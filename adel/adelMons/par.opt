@@ -1,0 +1,14 @@
+# the number of plant optical species
+n 2
+# s stands for soil reflectance, d stands for diffuse and is the only option at this time.
+# This line must be included even if there is no soil in the L-system nor in the simulation.
+s d 0.17
+# e stands for species. in this case just 1. therfore one line of data
+# d has the same meaning as for soil.
+# the first number is stem reflectance
+# second and third are reflectance and transmittance of upper side
+# fourth and fifth are reflectance and transmittance of lower side
+#  this is not singular i.e. this combination of values is ok.
+# optical species index 1 (the opaque part is indexed by using the - sign)
+e d 0.09   d 0.09 0.04 d 0.09 0.04
+e d 0.09   d 0.09 0.04 d 0.09 0.04

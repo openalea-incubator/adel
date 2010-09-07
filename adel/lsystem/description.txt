@@ -1,0 +1,29 @@
+Mini HowTo
+
+cf  /d/Christian/Softs/L-Studio/L-Studio_v4.0.23/oofs/GettingStarted/01-basic pour repartir d'une chaine existante
+
+Pour generer l'etat final en batch : 
+last frame= -1 dans leaf.a
+cpfg -g -homo -str bid.str Adel.l view.v leaf.a -m color.map
+
+Pour generer tous les etats : 
+  + changer last frame dans leaf.a et :
+  + cpfg -a -g -homo -str bid%03d.str Adel.l view.v leaf.a -m color.map
+
+Pour voir la simul sous cpfg avec geometrie simplifiée : 
+  + changer NOVISUALISATION en VISUALISATION, remettre last frame a -1,
+  + cpfg Adel.l view.v leaf.a -m color.map 
+
+Reflexion sur couplage avec environnement sous alea : 
+
+Dans les productions, on recupere les reponses (scanf) au fur et a mesure du parcours, 
+vu que les querry ont ete pos dans l'ordre de la chaine.
+Dans l'homomorphisme, on insere des modules 'query' (eg QueryT) 
+avec les parametres necessaires 
+(y compris pour s'y retrouver dans la maquette) 
+et ce que Query genere une table de reponse dans le meme ordre
+
+C'est assez astucieux car, par ex debplante peut recupérer une infos (eg Tapex) 
+alors que c'est finPlante qui a lancé la query (eg pour indiquer la hauteur de l'apex)!
+*/
+

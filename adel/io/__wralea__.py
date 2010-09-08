@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_saveRData', 'io_csvAsDict', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl']
+__all__ = ['io_saveRData', 'io_csvAsDict', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_Rdataframe']
 
 
 
@@ -60,7 +60,16 @@ io_RlistAsDict = Factory(name='RlistAsDict',
                 widgetclass=None,
                )
 
-
+io_Rdataframe = Factory(name='Rdataframe',
+                description='returns a dataframe (rpy2 object) from a dictionary containing named vectors of values',
+                category='io',
+                nodemodule='io',
+                nodeclass='dataframe',
+                inputs=[{'interface': IDict, 'name': 'Dict', 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
 
 io_to_canestra = Factory(name='to_canestra',

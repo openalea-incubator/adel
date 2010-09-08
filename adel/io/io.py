@@ -2,7 +2,23 @@
 
 import cPickle as Pickle
 
+import numpy as np
+from rpy2 import robjects
+from rpy2.robjects.numpy2ri import numpy2ri
+
 from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict
+
+def dataframe(d):
+    """ convert a dict of numbers to an RDataframe  """
+    df = {}
+    if d is None:
+        return robjects.r('as.null()')
+    else:
+        for k, v in d.iteritems():
+            df[k] = numpy2ri(np.array(v))
+    dataf = robjects.r['data.frame'](**df)
+    return dataf
+
 
 def load_leaf_data(fn):
     """  Load leaf data obtained by measurement. """ 

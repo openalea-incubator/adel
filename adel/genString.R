@@ -8,7 +8,8 @@ StemElement <- function(po, length, dbase, dtop,prec=3) {
 }
 #
 LeafElement <- function(po, Lf, l, wM, srb, srtop,index,seed,incB,prec=3) {
-  paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed,incB),prec)),collapse=","),")",sep="")
+  #paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed,incB),prec)),collapse=","),")",sep="")
+  paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed),prec)),collapse=","),")",sep="") # incB removed untill debugging completed
 }
 #
 pitch <- function(inc) paste("+(",round(inc,2),")",sep="")
@@ -41,6 +42,7 @@ Blade <- function(lv, lsen, Lf, wM, lctype, lcindex, incB, po, pos, epsillon) {
   if (lsen > epsillon)
     chn <- paste(chn,
                  LeafElement(pos, Lf, lv, wM / 2, lgreen / lv, 1, lctype, lcindex, incB))
+ 
   chn
 }
 #

@@ -39,7 +39,7 @@ psen <- function(rssi,nt,ssisenT) {
   t1delsen <- ssisenT$dssit1 - ssisenT$ndel
   t2delsen <- ssisenT$dssit2 - ssisenT$ndel
   senrate <- ssisenT$rate
-  psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= -1,1,rssi + 1))
+  psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 1,1,rssi + 1))
   if (nt < ndelsen) {
     t0 <- (nt-ndelsen)
     t1 <- t1delsen[ndelsen-nt]

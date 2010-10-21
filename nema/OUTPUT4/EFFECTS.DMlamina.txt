@@ -1,0 +1,98 @@
+
+Call:
+rsm(formula = DMlamina ~ FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, 
+    Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, 
+    DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, 
+    Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn), data = PB.NEMA)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-7.218e-05 -1.698e-05  3.143e-06  1.698e-05  7.218e-05 
+
+Coefficients:
+              Estimate Std. Error   t value Pr(>|t|)    
+(Intercept)  3.617e-01  1.248e-05 28976.441  < 2e-16 ***
+Ng          -4.337e-04  1.248e-05   -34.745 4.24e-09 ***
+DMg          2.449e-06  1.248e-05     0.196 0.850033    
+DMr          1.510e-04  1.248e-05    12.096 6.03e-06 ***
+Nr           2.472e-06  1.248e-05     0.198 0.848616    
+DMc          3.744e-04  1.248e-05    29.995 1.18e-08 ***
+Nc           6.871e-05  1.248e-05     5.504 0.000903 ***
+DMin.3       1.675e-05  1.248e-05     1.342 0.221495    
+Nin.3        2.364e-06  1.248e-05     0.189 0.855167    
+DMin.2       9.269e-05  1.248e-05     7.426 0.000146 ***
+Nin.2        9.897e-06  1.248e-05     0.793 0.453888    
+DMin.1       1.360e-04  1.248e-05    10.894 1.21e-05 ***
+Nin.1        4.639e-06  1.248e-05     0.372 0.721129    
+DMin         1.529e-04  1.248e-05    12.247 5.55e-06 ***
+Nin          3.317e-05  1.248e-05     2.657 0.032601 *  
+DMln.3       4.020e-03  1.248e-05   322.020 7.35e-16 ***
+Nln.3        2.552e-05  1.248e-05     2.044 0.080219 .  
+DMln.2       5.137e-03  1.248e-05   411.550  < 2e-16 ***
+Nln.2       -5.272e-05  1.248e-05    -4.224 0.003919 ** 
+DMln.1       9.396e-03  1.248e-05   752.738  < 2e-16 ***
+Nln.1        2.978e-05  1.248e-05     2.386 0.048453 *  
+DMln         1.484e-02  1.248e-05  1189.044  < 2e-16 ***
+Nln          4.448e-04  1.248e-05    35.631 3.56e-09 ***
+DMp          1.678e-04  1.248e-05    13.443 2.96e-06 ***
+Np           1.306e-04  1.248e-05    10.461 1.59e-05 ***
+DMsn.3      -3.536e-06  1.248e-05    -0.283 0.785132    
+Nsn.3        2.429e-05  1.248e-05     1.946 0.092720 .  
+DMsn.2       2.112e-05  1.248e-05     1.692 0.134524    
+Nsn.2        5.692e-06  1.248e-05     0.456 0.662204    
+DMsn.1       6.831e-05  1.248e-05     5.472 0.000934 ***
+Nsn.1        1.769e-05  1.248e-05     1.417 0.199290    
+DMsn         1.021e-04  1.248e-05     8.177 7.92e-05 ***
+Nsn          6.329e-05  1.248e-05     5.070 0.001447 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+Residual standard error: 7.895e-05 on 7 degrees of freedom
+Multiple R-squared:     1,	Adjusted R-squared:     1 
+F-statistic: 7.056e+04 on 32 and 7 DF,  p-value: < 2.2e-16 
+
+Analysis of Variance Table
+
+Response: DMlamina
+                                                                                                                                                                                                               Df
+FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn) 32
+Residuals                                                                                                                                                                                                       7
+Lack of fit                                                                                                                                                                                                     7
+Pure error                                                                                                                                                                                                      0
+                                                                                                                                                                                                                 Sum Sq
+FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn) 0.014072
+Residuals                                                                                                                                                                                                      0.000000
+Lack of fit                                                                                                                                                                                                    0.000000
+Pure error                                                                                                                                                                                                     0.000000
+                                                                                                                                                                                                                  Mean Sq
+FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn) 0.00043976
+Residuals                                                                                                                                                                                                      0.00000001
+Lack of fit                                                                                                                                                                                                    0.00000001
+Pure error                                                                                                                                                                                                               
+                                                                                                                                                                                                               F value
+FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn)   70558
+Residuals                                                                                                                                                                                                             
+Lack of fit                                                                                                                                                                                                           
+Pure error                                                                                                                                                                                                            
+                                                                                                                                                                                                                  Pr(>F)
+FO(Ng, DMg, DMr, Nr, DMc, Nc, DMin.3, Nin.3, DMin.2, Nin.2, DMin.1, Nin.1, DMin, Nin, DMln.3, Nln.3, DMln.2, Nln.2, DMln.1, Nln.1, DMln, Nln, DMp, Np, DMsn.3, Nsn.3, DMsn.2, Nsn.2, DMsn.1, Nsn.1, DMsn, Nsn) < 2.2e-16
+Residuals                                                                                                                                                                                                               
+Lack of fit                                                                                                                                                                                                             
+Pure error                                                                                                                                                                                                              
+
+Direction of steepest ascent (at radius 1):
+           Ng           DMg           DMr            Nr           DMc            Nc        DMin.3         Nin.3        DMin.2         Nin.2        DMin.1 
+-0.0231231904  0.0001305677  0.0080500104  0.0001318205  0.0199620830  0.0036629852  0.0008931009  0.0001260359  0.0049418711  0.0005276554  0.0072501835 
+        Nin.1          DMin           Nin        DMln.3         Nln.3        DMln.2         Nln.2        DMln.1         Nln.1          DMln           Nln 
+ 0.0002473535  0.0081502686  0.0017683680  0.2143065717  0.0013604041  0.2738895134 -0.0028108833  0.5009522624  0.0015878978  0.7913176650  0.0237126375 
+          DMp            Np        DMsn.3         Nsn.3        DMsn.2         Nsn.2        DMsn.1         Nsn.1          DMsn           Nsn 
+ 0.0089465234  0.0069617778 -0.0001885474  0.0012950403  0.0011258994  0.0003034672  0.0036418992  0.0009433233  0.0054419895  0.0033743395 
+
+Corresponding increment in original units:
+           V1            V2            V3            V4            V5            V6            V7            V8            V9           V10           V11 
+-0.0231231904  0.0001305677  0.0080500104  0.0001318205  0.0199620830  0.0036629852  0.0008931009  0.0001260359  0.0049418711  0.0005276554  0.0072501835 
+          V12           V13           V14           V15           V16           V17           V18           V19           V20           V21           V22 
+ 0.0002473535  0.0081502686  0.0017683680  0.2143065717  0.0013604041  0.2738895134 -0.0028108833  0.5009522624  0.0015878978  0.7913176650  0.0237126375 
+          V23           V24           V25           V26           V27           V28           V29           V30           V31           V32 
+ 0.0089465234  0.0069617778 -0.0001885474  0.0012950403  0.0011258994  0.0003034672  0.0036418992  0.0009433233  0.0054419895  0.0033743395 
+

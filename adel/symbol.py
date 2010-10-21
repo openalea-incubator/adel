@@ -91,12 +91,17 @@ class LeafElement(Symbol):
 
             #print 'angle: ', degrees(pgl.angle((x1[1]-x1[0], y1[1]-y1[0]),(0,1)))
             leaf = (x1, y1) + leaf[2:]
-        
-        pts, ind = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)
-        if len(ind) < 2:
-            mesh = None
-        else:
-            mesh = fitting.plantgl_shape(pts, ind)
+
+        pts, ind = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)        
+        leaf_mesh = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)
+	if leaf_mesh:
+	    pts, ind = leaf_mesh
+            if len(ind) < 2:
+                mesh = None
+            else:
+                mesh = fitting.plantgl_shape(pts, ind)
+	else:
+	    mesh = None
 
         return mesh
 

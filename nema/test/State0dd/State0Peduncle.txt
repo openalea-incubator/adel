@@ -1,7 +1,0 @@
-0.00130	#Nstructini, g      
-0.00253	#Nphini, g
-0.219	#L, m
-0.0024	#Areaini, m2 (area of the entire internode at maturity)
--130	#TTinit, dd
-0.0555	#DMrem, g
-0.2568	#DMstruct, g

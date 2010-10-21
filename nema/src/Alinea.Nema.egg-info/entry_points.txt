@@ -1,3 +1,0 @@
-[wralea]
-nema = alinea.nema_wralea
-

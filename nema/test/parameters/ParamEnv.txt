@@ -1,2 +1,0 @@
-1	#transmission, dimensionless
-0.5	#ext_coef for vertical entities, m-2 m-2 (un peu supérieur au 0.42 de midi de Bertheloot et al., 2008a) (en fait, il n'est pas utilisé ici car je le fait dépendre de l'angle d'insertion des limbes)

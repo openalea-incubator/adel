@@ -1,7 +1,0 @@
-0.00107	#Nstructini, g      
-0.00368	#Nphini, g
-0.09	#L, m
-0.00075	#Areaini, m2
--400	#TTinit, dd
-0.05	#DMrem, g
-0.21	#DMstruct, g

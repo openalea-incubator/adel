@@ -1,0 +1,14 @@
+0.0001	#Umax, g g-1 dd-1
+2.5	#k1, g m-3
+0.000005	#k2, m3 g-1 dd-1
+0.0013	#QonDmin, dimensionless
+130	#beta1, dimensionless
+2300	#beta2, dimensionless
+0	#Nsoilmin, g m-3
+0.1	#p, dimensionless (N fraction of the dry mass influx)
+1	#sink
+2	#alpha
+2	#beta
+1700	#TTexp, dd
+0.008	#DegDMRate
+0.008	#DegNRate

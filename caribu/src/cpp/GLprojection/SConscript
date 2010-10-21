@@ -1,0 +1,56 @@
+# -*-python-*-
+import os
+import sys
+Import("env")
+# Import("bibliotek")
+
+lib_env = env.Clone()
+
+# Import/Export symbols for windows
+if lib_env['compiler'] == 'mingw':
+    lib_env.AppendUnique(CPPDEFINES=['MINGW','WIN32'])
+#    LINKFLAGS=["-enable-stdcall-fixup",
+#               "-enable-auto-import",
+#               "-enable-runtime-pseudo-reloc",
+#               "-s"]
+#    lib_env.AppendUnique(LINKFLAGS=LINKFLAGS)
+#    lib_env.AppendUnique(CPPDEFINES=['BCC32','WIN32'])
+
+
+if 'OSTYPE' in os.environ:
+  if os.environ['OSTYPE']=='darwin':
+        print os.environ['OSTYPE']
+        lib_env.AppendUnique(CPPDEFINES=['_darwin_'])
+        lib_env.AppendUnique(CXXFLAGS='-Wall')
+        lib_env.AppendUnique(CPPPATH='.')
+        lib_env.AppendUnique(LIBS=['GL','GLU','m','objc','stdc++'])
+        lib_env.AppendUnique(LIBPATH='/System/Library/Frameworks/OpenGL.framework/Libraries')
+        ## les espaces dans la string donne' a LINKFLAGS font ajouter a scons 
+        ## des "" dans la ligne de commande qui la rend incorrect pour le linkage !    
+        lib_env.AppendUnique(LINKFLAGS = ['-Framework','GLUT',  '-framework', 'OpenGL'])
+
+if 'linux' in sys.platform:
+    print sys.platform
+    lib_env.AppendUnique(LIBS=['glut'])
+    
+    
+sources = """
+glProj.cpp
+"""
+sources = lib_env.Split(sources)
+# sources.append(bibliotek)
+
+lib_env.ALEAProgram("glproj", sources)
+
+
+### C. Pradal january 2009
+#  Import('env')
+# import os
+# pj = os.path.join
+# includes= lib_env.ALEAGlob('*.h')
+# sources = lib_env.ALEAGlob('*.cpp')
+# 
+# inc = env.ALEAIncludes('mymodule', includes)
+# lib = env.ALEALibrary('libname', sources)
+# # ou
+# exe = env.ALEAProgram('prog_name', sources)

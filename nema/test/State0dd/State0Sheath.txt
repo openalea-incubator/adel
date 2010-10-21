@@ -1,0 +1,30 @@
+0.00012 #Nstruct4ini, g
+0.000026	#Nph4ini, g
+0.11	#L4, m
+0.0002	#Area4ini, m2
+-510	#TTinit4, dd
+0.0019	#DMrem4, g
+0.0086	#DMstruct4, g
+0.00011	#Nstruct3ini, g
+0.00018	#Nph3ini, g
+0.125	#L3, m
+0.0004	#Area3ini, m2
+-420	#TTinit3, dd
+0.0093	#DMrem3, g
+0.0428	#DMstruct3, g
+0.00021	#Nstruct2ini, g
+0.00066	#Nph2ini, g
+0.14	#L2, m
+0.0005	#Area2ini, m2
+-330	#TTinit2, dd
+0.0148	#DMrem2, g
+0.0685	#DMstruct2, g
+0.00068	#Nstruct1ini, g
+0.0018	#Nph1ini, g
+0.145	#L1, m
+0.0006	#Area1ini, m2
+-240	#TTinit1, dd
+0.0222	#DMrem1, g
+0.1027	#DMstruct1, g
+
+

@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Launching Nema &mdash; Alinea.Nema v0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/openalea.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/oaicon.ico"/>
+    <link rel="top" title="Alinea.Nema v0.1 documentation" href="../index.html" />
+    <link rel="up" title="Nema User Guide" href="index.html" />
+    <link rel="next" title="Reference guide" href="autosum.html" />
+    <link rel="prev" title="Nema User Guide" href="index.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-4372857-3']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="autosum.html" title="Reference guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Nema User Guide"
+             accesskey="P">previous</a> |</li>
+
+
+<li><a href="../../../../../../openalea/doc/_build/html/index.html"> Main home </a>  |&nbsp;</li>
+<li><a href="../../../../../../openalea/doc/_build/html/alinea.html"> alinea packages </a> |&nbsp;</li><li><a href="../contents.html">Nema Documentation </a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Nema User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/wiki_logo_openalea.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Launching Nema</a><ul>
+<li><a class="reference internal" href="#how-to-run-nema-from-the-test-directory">How to run Nema from the test directory</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Nema User Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="autosum.html"
+                        title="next chapter">Reference guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/user/manual.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="launching-nema">
+<h1>Launching Nema<a class="headerlink" href="#launching-nema" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-run-nema-from-the-test-directory">
+<h2>How to run Nema from the test directory<a class="headerlink" href="#how-to-run-nema-from-the-test-directory" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Nema needs several input arguments:</dt>
+<dd><ul class="first last simple">
+<li><em>inputdir</em>: input directory</li>
+<li><em>outputdir</em>: output directory where nema write the results</li>
+<li><em>outf</em>: not used variable</li>
+</ul>
+</dd>
+<dt>When you run <strong>nema</strong>, be sure that you have created the following directories in the input directory:</dt>
+<dd><ul class="first last simple">
+<li>parameters</li>
+<li>DrivingVariables</li>
+<li>State0dd</li>
+</ul>
+</dd>
+</dl>
+<p>Please, create also an outputs directory in the outputdir.</p>
+<div class="highlight-bash"><div class="highlight"><pre>my@alinea:~nema/test<span class="nv">$ </span>ls
+DrivingVariables  outputs  parameters  State0dd
+
+<span class="c"># run nema program in test directory</span>
+my@alinea:~nema/test<span class="nv">$ </span>nema
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="autosum.html" title="Reference guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Nema User Guide"
+             >previous</a> |</li>
+
+
+<li><a href="../../../../../../openalea/doc/_build/html/index.html"> Main home </a>  |&nbsp;</li>
+<li><a href="../../../../../../openalea/doc/_build/html/alinea.html"> alinea packages </a> |&nbsp;</li><li><a href="../contents.html">Nema Documentation </a> &raquo;</li>
+          <li><a href="index.html" >Nema User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright None.
+      Last updated on Jun 17, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0b2.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

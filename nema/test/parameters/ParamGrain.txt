@@ -1,0 +1,7 @@
+6	#p
+250	#tgrain, dd	
+0.0055	#ggrain,dd-1
+7	#sink
+2	#alpha
+2	#beta
+700	#TTexp, dd

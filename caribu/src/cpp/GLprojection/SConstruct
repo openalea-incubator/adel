@@ -1,0 +1,94 @@
+## simple test
+#MC09
+
+#On cree un environnement de compilation pour le programme "test"
+env = Environment()
+
+# g++  -framework GLUT -framework OpenGL -Wall -o glproj glProj.cpp  -L"/System/Library/Frameworks/OpenGL.framework/Libraries" -lGL -lGLU -lm -lobjc -lstdc++ 
+env.Append(CXXFLAGS='-Wall')
+env.Append(CPPPATH='.')
+env.Append(LIBS=['GL','GLU','m','objc','stdc++'])
+env.Append(LIBPATH='/System/Library/Frameworks/OpenGL.framework/Libraries')
+env.Append(LINKFLAGS = '-framework GLUT -framework OpenGL')
+# env.Append(CPPDEFINES=['BIG_ENDIAN'])
+sources = Split("""
+glProj.cpp
+""")
+obj_list = env.Object(source = sources)
+
+env.Program(target='glproj', source=obj_list)
+
+import os
+print os.environ['OSTYPE']
+OS_TYPE = os.environ['OSTYPE']
+env.Append(CPPDEFINES =[ '__' + OS_TYPE + '__'])
+
+# env = Environment(ENV = os.environ).
+#env.ParseConfig('sdl-config --cflags --libs')
+# pkg-config : pas installe' par defaut
+#g++ -c mon_prog.cpp `pkg-config gtk+-2.0 --cflags`
+#g++ mon_prog.o -o mon_prog `pkg-config gtk+-2.0 --libs`
+
+opts = Options()
+#CPPDEFINES
+opts.AddOptions(
+    BoolOption('debug', 'Set to 1 to enable all warnings and allow debugging', 0),
+    BoolOption('release', 'Set to 1 and you will be asked a few questions', 0),
+    BoolOption('dev', 'Set to 1 if you want to compile the latest sources', 0)
+    )
+
+#env2 = Environment()
+#env2['CPPPATH'] = ['/lib/compat']
+#env2.ParseConfig("pkg-config x11 --cflags --libs") # pkg-config : pas sous Mac
+#print env2['CPPPATH']
+ 
+
+#
+# SConstruct
+#
+includesPath = [
+   '/usr/include/python2.5',
+   '/usr/include/freetype2',
+   '/usr/include/GL',
+   'extern/ftgl/src/FTGL',
+   'extern/ftgl/src',
+   'include'
+]
+
+librariesPath = [
+   '/usr/lib/python2.5',
+   '/usr/lib'
+   'extern/ftgl/src/.libs'
+]
+
+sourceFiles = [
+   'source/sys_log.c',
+   'source/gr_init.c',
+   'source/gr_textures.c',
+   'source/gr_draw.c',
+   'source/gr_font.c',
+   'source/in.c',
+   'source/main.c'
+]
+
+libraries = [
+   "python2.5",
+   "GL",
+   "GLU",
+   "glut",
+   "SDL_image",
+   "freetype",
+   "ftgl"
+]
+
+#env = Environment()
+#env.Append(CPPPATH=includesPath)
+#env.Append(LIBPATH=librariesPath)
+
+#app = env.Program(
+#       target      = "main",
+#       source      = sourceFiles,
+#       LIBS        = libraries,
+#       LIBPATH     = librariesPath,
+#)
+

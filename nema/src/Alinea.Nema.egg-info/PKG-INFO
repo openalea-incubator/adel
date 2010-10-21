@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: Alinea.Nema
+Version: 0.1.0
+Summary: nema package for OpenAlea.
+Home-page: http://openalea.gforge.inria.fr
+Author: XXX
+Author-email: XXX@XXX
+License: Cecill-C
+Description: The nema package is a typical package example to help developper to create their own package, compatible with OpenAlea standards. It defines best practices for build, installation, coding rules, and license information. It contains code in C++, Python, as well as Boost.Python wrappers.
+Platform: UNKNOWN

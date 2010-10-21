@@ -1,0 +1,535 @@
+
+
+		Meschach Frequently Asked Questions
+			    Version 0.1
+			  2nd March 1994
+
+
+This is a list of frequently asked questions regarding Meschach.
+It is maintained by David Stewart and Zbigniew Leyk, the developers and
+maintainers of Meschach.  A copy of this is kept in the anonymous ftp
+area
+
+    thrain.anu.edu.au : /pub/meschach/FAQ.meschach
+
+----------------------------------------------------------------------
+
+Q1.  What is Meschach?
+Q2.  Why not use C versions of LINPACK, EISPACK or LAPACK?
+Q2a. What are the differences of Meschach from LAPACK or EISPACK in C?
+Q2b. How reliable are the routines compared to the above packages?
+Q3.  How do I get documentation?
+Q4.  I've found a bug in Meschach!  What do I do?
+Q5.  It won't compile on my BrandX machine running X-OS.  What do I do?
+Q6.  Is there a C++ version of Meschach?
+Q7.  Meschach doesn't have an xxxx routine.  Why not?  What do I do?
+Q8.  Can I use Meschach with MATLAB?
+Q9.  I don't want ALL of Meschach.  How do I get just a subset?
+Q10. What does Meschach mean?
+Q11. My code that uses Meschach seems to run very slowly/uses incredible
+	amounts of memory.  Why?
+Q12. I have a huge problem and I keep running out of memory.  What do I do?
+Q13. How did you come to write Meschach?
+Q14. Complex part of Meschach
+Q15. Can I do an index search in order to know what routines exist?
+
+----------------------------------------------------------------------
+
+A1.  What is Meschach?
+
+Meschach is a library of functions written in C for performing matrix
+computations.  The operations can be (briefly) summarised as
+
+	* linear combinations of vectors and matrices; inner products;
+	  matrix-vector and matrix-matrix products
+	* solving linear systems of equations
+	* solving least-squares problems
+	* computing eigenvalues (or singular values)
+	* finding "nice" bases for subspaces like ranges of matrices and
+	  null spaces.
+
+There are, however, a lot of different ways of, for example, solving a
+system of linear equations depending on whether the matrix is real or
+complex, symmetric, positive definite or indefinite, sparse or has some
+other structure.  The rule in computational mathematics is: Exploit
+Structure.  So there is the standard Gaussian Elimination method for
+general real (and general complex) matrices, as well as Cholesky
+factorisation (for positive definite symmetric matrices), which is about
+twice as fast, LDL factorisation which just needs symmetric matrices, but
+is not always well-behaved, BKP (Bunch-Kaufman-Parlett) factorisation for
+indefinite symmetric matrices which is well-behaved but more complex,
+QR factorisation which is best used for least squares problems.
+And then there are sparse matrices, and a variety of different techniques
+for different types of sparse matrices.
+
+A list of the features of Meschach follows.
+
+	o  dynamic allocation, de-allocation, re-sizing and copying of objects
+	o  dense complex matrices and vectors as well as real matrices
+		and vectors
+	o  input and output routines for these objects, and MATLAB
+		save/load format
+	o  error/exception handling
+	o  basic numerical linear algebra -- linear combinations, inner
+		products, matrix-vector and matrix-matrix products
+		including transposed and adjoint forms
+	o  vector min, max, sorting, componentwise products, quotients
+	o  dense matrix factorise and solve -- LU, Cholesky, LDL^T, QR,
+		QR with	column pivoting, symmetric indefinite (BKP)
+	o  dense matrix factorisation update routines -- LDL^T, QR
+		(real matrix updates only)
+	o  eigenvector/eigenvalue routines -- symmetric, real Schur
+		decomposition, SVD, extract eigenvector
+	o  sparse matrix "utility" routines
+	o  sparse matrix factorise and solve -- Cholesky, LU and BKP
+		(Bunch-Kaufman-Parlett symmetric indefinite factorisation)
+	o  sparse incomplete factorisations -- Cholesky and LU
+	o  iterative techniques -- pre-conditioned conjugate gradients,
+		CGNE, LSQR, CGS, GMRES, MGCR, Lanczos, Arnoldi
+	o  allowance for "procedurally defined" matrices in the iterative
+		techniques
+	o  various "torture" routines for checking aspects of Meschach
+	o  memory tracking for locating memory leaks
+
+Here is a sample piece of code using Meschach to read in a matrix A and a
+vector b and to solve A.x = b for x and print the result.
+
+MAT  *A, *Acopy;
+VEC  *b, *x;
+PERM *pivot;
+
+A = m_input(MNULL);    /* read in matrix from stdin */
+Acopy = m_copy(A,MNULL);  /* create & copy matrix */
+b = v_input(VNULL);    /* read in vector from stdin */
+pivot = px_get(A->m);  /* get pivot permutation -- size = # rows of A */
+LUfactor(A,pivot);     /* LU factorisation */
+x = LUsolve(A,pivot,b,VNULL);  /* ... and solve A.x = b; result is in x */
+/* .... and print out solution with a comment */
+printf("# x =\n");    v_output(x);
+
+Meschach aims to be an easy-to-use, easy-to-debug-your-code library.
+The basic data objects (vectors, matrices etc.) are represented by
+self-contained data structures which can be created, destroyed and resized
+at will.  Workspace arrays do not need to be passed to routines (except
+for some internal routines).  Operations are continually checked to see if
+they are valid so that errors are quickly located.  Unlike matrix
+interpreter/calculators such as MATLAB, the user is given control over
+memory usage and can efficiently re-use memory which requires garbage
+collection in a more interpretive environment.
+----------------------------------------------------------------------
+
+A2.  Why not use C versions of LINPACK, EISPACK or LAPACK?
+
+LINPACK, EISPACK and LAPACK are well-known Fortran-language packages of
+routines for a variety of problems in matrix computations.  With the magic
+of translators like f2c, why not use the translated versions of these
+libraries?  Well, a number of people are already doing this; after all,
+LINPACK etc. are public domain and they have been incorporated in public
+domain software such as Octave and RlaB, to name but two.
+
+But, as with all translations from Fortran, these do not use any of the
+facilities that Fortran lacks.  In particular, there is no attempt to
+structure the data, nor is there any use of dynamic memory allocation,
+C's error handling (using setjmp() and longjmp()).  Finally there is no
+input/output.
+
+Meschach uses not only the data structuring facilities in C to provide
+self-contained data structures, but this is used with the error handling to
+ensure, for example, that the matrices passed to a matrix multiplication
+routine have compatible sizes.  The data structuring is also used with the
+dynamic memory allocation to allow efficient resizing -- vectors are only
+physically reallocated if the requested size is above the current "high
+water mark".  Input and output are both handled using C's I/O facilities to
+provide output that is both machine and human-readable.  Binary
+MATLAB-compatible output (for dense matrices) is also done.  And another
+useful aspect of Meschach's I/O is that it allows for comments in the data.
+
+As well, none of the above packages has anything to do with sparse
+matrices.  There are, of course, sparse matrix packages that are freely
+available, but even there, they do not seem to handle, in an integrated
+way, both sparse and dense matrices.  Meschach has not only sparse matrix
+data structures and the routines to make use of them, but as the sparse
+matrices are self-contained data structures, use of sparse and dense
+matrices can be intermixed.
+
+You may also like to look at answer A2a.
+----------------------------------------------------------------------
+
+A2a. What is the difference of meschach from LAPACK or EISPACK in C?
+
+First: The biggest difference is that Meschach is written from scratch in
+C, and works in terms of data structures that are self-contained
+mathematical objects (matrices, vectors, permutations, sparse matrices
+etc).  These can be created, destroyed and re-sized at will.
+
+Second: LAPACK and EISPACK have no sparse matrix routines, and no iterative
+routines; Meschach has both and includes sparse factorisations, both with
+fill-in and "incomplete" factorisations.
+
+Third: The algorithms are similar; we have **NOT** taken
+LINPACK/EISPACK/LAPACK and re-implemented this in C.
+
+Fourth: Meschach makes comprehensive use of C's facilities (as well as
+structures a.k.a. records) such as error handling, and dynamic memory
+allocation.  E.g. workspace arrays do not need to be passed.  They are
+created and re-sized as necessary where they are used.  With Meschach 1.2
+you can destroy any of these local workspace vectors etc if memory is
+short.
+
+Fifth: Meschach is smaller in the amount of memory needed, both for source
+and executable than e.g. LAPACK.  Full source code in shar files is under
+1Mbyte for Meschach, more like 4-5Mbyte for LAPACK.  There **are** a number
+of things in LAPACK that are not in Meschach (e.g. banded complex
+factorisations), but then again, there is a package of sparse matrix
+operations in Meschach that is not in LAPACK.  We suspect that it is partly
+due to the way the software has been constructed.  Meschach has been a 1 or
+2 person effort; LAPACK has had something like 10 full-time programmers.
+We've had to be economical in terms of how the software has been developed.
+---------------------------------------------------------------------------
+
+A2b. How reliable are the routines compared to the above packages?
+
+Well, LINPACK and EISPACK have been around for nearly 20 years.  The bugs
+should be found by now!  So we can't honestly claim that we have yet
+achieved **THAT** level of reliability.  But we believe that it probably
+approaches that level of reliability for the more commonly used routines.
+Because there is a considerable amount of error/exception checking in
+Meschach, bugs have been relatively easy to track down.
+
+A number of bugs have been found in Meschach 1.2a (and there will be more).
+But these have been mostly minor and easily fixed.
+------------------------------------------------------------------------
+
+A3.  How do I get documentation?
+
+There is some basic documentation that comes with the source code of
+Meschach and there will be more on that later.
+But the comprehensive documentation has been published as a
+book (both a users' and a reference manual) by
+
+	Centre for Mathematics and its Applications (CMA)
+	School of Mathematical Sciences
+	Australian National University
+	Canberra, ACT 0200
+	Australia
+
+as "Meschach: Matrix Computations in C", volume 32 in the "Proceedings of
+the CMA".  The cost is about A$30 (approx. US$22) + postage/handling.
+Orders can be passed to the CMA via David Stewart
+(david.stewart@anu.edu.au).  The manual is nearly 250pp long.
+
+If you just want to check out the sort of things that Meschach has before
+committing yourself to buying the manual, there is the manual for the
+**OLD** version of Meschach which is available over ftp at
+
+    thrain.anu.edu.au : /pub/meschach/version1.1b/bookdvi.tar [.Z or .gz]
+
+You can also have a look at some of the documentation that comes with the
+source code.  In the DOC directory there is tutorial.txt which is an ASCII
+file containing a tutorial introduction to Meschach.  There is also
+fnindex.txt which contains an index (in alphabetical order) of the
+functions in Meschach and a brief description of what they do.
+
+The calling sequences can be found from the header files and the actual
+source code.  Of course, this is no substitute for a comprehensive manual,
+but it does give you a start with using Meschach.  The torture.c and
+*tort.c files can also be useful in showing how Meschach can be used.
+----------------------------------------------------------------------
+
+A4.  I've found a bug in Meschach!  What do I do?
+
+Congratulations!  Let us know!  Not all bugs are serious --- most of the
+bugs found by users are installation problems.
+Most bugs in Meschach are very easily fixed.  Please try to determine where
+the bug is occuring (which routine, preferably) and what data results in a
+problem.  Send that information to us and we will aim to fix the problem as
+quickly as possible.  Send the information to either of us.  We will pass
+it on to the other.
+
+Sometimes the torture test(s) give a message "Error: ..." indicating that
+there may be something wrong.   Please have a look at the size of the error
+that is printed out with the "Error:  ..." message.  If this is of the
+order of 1e-15 or 1e-14 it is unlikely that there is anything seriously
+wrong.  The reason is that torture and the other testing programs generally
+use randomly generated problems, which may on occasion be more
+ill-conditioned than expected and give slightly larger errors than usual.
+If on the other hand, errors of size 1e-6 (say) or more for the direct
+methods **DOES** indicate a serious bug.
+----------------------------------------------------------------------
+
+A5.  It won't compile on my BrandX machine running X-OS.  What do I do?
+
+Firstly make sure that you run "configure" or "configure --with-..." to get
+the options you want.  Then you use "make".  The simplest installation
+procedure for Unix systems to create the entire library is
+
+	configure --with-all
+	make all
+
+If you want to use gcc (or if that is not the default compiler) then use
+
+	configgnu --with-all
+	make all
+
+The "configure" script is not perfect and sometimes misses some things.
+For example, when we used configure on Linux, it missed the fact that the
+type u_int was already declared.  This meant that some editing of the
+generated machine.h file was needed.
+
+Users of MS-DOS machines and C compilers, and users of VMS and other
+non-Unix operating systems will need to manually edit your machine.h and/or
+makefile for your system.  Some guidance in this can come from the examples
+in the MACHINES/xxxx directories which contain machine.h, makefile (and
+occasionally machine.c) files for some machines.
+
+If configure fails, then the files to modify for your particular machine
+are "machine.h" and "makefile".  (The file "machine.c" can also be
+modified for speed.)  There are a number of macros in machine.h which can
+be set to control the way the library is compiled.  You should consult a
+local expert (and/or your local manuals!) to determine how things should be
+set.  If this is not successful, send us a message.  We are unlikely to
+know the magic words for your particular machine/compiler/operating system,
+but we may know someone who does.
+----------------------------------------------------------------------
+
+A6.  Is there a C++ version of Meschach?
+
+There is a C++ version (called Meschach++) which is under development.  It
+is not yet, but soon will be released for public use.  There will also be a
+manual for this version.  Note that this manual will not be a substitute
+for the main manual described above -- the Meschach++ manual will refer to
+"Meschach: Matrix Computations in C" for many details on the behaviour of
+the various routines.  The C++ version is, basically, a "wrapper" for
+Meschach.  These will eventually be placed in an ftp site to make them
+publically accessible.
+
+Meschach++ is not being developed by David Stewart and Zbigniew Leyk, but
+by Stephen Roberts, Brian Austin and Alex Austin also while at the
+Australian National University, School of Mathematical Sciences.
+You can contact Stephen Roberts at steve@laplace.anu.edu.au.
+
+Some points should be made about the use of C++.  The use of operator
+overloading is one of the most attractive features of C++, especially for
+tasks such as matrix computations.  However, it also has some drawbacks.
+One drawback is the problem of temporary variables.  In a matrix expression
+of the form:
+
+	S = A + B + C + D + E;
+
+where all the objects are matrices (of the same size) if operator
+overloading is implemented in the naive way, then this will result in
+temporary matrices for (A+B), ((A+B)+C), (((A+B)+C)+D) and
+((((A+B)+C)+D)+E).  In fact, the sum could be accumulated directly into S
+(provided there is no aliasing) and there do not need to be any
+temporaries.  Instead, a naive implementation would spend most of its time
+allocating and deallocating temporary variables.  This is just one aspect
+of a problem with optimising evaluation of matrix expressions.
+
+There are ways of fixing this problem using delayed evaluation, which can
+be implemented in C++.  .  Another is to use 3-term functions, similar in
+spirit to Meschach's use of a final output parameter.  This loses the
+elegance of operator overloading, but gains greatly in performance.
+----------------------------------------------------------------------
+
+A7.  Meschach doesn't have an xxxx routine.  Why not?  What do I do?
+
+There is usually one answer to "Why not?"  We haven't had time.
+But some operations should be avoided if possible.  It was a long time
+before we implemented matrix inversion as a single function.  Most of the
+time it is not needed: often only the solution of systems of equations is
+needed.  There is no single "eigenvalue/vector" routine.  This is because
+this is done by computing the Schur decomposition of a matrix, and then
+extracting information about the eigenvalues and eigenvectors.  The Schur
+decomposition not only provides more information, but in the case of
+eigenvectors, is much more numerically stable.  After all, not all matrices
+can be transformed into diagonal form -- they have fewer eigenvectors than
+columns. 
+
+The other point that should be made is that Meschach is a toolkit.
+Often it is up to you to make the part you need.  You may need to
+re-consider what you are doing -- is it numerically stable?
+Is it an efficient way of doing the task?  It may be better to build on
+what Meschach provides, rather than hoping that it will all be there.
+----------------------------------------------------------------------
+
+A8.  Can I use Meschach with MATLAB?
+
+The answer is both "Yes" and "No".  The "Yes" part is that Meschach
+provides input and output of dense matrices and vectors that is compatible
+with MATLAB.  This means that matrices can be transferred between MATLAB
+and Meschach programs.  However, Meschach has not been made into a
+MEX-compatible library.  So Meschach routines are not **yet** ready to be
+used in MEX routines.
+----------------------------------------------------------------------
+
+A9.  I don't want ALL of Meschach.  How do I get just a subset?
+
+Yes you can.  If you have the shar files from netlib then the most basic
+library can be built out of shar files meschach0.shar and meschach1.shar.
+This contains the core routines and the basic matrix, vector computations.
+(It is not even enough to get torture to work.)  The next shar file needed
+is meschach2.shar which contains the matrix factorisation routines.
+With these three shar files the basic library can be built.  The shar file
+meschach3.shar contains the sparse and iterative methods, while
+meschach4.shar contains the complex vector and matrix operations.
+
+If you want the basic library (with the matrix factorisations), get the
+shar files meschach[012].shar, expand them, and then build the library
+using
+
+	configure
+	make basic
+
+If you want to add just the sparse routines use
+
+	configure --with-sparse
+	make sparse
+
+If you want to add just the complex routines use
+
+	configure --with-complex
+	make complex
+----------------------------------------------------------------------
+
+A10. What does Meschach mean?
+
+Meschach doesn't stand for anything in particular.  And it is NOT an
+acronym.  It is, however, someone's name.  If you want to find out, look
+two thirds down page ii of the manual :-)
+----------------------------------------------------------------------
+
+A11. My code that uses Meschach seems to run very slowly/uses incredible
+	amounts of memory.  Why?
+
+It is quite possible to make Meschach run very inefficiently.  What it is
+most likely doing is spending all of its time allocating matrices.
+(If it is not also deallocating them **explicitly**, then you will use an
+amazing amount of memory.)  Look at where you call Meschach.  Is the output
+parameter NULL?  If so, then a new data structure is created to hold the
+output whenever the routine is called.
+
+For example,
+
+	MAT  *A, *B, *C;
+
+	for ( i = 0; i < 100; i++ )
+	{
+	    ....
+	    C = m_add(A,B,MNULL);	/* C = A+B */
+	    ....
+	}
+
+will create a new C every time through the loop.  To avoid this use C as
+the output parameter:
+
+	MAT  *A, *B, *C;
+
+	C = m_get(A->m,A->n);
+	for ( i = 0; i < 100; i++ )
+	{
+	    ....
+	    C = m_add(A,B,C);
+	    ....
+	}
+
+See the pages under the index entry "memory management" for a comprehensive
+discussion of ways of dealing with memory allocation and deallocation.
+----------------------------------------------------------------------
+
+A12. I have a huge problem and I keep running out of memory.  What do I do?
+
+Large problems often require specialised techniques.  A large problem is
+one where just using dense matrices is intolerably slow.  For most
+workstations and most problems this is somewhere around 1000 x 1000,
+possibly a bit less, possibly a bit more.
+
+The first strategy to use is to consider using sparse matrices.  Direct
+methods can be used with sparse matrices, at least for solving systems of
+equations.  The danger here is that fill-in will result in the sparse
+matrix becoming a bit too dense for the amount of memory available.
+Re-ordering techniques should be used (unfortunately Meschach does not
+currently implement these) to reduce the amount of fill-in created by the
+factorisation process.
+
+If this is not enough, then iterative methods should be used.  The ones
+implemented in Meschach are based on "Krylov subspaces".  These just
+require a function to compute the product A.x for any given vector x
+(or sometimes the transposed-matrix-vector product A^T.x).  These do not
+require the matrix involved to be sparse; it can be dense, but as long
+as it has the right structure so that A.x can be computed quickly,
+these methods are appropriate.  Preconditioning is desirable for these
+iterative methods, and can be achieved in a variety of ways.  One is to
+use incomplete factorisations (which simply ignore fill-in).  Other methods
+are problem dependent: for partial differential equations, multigrid
+preconditioners can work very well.  Classical methods (Gauss-Seidel, SOR,
+SSOR, Chebyshev acceleration) can be used to create pre-conditioners which
+when combined with a Krylov subspace method can be far better than either
+alone.
+----------------------------------------------------------------------
+
+A13. How did you come to write Meschach?
+
+The first of us to start working on Meschach was David Stewart.  The first
+ideas of how to use pointers and dynamic memory allocation for storing
+matrices was developing while completing an Electrical Engineering degree.
+The next year was spent as a systems programmer for 5 months and then
+starting an Honours year in Mathematics (in USA read "Masters", in Germany
+read "Diplom").  By 1986, when he started his PhD he was ready to start
+writing code for it.  The library was never an end in itself, but a tool
+for writing the real programs for the thesis (in numerical analysis and
+differential equations).
+
+In 1989 the library was the basis for programs using linear programming and
+ODE solvers; however, it was still very limited and had no
+eigenvalue/vector routines, no complex routines, and was not particularly
+portable.  For a while he was waiting for a job on a project at an
+operations research company on large scale optimisation -- the project
+eventually fell through, but in the mean time some basic sparse routines
+were written in anticipation.  Later that year David Stewart was hired as a
+lecturer in Computational Mathematics at the University of Queensland,
+Australia, and taught Numerical Linear Algebra.  As a result, the
+development of a number of routines took place in parallel with them being
+taught in the classroom.
+
+Meanwhile, Zbigniew Leyk had also completed his PhD and was working in a
+Post-doc at Cornell.  While there he developed his own ideas about a
+numerical library in C as part of his work on multigrid methods.  This had
+a different flavour to Meschach in some respects, but both approaches
+emphasised the use of data structures.
+
+By 1991 when both David Stewart and Zbigniew Leyk arrived at the Australian
+National University, the ideas had matured enough; Meschach had been
+developed in terms of scope and portability to become a really general
+tool.  Meschach was placed in netlib in 1991.  A manual had been written
+over 1990/1991.  There was mutual interest in working with Meschach from
+both of us, and during 1993 we worked intensively on a major new revision,
+which has become version 1.2.  This had complex data structures and
+operations, a revamped way of dealing with iterative methods, better
+methods for handling workspace vectors and matrices and a new installation
+procedure based on GNU's autoconf.
+----------------------------------------------------------------------
+
+A14. Complex part of Meschach
+
+>> I wrote for myself a file called complex.h
+>> and this is the one which is included 
+>> automatically in your files. How can this work?
+>> What type of complex.h is required? 
+
+complex.h is not for a C++ header file.  Rather, the idea is that if a user
+have a better local complex.h (C) header file then that should be used.
+However, there may be problems with names being different (e.g.  cadd() vs.
+zadd() -- Meschach uses the latter).  It might be necessary to edit
+machine.h to make it work better for a particular setup.
+--------------------------------------------------------------------------
+
+A15. Can I do an index search in order to know what routines exist?
+
+In meschach0.shar (and in the tar and zip distributions) is a file called
+fnindex.txt which contains a list of routines and briefly what they do.
+Use your favourite string search method to find the right routine(s).
+------------------------------------------------------------------------
+
+End of Meschach FAQ
+
+

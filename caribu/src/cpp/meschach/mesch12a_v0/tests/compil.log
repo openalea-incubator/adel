@@ -1,0 +1,60 @@
+MAKE Version 5.2  Copyright (c) 1987, 2000 Borland
+	bcc32 -c -5 -y -R -DWIN32 -I../include -I"C:\Program Files\bcc55\include" torture.c
+Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
+torture.c:
+Warning W8012 torture.c 68: Comparing signed and unsigned values in function cmp_perm
+Warning W8012 torture.c 83: Comparing signed and unsigned values in function px_rand
+Warning W8065 torture.c 195: Call to function 'px_rand' with no prototype in function main
+Warning W8012 torture.c 204: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 205: Comparing signed and unsigned values in function main
+Warning W8004 torture.c 216: '_err_num' is assigned a value that is never used in function main
+Warning W8012 torture.c 264: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 284: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 295: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 302: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 308: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 350: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 368: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 368: Comparing signed and unsigned values in function main
+Warning W8065 torture.c 380: Call to function 'px_rand' with no prototype in function main
+Warning W8065 torture.c 389: Call to function 'px_rand' with no prototype in function main
+Warning W8012 torture.c 538: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 645: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 688: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 689: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 694: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 695: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 874: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 875: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 886: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 909: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 921: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 956: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 978: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 992: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 1002: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 1010: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 1011: Comparing signed and unsigned values in function main
+Warning W8012 torture.c 1014: Comparing signed and unsigned values in function main
+Warning W8004 torture.c 1053: 'U' is assigned a value that is never used in function main
+Warning W8004 torture.c 1053: 'Q' is assigned a value that is never used in function main
+Warning W8004 torture.c 1053: 'D' is assigned a value that is never used in function main
+Warning W8004 torture.c 1052: 'C' is assigned a value that is never used in function main
+Warning W8004 torture.c 1052: 'B' is assigned a value that is never used in function main
+Warning W8004 torture.c 1052: 'A' is assigned a value that is never used in function main
+Warning W8004 torture.c 1051: 'blocks' is assigned a value that is never used in function main
+Warning W8004 torture.c 1051: 'pivot' is assigned a value that is never used in function main
+Warning W8004 torture.c 1050: 'pi3' is assigned a value that is never used in function main
+Warning W8004 torture.c 1050: 'pi2' is assigned a value that is never used in function main
+Warning W8004 torture.c 1050: 'pi1' is assigned a value that is never used in function main
+Warning W8004 torture.c 1049: 'beta' is assigned a value that is never used in function main
+Warning W8004 torture.c 1049: 'diag' is assigned a value that is never used in function main
+Warning W8004 torture.c 1048: 'w' is assigned a value that is never used in function main
+Warning W8004 torture.c 1048: 'v' is assigned a value that is never used in function main
+Warning W8004 torture.c 1048: 'u' is assigned a value that is never used in function main
+Warning W8004 torture.c 1047: 'z' is assigned a value that is never used in function main
+Warning W8004 torture.c 1047: 'y' is assigned a value that is never used in function main
+Warning W8004 torture.c 1047: 'x' is assigned a value that is never used in function main
+	bcc32 -L"C:\Program Files\BCC55\lib" -lm ../lib/libmeschach.lib torture.obj 
+Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
+Turbo Incremental Link 5.00 Copyright (c) 1997, 2000 Borland

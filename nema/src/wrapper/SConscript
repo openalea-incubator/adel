@@ -1,0 +1,18 @@
+# -*-python-*-
+
+Import("env")
+
+py_dir = '../alinea/nema'
+
+# Build wrappers as shared libraries
+# First wrapper
+
+env1 = env.Clone()
+
+sources = env1.ALEAGlob('*.cpp')
+target = "_nema"
+lib = ["nema"]
+
+env1.AppendUnique(LIBS=lib)
+env1.ALEAWrapper(py_dir, target, sources)
+

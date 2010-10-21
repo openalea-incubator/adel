@@ -1,0 +1,25 @@
+Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
+Syntax is: BCC32 [ options ] file[s]     * = default; -x- = turn switch x off
+  -3    * 80386 Instructions        -4      80486 Instructions
+  -5      Pentium Instructions      -6      Pentium Pro Instructions
+  -Ax     Disable extensions        -B      Compile via assembly
+  -C      Allow nested comments     -Dxxx   Define macro
+  -Exxx   Alternate Assembler name  -Hxxx   Use pre-compiled headers
+  -Ixxx   Include files directory   -K      Default char is unsigned
+  -Lxxx   Libraries directory       -M      Generate link map
+  -N      Check stack overflow      -Ox     Optimizations
+  -P      Force C++ compile         -R      Produce browser info
+  -RT   * Generate RTTI             -S      Produce assembly output
+  -Txxx   Set assembler option      -Uxxx   Undefine macro
+  -Vx     Virtual table control     -X      Suppress autodep. output
+  -aN     Align on N bytes          -b    * Treat enums as integers
+  -c      Compile only              -d      Merge duplicate strings
+  -exxx   Executable file name      -fxx    Floating point options
+  -gN     Stop after N warnings     -iN     Max. identifier length
+  -jN     Stop after N errors       -k    * Standard stack frame
+  -lx     Set linker option         -nxxx   Output file directory
+  -oxxx   Object file name          -p      Pascal calls
+  -tWxxx  Create Windows app        -u    * Underscores on externs
+  -v      Source level debugging    -wxxx   Warning control
+  -xxxx   Exception handling        -y      Produce line number info
+  -zxxx   Set segment names

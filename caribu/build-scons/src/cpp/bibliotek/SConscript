@@ -1,0 +1,32 @@
+# -*-python-*-
+
+import os
+
+Import( "env" )
+
+lib_env = env.Clone(static=True)
+
+# Import/Export symbols for windows
+if lib_env['compiler'] == 'mingw':
+    lib_env.AppendUnique(CPPDEFINES=['MINGW','WIN32'])
+#    LINKFLAGS=["-enable-stdcall-fixup",
+#               "-enable-auto-import",
+#               "-enable-runtime-pseudo-reloc",
+#               "-s"]
+#    lib_env.AppendUnique(LINKFLAGS=LINKFLAGS)
+#    lib_env.AppendUnique(CPPDEFINES=['BCC32','WIN32'])
+
+sources = """
+chrono.cpp
+ferrlog.cpp
+GetOpt.cpp
+outils.cpp
+primitive.cpp
+T_geometrie.cpp
+getallfilename.cpp
+decodeclef.cpp
+"""
+sources = lib_env.Split(sources)
+
+lib, install_lib = lib_env.ALEALibrary("bibliotek", sources )
+Return('lib')

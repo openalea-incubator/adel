@@ -1,0 +1,13 @@
+Historique des modifications :
+
+-- canopyL.C --
+************************************************************
+05/04/05 : dans la fontion parse_can, modification de la facon d'afficher 
+les erreurs d'ouverture de fichier quand la variable est nulle
+************************************************************
+
+-- periodise.C --
+#######################################
+05/04/05 : ajout de l'option -p pour permettre de specifier 
+le fichier de proprietes optiques
+#######################################

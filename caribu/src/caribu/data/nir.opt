@@ -1,0 +1,22 @@
+#     nir.opt  MC96
+#simulation 
+#format e : tige,  feuille sup,  feuille inf
+# nbre d'especes
+n 4
+#1 ESPECES
+s d 0.35
+# espece 1
+e d 0.40  d 0.40 0.45  d 0.40 0.45  
+# espece 1
+e d 0.40  d 0.40 0.45  d 0.40 0.45
+# espece 1
+e d 0.40  d 0.40 0.45  d 0.40 0.45
+# espece 1
+e d 0.40  d 0.40 0.45  d 0.40 0.45
+
+
+
+
+
+
+

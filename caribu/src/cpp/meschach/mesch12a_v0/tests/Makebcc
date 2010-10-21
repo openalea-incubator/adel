@@ -1,0 +1,55 @@
+
+CHIP	= x86_NT
+MESCHACH	= ..
+LIB_MES	= ..\..\..\lib\$(CHIP)\libmeschach.lib
+LIBS =  -L"C:\Program Files\BCC55\lib" -lm $(LIB_MES)
+
+INCFLAG = -I$(MESCHACH)/include -I"C:\Program Files\bcc55\include"
+CFLAGS = -5 -y -R -DWIN32
+
+# -DANSI_C dans machine.h
+#C++ = bcc322
+CC = bcc32
+RM	= del 
+NUL	= 2> C:\temp\Nul.nul
+
+.SUFFIXES :
+.SUFFIXES : .c .obj
+
+#.C.o : 
+#	$(C++) -c $(CFLAGS) $(INCFLAG) $< 
+
+
+.c.obj :
+	$(CC) -c $(CFLAGS) $(INCFLAG) $<
+
+.obj.exe:
+	$(CC) $(LIBS)  $<	
+
+SRCS = 
+#OBJS = ${SRCS:.c=.obj}
+EXE = iotort.exe mfuntort.exe torture.exe  ztorture.exe itertort.exe \
+        memtort.exe sptort.exe tutorial.exe tutadv.exe
+
+OBJS = iotort.obj mfuntort.obj torture.obj  ztorture.obj itertort.obj \
+        memtort.obj sptort.obj tutorial.obj tutadv.obj
+
+CSRCS = iotort.c mfuntort.c torture.c  ztorture.c itertort.c \
+        memtort.c sptort.c tutorial.c tutadv.c
+
+COBJS = ${CSRCS:.c=.obj}
+EXEC = ${CSRCS:.c=}
+
+$(EXEC)  : $(EXE) $(OBJS) $(LIB_MES)
+#	$(CC) $(LIBS)  $@.obj
+
+all : $(EXEC)
+
+clean:
+        $(RM) *.obj  $(NUL)
+
+cleanall:
+	$(RM) *.exe  $(NUL)
+	$(RM) *.tds $(NUL)
+	$(RM) *.*~ $(NUL)
+	$(RM) *~ $(NUL)

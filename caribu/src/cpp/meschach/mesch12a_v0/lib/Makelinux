@@ -1,0 +1,7 @@
+
+all : 
+	@echo "options clean"
+
+clean :
+	/bin/rm -f *.a
+

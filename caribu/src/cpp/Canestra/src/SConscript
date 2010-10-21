@@ -1,0 +1,39 @@
+# -*-python-*-
+
+Import("env")
+Import("bibliotek")
+Import("meschach")
+
+lib_env = env.Clone()
+
+lib_env.AppendUnique(CPPDEFINES=['_HD'])
+
+# Import/Export symbols for windows
+if lib_env['compiler'] == 'mingw':
+    lib_env.AppendUnique(CPPDEFINES=['MINGW','WIN32'])
+#    LINKFLAGS=["-enable-stdcall-fixup",
+#               "-enable-auto-import",
+#               "-enable-runtime-pseudo-reloc",
+#               "-s"]
+#    lib_env.AppendUnique(LINKFLAGS=LINKFLAGS)
+#    lib_env.AppendUnique(CPPDEFINES=['BCC32','WIN32'])
+
+sources = """
+ff.cpp
+bsp.cpp
+bzh.cpp
+diffuseur.cpp
+infini.cpp
+solver.cpp
+radioxity.cpp
+voxel.cpp
+canopy_E.cpp
+canopy_io.cpp
+"""
+sources = lib_env.Split(sources)
+sources.append(bibliotek)
+sources.append(meschach)
+
+lib_env.Append(CPPPATH='#/src/cpp/meschach/mesch12a/include')
+
+lib_env.ALEAProgram("canestrad", sources)

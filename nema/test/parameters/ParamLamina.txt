@@ -1,0 +1,15 @@
+0.1	#p, dimensionless (N fraction of the dry mass influx)
+0.00015	#SynthRate, dd-1
+0.008	#DegRate, dd-1
+0.0018	#k1, g g-1
+864000	#k2, J m-2 day-1
+0.000005	#peff, g J-1
+0.8	#pm1, g m-2 day-1
+6	#pm2, day-1
+0.4	#pdeath, dimensionless
+1	#sink
+2	#alpha
+2	#beta
+1090	#TTexp, dd
+0.52	#InsertionAngle (measured from horizontal), not in degree !
+0.008	#DegDMRate

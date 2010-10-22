@@ -7,7 +7,8 @@ Date: 08/07/2008
 
 import csv
 
-from openalea.mtg import *
+from openalea.mtg import MTG, fat_mtg
+
 try:
     from openalea.mtg.traversal import *
 except:
@@ -250,6 +251,14 @@ def properties(d, exclude = []):
             res[k] = v
     return res
 
+def properties_from_dict(d,index, exclude = []):
+    res = {}
+    for k in d:
+        if k in exclude:
+            continue
+        res[k] = d[k][index]
+    return res
+
 def topological_table_to_mtg(csv_file, epsilon=1e-6):
     f = open(csv_file)
     l=f.readline()
@@ -396,3 +405,195 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
 def internode(g, vid_axe, vid_metamer, prev_node, props, epsilon):
     if props['Ev'] < epsilon:
         return prev_node
+
+def mtg_factory(params):
+    """ Construct a MTG from a dictionary.
+
+    The dictionary contains the parameters and a list of elements.
+    The keys of params are:
+        - plant: indx of plant
+        - axe: 
+        - numphy
+        - Lv
+        - Ll
+        - Lsen
+        - Lw
+        - LcType
+        - LcIndex
+        - Linc
+        - Laz
+        - Lpo
+        - Lpos
+        - Gl
+        - Gv
+        - Gsen
+        - Gpo
+        - Gpos
+        - Gd
+        - Ginc
+        - El
+        - Ev
+        - Esen
+        - Ed
+        - Einc
+        - Epo
+        - Epos
+    """
+
+    if not _check_adel_parameters(params):
+        raise ValueError('Adel parameters are invalid')
+
+    g = MTG()
+    topology = ['plant', 'axe', 'numphy']
+
+    # buffers
+    prev_plant = 0
+    prev_axe = -1
+    prev_metamer = -1
+    vid_plant = -1
+    vid_axe = -1
+    vid_metamer = -1
+    vid_node = -1
+
+    # store the metamer vids of the axis 0 
+    metamers = []
+    nodes = []
+    edge_type = '<'
+
+    dp = params
+    nrow = len(params['plant'])
+    for i in range(nrow):
+
+        #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
+        plant = dp['plant'][i]
+        axe = dp['axe'][i]
+        num_metamer = dp['numphy'][i]
+
+        #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
+        print 'plant: %d, axe:%d, nb_metamers: %d'%(plant, axe, num_metamer)
+        # Add new plant
+        if plant != prev_plant:
+            label = 'plant'+str(plant)
+            vid_plant = g.add_component(g.root, label=label)
+            vid_axe = -1
+            vid_metamer = -1
+            vid_node = -1
+            prev_axe = -1
+
+        if num_metamer < prev_metamer:
+            prev_axe = -1
+            prev_metamer = -1
+            
+        # Add an axis
+        if axe != prev_axe:
+            label = 'axe'+str(axe)
+           
+            
+            if axe == 0:
+                vid_axe = g.add_component(vid_plant,edge_type='/',label=label)
+                vid_node = -1
+            else:
+                #args['edge_type'] = '+'
+                edge_type = '+'
+                vid_axe = g.add_child(vid_axe, edge_type=edge_type, label=label)
+                #vid, vid_axe = g.add_child_and_complex(metamers[axe], complex=vid_axe, **args)
+
+        # Add metamers
+        args = properties_from_dict(dp,i,exclude=topology)
+
+        assert num_metamer > 0
+        label = 'metamer'+str(num_metamer)
+
+        if axe==0 and num_metamer==1:
+            metamers=[]
+            edge_type = '/'
+            vid_metamer = g.add_component(vid_axe, edge_type='/', label = label, **args)
+        elif num_metamer == 1:
+            # Add the first element connected to previous metamer on the previous axis
+            edge_type = '+'
+            vid_metamer, vid_axe =  g.add_child_and_complex(metamers[axe-1], complex=vid_axe, edge_type='+',label=label, **args)
+            vid_node = nodes[axe-1]
+        else:
+            edge_type = '<'
+            vid_metamer = g.add_child(vid_metamer, label=label, edge_type='<',**args)
+
+        if axe == 0:
+            metamers.append(vid_metamer)
+
+        # Add internode, sheath, and lamina
+        nb_internodes = 0
+        nb_sheath = 0
+        nb_leaf = 0
+
+        # Internode
+        if args['Ev'] > 0.:
+            if args['Esen'] > args['Ev']:
+                if vid_node == -1:
+                    vid_node= g.add_component(vid_metamer, label='Esen', edge_type='/',
+                        length=args['Ev'],po=args['Epos'], diam=args['Ed'] )
+                    assert edge_type == '/'
+                else:
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
+                        complex=vid_metamer, label='Esen', edge_type=edge_type,
+                        length=args['Ev'],po=args['Epos'], diam=args['Ed'] )
+            else:
+                if vid_node == -1:
+                    vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',
+                        length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
+                    assert edge_type == '/'
+                else:
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
+                            complex=vid_metamer, label='Egreen', edge_type=edge_type,
+                            length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
+                vid_node = g.add_child(vid_node, label='Esen', edge_type='<',
+                    length=args['Esen'],po=args['Epos'], diam=args['Ed'])
+        else:
+            if vid_node == -1:
+                vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',length=0.,po=args['Epo'], diam=args['Ed'] )
+                assert edge_type == '/'
+            else:
+                vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=0.,po=args['Epo'], diam=args['Ed'] )
+        # Sheath
+        if args['Gv'] > 0.:
+            if args['Gsen'] > args['Gv']:
+                vid_node= g.add_child(vid_node, label='Gsen', edge_type='<',
+                    length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
+            else:
+                vid_node = g.add_child(vid_node, label='Ggreen', edge_type='<',
+                    length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
+                vid_node = g.add_child(vid_node, label='Gsen', edge_type='<',
+                    length=args['Gsen'],po=args['Gpos'], diam=args['Gd'])
+
+        if axe == 0:
+            nodes.append(vid_node)
+
+        # Laminae
+        if args['Lv'] > 0.:
+            if args['Lsen'] > args['Lv']:
+                l_node= g.add_child(vid_node, label='Lsen', edge_type='+',length=args['Lv'],
+                    po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
+                    LcType=args['LcType'], LcIndex=args['LcIndex'], Linc=args['Linc'], 
+                    Laz=args['Laz'], srb=0, srt=1)
+            else:
+                l_node = g.add_child(vid_node, label='Lgreen', edge_type='+',
+                    length=args['Lv']-args['Lsen'],po=args['Lpo'],
+                    Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                    LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
+                    srb=0, srt=1-(args['Lsen']/args['Lv']))
+                l_node = g.add_child(l_node, label='Lsen', edge_type='<',
+                    length=args['Lsen'],po=args['Lpos'],
+                    Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                    LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
+                    srt=1, srb=1-(args['Lsen']/args['Lv']))
+
+        
+        prev_plant = plant
+        prev_axe = axe
+        prev_metamer = num_metamer
+
+    return fat_mtg(g)
+
+
+def _check_adel_parameters( params):
+    return True
+

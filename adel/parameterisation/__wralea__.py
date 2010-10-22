@@ -269,6 +269,14 @@ p_simpleMais = Factory(name='simpleMais',
                 widgetmodule=None,
                 widgetclass=None,
                )
+p_simpleMais_dict = Factory(name='simpleMais (dict)',
+                description='Return a parametrisation as dict',
+                category='simulation',
+                nodemodule='parameterisation',
+                nodeclass='simpleMais2dict',
+                inputs=[{'interface': IDict, 'name': 'Parameter dict', 'value': None, 'desc': ''}],
+               )
+__all__.append('p_simpleMais_dict')
 
 p_geometric_dist = Factory(name='geometric_dist',
                 description='',
@@ -284,3 +292,4 @@ p_bell_shaped_dist = Factory(name='bell_shaped_dist',
                 nodemodule='parameterisation',
                 nodeclass='bell_shaped_dist',
                )
+

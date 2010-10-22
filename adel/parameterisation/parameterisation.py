@@ -19,6 +19,7 @@ def dataframe(d):
     dataf = robjects.r['data.frame'](**df)
     return dataf
 
+
 def simpleMais(simpleMais_parameter):
     """ generate Adel canopy Table (R)  from a simpleMais parameter dictionary"""
 
@@ -59,6 +60,47 @@ def simpleMais(simpleMais_parameter):
             'Epos' : zero + 2
             }
     return(dataframe(canT))
+
+def simpleMais2dict(simpleMais_parameter):
+    """ generate Adel canopy Table (R)  from a simpleMais parameter dictionary"""
+
+    d = simpleMais_parameter
+    nrow = len(d['plante'])
+    zero = np.zeros(nrow)
+    
+    if ('longEn' not in d) or ('longGa' not in d):
+        d.update({'longEn':zero})
+        d.update({'longGa':(np.array(d['longTige'])).cumsum()})
+        
+    canT = {'plant' : d['plante'],
+            'axe' : zero,
+            'numphy' : d['phytomere'],
+            'Lv' : d['longFeu'],
+            'Ll' : d['longFeu'],
+            'Lsen' : zero,
+            'Lw' : d['largFeu'],
+            'LcType' : d['phytomere'],
+            'LcIndex' : zero,
+            'Linc' : d['inclinaisonFeu'],
+            'Laz' : d['azimuthFeu'],
+            'Lpo' : zero + 1,
+            'Lpos' : zero + 2,
+            'Gl' : d['longGa'],
+            'Gv' : d['longTige'],
+            'Gsen' : zero,
+            'Gpo' : zero + 1,
+            'Gpos' : zero + 2,
+            'Gd' : d['diamTige'],
+            'Ginc' : zero,
+            'El' : d['longEn'],
+            'Ev' : zero,
+            'Esen' : zero,
+            'Ed' : zero,
+            'Einc' : zero,
+            'Epo' : zero + 1,
+            'Epos' : zero + 2
+            }
+    return canT,
 
 def bell_shaped_dist(total_area=1, nb_phy=15, rmax=.7, skewness=5):
     """ returns leaf area of individual leaves along bell shaped model """

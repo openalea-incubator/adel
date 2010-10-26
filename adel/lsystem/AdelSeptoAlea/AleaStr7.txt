@@ -1,7 +1,0 @@
-newPlant
-newAxe
-/(180)[+(45)newAxe
-]
-newMetamer
-[/(5)LeafElement(1,8.125,2.87856,0.3,0,0.435483,1,1)LeafElement(1,8.125,2.87856,0.3,0.435483,1,1,1)]/(180)[+(45)newAxe
-]

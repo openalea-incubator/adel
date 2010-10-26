@@ -289,16 +289,16 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
     edge_type = '<'
     for d in reader:
         plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
-        print 'plant: %d, axe:%d, nb_metamers: %d'%(plant, axe, num_metamer)
+        print 'adding vertices for plant: %d, axe:%d, metamer: %d'%(plant, axe, num_metamer)
         # Add new plant
         if plant != prev_plant:
             label = 'plant'+str(plant)
-            vid_plant = g.add_component(g.root, label=label)
+            vid_plant = g.add_component(g.root, edge_type='/',label=label)
             vid_axe = -1
             vid_metamer = -1
             vid_node = -1
             prev_axe = -1
-
+        #??
         if num_metamer < prev_metamer:
             prev_axe = -1
             prev_metamer = -1

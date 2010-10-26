@@ -1,5 +1,5 @@
 
-# This file has been generated at Fri Jun 04 16:47:11 2010
+# This file has been generated at Tue Oct 26 13:41:12 2010
 
 from openalea.core import *
 
@@ -17,21 +17,31 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_saveRData', 'io_csvAsDict', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_Rdataframe']
+__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'dataFrameAsDict_dataFrameAsDict', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl']
 
 
 
-io_saveRData = Factory(name='saveRData',
-                description='',
+io_dataframe = Factory(name='Rdataframe',
+                description='returns a dataframe (rpy2 object) from a dictionary containing named vectors of values',
                 category='io',
                 nodemodule='io',
-                nodeclass='saveRData',
-                inputs=[{'name': 'RObject', 'desc': 'R object'}, {'interface': IStr, 'name': 'Name of the savec object', 'value': 'Robj', 'desc': ''}, {'interface': IFileStr, 'name': 'RData file', 'desc': ''}],
-                outputs=[{'interface': IStr, 'name': 'name', 'desc': ''}],
+                nodeclass='dataframe',
+                inputs=[{'interface': IDict, 'name': 'Dict', 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )
 
+io_dataframeAsdict = Factory(name='dataframeAsdict',
+                description='returns a dictionary containing named vectors of values from adataframe (rpy2 object)',
+                category='io',
+                nodemodule='io',
+                nodeclass='dataframeAsdict',
+                inputs=[{'interface': IDict, 'name': 'dataframe', 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dict', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
 
 
@@ -42,6 +52,20 @@ io_csvAsDict = Factory(name='CsvAsDict',
                 nodeclass='csvAsDict',
                 inputs=[{'interface': IFileStr, 'name': 'Csv File name', 'desc': ''}, {'interface': IInt, 'name': 'csv type', 'value': 1, 'desc': '1 for coma separated/dot as decimal, 2 for ; separated, coma decimal'}],
                 outputs=[{'interface': IDict, 'name': 'dict', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+io_saveRData = Factory(name='saveRData',
+                description='',
+                category='io',
+                nodemodule='io',
+                nodeclass='saveRData',
+                inputs=[{'name': 'RObject', 'desc': 'R object'}, {'interface': IStr, 'name': 'Name of the savec object', 'value': 'Robj', 'desc': ''}, {'interface': IFileStr, 'name': 'RData file', 'desc': ''}],
+                outputs=[{'interface': IStr, 'name': 'name', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -60,16 +84,7 @@ io_RlistAsDict = Factory(name='RlistAsDict',
                 widgetclass=None,
                )
 
-io_Rdataframe = Factory(name='Rdataframe',
-                description='returns a dataframe (rpy2 object) from a dictionary containing named vectors of values',
-                category='io',
-                nodemodule='io',
-                nodeclass='dataframe',
-                inputs=[{'interface': IDict, 'name': 'Dict', 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
+
 
 
 io_to_canestra = Factory(name='to_canestra',
@@ -93,6 +108,20 @@ mylist_mylist = Factory(name='mylist',
                 nodeclass='mylist',
                 inputs=[{'interface': None, 'name': 'array', 'value': None, 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'list', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+dataFrameAsDict_dataFrameAsDict = Factory(name='dataFrameAsDict',
+                description='',
+                category='Unclassified',
+                nodemodule='dataFrameAsDict',
+                nodeclass='dataFrameAsDict',
+                inputs=[{'interface': None, 'name': 'RDataframe', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dict', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )

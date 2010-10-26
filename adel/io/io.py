@@ -6,7 +6,7 @@ import numpy as np
 from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
-from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict
+from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict
 
 def dataframe(d):
     """ convert a dict of numbers to an RDataframe  """
@@ -18,6 +18,7 @@ def dataframe(d):
             df[k] = numpy2ri(np.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
+
 
 
 def load_leaf_data(fn):

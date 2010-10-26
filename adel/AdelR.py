@@ -66,6 +66,10 @@ def RlistAsDict(Rlist):
 	"""returns a dictionary containing the elements of the Rlist"""
 	return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
 
+def dataframeAsdict(df):
+    """ convert an RDataframe to a python dict """
+    return dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+
 def csvAsDict(fn,type=1):
 	""" returns a dictionnary with the content of csv file as numpy vectors (one colum = one key) """
 	df = RreadCsv(fn,type)

@@ -1,2 +1,2 @@
 
-#define NB_PLANTS 100
+#define NB_PLANTS 48

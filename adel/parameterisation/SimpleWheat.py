@@ -1,116 +1,150 @@
 import csv as csv
+from math import ceil, floor
+from numpy import array, arange
+from copy import deepcopy
 
 class dim_pattern:
-	'''
-	Class which implements patterns for predicting dimension, Aera_contrib and so on from data.
-	'''
-	def __init__(self, dimTn):
-		'''
-		Initialisation of dimension pattern, just need the equivalent of a dimT
-		'''
-		#Opening dimT file
-		csvfile = open(dimT, "rb")
-		dialect = csv.Sniffer().sniff(csvfile.read(1024))
-		csvfile.seek(0)
-		reader = csv.reader(csvfile, dialect)
-		#Initialisation of the usefull information
-		dict {'surface' : [],'bladelength': [], 'sheathlength': [], 'internodelength': [], 'stemdiameter': [] }
-		self.emptydict= dict
-		self.dictMS
-		#dimT construction CAREFULL NO HEADER
-		for row in reader:
-			self.dictMS['surface'].append(float(row[]))
-			self.dictMS['bladelength'].append(float(row[]))
-			self.dictMS['sheathlength'].append(float(row[]))
-			self.dictMS['internodelength'].append(float(row[]))
-			self.dictMS['stemdiameter'].append(float(row[]))
-		self.decphy = 1 # decalage des phytomeres
-		
-	
-	def predict_tiller(self, tiller_position):
-		'''
-		Returns datadict for tiller_position:
-		'''
-		if tiller_position == 0:
-			return self.dictMS
-		else:
-			dict = self.emptydict
-			####
-			#Mettre une loi interpolants les valeurs de dict pour le tiller en question
-			####
-			
-			return dict
-		
-	
-	def total_area(dict):
-		'''
-		Returns total aera of a tiller which is represented by a dict
-		'''
-		return(sum(dict['surface']))
-		
-	def PlantAera_contrib(self, nb_tiller):
-		surface = [self.total_area()]
-		for i in arange(nb_tiller):
-			surface.append(self.total_area(self.predict_tiller(i)))
-		Stot = sum(array(surface))
-		return array(surface)/Stot
-		#out = list_poid_0 a nb tiller
+    '''
+    Class which implements patterns for predicting dimension, Aera_contrib and so on from data.
+    '''
+    def __init__(self, dimT, index= 111):
+        '''
+        Initialisation of dimension pattern, just need the equivalent of a dimT
+		dimT: 
+		index: column which identify axis in dimT
+        '''
+        #Opening dimT file
+        csvfile = open(dimT, "rb")
+        dialect = csv.Sniffer().sniff(csvfile.read(1024))
+        csvfile.seek(0)
+        reader = csv.reader(csvfile, dialect)
+        #Initialisation of the usefull information
+        self.decphy = [0, 3, 4, 5, 6, 7] # decalage des phytomeres pour les talles
+        ndict =  {'relative_phytomer': [], 'surface' : [],'bladelength': [], 'sheathlength': [], 'internodelength': [], 'stemdiameter': [] }
+        self.emptydict= ndict
+        self.dictMS = deepcopy(ndict)
+        #dimT construction CAREFULL NO HEADER
+        reader.next() # Getting the header out
+        row = reader.next() # initialisation
+        while int(row[0]) is not index:
+		    row = reader.next()
+        
+        while int(row[0]) is index:
+            self.dictMS['relative_phytomer'].append(float(row[1]))
+            self.dictMS['surface'].append(float(row[2]) * float(row[3]) * float(row[9]))
+            self.dictMS['bladelength'].append(float(row[2]))
+            self.dictMS['sheathlength'].append(float(row[4]))
+            self.dictMS['internodelength'].append(float(row[6]))
+            self.dictMS['stemdiameter'].append(float(row[5]))
+            row = reader.next()
+        self.numphy = len(self.dictMS['stemdiameter']) # number of phytomer for mainstem
+       
+    def predict_tiller(self, tiller_position):
+        '''
+        Returns datadict for tiller_position: 0 is main stem, 5 is the absolute last tiller
+        '''
+        tiller_position = int(tiller_position)
+        if tiller_position == 0:
+            return self.dictMS
+        else:
+            dict = deepcopy(self.emptydict) # Take the empty dictionnary having the same ontology then dictMS
+            for i in range(self.decphy[tiller_position], self.numphy):
+                dict['relative_phytomer'].append(self.dictMS['relative_phytomer'][i])
+                dict['surface'].append(self.dictMS['surface'][i])
+                dict['bladelength'].append(self.dictMS['bladelength'][i])
+                dict['sheathlength'].append(self.dictMS['sheathlength'][i])
+                dict['internodelength'].append(self.dictMS['internodelength'][i])
+                dict['stemdiameter'].append(self.dictMS['stemdiameter'][i])
+            return dict
+        
+    
+    def total_area(self, dict):
+        '''
+        Returns total aera of a tiller which is represented by a dict
+        '''
+        return(sum(dict['surface']))
+        
+    def PlantArea_contrib(self, nb_tiller):
+        '''
+        Contribution of each tiller for the total area
+        '''
+        surface = []
+        for i in arange(nb_tiller+1): #We include the main stem
+            surface.append(self.total_area(self.predict_tiller(i)))
+        Stot = sum(array(surface))
+        return array(surface)/Stot
+        #out = list_poid_0 a nb tiller
 
 
-soisson = dim_patern(Datasoisson)
+soisson = dim_pattern('../data/dimTSoissons.csv')
 
 
-def Wheatpop(LAI=3, axe_density = 1000, plant_density= 300, nout = 10, nb_phy=11, 
-	dim_pattern = 'soisson' # Qui contient PlantArea_contrib (% de plant area porté par les axes)
-	):
-	"""
-	Generate a population of nout different plants with appropriate tiller number and surface per plant
-	To be plug to "agronomic plot" and "SimpleWheat" 
-	"""
-	
-	
-	# Tableau en sortie: 
-	#nout => nb de ligne du tableau
-	# pour chaque ligne est un axe (MB ou talle)
-	# boucle pour créer les plantes: loi qui arrondi au supérieur ou inferieur du nombre de talle moyen
-	#pour faire les talles: BM: plante i, axe 0
-	# out tableau: plante, axe, nbphy mais à terme ce sera un mtg.
-	#Pour chaque plante: un numero, un nb d'axe, un nb de phytomere et une surface
-
-#A terme prendra un mtg et cherchera la topo des plantes, + la surface de la plante et nb_thalles
+def Wheatpop(LAI=3.3, axe_density = 1001, plant_density= 300., nout = 10, nb_phy=11, 
+    dim_pattern = soisson # Qui contient PlantArea_contrib (% de plant area porte par les axes)
+    ):
+    '''
+    Generate a population of nout different axe with appropriate tiller number and surface per plant
+    To be plug to "agronomic plot" and "SimpleWheat" 
+    
+    LAI
+    axe_density
+    plant_density
+    nout is number of plant
+    nb_phy: nb_phytomer
+    '''
+    target_surface = LAI / plant_density  # target_surface is in m2
+    mean_tiller_per_plant = axe_density / plant_density - 1#Main stem aren't tillers
+    tiller_min = floor(mean_tiller_per_plant)
+    nb_plant_max = floor(nout * (mean_tiller_per_plant - tiller_min))
+    nb_plant_min = nout - nb_plant_max
+    # More tillers, more surface => correction
+    AreaContrib_tiller_max = dim_pattern.PlantArea_contrib(tiller_min +1 ) #tiller_max = tiller_min +1
+    weight_plant_tiller_min = 1 # reference for min nb of tiller
+    weight_plant_tiller_max = 1 + AreaContrib_tiller_max[tiller_min + 1] / (1 - AreaContrib_tiller_max[tiller_min +1]) # Area of last tiller
+    total_weight = weight_plant_tiller_min * nb_plant_min  + weight_plant_tiller_max *  nb_plant_max 
+    
+    
+    Plant_min = array([nb_plant_min , tiller_min + 1, nb_phy, target_surface * weight_plant_tiller_min / total_weight])
+    Plant_max = array([nb_plant_max ,tiller_min + 2, nb_phy, target_surface * weight_plant_tiller_max / total_weight])
+    # nb de plante, nb_axe, nb_phyt, surface_plante
+    return array([Plant_min, Plant_max])
+    
+    
+     
+    
 def simpleWheat_param(total_area = 10000 , # aussi dans wheatpop
-		total_height = 200,  #Nouveau!!!
-		nb_phy = 11, # entrée de Wheatpop
-		# leaf area dist function
-		dim_pattern = 'soisson', #function des distributions de longueurs d'organes et du passage brin-maitre tiller(gaine entre-noeud et limbe) (3functions)
-		geom_pattern = 'soisson', # BD des XYSR de nervures mesurées
-		#dred: maximal distance between maintsteem and tiller at flowering
-		dred = 7, #Nouveau
-		diam_base = 3,#Nouveau
-		diam_top = 1,#Nouveau
-		nbtalles = 3, #topo: info dans le mtg (mtg.verticies_at_scale(1))
-		#No azimuth param
-		):
-	""" 
-	generate simpleMais dictionary from parameter for wheat-like plants
-	
-	"""
+        total_height = 200,  #Nouveau!!!
+        nb_phy = 11, # entree de Wheatpop
+        # leaf area dist function
+        dim_pattern = 'soisson', #function des distributions de longueurs d'organes et du passage brin-maitre tiller(gaine entre-noeud et limbe) (3functions)
+        geom_pattern = 'soisson', # BD des XYSR de nervures mesurees
+        #dred: maximal distance between maintsteem and tiller at flowering
+        dred = 7, #Nouveau
+        diam_base = 3,#Nouveau
+        diam_top = 1,#Nouveau
+        nbtalles = 3, #topo: info dans le mtg (mtg.verticies_at_scale(1))
+        #No azimuth param
+        ):
+    '''
+    generate simpleMais dictionary from parameter for wheat-like plants
+    
+    '''
 
-	#creation brin maitre
+    #creation brin maitre
 
-	nb_phy = int(nb_phy)
-	nb_young_phy = int(nb_young_phy)
+    nb_phy = int(nb_phy)
+    nb_young_phy = int(nb_young_phy)
 
-	# compute the leaf surface
-	leaf_area = np.array(bell_shaped_dist(total_area, nb_phy, lad_rmax, lad_skew))
-	# derive corresponding length and widths
-	lengths = np.sqrt(leaf_area / np.array(shape_factors) / leaf_width_ratio)
-	widths = lengths * leaf_width_ratio
+    # compute the leaf surface
+    leaf_area = np.array(bell_shaped_dist(total_area, nb_phy, lad_rmax, lad_skew))
+    # derive corresponding length and widths
+    lengths = np.sqrt(leaf_area / np.array(shape_factors) / leaf_width_ratio)
+    widths = lengths * leaf_width_ratio
 
-	# distances between leaves
-	pseudostem = geometric_dist(pseudostem_height, nb_young_phy,pseudostem_dist)
-	stem = geometric_dist(total_height - pseudostem_height, nb_phy - nb_young_phy,stem_dist)
-	distances = pseudostem + stem
+    # distances between leaves
+    pseudostem = geometric_dist(pseudostem_height, nb_young_phy,pseudostem_dist)
+    stem = geometric_dist(total_height - pseudostem_height, nb_phy - nb_young_phy,stem_dist)
+    distances = pseudostem + stem
     # sheath and internode true length
     pseudostem_sheath = (np.array(pseudostem)).cumsum()
     pseudostem_internode = [0] * nb_young_phy
@@ -123,9 +157,7 @@ def simpleWheat_param(total_area = 10000 , # aussi dans wheatpop
     # inclinations
     inclinations = np.linspace(basal_insertion, top_insertion, nb_phy)
     # azimuths Attention R
-      Azimuth = 
-	(n-4 n) 180 + 60 * randn(1),
-              (1 n-4)   180 + 20 * randn(1))
+    # Azimuth = (n-4 n) 180 + 60 * randn(1), (1 n-4)   180 + 20 * randn(1))
          
     axe = [0] * nbphy
     Einc = axe

@@ -4,8 +4,8 @@ r = robj.r
 from numpy import transpose
 
 def RlistAsDict(Rlist):
-	"""returns a dictionary containing the elements of the Rlist"""
-	return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
+    """returns a dictionary containing the elements of the Rlist"""
+    return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
 
 def extract_leaf_info(rdata_xy, rdata_sr):
     """

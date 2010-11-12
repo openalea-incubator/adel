@@ -13,24 +13,24 @@ def regular(nb_plants, nb_rank, dx, dy):
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
 
 def agronomicplot(length, width, nominal_density, actual_density, inter_row, noise = 0,convunit=100):
-	""" Returns the number of plants, the positions and the domain of a plot specified with agronomical variables
-	length (m) is plot dimension along row direction
-	width (m) is plot dimension perpendicular to row direction
-	nominal density is for sowing density 
-	actual_density is density measured (after loss due to bad emergence)
-	inter_row (m) is for the  distance between rows
-	noise (%), indicates the precision of the sowing for the inter plant spacing
-	unit (m or cm) is for the unit of the position and domain
-	"""
-	inter_plant = 1. / inter_row / nominal_density
-	nrow = max(1, int(float(width) / inter_row))
-	plant_per_row = max(1,int(float(length) / inter_plant))
-	nplants = nrow * plant_per_row
-	positions, domain = regular(nplants, nrow, inter_plant * convunit, inter_row * convunit)
-	n_emerged = int(nplants * actual_density / nominal_density)
-	positions = sample(positions, n_emerged)
+    """ Returns the number of plants, the positions and the domain of a plot specified with agronomical variables
+    length (m) is plot dimension along row direction
+    width (m) is plot dimension perpendicular to row direction
+    nominal density is for sowing density 
+    actual_density is density measured (after loss due to bad emergence)
+    inter_row (m) is for the  distance between rows
+    noise (%), indicates the precision of the sowing for the inter plant spacing
+    unit (m or cm) is for the unit of the position and domain
+    """
+    inter_plant = 1. / inter_row / nominal_density
+    nrow = max(1, int(float(width) / inter_row))
+    plant_per_row = max(1,int(float(length) / inter_plant))
+    nplants = nrow * plant_per_row
+    positions, domain = regular(nplants, nrow, inter_plant * convunit, inter_row * convunit)
+    n_emerged = int(nplants * actual_density / nominal_density)
+    positions = sample(positions, n_emerged)
 
-	return n_emerged, positions, domain
+    return n_emerged, positions, domain
 
 
 def regularband(nb_plants, nb_rank, dx, dy):

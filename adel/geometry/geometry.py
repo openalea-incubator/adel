@@ -1,4 +1,5 @@
 from alinea.adel import fitting, symbol
+from alinea.adel.mtg import mtg_turtle
 
 def leaf_to_mesh(leaf, lmax, l, rmax):
     pts, ind = fitting.mesh3(leaf, lmax, l, rmax)

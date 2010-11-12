@@ -19,11 +19,4 @@ __icon__ = 'adel.png'
 
 __all__ = []
 
-params2mtg = Factory(name='mtg (params)',
-                category='simulation',
-                nodemodule='mtg',
-                nodeclass='mtg_factory',
-               )
-__all__.append('params2mtg')
-
 

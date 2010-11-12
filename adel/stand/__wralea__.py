@@ -1,5 +1,5 @@
 
-# This file has been generated at Fri Mar 13 14:43:31 2009
+# This file has been generated at Fri Oct 29 11:39:23 2010
 
 from openalea.core import *
 
@@ -22,6 +22,7 @@ __all__ = ['stand_agronomicplot', 'stand_sample_selection', 'stand_regularband',
 
 
 stand_agronomicplot = Factory(name='agronomic plot',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Returns the number of plants, the positions and the domain of a plot specified with agronomical variables',
                 category='Unclassified',
                 nodemodule='stand',
@@ -36,6 +37,7 @@ stand_agronomicplot = Factory(name='agronomic plot',
 
 
 stand_sample_selection = Factory(name='sample selection',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Choose a sample from a list of points.',
                 category='scene',
                 nodemodule='stand',
@@ -50,6 +52,7 @@ stand_sample_selection = Factory(name='sample selection',
 
 
 stand_regularband = Factory(name='regularband',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Returns a regular distribution of points within band to build a stand.',
                 category='scene.distribution',
                 nodemodule='stand',
@@ -64,6 +67,7 @@ stand_regularband = Factory(name='regularband',
 
 
 stand_planter = Factory(name='planter',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='',
                 category='scene',
                 nodemodule='stand',
@@ -78,6 +82,7 @@ stand_planter = Factory(name='planter',
 
 
 stand_concentric = Factory(name='concentric',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Returns a regular distribution of points to build a stand.',
                 category='scene.distribution',
                 nodemodule='stand',
@@ -92,6 +97,7 @@ stand_concentric = Factory(name='concentric',
 
 
 stand_regular = Factory(name='regular',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Returns a regular distribution of points to build a stand.',
                 category='scene.distribution',
                 nodemodule='stand',
@@ -106,11 +112,12 @@ stand_regular = Factory(name='regular',
 
 
 CanMTGPlanter_CanMTGPlanter = Factory(name='CanMTGPlanter',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='arrange Alinea CanMTG plants in a stand',
                 category='scene design',
                 nodemodule='CanMTGPlanter',
                 nodeclass='CanMTGPlanter',
-                inputs=[{'interface': None, 'name': 'CanMTG', 'value': None, 'desc': ''}, {'interface': ISequence, 'name': 'Positions', 'value': [(0, 0, 0)], 'desc': ''}],
+                inputs=[{'interface': None, 'name': 'CanMTG', 'value': None, 'desc': ''}, {'interface': ISequence, 'name': 'Positions', 'value': [(0, 0, 0)], 'desc': ''}, {'interface': IInt, 'name': 'random_seed', 'value': 0, 'desc': 'Rotate each plant with a random rotation around z axis if random_seed > 0'}],
                 outputs=[{'interface': None, 'name': 'StandMTG', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,

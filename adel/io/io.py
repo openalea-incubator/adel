@@ -7,6 +7,7 @@ from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
 from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict
+from alinea.adel.mtg import mtg_factory, duplicate
 
 def dataframe(d):
     """ convert a dict of numbers to an RDataframe  """

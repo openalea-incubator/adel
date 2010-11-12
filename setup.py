@@ -4,26 +4,15 @@
 
 import os, sys
 from setuptools import setup, find_packages
+from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
 
-# Setup script
+# Reads the metainfo file
+metadata = read_metainfo('metainfo.ini', verbose=True)
+for key,value in metadata.iteritems():
+    exec("%s = '%s'" % (key, value))
 
-name = 'adel'
-namespace = 'alinea'
-pkg_name = 'alinea.adel'
-src_rep = 'adel'
-
-version= '0.8.1'
-
-description= 'ADEL' 
-long_description= ''' '''
-
-author= 'Chrisian Fournier, Christophe Pradal'
-author_email= ''
-url= ''
-
-license= 'INRA License agreement' 
 
 if("win32" in sys.platform):
     install_requires = []
@@ -32,20 +21,22 @@ else:
     install_requires = []
     setup_requires = []
     
-packages =[pkg_name]+['%s.%s'%(pkg_name,x) for x in find_packages(src_rep)]
+pkg_name = 'alinea.adel'
+src_rep = 'adel'
+packages =[pkg_name]#+['%s.%s'%(pkg_name,x) for x in find_packages(src_rep)]
 
 # Main setup
 setup(
-    name="Alinea.Adel",
+    name=name,
     version=version,
     description=description,
     long_description=long_description,
-    author=author,
-    author_email=author_email,
+    authors=authors,
+    authors_email=authors_email,
     url=url,
     license=license,
     
-    namespace_packages = ["alinea"],
+    namespace_packages = [namespace],
     create_namespaces = True,
 
     py_modules = [],

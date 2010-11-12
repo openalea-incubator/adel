@@ -184,4 +184,19 @@ io_to_plantgl = Factory(name='to_plantgl',
 
 
 
+params2mtg = Factory(name='mtg (params)',
+                category='simulation',
+                nodemodule='io',
+                nodeclass='mtg_factory',
+               )
+__all__.append('params2mtg')
+
+duplicate = Factory(name='duplicate mtg',
+                category='simulation',
+                nodemodule='io',
+                nodeclass='duplicate',
+                inputs=[dict(name='mtg'), dict(name='nb_plants', interface='IInt', value=1)],
+                outputs=[{'name': 'mtg', 'desc': 'duplicated mtg'}],
+               )
+__all__.append('duplicate')
 

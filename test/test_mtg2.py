@@ -1,10 +1,34 @@
-from alinea.adel.mtg import *
+from openalea.core.alea import *
+from alinea.adel import mtg
+import alinea.adel.fitting as fitting
+from alinea.adel.symbol import build_symbols
 
-def test1():
-    fn = r'data/canopydesc.csv'
-    g = topological_table_to_mtg(fn)
-    assert g.nb_scales() == 5
-    assert g.max_scale()==4
-    assert len(g) == 93
+g = None
+
+def adel_mtg():
+    global g
+    if g is not None:
+        return g
+    pm = load_package_manager()
+    g = run(('alinea.adel.tutorials','mtgparam'), {},pm=pm, vtx_id=5)
+    return g
+def leaves_db():
+    import cPickle as Pickle
+    fn = r'../adel/data/leaves_simple.db'
+    f = open(fn)
+    leaves = Pickle.load(f)
+    f.close()
+    leaves = fitting.fit_leaves(leaves, 9)
     
+    db = leaves
+    functions = build_symbols(db)
+    return functions
+
+def test_adel_mtg():
+    (g,) = adel_mtg()
+    #print g
+    symbols = leaves_db()
+
+    print symbols.keys()
+    g=mtg.mtg_turtle(g,symbols)
     return g

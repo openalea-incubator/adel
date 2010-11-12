@@ -15,10 +15,12 @@ except:
     pass
 
 from openalea.mtg.io import read_lsystem_string
+from openalea.mtg.algo import union
+
 import numpy
 try:
     from openalea.plantgl.all import (Scene,Translation, Vector3, 
-                                AxisRotation, Transform4, 
+                                AxisRotation, Transform4, BaseOrientation, 
                                 Shape, Material, Color3) 
 except:
     Material = tuple
@@ -182,9 +184,15 @@ def to_canestra(g):
     lines.append('')
     return '\n'.join(lines)
 
-def planter(g, distribution):
+def planter(g, distribution, random_seed=0):
     """
     Transform a set of plants with given point distributions.
+
+    :Parameters: 
+        - g: MTG
+        - distribution: a list of 2D positions
+        - random_seed: add a random rotation to each plant if the value is positive.
+          In this case, random_seed is used as a seed.
     """
     #assert g.nb_vertices(scale=1) == len(distribution)
     geometry = g.property('geometry')
@@ -194,10 +202,15 @@ def planter(g, distribution):
         g.add_property('_plant_translation')
     translations = g.property('_plant_translation')
     
-    def pt2transfo(pt):
-        #r = AxisRotation((0,0,1), random.random()*pi).getMatrix()
-        #return Transform4(Translation(pt).getMatrix()*r)
-        return Transform4(Translation(pt).getMatrix())
+    if random_seed > 0:
+        random.seed(random_seed)
+
+    def pt2transfo(pt, previous_pt):
+        matrix = Translation(pt).getMatrix()
+        if random_seed > 0:
+            r = AxisRotation((0,0,1), random.random()*pi).getMatrix()
+            matrix = matrix * r * Translation(previous_pt).getMatrix()
+        return Transform4(matrix)
 
     plants = g.vertices(scale=1)
     plants = list(plants)[:len(distribution)]
@@ -205,17 +218,24 @@ def planter(g, distribution):
     for i, root_elt in enumerate(plants):
         previous_translation = translations.get(root_elt,(0,0,0))
         translations[root_elt] = distribution[i]
-        displacement = Vector3(distribution[i])-Vector3(previous_translation)
 
-        transfo = pt2transfo(displacement)
+        #displacement = Vector3(distribution[i])-Vector3(previous_translation)
+
+        transfo = pt2transfo(Vector3(distribution[i]), -Vector3(previous_translation))
         l = (vid for vid in g.vertices(scale=4) if g.complex_at_scale(vid, scale=1) == root_elt) 
         #for vid in g.components_at_scale(root_elt, 4):
         for vid in l:
             geom = geometry.get(vid)
-            if geom:
-                geometry[vid] = geom.transform(transfo)
-            else:
-                geometry[vid] = geom
+            geometry[vid] = geom.transform(transfo) if geom else geom
+            can_label = g.node(vid).can_label
+            if can_label:
+                can_label.plant_id = i
+
+def duplicate(g, n=1):
+    g1 = g.sub_mtg(g.root)
+    for i in range(n-1):
+        g1 = union(g1,g)
+    return g1
 
 class CanMTG(MTG):
     def __init__(self, functions, axial_string):
@@ -228,6 +248,11 @@ CanMTG.planter = planter
 CanMTG.to_plantgl = to_plantgl
 CanMTG.to_canestra = to_canestra
 CanMTG.to_aggregation_table = to_aggregation_table
+
+MTG.planter = planter
+MTG.to_plantgl = to_plantgl
+MTG.to_canestra = to_canestra
+MTG.to_aggregation_table = to_aggregation_table
 
 def convert(v, undef='NA'):
     res = v
@@ -470,7 +495,7 @@ def mtg_factory(params):
         num_metamer = dp['numphy'][i]
 
         #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
-        print 'plant: %d, axe:%d, nb_metamers: %d'%(plant, axe, num_metamer)
+        #print 'plant: %d, axe:%d, nb_metamers: %d'%(plant, axe, num_metamer)
         # Add new plant
         if plant != prev_plant:
             label = 'plant'+str(plant)
@@ -545,24 +570,38 @@ def mtg_factory(params):
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
                             complex=vid_metamer, label='Egreen', edge_type=edge_type,
                             length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
-                vid_node = g.add_child(vid_node, label='Esen', edge_type='<',
+                if args['Esen'] > 0.:
+                    vid_node = g.add_child(vid_node, label='Esen', edge_type='<',
                     length=args['Esen'],po=args['Epos'], diam=args['Ed'])
         else:
+            """
             if vid_node == -1:
                 vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',length=0.,po=args['Epo'], diam=args['Ed'] )
                 assert edge_type == '/'
             else:
                 vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=0.,po=args['Epo'], diam=args['Ed'] )
+            """
+            pass
+
         # Sheath
         if args['Gv'] > 0.:
             if args['Gsen'] > args['Gv']:
-                vid_node= g.add_child(vid_node, label='Gsen', edge_type='<',
+                if vid_node == -1:
+                    vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
+                        length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
+                else:
+                    vid_node= g.add_child(vid_node, label='StemElement', edge_type='<',
                     length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
             else:
-                vid_node = g.add_child(vid_node, label='Ggreen', edge_type='<',
+                if vid_node == -1:
+                    vid_node = g.add_component(vid_metamer, label='StemElement', edge_type='/',
                     length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
-                vid_node = g.add_child(vid_node, label='Gsen', edge_type='<',
-                    length=args['Gsen'],po=args['Gpos'], diam=args['Gd'])
+                else:
+                    vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
+                    length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
+                if args['Gsen'] > 0.:
+                    vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
+                    length=args['Gsen'],po=args['Gpos'], diam=args['Gd'], sen=True)
 
         if axe == 0:
             nodes.append(vid_node)
@@ -570,30 +609,104 @@ def mtg_factory(params):
         # Laminae
         if args['Lv'] > 0.:
             if args['Lsen'] > args['Lv']:
-                l_node= g.add_child(vid_node, label='Lsen', edge_type='+',length=args['Lv'],
+                l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],
                     po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
                     LcType=args['LcType'], LcIndex=args['LcIndex'], Linc=args['Linc'], 
                     Laz=args['Laz'], srb=0, srt=1)
             else:
-                l_node = g.add_child(vid_node, label='Lgreen', edge_type='+',
+                l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
                     length=args['Lv']-args['Lsen'],po=args['Lpo'],
                     Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
                     LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
                     srb=0, srt=1-(args['Lsen']/args['Lv']))
-                l_node = g.add_child(l_node, label='Lsen', edge_type='<',
+                l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
                     length=args['Lsen'],po=args['Lpos'],
                     Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
                     LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
-                    srt=1, srb=1-(args['Lsen']/args['Lv']))
+                    srt=1, srb=1-(args['Lsen']/args['Lv']), sen=True)
 
         
         prev_plant = plant
         prev_axe = axe
         prev_metamer = num_metamer
 
+    
     return fat_mtg(g)
 
 
 def _check_adel_parameters( params):
     return True
 
+def compute_element(n, symbols):
+    leaf = symbols.get('LeafElement')
+    stem = symbols.get('StemElement')
+
+    leaf_rank = int(n.complex().index())
+    optical_species = int(n.po)
+    final_length = n.length
+    length = n.length
+    s_base = n.srb
+    s_top = n.srt
+    
+    element = {} 
+    if n.label.startswith('L'):
+        radius_max = n.Lw
+        element = leaf(optical_species, 
+                    final_length, 
+                    length, 
+                    radius_max, 
+                    s_base, 
+                    s_top, 
+                    leaf_rank) 
+    else:
+        diameter_base = n.parent().diam if (n.parent() and n.parent().diam > 0.) else n.diam
+        diameter_top = n.diam
+        element = stem( optical_species, length, diameter_base, diameter_top)
+
+    can_label =  element['label']
+    if can_label:
+        can_label.elt_id = leaf_rank
+        plant_node = n.complex_at_scale(scale=1)
+        can_label.plant_id = plant_node.index()
+
+    return element['geometry'], can_label
+
+def transform(turtle, mesh):
+        x = turtle.getUp()
+        z = turtle.getHeading()
+
+        bo = BaseOrientation(x, z^x)
+        matrix = Transform4(bo.getMatrix())
+        matrix.translate(turtle.getPosition())
+        mesh = mesh.transform(matrix)
+        return mesh
+
+def mtg_turtle(g, symbols):
+    ''' Compute the geometry on each node of the MTG using Turtle geometry. '''
+
+    from openalea.mtg import turtle
+
+    def adel_visitor(g, v, turtle):
+        # 1. retriev the node
+        n = g.node(v)
+        angle = float(n.Laz) if n.Laz else 0.
+        turtle.rollL(angle)
+        if g.edge_type(v) == '+':
+            angle = n.Linc or n.Ginc or n.Einc
+            angle = float(angle) if angle is not None else 0.
+            turtle.up(angle)
+
+        # 2. Compute the geometric symbol
+        mesh, can_label = compute_element(n, symbols)
+        if mesh:
+            n.geometry = transform(turtle, mesh)
+            n.can_label = can_label
+
+        # 3. Update the turtle
+        turtle.setId(v)
+        turtle.F(n.length)
+        # Get the azimuth angle
+        
+    scene = turtle.TurtleFrame(g,visitor=adel_visitor)
+    return g
+    

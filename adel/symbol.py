@@ -42,7 +42,7 @@ class LeafElement(Symbol):
         self.database = database
         self.seed = seed
 
-    def __call__( self, optical_species, final_length, length, radius_max, s_base, s_top, leaf_rank, seed, *args ):
+    def __call__( self, optical_species, final_length, length, radius_max, s_base, s_top, leaf_rank, seed=1, *args ):
     #def __call__( self, optical_species, final_length, radius_max, s_base, s_top, leaf_rank, seed ):
 
         leaf_rank = max(1, leaf_rank% 999)
@@ -94,14 +94,14 @@ class LeafElement(Symbol):
 
         #pts, ind = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)        
         leaf_mesh = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)
-	if leaf_mesh:
-	    pts, ind = leaf_mesh
+        if leaf_mesh:
+            pts, ind = leaf_mesh
             if len(ind) < 2:
                 mesh = None
             else:
                 mesh = fitting.plantgl_shape(pts, ind)
-	else:
-	    mesh = None
+        else:
+            mesh = None
 
         return mesh
 
@@ -113,7 +113,7 @@ class StemElement(Symbol):
         self.tessel = pgl.Tesselator()
         self.seed = seed
 
-    def __call__( self, optical_species, length, diameter_base, diameter_top ):
+    def __call__( self, optical_species, length, diameter_base, diameter_top, *args ):
         leaf_rank = 0
         res = {}
         res['geometry'] = self._mesh(length, diameter_base, diameter_top)

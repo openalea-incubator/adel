@@ -10,8 +10,8 @@ class dim_pattern:
     def __init__(self, dimT, index= 111):
         '''
         Initialisation of dimension pattern, just need the equivalent of a dimT
-		dimT: 
-		index: column which identify axis in dimT
+        dimT: 
+        index: column which identify axis in dimT
         '''
         #Opening dimT file
         csvfile = open(dimT, "rb")
@@ -27,7 +27,7 @@ class dim_pattern:
         reader.next() # Getting the header out
         row = reader.next() # initialisation
         while int(row[0]) is not index:
-		    row = reader.next()
+            row = reader.next()
         
         while int(row[0]) is index:
             self.dictMS['relative_phytomer'].append(float(row[1]))

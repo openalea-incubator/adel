@@ -2,7 +2,7 @@ from rpy import *
 
 def Ecalc(eabs, area, table):
     '''    
-    '''	
+    '''    
  
     # write the node code here.
 

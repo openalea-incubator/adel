@@ -17,19 +17,16 @@ def Morris(repet,factors,binf,bsup):
     d=r.list('oat', 5, 3)
     d= r['names<-'](d,['type','levels','grid.jump'])
     m = r.morris(factors=factors,r=repet,design=d,binf=binf,bsup=bsup)
-    param=r['data.frame'](m.rx["X"])
-    #print param
-    #l =r.colnames(param)
-    #print list(l)
-    #pdict = dict((k,numpy.array(param.rx[k]).tolist()) for k in r.colnames(param))
-    #print pdict['X.NbPhy']
-    pdict = dict((str(k), list(v)) for k,v in param.iteritems()) 
+    #param=r['data.frame'](m.rx["X"])
+    param=r['data.frame'](r['$'](m,'X'))
+    pdict = dict((k,list(r['$'](param,k))) for k in param.names)
+    #pdict = dict((str(k), list(v)) for k,v in param.iteritems()) 
     return m,pdict
 
 def Morris_IS(morrisPlan,y):
     """ Compute morris sensitivity indicators for a Morris plan and the corresponding model responses"""
     mod=r.tell(morrisPlan,numpy.array(y))
-    ee=mod.rx('ee')[0]
+    ee=r['$'](mod,'ee')
     mu=r.apply(ee,2,r['mean'])
     mustar=r.apply(ee,2,r('function(x) mean(abs(x))'))
     sigma=r.apply(ee,2,r.sd)

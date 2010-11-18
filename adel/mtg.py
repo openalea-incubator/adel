@@ -463,6 +463,20 @@ def mtg_factory(params):
         - Einc
         - Epo
         - Epos
+
+    TODO: 
+        * add length and final_length
+        * diam and final_diam (resp. width)
+        * function reset length
+        * function phenology(g, table) -> dynamic parameters (start_thermaltime, end_thermaltime)
+        * function growth_thermaltime(g, tt, d_tt): tt=thermaltime du couvert
+        * function growth_thermaltime(g, tt, d_tt, stress factor)
+        * stress_factor: offre/demande
+            - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
+            - offre : sum{E_abs}*\eps_b
+            => ds = ds_predit* stress_factor
+        * passer la surface aux modèles de feuille
+        * update properties
     """
 
     if not _check_adel_parameters(params):

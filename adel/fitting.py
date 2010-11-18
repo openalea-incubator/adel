@@ -266,7 +266,7 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
     def insert_values(a, values):
         l= a.tolist()
         l.extend(values)
-        return unique1d(l) 
+        return unique(l) 
 
     s_base = min(s_base, s_top, 1.)
     s_top = max(s_base, s_top, 0.)

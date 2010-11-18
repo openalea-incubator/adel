@@ -14,8 +14,10 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     database key: rank, value : x,y,s,r
     """
 #    global r
-    xy = r.load(rdata_xy)[0]
-    sr = r.load(rdata_sr)[0]
+    #xy = r.load(rdata_xy)[0]
+    #sr = r.load(rdata_sr)[0]
+    xy = r.load(rdata_xy)
+    sr = r.load(rdata_sr)
     xy = RlistAsDict(r(xy))
     sr = RlistAsDict(r(sr))
 

@@ -1,6 +1,8 @@
 import rpy2.robjects as robj
+from rpy2.robjects.numpy2ri import numpy2ri
 r = robj.r
 
+import numpy as np
 from numpy import transpose
 
 def RlistAsDict(Rlist):
@@ -33,16 +35,16 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     for k in rank:
         xyk = RlistAsDict(xy[k])
         leaves_id = xyk.keys()
-        s, radius = transpose(sr[k])
+        s, radius = transpose(np.array(sr[k]))
         for leaf_id in leaves_id:
-            x, y = transpose(xyk[leaf_id])
+            x, y = transpose(np.array(xyk[leaf_id]))
             leaves.setdefault(k,[]).append((x,y,s,radius))
 
     return leaves
 
 def test():
-    rdata_xy = 'So99.RData'
-    rdata_sr = 'SRSo.RData'
+    rdata_xy = 'data/So99.RData'
+    rdata_sr = 'data/SRSo.RData'
     leaves = extract_leaf_info(rdata_xy, rdata_sr)
     rank = leaves.keys()
     rank.sort()

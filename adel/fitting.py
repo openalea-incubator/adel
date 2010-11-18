@@ -163,9 +163,9 @@ def discretize( leaf, nb_polygones, length_max, radius_max):
     """
     Compute a mesh from a leaf represented by a 3d spline containing
     x, y and radius.
+
     Final radius have to be null.
     """
-
     return partial_leaf(leaf, nb_polygones, length_max, length_max, radius_max)
 
 def partial_leaf( leaf, nb_polygones, length_max, length, radius_max):

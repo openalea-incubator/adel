@@ -1,6 +1,6 @@
 .. _adel_user:
 
-£PROJECT_NAME.Adel User Guide
+Alinea.Adel User Guide
 #######################################
 
 :Version: |version|
@@ -8,16 +8,8 @@
 :Date: |today|
 
 This manual details functions, modules, and objects included in 
-OpenAlea.Adel, describing what they are and what they do. For a complete 
+Alinea.Adel, describing what they are and what they do. For a complete 
 reference guide, see :ref:`adel_reference`.
-
-.. warning::
-
-   This "User Guide" is still very much in progress. 
-   Many aspects of OpenAlea.Adel are not covered.
-
-   More documentation can be found on the
-   `openalea <http://openalea.gforge.inria.fr>`__ wiki.
 
 .. toctree::
 

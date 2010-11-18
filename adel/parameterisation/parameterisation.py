@@ -209,7 +209,7 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
 
 def simpleMais_plan(d, step=0):
     params = ['S','H', 'Hps', 'NbPhy', 'NbJ', 'Skew', 'pmax', 'HLips', 'HLi', 'az', 'phib', 'phit', 'db', 'dt', 'lwr', 'ff']
-
+    params=['X.'+p for p in params]
     l = [ d[p][step] if p in d else None for p in params]
     return l
 

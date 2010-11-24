@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Methods on the mtg for adel programs.
 Author: Christophe Pradal

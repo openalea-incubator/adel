@@ -477,7 +477,7 @@ def mtg_factory(params):
             - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
             - offre : sum{E_abs}*\eps_b
             => ds = ds_predit* stress_factor
-        * passer la surface aux modèles de feuille
+        * passer la surface aux modeles de feuille
         * update properties
     """
 

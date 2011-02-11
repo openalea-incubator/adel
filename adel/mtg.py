@@ -23,7 +23,7 @@ import numpy
 try:
     from openalea.plantgl.all import (Scene,Translation, Vector3, 
                                 AxisRotation, Transform4, BaseOrientation, 
-                                Shape, Material, Color3) 
+                                Shape, Material, Color3, PglTurtle) 
 except:
     Material = tuple
     Color3 = tuple
@@ -475,7 +475,7 @@ def mtg_factory(params):
         * function growth_thermaltime(g, tt, d_tt, stress factor)
         * stress_factor: offre/demande
             - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
-            - offre : sum{E_abs}*\eps_b
+            - offre : :math:`sum{E_abs}*\eps_b`
             => ds = ds_predit* stress_factor
         * give the area to the leaf model
         * update properties
@@ -726,3 +726,95 @@ def mtg_turtle(g, symbols):
     scene = turtle.TurtleFrame(g,visitor=adel_visitor)
     return g
     
+
+def mtg_turtle_time(g, symbols, time):
+    ''' Compute the geometry on each node of the MTG using Turtle geometry. '''
+
+    from openalea.mtg import turtle
+
+    def compute_element(n, symbols, time):
+        leaf = symbols.get('LeafElement')
+        stem = symbols.get('StemElement')
+
+        leaf_rank = int(n.complex().index())
+        optical_species = int(n.po)
+        final_length = n.length
+        length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+        s_base = n.srb
+        s_top = n.srt
+        
+        element = {} 
+        if n.label.startswith('L'):
+            radius_max = n.Lw
+            element = leaf(optical_species, 
+                        final_length, 
+                        length, 
+                        radius_max, 
+                        s_base, 
+                        s_top, 
+                        leaf_rank) 
+        else:
+            diameter_base = n.parent().diam if (n.parent() and n.parent().diam > 0.) else n.diam
+            diameter_top = n.diam
+            element = stem( optical_species, length, diameter_base, diameter_top)
+
+        can_label =  element['label']
+        if can_label:
+            can_label.elt_id = leaf_rank
+            plant_node = n.complex_at_scale(scale=1)
+            can_label.plant_id = plant_node.index()
+
+        return element['geometry'], can_label
+
+    def adel_visitor(g, v, turtle, time):
+        # 1. retriev the node
+        n = g.node(v)
+        angle = float(n.Laz) if n.Laz else 0.
+        turtle.rollL(angle)
+        if g.edge_type(v) == '+':
+            angle = n.Linc or n.Ginc or n.Einc
+            angle = float(angle) if angle is not None else 0.
+            turtle.up(angle)
+
+        # 2. Compute the geometric symbol
+        mesh, can_label = compute_element(n, symbols, time)
+        if mesh:
+            n.geometry = transform(turtle, mesh)
+            n.can_label = can_label
+
+        # 3. Update the turtle
+        turtle.setId(v)
+
+        length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+        turtle.F(length)
+        # Get the azimuth angle
+        
+
+    def traverse_with_turtle_time(g, vid, time, visitor=adel_visitor):
+        turtle = PglTurtle()
+        times = g.property('time')
+        def push_turtle(v):
+            n = g.node(v)
+            if n.start_tt > time:
+                return False
+            if g.edge_type(v) == '+':
+                turtle.push()
+            return True
+
+        def pop_turtle(v):
+            if g.edge_type(v) == '+':
+                turtle.pop()
+
+        visitor(g,vid,turtle,time)
+        turtle.push()
+        for v in pre_order2_with_filter(g, vid, None, push_turtle, pop_turtle):
+            if v == vid: continue
+            visitor(g,v,turtle,time)
+
+        scene = turtle.getScene()
+        return g
+
+    root_4 = g.component_roots_at_scale(g.root, scale=4).next()
+    scene = traverse_with_turtle_time(g, root_4, time)
+    return scene
+

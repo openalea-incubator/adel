@@ -191,6 +191,13 @@ params2mtg = Factory(name='mtg (params)',
                )
 __all__.append('params2mtg')
 
+tht = Factory(name='update thermal time',
+                category='simulation',
+                nodemodule='io',
+                nodeclass='thermal_time',
+               )
+__all__.append('tht')
+
 duplicate = Factory(name='duplicate mtg',
                 category='simulation',
                 nodemodule='io',

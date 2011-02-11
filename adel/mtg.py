@@ -732,6 +732,7 @@ def mtg_turtle_time(g, symbols, time):
 
     from openalea.mtg import turtle
 
+    g.properties()['geometry'] = {}
     def compute_element(n, symbols, time):
         leaf = symbols.get('LeafElement')
         stem = symbols.get('StemElement')
@@ -739,7 +740,10 @@ def mtg_turtle_time(g, symbols, time):
         leaf_rank = int(n.complex().index())
         optical_species = int(n.po)
         final_length = n.length
-        length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+        try :
+            length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if n.end_tt and time < n.end_tt else n.length
+        except:
+            length = n.length
         s_base = n.srb
         s_top = n.srt
         
@@ -817,4 +821,23 @@ def mtg_turtle_time(g, symbols, time):
     root_4 = g.component_roots_at_scale(g.root, scale=4).next()
     scene = traverse_with_turtle_time(g, root_4, time)
     return scene
+
+def thermal_time(g):
+    """ Dummy function to test adel with a thermal time parameter.
+    """
+
+    plants = g.vertices(scale=1)
+    metamer_scale = g.max_scale()-1
+    dtt = 10.
+
+    for plant in plants:
+        tt = 0
+        v = g.component_roots_at_scale(g.root, scale=metamer_scale).next()
+        for metamer in pre_order2(g, v):
+            nm = g.node(metamer)
+            for node in nm.components():
+                node.start_tt = tt
+                node.end_tt = tt+dtt
+            tt += dtt
+    return g
 

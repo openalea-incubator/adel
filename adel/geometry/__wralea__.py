@@ -17,7 +17,7 @@ __institutes__ = 'CIRAD'
 __icon__ = ''
 
 
-__all__ = ['geometry_symbols', 'geometry_mtg_turtle', 'geometry_leaf_to_mesh', 'setGeometry_setGeometry', 'geometry_leaf_element']
+__all__ = ['geometry_symbols', 'geometry_mtg_turtle','geometry_mtg_turtle_time',  'geometry_leaf_to_mesh', 'setGeometry_setGeometry', 'geometry_leaf_element']
 
 
 
@@ -48,6 +48,14 @@ geometry_mtg_turtle = Factory(name='MTG Interpreter',
                 widgetclass=None,
                )
 
+geometry_mtg_turtle_time = Factory(name='MTG Interpreter time',
+                authors='C. Pradal',
+                category='geometry',
+                nodemodule='geometry',
+                nodeclass='mtg_turtle_time',
+                inputs=[{'name': 'g' }, {'name': 'symbols'}, {'name': 'thermal time', 'interface' : 'IInt'} ],
+                outputs=[{'interface': None, 'name': 'g', 'desc': 'MTG with geometry'}],
+               )
 
 
 

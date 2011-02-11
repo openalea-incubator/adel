@@ -11,6 +11,10 @@ def adel_mtg():
         return g
     pm = load_package_manager()
     g = run(('alinea.adel.tutorials','mtgparam'), {},pm=pm, vtx_id=5)
+
+    g = g[0]
+    
+
     return g
 def leaves_db():
     import cPickle as Pickle
@@ -25,9 +29,11 @@ def leaves_db():
     return functions
 
 def test_adel_mtg():
-    (g,) = adel_mtg()
+    g = adel_mtg()
     #print g
     symbols = leaves_db()
+
+    assert len(g) == len(g.sub_mtg(g.root))
 
     print symbols.keys()
     g=mtg.mtg_turtle(g,symbols)

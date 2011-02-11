@@ -466,7 +466,7 @@ def mtg_factory(params):
         - Epo
         - Epos
 
-    TODO: 
+    :TODO: 
         * add length and final_length
         * diam and final_diam (resp. width)
         * function reset length
@@ -477,7 +477,7 @@ def mtg_factory(params):
             - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
             - offre : sum{E_abs}*\eps_b
             => ds = ds_predit* stress_factor
-        * passer la surface aux modeles de feuille
+        * give the area to the leaf model
         * update properties
     """
 
@@ -606,17 +606,17 @@ def mtg_factory(params):
                     vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
                         length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
                 else:
-                    vid_node= g.add_child(vid_node, label='StemElement', edge_type='<',
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
                     length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
             else:
                 if vid_node == -1:
                     vid_node = g.add_component(vid_metamer, label='StemElement', edge_type='/',
                     length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
                 else:
-                    vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
                     length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
                 if args['Gsen'] > 0.:
-                    vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
                     length=args['Gsen'],po=args['Gpos'], diam=args['Gd'], sen=True)
 
         if axe == 0:

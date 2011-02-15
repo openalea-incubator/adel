@@ -72,7 +72,11 @@ class LeafElement(Symbol):
         else: 
             random.seed(self.seed)
 
-        i = random.randint(0,n-1)
+        if args and args[1] >= 0:
+            i = args[1]
+        else:
+            i = random.randint(0,n-1)
+            
         leaf = leaves[i]
 
         # Rotation of the midrib of the leaf to set the insertion angle from the vertical 

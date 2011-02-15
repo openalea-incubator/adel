@@ -17,7 +17,7 @@ __institutes__ = 'CIRAD'
 __icon__ = ''
 
 
-__all__ = ['geometry_symbols', 'geometry_mtg_turtle','geometry_mtg_turtle_time',  'geometry_leaf_to_mesh', 'setGeometry_setGeometry', 'geometry_leaf_element']
+__all__ = ['geometry_symbols', 'geometry_mtg_turtle','geometry_mtg_turtle_time',  'geometry_leaf_to_mesh', 'setGeometry_setGeometry', 'geometry_leaf_element', 'geometry_LeafElement']
 
 
 
@@ -32,7 +32,6 @@ geometry_symbols = Factory(name='symbols',
                 widgetmodule=None,
                 widgetclass=None,
                )
-
 
 
 
@@ -90,17 +89,44 @@ setGeometry_setGeometry = Factory(name='setGeometry',
 
 
 geometry_leaf_element = Factory(name='leaf element',
-                authors='C. Pradal (wralea authors)',
-                description='convert a midrib data to a mesh',
-                category='graphic',
-                nodemodule='geometry',
-                nodeclass='leaf_element',
-                inputs=[{'interface': ISequence, 'name': 'leaf', 'value': [], 'desc': ''}, {'interface': IFloat, 'name': 'length_max', 'value': 1.0, 'desc': ''}, {'interface': IFloat, 'name': 'length', 'value': 1.0, 'desc': ''}, {'interface': IFloat, 'name': 's_min', 'value': 0.0, 'desc': ''}, {'interface': IFloat, 'name': 's_max', 'value': 1.0, 'desc': ''}, {'interface': IFloat, 'name': 'radius', 'value': 1.0, 'desc': ''}],
-                outputs=[{'interface': IInterface, 'name': 'mesh', 'desc': 'A plantgl mesh'}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
+                                authors='C. Pradal (wralea authors)',
+                                description='convert a midrib data to a mesh',
+                                category='graphic',
+                                nodemodule='geometry',
+                                nodeclass='leaf_element',
+                                inputs=[
+    {'interface': ISequence, 'name': 'leaf', 'value': [], 'desc': ''},
+    {'interface': IFloat, 'name': 'length_max', 'value': 1.0, 'desc': ''},
+    {'interface': IFloat, 'name': 'length', 'value': 1.0, 'desc': ''},
+    {'interface': IFloat, 'name': 's_min', 'value': 0.0, 'desc': ''},
+    {'interface': IFloat, 'name': 's_max', 'value': 1.0, 'desc': ''},
+    {'interface': IFloat, 'name': 'radius', 'value': 1.0, 'desc': ''}],
+                                outputs=[
+    {'interface': IInterface, 'name': 'mesh', 'desc': 'A plantgl mesh'}],
+                                widgetmodule=None,
+                                widgetclass=None,
+                                )
 
 
+geometry_LeafElement = Factory(name='LeafElement',
+                               authors='C. Fournier',
+                               description='simulate the behavior of a cal to Leaf Element',
+                               category='graphic',
+                               nodemodule='geometry',
+                               nodeclass='LeafElement',
+                               inputs=[
+    {'interface': None, 'name': 'symbols', 'value': None, 'desc': ''},
+    {'interface': IInt, 'name': 'leaf_rank', 'value': 1, 'desc': ''},
+    {'interface': IFloat, 'name': 'length', 'value': 1.0, 'desc': ''},
+    {'interface': IFloat, 'name': 'final_length', 'value': 1.0, 'desc': ''},
+    {'interface': IFloat, 'name': 'radius', 'value': 1.0, 'desc': ''},
+    {'interface': IInt, 'name': 'basal inclination', 'value': 0, 'desc': ''},
+    {'interface': IInt, 'name': 'index', 'value': 1, 'desc': ''}],
+                               outputs=[
+    {'interface': IInterface, 'name': 'mesh', 'desc': 'A plantgl mesh'},
+    {'interface': IInterface, 'name': 'label', 'desc': 'A canlabel'}],
+                               widgetmodule=None,
+                               widgetclass=None,
+                               )
 
 

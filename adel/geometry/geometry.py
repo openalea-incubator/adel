@@ -14,3 +14,17 @@ def leaf_element(leaf, lmax, l, s_base, s_top,  rmax):
 def symbols( database, seed=None ):
     return symbol.build_symbols(database, seed)
 
+def LeafElement(sym,leaf_rank,length,final_length,radius_max,incB,index): 
+    leaf = sym.get('LeafElement')
+    element = leaf(1, 
+                   final_length, 
+                   length, 
+                   radius_max, 
+                   0, 
+                   1, 
+                   leaf_rank,
+                   1,
+                   incB,
+                   index - 1)
+    return element['geometry'],element['label']
+    

@@ -221,7 +221,8 @@ getdesc <- function(kinlist,plantlist,t=1,epsillon = 1e-6) {
         # control of blade basal inclination (to be moved in kinL?)
         Linc <- ifelse(datp$Ll - dat$Lv >= epsillon,0,datp$incB)
         # setup of Lindex (for Tino, no more needed) as a function of leaf stage
-        LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy),dat$Lv/datp$Ll)
+        #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy),dat$Lv/datp$Ll)
+        #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy))
       #Epo
         Epo <- c(rep(1,nbleaf),1,1,3)
         Epos <- c(rep(2,nbleaf),2,2,4)
@@ -234,7 +235,7 @@ getdesc <- function(kinlist,plantlist,t=1,epsillon = 1e-6) {
                                          numphy=1:nbphy,
                                          Ll=datp$Ll,
                                          Lw=datp$Lw,
-                                         LcType=LcType,
+                                         LcType=datp$Lindex,
                                          LcIndex=datp$Lseed,
                                          Linc=Linc,
                                          Laz=Laz,

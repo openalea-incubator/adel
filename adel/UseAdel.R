@@ -86,7 +86,7 @@ genGeoLeaf <- function(ntoplim = 4,dazTop = 60,dazBase = 30,topIndex=TRUE) {
                  180 + dazTop * (runif(1) - .5),
                  180 + dazBase * (runif(1) - .5))
                },
-        Lindex = function(a,n,ntop,stage) {
+        Lindex = function(a,n,ntop) {
           ifelse(topIndex,
                  ntop + 1,
                  n)}

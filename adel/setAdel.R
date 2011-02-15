@@ -119,7 +119,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
         phytoT[seq(nf),"Azim",a] <- sapply(seq(nf),function(n) geoLeaf$Azim(a,n,nf-n))
       else
         phytoT[seq(nf),"Azim",a] <- phytoT[seq(nf),"pAngle",a] + (runif(nf) - .5) * phytoT[seq(nf),"dpAngle",a]
-      #phytoT[seq(nf),"Lindex",a] <- sapply(seq(nf),function(n) geoLeaf$Lindex(a,n,nf-n))
+      phytoT[seq(nf),"Lindex",a] <- sapply(seq(nf),function(n) geoLeaf$Lindex(a,n,nf-n))
       phytoT[seq(nf),"Lseed",a] <- runif(nf)
       phytoT[(nf+1):(nf+3),,a] <- 0
       phytoT[(nf+1):(nf+2),"El",a] <- unlist(earT[pT$earIndex[a],c("l_ped","l_ear")])

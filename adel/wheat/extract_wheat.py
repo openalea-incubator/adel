@@ -20,6 +20,10 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     #sr = r.load(rdata_sr)[0]
     xy = r.load(rdata_xy)
     sr = r.load(rdata_sr)
+   # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
+    r('names(%s) = seq(%s)'%(xy[0],xy[0]))
+    r('names(%s) = seq(%s)'%(sr[0],sr[0]))
+
     xy = RlistAsDict(r(xy))
     sr = RlistAsDict(r(sr))
 

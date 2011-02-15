@@ -120,7 +120,7 @@ geometry_LeafElement = Factory(name='LeafElement',
     {'interface': IFloat, 'name': 'length', 'value': 1.0, 'desc': ''},
     {'interface': IFloat, 'name': 'final_length', 'value': 1.0, 'desc': ''},
     {'interface': IFloat, 'name': 'radius', 'value': 1.0, 'desc': ''},
-    {'interface': IInt, 'name': 'basal inclination', 'value': 0, 'desc': ''},
+    {'interface': IFloat, 'name': 'relative basal inclination', 'value': 1, 'desc': ''},
     {'interface': IInt, 'name': 'index', 'value': 1, 'desc': ''}],
                                outputs=[
     {'interface': IInterface, 'name': 'mesh', 'desc': 'A plantgl mesh'},

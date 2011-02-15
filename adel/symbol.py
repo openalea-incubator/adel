@@ -79,12 +79,13 @@ class LeafElement(Symbol):
             
         leaf = leaves[i]
 
-        # Rotation of the midrib of the leaf to set the insertion angle from the vertical 
+        # Rotation of the midrib of the leaf to set the insertion angle a relative fraction of the angle (reference beeing the  vertical)
         if args and args[0] >= 0:
             x, y = leaf[0], leaf[1]
-            angle = radians(args[0])
-
             init_angle = pgl.angle((x[1]-x[0], y[1]-y[0]),(0,1))
+            angle = min(radians(180),args[0] * init_angle)
+
+            
             rotation_angle = init_angle-angle
 
             # rotation of the midrib

@@ -1,0 +1,18 @@
+# Test AdelR
+#
+#
+from alinea.adel.AdelR import devCsv,setAdel,RunAdel,genGeoLeaf,genGeoAxe
+
+
+
+def test_adelR(nplants,dd):
+    devT = devCsv('./data/axeTCa0N.csv',
+                  './data/dimTCa0N.csv',
+                  './data/phenTCa0N.csv',
+                  './data/earTCa0N.csv',
+                  './data/ssi2sen.csv')
+    geoLeaf = genGeoLeaf(4,60,20)
+    geoAxe = genGeoAxe(75,0,0,0,60,7,5)
+    pars = setAdel(devT,geoLeaf,geoAxe,nplants)
+    string = RunAdel(dd,pars)
+    return pars,string

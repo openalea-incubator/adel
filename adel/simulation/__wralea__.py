@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 30 14:12:27 2009
+# This file has been generated at Thu Feb 17 22:34:17 2011
 
 from openalea.core import *
 
@@ -17,11 +17,12 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['simulation_simulation', 'simulation_RunAdel','simulation_genString']
+__all__ = ['simulation_simulation', 'simulation_RunAdel', 'AdelRunOptions_AdelRunOptions', 'simulation_genString']
 
 
 
 simulation_simulation = Factory(name='simulation',
+                authors='C. Fournier, C. Pradal (wralea authors)',
                 description='cpfg ',
                 category='scene',
                 nodemodule='simulation',
@@ -36,20 +37,37 @@ simulation_simulation = Factory(name='simulation',
 
 
 simulation_RunAdel = Factory(name='RunAdel',
+                authors='C. Fournier, C. Pradal (wralea authors)',
                 description='',
                 category='simulation',
                 nodemodule='simulation',
                 nodeclass='RunAdel',
-                inputs=[{'interface': ISequence, 'name': 'dates', 'value': 1000, 'desc': ''},
-                        {'interface': None, 'name': 'Parameter Rlist', 'desc': ''},
-                        {'interface': IDict, 'name': 'Global parameters', 'value': {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}, 'desc': ''}
-                        ],
+                inputs=[{'interface': ISequence, 'name': 'dates', 'value': 1000, 'desc': ''}, {'interface': None, 'name': 'Parameter Rlist', 'desc': ''}, {'interface': IDict, 'name': 'Global parameters', 'value': {'endLeaf': 1.6000000000000001, 'stemLeaf': 1.2, 'epsillon': 9.9999999999999995e-07, 'startLeaf': -0.40000000000000002, 'senescence_leaf_shrink': 0.5}, 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'Lstrings', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )
 
+
+
+
+AdelRunOptions_AdelRunOptions = Factory(name='AdelRunOptions',
+                authors='C. Fournier, C. Pradal (wralea authors)',
+                description='Node interface for Adel General Option dict',
+                category='parameter definition',
+                nodemodule='AdelRunOptions',
+                nodeclass='AdelRunOptions',
+                inputs=[{'interface': IFloat, 'name': 'startLeaf', 'value': -0.40000000000000002, 'desc': ''}, {'interface': IFloat, 'name': 'endLeaf', 'value': 1.6000000000000001, 'desc': ''}, {'interface': IFloat, 'name': 'stemLeaf', 'value': 1.2, 'desc': ''}, {'interface': IFloat, 'name': 'senescence_leaf_shrink', 'value': 0.5, 'desc': ''}, {'interface': IFloat, 'name': 'epsillon', 'value': (0, 1), 'desc': ''}],
+                outputs=[{'interface': IDict, 'name': 'Adel general option dict', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
 simulation_genString = Factory(name='genString',
+                authors='C. Fournier, C. Pradal (wralea authors)',
                 description='',
                 category='simulation',
                 nodemodule='simulation',
@@ -59,6 +77,7 @@ simulation_genString = Factory(name='genString',
                 widgetmodule=None,
                 widgetclass=None,
                )
+
 
 
 

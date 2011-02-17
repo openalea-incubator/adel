@@ -111,13 +111,14 @@ def setCanopy(RcanT,nplants = 1,randomize = True, seed = None):
     can = RsetCanopy(RcanT,nplants,rrand,rseed)
     return can
 
-def RunAdel(datesTT,parameters):
+def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
     """ Run Adel model for each date in datesTT according to parameter list """
     
     if (type(datesTT) is not list):
         datesTT = [datesTT]
     x = robj.FloatVector(datesTT)
-    chn = RrunAdel(x,parameters)
+    ap = robj.r['list'](**adelpars)
+    chn = RrunAdel(x,plant_parameters,ap)
     return [c[0] for c in chn]
 
 def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):

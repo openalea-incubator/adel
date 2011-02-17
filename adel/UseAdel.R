@@ -5,12 +5,12 @@
 #
 #Run adel for several dates and a list of plants. Returns a list of string
 #
-runAdel <- function(x,p) {
-  out <- vector("list",length(x))
-  for (t in seq(out)) {
-    kinlist <- lapply(p,function(plant) kinLvis(kinL(x[t],plant)))
-    desc <- getdesc(kinlist,p)
-    out[[t]] <- genString(desc)
+runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'startLeaf' = -0.4, 'endLeaf' =1.6, 'stemLeaf' = 1.2,'epsillon' = 1e-6)) {
+  out <- vector("list",length(dates))
+  for (i in seq(out)) {
+    kinlist <- lapply(plants,function(plant) kinLvis(kinL(dates[i],plant,pars),pars))
+    desc <- getdesc(kinlist,plants,pars)
+    out[[i]] <- genString(desc,pars)
   }
   out
 }

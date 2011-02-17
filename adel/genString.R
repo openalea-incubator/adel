@@ -33,7 +33,7 @@ Sheath <- function(lgreen,lsen,diam,po,pos,epsillon) {
   chn
 }
 #
-Blade <- function(lv, lsen, Lf, wM, lctype, lcindex, incB, po, pos, epsillon) {
+Blade <- function(lv, lsen, Lf, wM, lctype, lcindex, incB, po, pos, epsillon,fshrink) {
   chn <- ""
   lgreen = lv - lsen
   if (lgreen > epsillon)
@@ -41,12 +41,12 @@ Blade <- function(lv, lsen, Lf, wM, lctype, lcindex, incB, po, pos, epsillon) {
                  LeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB))
   if (lsen > epsillon)
     chn <- paste(chn,
-                 LeafElement(pos, Lf, lv, wM / 2, lgreen / lv, 1, lctype, lcindex, incB))
+                 LeafElement(pos, Lf, lv, wM * fshrink, lgreen / lv, 1, lctype, lcindex, incB))
  
   chn
 }
 #
-Metamer <- function(dat,epsillon) {
+Metamer <- function(dat,epsillon,fshrink) {
   chn <- "newMetamer"
   if (abs(dat$Einc) > 0)
     chn <- paste(chn,
@@ -64,12 +64,14 @@ Metamer <- function(dat,epsillon) {
     chn <- paste(chn,
                  "[",
                  roll(dat$Laz),
-                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon),
+                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,fshrink),
                  "]")
   chn
 }
 #
-genString <- function(can,epsillon = 1e-6) {
+genString <- function(can,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6)) {
+  epsillon = pars$epsillon
+  fshrink = pars$senescence_leaf_shrink
   chn <- ""
   for (p in unique(can$plant)) {
     pl <- can[can$plant == p,]
@@ -89,7 +91,7 @@ genString <- function(can,epsillon = 1e-6) {
                    pitch(incB))
       last <- max(which(apply(axe[,c("Lv","Gv","Ev")],1,sum) > epsillon))
       for (n in 1:last)
-        chn <- paste(chn,Metamer(axe[axe$numphy == n,],epsillon))
+        chn <- paste(chn,Metamer(axe[axe$numphy == n,],epsillon,fshrink))
       chn <- paste(chn,"]")
       }
     chn <- paste(chn,"]")

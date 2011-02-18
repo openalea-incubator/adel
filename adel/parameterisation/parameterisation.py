@@ -1,4 +1,5 @@
-from alinea.adel.AdelR import setAdelArv,setAdel,devCsv,genGeoAxe,genGeoLeaf,freeGeoLeaf,setCanopy
+from alinea.adel import AdelR
+from alinea.adel.AdelR import setAdelArv,devCsv,genGeoAxe,genGeoLeaf,freeGeoLeaf,setCanopy
 from alinea.adel.fitting import fit2
 
 import numpy as np
@@ -357,4 +358,5 @@ def plant_parameter(surface,
     return(devT,RdevT)
     
 
-
+def setAdel(*args, **kwds):
+    return AdelR.setAdel(*args, **kwds),

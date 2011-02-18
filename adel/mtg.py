@@ -204,6 +204,7 @@ def planter(g, distribution, random_seed=0):
         g.add_property('_plant_translation')
     translations = g.property('_plant_translation')
     
+
     if random_seed > 0:
         random.seed(random_seed)
 
@@ -228,12 +229,16 @@ def planter(g, distribution, random_seed=0):
         #for vid in g.components_at_scale(root_elt, 4):
         for vid in l:
             geom = geometry.get(vid)
-            geometry[vid] = geom.transform(transfo) if geom else geom
-            can_label = g.node(vid).can_label
-            if can_label:
-                can_label.plant_id = i
+            geom = geom.transform(transfo) if geom else geom
+            if geom:
+                geometry[vid] = geom
+                can_label = g.node(vid).can_label
+                if can_label:
+                    can_label.plant_id = i
 
 def duplicate(g, n=1):
+    if g.nb_vertices(scale=1) == n:
+        return g
     g1 = g.sub_mtg(g.root)
     for i in range(n-1):
         g1 = union(g1,g)
@@ -733,6 +738,8 @@ def mtg_turtle_time(g, symbols, time):
     from openalea.mtg import turtle
 
     g.properties()['geometry'] = {}
+    g.properties()['_plant_translation'] = {}
+
     def compute_element(n, symbols, time):
         leaf = symbols.get('LeafElement')
         stem = symbols.get('StemElement')
@@ -772,6 +779,7 @@ def mtg_turtle_time(g, symbols, time):
 
     def adel_visitor(g, v, turtle, time):
         # 1. retriev the node
+
         n = g.node(v)
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
@@ -818,9 +826,9 @@ def mtg_turtle_time(g, symbols, time):
         scene = turtle.getScene()
         return g
 
-    root_4 = g.component_roots_at_scale(g.root, scale=4).next()
-    scene = traverse_with_turtle_time(g, root_4, time)
-    return scene
+    for plant_id in g.component_roots_at_scale(g.root, scale=4):
+        g = traverse_with_turtle_time(g, plant_id, time)
+    return g
 
 def thermal_time(g):
     """ Dummy function to test adel with a thermal time parameter.

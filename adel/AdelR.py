@@ -118,8 +118,10 @@ def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'s
         datesTT = [datesTT]
     x = robj.FloatVector(datesTT)
     ap = robj.r['list'](**adelpars)
-    chn = RrunAdel(x,plant_parameters,ap)
-    return [c[0] for c in chn]
+    #chn = RrunAdel(x,plant_parameters,ap)
+    #return [c[0] for c in chn]
+    res = RrunAdel(x,plant_parameters,ap)
+    return res
 
 def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):
     """ Import development parameters for adel from csv files """

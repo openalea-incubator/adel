@@ -9,8 +9,8 @@ runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'sta
   out <- vector("list",length(dates))
   for (i in seq(out)) {
     kinlist <- lapply(plants,function(plant) kinLvis(kinL(dates[i],plant,pars),pars))
-    desc <- getdesc(kinlist,plants,pars)
-    out[[i]] <- genString(desc,pars)
+    out[[i]] <- getdesc(kinlist,plants,pars)
+    #out[[i]] <- genString(desc,pars)
   }
   out
 }

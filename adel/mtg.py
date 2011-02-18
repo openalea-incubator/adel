@@ -354,6 +354,7 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
 
         assert num_metamer > 0
         label = 'metamer'+str(num_metamer)
+        new_axe = True
 
         if axe==0 and num_metamer==1:
             metamers=[]
@@ -367,6 +368,7 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
         else:
             edge_type = '<'
             vid_metamer = g.add_child(vid_metamer, label=label, edge_type='<',**args)
+            new_axe = False
 
         if axe == 0:
             metamers.append(vid_metamer)
@@ -392,11 +394,11 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
                 vid_node = g.add_child(vid_node, label='Esen', edge_type='<',length=args['Esen'],po=args['Epos'], diam=args['Ed'])
         else:
-            if vid_node == -1:
-                vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',length=0.,po=args['Epo'], diam=args['Ed'] )
-                assert edge_type == '/'
-            else:
-                vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=0.,po=args['Epo'], diam=args['Ed'] )
+            if new_axe and args['Gv'] == 0.:
+                if vid_node == -1:
+                    vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',length=0.,po=args['Epo'], diam=args['Ed'] )
+                else:
+                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=0.,po=args['Epo'], diam=args['Ed'] )
         # Sheath
         if args['Gv'] > 0.:
             if args['Gsen'] > args['Gv']:
@@ -512,16 +514,16 @@ def mtg_factory(params):
     for i in range(nrow):
 
         #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
-        plant = dp['plant'][i]
-        axe = dp['axe'][i]
-        num_metamer = dp['numphy'][i]
+        plant = int(dp['plant'][i])
+        axe = int(dp['axe'][i])
+        num_metamer = int(dp['numphy'][i])
 
         #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
         #print 'plant: %d, axe:%d, nb_metamers: %d'%(plant, axe, num_metamer)
         # Add new plant
         if plant != prev_plant:
             label = 'plant'+str(plant)
-            vid_plant = g.add_component(g.root, label=label)
+            vid_plant = g.add_component(g.root, label=label, edge_type='/')
             vid_axe = -1
             vid_metamer = -1
             vid_node = -1
@@ -542,7 +544,10 @@ def mtg_factory(params):
             else:
                 #args['edge_type'] = '+'
                 edge_type = '+'
-                vid_axe = g.add_child(vid_axe, edge_type=edge_type, label=label)
+                assert g.parent(vid_plant) is None
+                new_axe = g.add_child(vid_axe,edge_type=edge_type,label=label)
+                print vid_axe, new_axe, vid_plant
+                assert g.parent(vid_plant) is None
                 #vid, vid_axe = g.add_child_and_complex(metamers[axe], complex=vid_axe, **args)
 
         # Add metamers
@@ -558,7 +563,8 @@ def mtg_factory(params):
         elif num_metamer == 1:
             # Add the first element connected to previous metamer on the previous axis
             edge_type = '+'
-            vid_metamer, vid_axe =  g.add_child_and_complex(metamers[axe-1], complex=vid_axe, edge_type='+',label=label, **args)
+            vid_metamer = g.add_component(vid_axe, label=label, **args)
+            vid_metamer =  g.add_child(metamers[axe-1], child=vid_metamer, edge_type='+')
             vid_node = nodes[axe-1]
         else:
             edge_type = '<'
@@ -568,9 +574,6 @@ def mtg_factory(params):
             metamers.append(vid_metamer)
 
         # Add internode, sheath, and lamina
-        nb_internodes = 0
-        nb_sheath = 0
-        nb_leaf = 0
 
         # Visible Internode
         if args['Ev'] > 0.:
@@ -586,8 +589,9 @@ def mtg_factory(params):
                     assert edge_type == '/'
                 else:
                     # first element on the metamer which has a parent metamer on the axis
-                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
-                        complex=vid_metamer, label='StemElement', edge_type=edge_type,
+                    new_node = g.add_component(vid_metamer)
+                    vid_node= g.add_child(vid_node,child=new_node, 
+                        label='StemElement', edge_type=edge_type,
                         length=args['Ev'], final_length=args['El'], po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True,inclination=args['Einc'] )
             else:
                 #  - Green element and perhaps a senescent one
@@ -598,16 +602,29 @@ def mtg_factory(params):
                     assert edge_type == '/'
                 else:
                     # first element on the metamer which has a parent metamer on the axis
-                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
-                            complex=vid_metamer, label='StemElement', edge_type=edge_type,
+                    new_node = g.add_component(vid_metamer)
+                    vid_node= g.add_child(vid_node,child=new_node, 
+                            label='StemElement', edge_type=edge_type,
                             length=args['Ev']-args['Esen'],final_length=args['El'],po=args['Epo'], diam=args['Ed'], tissue=tissue, inclination=args['Einc'] )
                 # Add a senescent element
                 if args['Esen'] > 0.:
                     vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
                     length=args['Esen'],final_length=args['El'],po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True, inclination=0.)
         else:
-            pass
-
+            tissue = 'internode'
+            if args['Gv'] <= 0.:
+                if vid_node == -1:
+                    # first metamer on the axis
+                    vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
+                        length=args['Ev'],final_length=args['El'], po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True, inclination=args['Einc'] )
+                    assert edge_type == '/'
+                else:
+                    # first element on the metamer which has a parent metamer on the axis
+                    new_node = g.add_component(vid_metamer)
+                    vid_node= g.add_child(vid_node,child=new_node, 
+                        label='StemElement', edge_type=edge_type,
+                        length=args['Ev'], final_length=args['El'], po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True,inclination=args['Einc'] )
+               
         # Sheath
         # Same logic that described previously.
         if args['Gv'] > 0.:
@@ -617,17 +634,19 @@ def mtg_factory(params):
                     vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
                         length=args['Gv'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], tissue=tissue, sen=True, inclination=args['Ginc'])
                 else:
-                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
+                    new_node = g.add_component(vid_metamer)
+                    vid_node= g.add_child(vid_node, child=new_node, label='StemElement', edge_type='<',
                     length=args['Gv'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], tissue=tissue, sen=True, inclination=args['Ginc'] )
             else:
                 if vid_node == -1:
                     vid_node = g.add_component(vid_metamer, label='StemElement', edge_type='/',
                     length=args['Gv']-args['Gsen'],final_length=args['Gl'],po=args['Gpo'], diam=args['Gd'], tissue=tissue, inclination=args['Ginc'] )
                 else:
-                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
+                    new_node = g.add_component(vid_metamer)
+                    vid_node= g.add_child(vid_node, child=new_node, label='StemElement', edge_type='<',
                     length=args['Gv']-args['Gsen'],final_length=args['Gl'],po=args['Gpo'], diam=args['Gd'], tissue=tissue, inclination=args['Ginc'] )
                 if args['Gsen'] > 0.:
-                    vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
+                    vid_node= g.add_child(vid_node, label='StemElement', edge_type='<',
                     length=args['Gsen'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], sen=True, tissue=tissue, inclination=0.)
 
         if axe == 0:

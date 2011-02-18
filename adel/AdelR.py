@@ -72,7 +72,12 @@ def RlistAsDict(Rlist):
 
 def dataframeAsdict(df):
     """ convert an RDataframe to a python dict """
-    return dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+    try:
+        d = dict(zip( df.colnames, numpy.array(df)))
+        return d
+    except:
+        d = dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+        return d
 
 def csvAsDict(fn,type=1):
     """ returns a dictionnary with the content of csv file as numpy vectors (one colum = one key) """
@@ -121,7 +126,8 @@ def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'s
     #chn = RrunAdel(x,plant_parameters,ap)
     #return [c[0] for c in chn]
     res = RrunAdel(x,plant_parameters,ap)
-    return res
+    d = dataframeAsdict(res[0])
+    return d
 
 def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):
     """ Import development parameters for adel from csv files """

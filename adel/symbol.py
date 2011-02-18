@@ -72,7 +72,7 @@ class LeafElement(Symbol):
         else: 
             random.seed(self.seed)
 
-        if args and args[1] >= 0:
+        if args and len(args) > 1 and args[1] >= 0:
             i = args[1]
         else:
             i = random.randint(0,n-1)
@@ -81,11 +81,13 @@ class LeafElement(Symbol):
 
         # Rotation of the midrib of the leaf to set the insertion angle a relative fraction of the angle (reference beeing the  vertical)
         if args and args[0] >= 0:
+            Linc = args[0]
             x, y = leaf[0], leaf[1]
             init_angle = pgl.angle((x[1]-x[0], y[1]-y[0]),(0,1))
-            angle = min(radians(180),args[0] * init_angle)
+            angle = Linc * init_angle
 
-            
+            angle = min(math.pi, angle)
+
             rotation_angle = init_angle-angle
 
             # rotation of the midrib

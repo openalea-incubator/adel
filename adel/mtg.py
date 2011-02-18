@@ -472,7 +472,8 @@ def mtg_factory(params):
         - Epos
 
     :TODO: 
-        * add length and final_length
+        * add length and final_length (DONE)
+        * fix naming convention for Linc: relative inclination
         * diam and final_diam (resp. width)
         * function reset length
         * function phenology(g, table) -> dynamic parameters (start_thermaltime, end_thermaltime)
@@ -571,80 +572,89 @@ def mtg_factory(params):
         nb_sheath = 0
         nb_leaf = 0
 
-        # Internode
+        # Visible Internode
         if args['Ev'] > 0.:
+            tissue = 'internode'
+
+            # Several cases:
             if args['Esen'] > args['Ev']:
+                #  - Only one senescent element
                 if vid_node == -1:
-                    vid_node= g.add_component(vid_metamer, label='Esen', edge_type='/',
-                        length=args['Ev'],po=args['Epos'], diam=args['Ed'] )
+                    # first metamer on the axis
+                    vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
+                        length=args['Ev'],final_length=args['El'], po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True, inclination=args['Einc'] )
                     assert edge_type == '/'
                 else:
+                    # first element on the metamer which has a parent metamer on the axis
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
-                        complex=vid_metamer, label='Esen', edge_type=edge_type,
-                        length=args['Ev'],po=args['Epos'], diam=args['Ed'] )
+                        complex=vid_metamer, label='StemElement', edge_type=edge_type,
+                        length=args['Ev'], final_length=args['El'], po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True,inclination=args['Einc'] )
             else:
+                #  - Green element and perhaps a senescent one
                 if vid_node == -1:
-                    vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',
-                        length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
+                    # first metamer on the axis
+                    vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
+                        length=args['Ev']-args['Esen'],final_length=args['El'],po=args['Epo'], diam=args['Ed'], tissue=tissue, inclination=args['Einc'] )
                     assert edge_type == '/'
                 else:
+                    # first element on the metamer which has a parent metamer on the axis
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, 
-                            complex=vid_metamer, label='Egreen', edge_type=edge_type,
-                            length=args['Ev']-args['Esen'],po=args['Epo'], diam=args['Ed'] )
+                            complex=vid_metamer, label='StemElement', edge_type=edge_type,
+                            length=args['Ev']-args['Esen'],final_length=args['El'],po=args['Epo'], diam=args['Ed'], tissue=tissue, inclination=args['Einc'] )
+                # Add a senescent element
                 if args['Esen'] > 0.:
-                    vid_node = g.add_child(vid_node, label='Esen', edge_type='<',
-                    length=args['Esen'],po=args['Epos'], diam=args['Ed'])
+                    vid_node = g.add_child(vid_node, label='StemElement', edge_type='<',
+                    length=args['Esen'],final_length=args['El'],po=args['Epos'], diam=args['Ed'], tissue=tissue, sen=True, inclination=0.)
         else:
-            """
-            if vid_node == -1:
-                vid_node= g.add_component(vid_metamer, label='Egreen', edge_type='/',length=0.,po=args['Epo'], diam=args['Ed'] )
-                assert edge_type == '/'
-            else:
-                vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='Egreen', edge_type=edge_type,length=0.,po=args['Epo'], diam=args['Ed'] )
-            """
             pass
 
         # Sheath
+        # Same logic that described previously.
         if args['Gv'] > 0.:
+            tissue = 'sheath'
             if args['Gsen'] > args['Gv']:
                 if vid_node == -1:
                     vid_node= g.add_component(vid_metamer, label='StemElement', edge_type='/',
-                        length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
+                        length=args['Gv'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], tissue=tissue, sen=True, inclination=args['Ginc'])
                 else:
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
-                    length=args['Gv'],po=args['Gpos'], diam=args['Gd'] )
+                    length=args['Gv'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], tissue=tissue, sen=True, inclination=args['Ginc'] )
             else:
                 if vid_node == -1:
                     vid_node = g.add_component(vid_metamer, label='StemElement', edge_type='/',
-                    length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
+                    length=args['Gv']-args['Gsen'],final_length=args['Gl'],po=args['Gpo'], diam=args['Gd'], tissue=tissue, inclination=args['Ginc'] )
                 else:
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
-                    length=args['Gv']-args['Gsen'],po=args['Gpo'], diam=args['Gd'] )
+                    length=args['Gv']-args['Gsen'],final_length=args['Gl'],po=args['Gpo'], diam=args['Gd'], tissue=tissue, inclination=args['Ginc'] )
                 if args['Gsen'] > 0.:
                     vid_node, vid_metamer= g.add_child_and_complex(vid_node, complex=vid_metamer, label='StemElement', edge_type='<',
-                    length=args['Gsen'],po=args['Gpos'], diam=args['Gd'], sen=True)
+                    length=args['Gsen'],final_length=args['Gl'],po=args['Gpos'], diam=args['Gd'], sen=True, tissue=tissue, inclination=0.)
 
         if axe == 0:
             nodes.append(vid_node)
 
-        # Laminae
+        # Lamina
         if args['Lv'] > 0.:
+            tissue='lamina'
+            # Only one senescent LeafElement
             if args['Lsen'] > args['Lv']:
-                l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],
+                l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],final_length=args['Ll'],
                     po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
-                    LcType=args['LcType'], LcIndex=args['LcIndex'], Linc=args['Linc'], 
-                    Laz=args['Laz'], srb=0, srt=1)
+                    LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
+                    Laz=args['Laz'], srb=0, srt=1, tissue=tissue, sen=True)
             else:
+                # one green LeafElement followed eventually by one senescent
                 l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
-                    length=args['Lv']-args['Lsen'],po=args['Lpo'],
+                    length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
                     Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                    LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
-                    srb=0, srt=1-(args['Lsen']/args['Lv']))
-                l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
-                    length=args['Lsen'],po=args['Lpos'],
-                    Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                    LcIndex=args['LcIndex'], Linc=args['Linc'], Laz=args['Laz'],
-                    srt=1, srb=1-(args['Lsen']/args['Lv']), sen=True)
+                    LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                    srb=0, srt=1-(args['Lsen']/args['Lv']), tissue=tissue)
+                if args['Lsen'] > 0.:
+                    l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
+                        length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
+                        Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                        LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                        srt=1, srb=1-(args['Lsen']/args['Lv']), sen=True, tissue=tissue)
 
         
         prev_plant = plant
@@ -664,10 +674,13 @@ def compute_element(n, symbols):
 
     leaf_rank = int(n.complex().index())
     optical_species = int(n.po)
-    final_length = n.length
+    final_length = n.final_length
     length = n.length
     s_base = n.srb
     s_top = n.srt
+    seed = n.LcIndex
+    #relative leaf inclination
+    linc = n.Linc
     
     element = {} 
     if n.label.startswith('L'):
@@ -678,7 +691,9 @@ def compute_element(n, symbols):
                     radius_max, 
                     s_base, 
                     s_top, 
-                    leaf_rank) 
+                    leaf_rank,
+                    seed,
+                    linc) 
     else:
         diameter_base = n.parent().diam if (n.parent() and n.parent().diam > 0.) else n.diam
         diameter_top = n.diam
@@ -746,14 +761,17 @@ def mtg_turtle_time(g, symbols, time):
 
         leaf_rank = int(n.complex().index())
         optical_species = int(n.po)
-        final_length = n.length
+        final_length = n.final_length
         try :
-            length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if n.end_tt and time < n.end_tt else n.length
+            length = final_length * (time - n.start_tt) / (n.end_tt - n.start_tt) if n.end_tt and time < n.end_tt else n.length
         except:
             length = n.length
         s_base = n.srb
         s_top = n.srt
-        
+        seed = n.LcIndex
+        #relative leaf inclination
+        linc = n.Linc
+ 
         element = {} 
         if n.label.startswith('L'):
             radius_max = n.Lw
@@ -763,7 +781,7 @@ def mtg_turtle_time(g, symbols, time):
                         radius_max, 
                         s_base, 
                         s_top, 
-                        leaf_rank) 
+                        leaf_rank, seed, linc) 
         else:
             diameter_base = n.parent().diam if (n.parent() and n.parent().diam > 0.) else n.diam
             diameter_top = n.diam
@@ -784,7 +802,7 @@ def mtg_turtle_time(g, symbols, time):
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
         if g.edge_type(v) == '+':
-            angle = n.Linc or n.Ginc or n.Einc
+            angle = n.inclination
             angle = float(angle) if angle is not None else 0.
             turtle.up(angle)
 

@@ -169,8 +169,9 @@ kinLvis <- function(kinlist,pars=NULL) {
 # Converting kinetics -> Canopy desc table
 
 #generate desc table(s) for one plant at time t
-getdesc <- function(kinlist,plantlist,pars=list("epsillon" = 1e-6),t=1) {
+getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6),t=1) {
   epsillon = pars$epsillon
+  fshrink = pars$senescence_leaf_shrink
   res <- NULL
   for (p in seq(kinlist)) {
     kin <- kinlist[[p]]
@@ -235,7 +236,7 @@ getdesc <- function(kinlist,plantlist,pars=list("epsillon" = 1e-6),t=1) {
                                          axe=rep(as.numeric(axename),nbphy),
                                          numphy=1:nbphy,
                                          Ll=datp$Ll,
-                                         Lw=datp$Lw,
+                                         Lw=datp$Lw * ifelse(dat$Lsen > 0,fshrink,1),
                                          LcType=datp$Lindex,
                                          LcIndex=datp$Lseed,
                                          Linc=Linc,

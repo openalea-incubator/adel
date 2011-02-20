@@ -210,7 +210,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
             d <- lprec * cos(incT * pi / 180)
             dinc <- min(d * dincd, incT)
             Ginc[n] <- (-dinc)
-          incT <- incT - dinc
+            incT <- incT - dinc
             n <- n + 1
           }
         }
@@ -221,7 +221,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
           Laz[i] = Laz[i-1] + datp$Azim[i]
         Laz <- Laz %% 360
         # control of blade basal inclination (to be moved in kinL?)
-        Linc <- ifelse(datp$Ll - dat$Lv >= epsillon,0,datp$incB)
+        Linc <- ifelse(datp$Ll > 0,dat$Lv / datp$Ll,1)
         # setup of Lindex (for Tino, no more needed) as a function of leaf stage
         #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy),dat$Lv/datp$Ll)
         #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy))

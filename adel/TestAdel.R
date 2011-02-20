@@ -33,9 +33,9 @@ pars <- devTcsv(paste(chem,"axeTSoissonsNormal_10plants.csv",sep=""),
 geoLeaf <- genGeoLeaf()
 geoAxe <- genGeoAxe()
 #generate a list of plant to simulate from parameters
-p <- setAdel(pars$axeT,pars$dimT,pars$phenT,pars$earT,pars$ssisenT,geoLeaf,geoAxe,nplants=1)
+pl <- setAdel(pars$axeT,pars$dimT,pars$phenT,pars$earT,pars$ssisenT,geoLeaf,geoAxe,nplants=1)
 #run the model as a whole from plant list to AleaChn
-chn <- runAdel(1200,p)[[1]]
+chn <- runAdel(1200,pl)[[1]]
 #
 #
 #Run step by step the model
@@ -43,14 +43,14 @@ chn <- runAdel(1200,p)[[1]]
 #
 #Predict kinetic of extension
 #
-kinExt <- lapply(p,function(plant) kinL(1000,plant))
+kinExt <- lapply(pl,function(plant) kinL(1000,plant))
 #
 # idem for visible parts
 kinExtv <- lapply(kinExt,kinLvis)
 #
 #Dataframe representing the canopy
 #
-canopy <- getdesc(kinExtv,p)
+canopy <- getdesc(kinExtv,pl)
 #
 #string
 #

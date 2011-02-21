@@ -177,8 +177,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     kin <- kinlist[[p]]
     plant <- plantlist[[p]]
     pldesc <- NULL
-    azPlant <- plant$axeT$azT[1]#1st axe is considered as main stem
-    plant$axeT$azT[1]=0
+    
     for (a in seq(kin)) {
       axename <- names(kin)[a]
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llsen","Glsen","Elsen")])
@@ -214,12 +213,11 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
             n <- n + 1
           }
         }
-                                        #azimuts
-        Laz <- rep(0,nbphy)
-        Laz[1] <- azPlant + dataxe$azT
-        for (i in 2:nbleaf) 
-          Laz[i] = Laz[i-1] + datp$Azim[i]
-        Laz <- Laz %% 360
+
+        #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
+        Laz <- datp$Azim
+        Laz[1] <- dataxe$azT
+        
         # control of blade basal inclination (to be moved in kinL?)
         Linc <- ifelse(datp$Ll > 0,dat$Lv / datp$Ll,1)
         # setup of Lindex (for Tino, no more needed) as a function of leaf stage

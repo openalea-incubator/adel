@@ -35,7 +35,9 @@ geoAxe <- genGeoAxe()
 #generate a list of plant to simulate from parameters
 pl <- setAdel(pars$axeT,pars$dimT,pars$phenT,pars$earT,pars$ssisenT,geoLeaf,geoAxe,nplants=1)
 #run the model as a whole from plant list to AleaChn
-chn <- runAdel(1200,pl)[[1]]
+canopy <- runAdel(1200,pl)[[1]]
+#
+chn <- genString(canopy)
 #
 #
 #Run step by step the model

@@ -834,7 +834,10 @@ def mtg_turtle_time(g, symbols, time):
         # 3. Update the turtle
         turtle.setId(v)
 
-        length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+        try:
+            length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+        except:
+            length = n.length
         turtle.F(length)
         # Get the azimuth angle
         
@@ -844,8 +847,11 @@ def mtg_turtle_time(g, symbols, time):
         times = g.property('time')
         def push_turtle(v):
             n = g.node(v)
-            if n.start_tt > time:
-                return False
+            try:
+                if n.start_tt > time:
+                    return False
+            except: 
+                pass
             if g.edge_type(v) == '+':
                 turtle.push()
             return True

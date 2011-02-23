@@ -838,7 +838,8 @@ def mtg_turtle_time(g, symbols, time):
             length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
         except:
             length = n.length
-        turtle.F(length)
+	if ('Leaf' not in n.label) and (length > 0.):
+        	turtle.F(length)
         # Get the azimuth angle
         
 
@@ -857,11 +858,18 @@ def mtg_turtle_time(g, symbols, time):
             return True
 
         def pop_turtle(v):
+            n = g.node(v)
+            try:
+                if n.start_tt > time:
+                    return 
+            except: 
+                pass
             if g.edge_type(v) == '+':
                 turtle.pop()
 
         visitor(g,vid,turtle,time)
         turtle.push()
+	plant_id = g.complex_at_scale(vid, scale=1)
         for v in pre_order2_with_filter(g, vid, None, push_turtle, pop_turtle):
             if v == vid: continue
             visitor(g,v,turtle,time)

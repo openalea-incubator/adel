@@ -747,9 +747,10 @@ def mtg_turtle(g, symbols):
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
         if g.edge_type(v) == '+':
-            angle = n.Linc or n.Ginc or n.Einc
-            angle = float(angle) if angle is not None else 0.
-            turtle.up(angle)
+            if not n.label.startswith('L'):
+                angle = n.Ginc or n.Einc
+                angle = float(angle) if angle is not None else 0.
+                turtle.up(angle)
 
         # 2. Compute the geometric symbol
         mesh, can_label = compute_element(n, symbols)

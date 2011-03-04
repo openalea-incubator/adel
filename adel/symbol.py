@@ -38,9 +38,10 @@ class Symbol(object):
 # s_base and s_top are relative to current length and not final_length.
 
 class LeafElement(Symbol):
-    def __init__(self, database, seed = None):
+    def __init__(self, database, seed = None, relative_angle=True):
         self.database = database
         self.seed = seed
+        self.relative_angle = relative_angle
 
     def __call__( self, optical_species, final_length, length, radius_max, s_base, s_top, leaf_rank, seed=1, *args ):
     #def __call__( self, optical_species, final_length, radius_max, s_base, s_top, leaf_rank, seed ):
@@ -84,11 +85,14 @@ class LeafElement(Symbol):
             Linc = args[0]
             x, y = leaf[0], leaf[1]
             init_angle = pgl.angle((x[1]-x[0], y[1]-y[0]),(0,1))
-            angle = Linc * init_angle
 
-            angle = min(math.pi, angle)
-
-            rotation_angle = init_angle-angle
+            if self.relative_angle:
+                angle = Linc * init_angle
+                angle = min(math.pi, angle)
+            else:
+                angle = math.radians(Linc)
+            
+            rotation_angle = init_angle - angle
 
             # rotation of the midrib
             cos_a = cos(rotation_angle); sin_a = sin(rotation_angle)
@@ -96,10 +100,8 @@ class LeafElement(Symbol):
             x1 = x[0] + cos_a*x - sin_a*y
             y1 = y[0] + sin_a*x + cos_a*y
 
-            #print 'angle: ', degrees(pgl.angle((x1[1]-x1[0], y1[1]-y1[0]),(0,1)))
             leaf = (x1, y1) + leaf[2:]
 
-        #pts, ind = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)        
         leaf_mesh = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)
         if leaf_mesh:
             pts, ind = leaf_mesh
@@ -141,10 +143,10 @@ class StemElement(Symbol):
         return mesh
 
 
-def build_symbols(leaves, seed=None):
+def build_symbols(leaves, seed=None, relative_angle=True):
 
     symbols = {}
-    symbols['LeafElement'] = LeafElement(leaves,seed=seed)
+    symbols['LeafElement'] = LeafElement(leaves,seed=seed, relative_angle=relative_angle)
     symbols['StemElement'] = StemElement(leaves,seed=seed)
     return symbols
 

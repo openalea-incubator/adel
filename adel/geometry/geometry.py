@@ -11,8 +11,8 @@ def leaf_element(leaf, lmax, l, s_base, s_top,  rmax):
     mesh = fitting.plantgl_shape(pts, ind)
     return mesh
 
-def symbols( database, seed=None ):
-    return symbol.build_symbols(database, seed)
+def symbols( database, seed=None, relative_angle=True ):
+    return symbol.build_symbols(database, seed, relative_angle=relative_angle)
 
 def LeafElement(sym,leaf_rank,length,final_length,radius_max,incB,index): 
     leaf = sym.get('LeafElement')

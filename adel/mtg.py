@@ -475,7 +475,8 @@ def mtg_factory(params):
 
     :TODO: 
         * add length and final_length (DONE)
-        * fix naming convention for Linc: relative inclination
+        * fix naming convention for Linc: relative inclination (DONE)
+        * Add a scale to define the tissue types (ear, sheath, laminae, gain)
         * diam and final_diam (resp. width)
         * function reset length
         * function phenology(g, table) -> dynamic parameters (start_thermaltime, end_thermaltime)

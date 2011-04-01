@@ -12,25 +12,28 @@ def regular(nb_plants, nb_rank, dx, dy):
     domain = ((0,0),(nx*dx, ny*dy))
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
 
-def agronomicplot(length, width, nominal_density, actual_density, inter_row, noise = 0,convunit=100):
-    """ Returns the number of plants, the positions and the domain of a plot specified with agronomical variables
+def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100):
+    """ Returns the number of plants, the positions, the domain and the simulated density of a micro-plot specified with agronomical variables
     length (m) is plot dimension along row direction
     width (m) is plot dimension perpendicular to row direction
-    nominal density is for sowing density 
-    actual_density is density measured (after loss due to bad emergence)
+    sowing density is the density of seeds sawn
+    plant_density is the density of plants that are present (after loss due to bad emergence, early death...)
     inter_row (m) is for the  distance between rows
     noise (%), indicates the precision of the sowing for the inter plant spacing
     unit (m or cm) is for the unit of the position and domain
     """
-    inter_plant = 1. / inter_row / nominal_density
+    # instead use : sowing_density, %loss, et ajouter une sortie realised density
+    #changer le nom actual density en plant density et ajouter une sortie simulated density
+    inter_plant = 1. / inter_row / sowing_density
     nrow = max(1, int(float(width) / inter_row))
     plant_per_row = max(1,int(float(length) / inter_plant))
     nplants = nrow * plant_per_row
     positions, domain = regular(nplants, nrow, inter_plant * convunit, inter_row * convunit)
-    n_emerged = int(nplants * actual_density / nominal_density)
+    n_emerged = int(nplants * plant_density / sowing_density)
     positions = sample(positions, n_emerged)
+    density = int(n_emerged / ( abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit))
 
-    return n_emerged, positions, domain
+    return n_emerged, positions, domain, density
 
 
 def regularband(nb_plants, nb_rank, dx, dy):

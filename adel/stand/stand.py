@@ -22,8 +22,7 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     noise (%), indicates the precision of the sowing for the inter plant spacing
     unit (m or cm) is for the unit of the position and domain
     """
-    # instead use : sowing_density, %loss, et ajouter une sortie realised density
-    #changer le nom actual density en plant density et ajouter une sortie simulated density
+    
     inter_plant = 1. / inter_row / sowing_density
     nrow = max(1, int(float(width) / inter_row))
     plant_per_row = max(1,int(float(length) / inter_plant))

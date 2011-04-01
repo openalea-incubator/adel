@@ -22,7 +22,7 @@ Rfun = list(
   geomT = function(a) {
     if (a == 0) {
       azT = 0
-      incT = runif(1) * 5
+      incT = (runif(1) - .5) * 5
       dred =0
     } else {
       azT = 75 + (runif(1) - .5) * 5

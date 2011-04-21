@@ -1,0 +1,80 @@
+from openalea.plantgl.all import *
+from math import cos, sin, degrees, radians
+
+NbPhyto = 100 
+internodes = [20]*NbPhyto
+leaf = [100]*NbPhyto
+phi = 90
+lw = 0.2
+Axiom: SetWidth(2)A(NbPhyto)
+
+derivation length: 1
+production:
+
+A(n): 
+  for i in range(n):
+    nproduce I(internodes[i])[/(phi*i) L(leaf[i], phi*i)]
+
+interpretation:
+
+I(l) --> SetColor(1)F(l)
+
+L(l, angle):
+  nproduce SetColor(2)@Gc SetContour(parameter_3)
+  sp = 0
+  for i in range(10):
+    s = float(i+1)/10
+    if parameter(s) >0.:
+      pt1 = parameter_2.getPointAt(sp)
+      pt2 = parameter_2.getPointAt(s)
+      sp = s
+      r = (pt2[0]-pt1[0])*l
+      x = r* cos(radians(angle))
+      y = r* sin(radians(angle))      
+      z = (pt2[1]-pt1[1])*l
+      nproduce SetWidth(parameter(s)*l*lw) LineRel(x,y,z)
+  nproduce @Ge
+    
+
+
+endlsystem
+###### INITIALISATION ######
+
+__lpy_code_version__ = 1.1
+
+def __initialiseContext__(context):
+	import openalea.plantgl.all as pgl
+	Color_1 = pgl.Material("Color_1" , 		ambient = (0,170,0) , 
+		diffuse = 0.205882 , 
+		specular = (79,79,79) , 
+)
+	Color_1.name = "Color_1"
+	context.turtle.setMaterial(1,Color_1)
+	Color_2 = pgl.Material("Color_2" , 		ambient = (99,198,32) , 
+		diffuse = 0.909091 , 
+)
+	Color_2.name = "Color_2"
+	context.turtle.setMaterial(2,Color_2)
+	panel_0 = ({'active': True, 'visible': False, 'name': 'Panel 1'},[])
+	import openalea.plantgl.all as pgl
+	parameter = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(0, 0.18977, 1),(0.210286, 0.711839, 1),(0.789357, 0.713147, 1),(1, 0, 1)]) , 
+	    )
+	parameter.name = "parameter"
+	import openalea.plantgl.all as pgl
+	parameter_2 = pgl.BezierCurve2D(	
+	    pgl.Point3Array([(-0.00150942, 0.0453173, 1),(0.28895, 1.30304, 1),(0.592717, 0.883796, 1),(0.736803, 0.780585, 1)]) , 
+	    )
+	parameter_2.name = "parameter_2"
+	parameter_3 = pgl.BezierCurve2D(	
+	    pgl.Point3Array([(-0.656983, 0.283441, 1),(-0.322687, -0.111276, 1),(-0.0714748, -0.0306852, 1),(-4.51028e-17, 0.250656, 1),(0.0755631, -0.0176024, 1),(0.457866, -0.063309, 1),(0.552328, 0.27472, 1)]) , 
+	    )
+	parameter_3.name = "parameter_3"
+	panel_1 = ({'active': True, 'visible': True, 'name': 'Panel 2'},[('Function',parameter),('Curve2D',parameter_2),('Curve2D',parameter_3)])
+	parameterset = [panel_0,panel_1,]
+	context["__functions__"] = [('parameter',parameter),]
+	context["__curves__"] = [('parameter_2',parameter_2),('parameter_3',parameter_3),]
+	context["__parameterset__"] = parameterset
+	context["parameter"] = pgl.QuantisedFunction(parameter)
+	context["parameter_2"] = parameter_2
+	context["parameter_3"] = parameter_3

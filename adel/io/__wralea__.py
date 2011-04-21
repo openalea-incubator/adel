@@ -207,3 +207,31 @@ duplicate = Factory(name='duplicate mtg',
                )
 __all__.append('duplicate')
 
+
+lpy2mtg_lpy2mtg = Factory(name='lpy2mtg',
+                description='aggregate lpy outputs into an mtg',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='lpy2mtg',
+                inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+__all__.append('lpy2mtg_lpy2mtg')
+
+mtg2axial_mtg2lpy = Factory(name='mtg2axial',
+                description='Convert MTg to axial tree along with spec in lysystem',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='mtg2lpy',
+                inputs=[{'interface': None, 'name': 'mtg', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'axial tree', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+__all__.append('mtg2axial_mtg2lpy')
+

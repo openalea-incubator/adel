@@ -1,14 +1,21 @@
 from openalea.plantgl.all import *
 from math import cos, sin, degrees, radians
 
-NbPhyto = 100 
+NbPhyto = 15 
 internodes = [20]*NbPhyto
 leaf = [100]*NbPhyto
 phi = 90
 lw = 0.2
-Axiom: SetWidth(2)A(NbPhyto)
 
-derivation length: 1
+module plant : scale = 1
+module A(n) : scale = 2
+module I(l) : scale = 2
+module L(l,p) : scale = 2
+
+
+Axiom: plant SetWidth(2)A(NbPhyto)
+
+derivation length: 2
 production:
 
 A(n): 
@@ -67,7 +74,7 @@ def __initialiseContext__(context):
 	    )
 	parameter_2.name = "parameter_2"
 	parameter_3 = pgl.BezierCurve2D(	
-	    pgl.Point3Array([(-0.656983, 0.283441, 1),(-0.322687, -0.111276, 1),(-0.0714748, -0.0306852, 1),(-4.51028e-17, 0.250656, 1),(0.0755631, -0.0176024, 1),(0.457866, -0.063309, 1),(0.552328, 0.27472, 1)]) , 
+	    pgl.Point3Array([(-0.5, 0, 1),(-0.157658, -0.153153, 1),(0.153153, 0.315315, 1),(0.5, 0, 1)]) , 
 	    )
 	parameter_3.name = "parameter_3"
 	panel_1 = ({'active': True, 'visible': True, 'name': 'Panel 2'},[('Function',parameter),('Curve2D',parameter_2),('Curve2D',parameter_3)])

@@ -1,5 +1,5 @@
 from openalea.plantgl.all import *
-from math import cos, sin, degrees, radians
+from math import cos, sin, degrees, radians, atan2,sqrt
 
 NbPhyto = 15 
 internodes = [20]*NbPhyto
@@ -29,6 +29,7 @@ I(l) --> SetColor(1)F(l)
 L(l, angle):
   nproduce SetColor(2)@Gc SetContour(parameter_3)
   sp = 0
+  ap = 0
   for i in range(10):
     s = float(i+1)/10
     if parameter(s) >0.:
@@ -39,7 +40,10 @@ L(l, angle):
       x = r* cos(radians(angle))
       y = r* sin(radians(angle))      
       z = (pt2[1]-pt1[1])*l
-      nproduce SetWidth(parameter(s)*l*lw) LineRel(x,y,z)
+      dl = sqrt(r**2 + z**2)
+      a = atan2(r,z) - ap
+      ap = atan2(r,z)
+      nproduce SetWidth(parameter(s)*l*lw) ^(degrees(a)) F(dl)
   nproduce @Ge
     
 
@@ -74,7 +78,7 @@ def __initialiseContext__(context):
 	    )
 	parameter_2.name = "parameter_2"
 	parameter_3 = pgl.BezierCurve2D(	
-	    pgl.Point3Array([(-0.5, 0, 1),(-0.157658, -0.153153, 1),(0.153153, 0.315315, 1),(0.5, 0, 1)]) , 
+	    pgl.Point3Array([(-0.5, 0, 1),(-0.10528, 0.00397954, 1),(0.153153, 0.315315, 1),(0.5, 0, 1)]) , 
 	    )
 	parameter_3.name = "parameter_3"
 	panel_1 = ({'active': True, 'visible': True, 'name': 'Panel 2'},[('Function',parameter),('Curve2D',parameter_2),('Curve2D',parameter_3)])

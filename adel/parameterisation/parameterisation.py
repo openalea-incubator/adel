@@ -60,7 +60,8 @@ def simpleMais(simpleMais_parameter):
             'Epo' : zero + 1,
             'Epos' : zero + 2
             }
-    return(dataframe(canT))
+    return(canT)
+    #return(dataframe(canT))
 
 def simpleMais2dict(simpleMais_parameter):
     """ generate Adel canopy Table (R)  from a simpleMais parameter dictionary"""

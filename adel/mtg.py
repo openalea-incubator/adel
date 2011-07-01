@@ -42,6 +42,7 @@ def to_aggregation_table(g):
     label = g.property('label')
     index = g.property('index')
     geometry = g.property('geometry')
+    can_label = g.property("can_label")
 
     symbols = dict(zip(label.itervalues(), label.iterkeys()))
     for k, v in symbols.iteritems():
@@ -51,7 +52,7 @@ def to_aggregation_table(g):
     l.sort(cmp= lambda x, y: cmp(x[1], y[1]))
 
     # scales
-    header = "Plant Axe Metamer StemElement LeafElement"
+    header = "Plant Axe Metamer StemElement LeafElement Type"
     header = header.split()
 
     # 2. iterate on the geometry at the last scale
@@ -64,10 +65,12 @@ def to_aggregation_table(g):
     # compute the number of triangles
 
     nb_lines = sum( mesh.indexListSize() for mesh in geometry.itervalues() if mesh)
-    lines = numpy.zeros((nb_lines, 5), dtype=int)
+    lines = numpy.zeros((nb_lines, 6), dtype=int)
 
     # compute relative index for metamer in axe and element in metamer
     local_index = {}
+    #determine the number of element
+    nb_stem_elements = {}
     for root_axe in g.roots(scale=2):
         for axe_id in pre_order(g,root_axe):
             for i, mid in enumerate(g.components(axe_id)):
@@ -84,6 +87,8 @@ def to_aggregation_table(g):
                 else:
                     leaf_index += 1
                     local_index[eid] = leaf_index
+            
+            nb_stem_elements[mid] = stem_index
 
     i = 0
     for root_elt in g.roots(scale=4):
@@ -106,8 +111,26 @@ def to_aggregation_table(g):
                 stem_index = element_index
             else:
                 leaf_index = element_index
+            #determine tissue type
+            lab = can_label[vid]
+            if lab.is_soil():
+                ttype = 0
+            elif lab.is_leaf():
+                ttype = 1#lamina
+            elif lab.is_stem():
+                if nb_stem_elements[metamer_id] == 1:
+                    ttype = 2 if lab.optical_id <= 2 else 5#2 = sheath, 5 = ear
+                else: 
+                    if element_index == 1:
+                        ttype = 3 if lab.optical_id <= 2 else 4#internode(4) or peduncle(4)
+                    else:
+                        ttype = 2 if lab.optical_id <= 2 else 5#sheath or ear
+            else:
+                ttype = -1 #unknown
+             
 
-            indices = (plant_index, axe_index, metamer_index, stem_index, leaf_index)
+            
+            indices = (plant_index, axe_index, metamer_index, stem_index, leaf_index, ttype)
             geom = geometry.get(vid)
             if geom:
                 n = geom.indexListSize()
@@ -767,10 +790,19 @@ def transform(turtle, mesh):
         mesh = mesh.transform(matrix)
         return mesh
 
+
+
+
+
 def mtg_turtle(g, symbols):
     ''' Compute the geometry on each node of the MTG using Turtle geometry. '''
 
     from openalea.mtg import turtle
+
+    plants = g.component_roots_at_scale(g.root, scale=1)
+    nplants = g.nb_vertices(scale=1)
+
+    gt = MTG()
 
     def adel_visitor(g, v, turtle):
         # 1. retriev the node
@@ -791,11 +823,16 @@ def mtg_turtle(g, symbols):
 
         # 3. Update the turtle
         turtle.setId(v)
-        turtle.F(n.length)
+        if n.label.startswith('S'):
+            turtle.f(n.length)
         # Get the azimuth angle
-        
-    scene = turtle.TurtleFrame(g,visitor=adel_visitor)
-    return g
+
+    for plant in plants:
+       gplant = g.sub_mtg(plant)
+       scene = turtle.TurtleFrame(gplant,visitor=adel_visitor)
+       gt = union(gplant,gt)
+       
+    return gt
     
 
 def mtg_turtle_time(g, symbols, time):

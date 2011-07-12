@@ -92,9 +92,11 @@ def Wheatpop(LAI=3.3, axe_density = 1001, plant_density= 300., nout = 10, nb_phy
     nout is number of plant
     nb_phy: nb_phytomer
     '''
+    # How many tiller for each main stem 
     target_surface = LAI / plant_density  # target_surface is in m2
     mean_tiller_per_plant = axe_density / plant_density - 1#Main stem aren't tillers
     tiller_min = floor(mean_tiller_per_plant)
+    
     nb_plant_max = floor(nout * (mean_tiller_per_plant - tiller_min))
     nb_plant_min = nout - nb_plant_max
     # More tillers, more surface => correction
@@ -210,4 +212,5 @@ def talle_expend_length(param,nbtalles,nb_phy):
         t_param = param[(nb_phy - t_nb_phy - 1):]
         exp = np.concatenate((exp, t_param))
     return exp
-    
+
+

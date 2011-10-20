@@ -11,7 +11,7 @@ runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'sta
     kinlist <- lapply(plants,function(plant) kinLvis(kinL(dates[i],plant,pars),pars))
     desc <- getdesc(kinlist,plants,pars)
     chn <- genString(desc,pars)
-    out[[i]] <- desc
+    out[[i]] <- cbind(date=dates[i],desc)
   }
   out
 }

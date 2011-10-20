@@ -111,7 +111,7 @@ geometry_leaf_element = Factory(name='leaf element',
 
 geometry_LeafElement = Factory(name='LeafElement',
                                authors='C. Fournier',
-                               description='simulate the behavior of a cal to Leaf Element',
+                               description='simulate the behavior of a call to Leaf Element',
                                category='graphic',
                                nodemodule='geometry',
                                nodeclass='LeafElement',

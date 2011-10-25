@@ -17,8 +17,18 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'dataFrameAsDict_dataFrameAsDict', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl']
+__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'dataFrameAsDict_dataFrameAsDict', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_canL2canS']
 
+io_canL2canS = Factory(name='canL2canS',
+                description='transform canopy Table Rdata to Surface canopy Table',
+                category='io',
+                nodemodule='io',
+                nodeclass='canL2canS',
+                inputs=[{'interface': None, 'name': 'canopy table (Rdataframe)', 'desc': ''},{'interface': None, 'name': 'sr database (RList)', 'desc': ''},{'interface': IFloat, 'name': 'senescence leaf shrink', 'desc': '','value': 1}],
+                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
 
 io_dataframe = Factory(name='Rdataframe',

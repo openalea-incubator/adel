@@ -51,6 +51,7 @@ RgenGeoAxe = robj.globalEnv['genGeoAxe']
 RgenGeoLeaf = robj.globalEnv['genGeoLeaf']
 RsetAdelArv = robj.globalEnv['setAdelArv']
 RgenString = robj.globalEnv['genString']
+RcanL2canS = robj.globalEnv['canL2canS']
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
 
 
@@ -92,14 +93,30 @@ def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     p = RsetAdelArv(Rcalage,np,sdlev,RFun)
     return p
 
-def setAdel(RdevT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None):
+def setAdel(RdevT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
     """Creates a set of parameter for simulating np plants with adel from R inputs (see adeldoc.R)"""
     if seed is None:
         rseed = r('as.null()')
     else:
         rseed = seed
-    p = RsetAdel(RdevT,RgeoLeaf,RgeoAxe,nplants,rseed)
+        
+    if xydb is None:
+        rxydb = r('as.null()')
+    else:
+        rxydb = xydb
+        
+    if srdb is None:
+        rsrdb = r('as.null()')
+    else:
+        rsrdb = srdb
+        
+    p = RsetAdel(RdevT,RgeoLeaf,RgeoAxe,nplants,rseed,rxydb,rsrdb)
     return p
+
+def canL2canS(RcanT,srdb,shrink):
+    res = RcanL2canS(RcanT,srdb,shrink)
+    d = dataframeAsdict(res)
+    return d
 
 def setCanopy(RcanT,nplants = 1,randomize = True, seed = None):
     """ Duplicates or subsample a canopy table to create a new canopy with specified number of plants. Radomise allows for random sample and random azimuth"""

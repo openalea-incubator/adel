@@ -85,6 +85,11 @@ def Wheatpop(LAI=3.3, axe_density = 1001, plant_density= 300., nout = 10, nb_phy
     '''
     Generate a population of nout different axe with appropriate tiller number and surface per plant
     To be plug to "agronomic plot" and "SimpleWheat" 
+
+    TO DO :
+    - > donner un stade ET un nombre de feuille verte contribuant au LAI sur le bm => on sait ou se poisitionner dans le pattern
+    - > donner un LAI qui represente la surface des feuilles presente (vert + sene) et un % senescent global sur ce LAI
+    - > + et la hauteur
     
     LAI
     axe_density

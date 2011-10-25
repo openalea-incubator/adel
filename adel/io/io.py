@@ -6,7 +6,7 @@ import numpy as np
 from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
-from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict
+from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict,canL2canS
 from alinea.adel.mtg import mtg_factory, duplicate, thermal_time
 from openalea.mtg.io import lpy2mtg, mtg2lpy
 

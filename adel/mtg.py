@@ -122,7 +122,7 @@ def to_aggregation_table(g):
                     ttype = 2 if lab.optical_id <= 2 else 5#2 = sheath, 5 = ear
                 else: 
                     if element_index == 1:
-                        ttype = 3 if lab.optical_id <= 2 else 4#internode(4) or peduncle(4)
+                        ttype = 3 if lab.optical_id <= 2 else 4#internode(3) or peduncle(4)
                     else:
                         ttype = 2 if lab.optical_id <= 2 else 5#sheath or ear
             else:

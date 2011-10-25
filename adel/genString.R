@@ -11,6 +11,10 @@ LeafElement <- function(po, Lf, l, wM, srb, srtop,index,seed,incB,prec=3) {
   paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed,incB),prec)),collapse=","),")",sep="")
   #paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed),prec)),collapse=","),")",sep="") # incB removed untill debugging completed
 }
+indexedLeafElement <- function(po, Lf, l, wM, srb, srtop,index,seed,incB,tindex,prec=3) {
+  paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed,incB),prec),tindex),collapse=","),")",sep="")
+  #paste("LeafElement(",paste(c(po,round(c(Lf,l,wM,srb,srtop),prec),index,round(c(seed),prec)),collapse=","),")",sep="") # incB removed untill debugging completed
+}
 #
 pitch <- function(inc) paste("+(",round(inc,2),")",sep="")
 roll <- function(ang) paste("/(",round(ang,2),")",sep="")
@@ -34,15 +38,24 @@ Sheath <- function(lgreen,lsen,diam,po,pos,epsillon) {
   chn
 }
 #
-Blade <- function(lv, lsen, Lf, wM, lctype, lcindex, incB, po, pos, epsillon) {
+Blade <- function(lv, lsen, Lf, wM, lsenshrink,lctype, lcindex, incB, po, pos, epsillon,randindex) {
   chn <- ""
   lgreen = lv - lsen
-  if (lgreen > epsillon)
-    chn <- paste(chn,
-                 LeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB))
-  if (lsen > epsillon)
-    chn <- paste(chn,
-                 LeafElement(pos, Lf, lv, wM, lgreen / lv, 1, lctype, lcindex, incB))
+  if (randindex) {#lcindex has not been set by adel)
+    if (lgreen > epsillon)
+      chn <- paste(chn,
+                   LeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB))
+    if (lsen > epsillon)
+      chn <- paste(chn,
+                   LeafElement(pos, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB))
+  } else {
+    if (lgreen > epsillon)
+      chn <- paste(chn,
+                   indexedLeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB,lcindex))
+    if (lsen > epsillon)
+      chn <- paste(chn,
+                   indexedLeafElement(pos, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB,lcindex))
+  }
  
   chn
 }
@@ -83,7 +96,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
     chn <- paste(chn,
                  "[",
                  roll(azm),
-                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon),
+                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1)),
                  "]")
   chn
 }

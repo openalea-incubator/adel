@@ -32,10 +32,20 @@ pars <- devTcsv(paste(chem,"axeTSoissonsNormal_10plants.csv",sep=""),
 #Specify geoLeaf & geoAxe
 geoLeaf <- genGeoLeaf()
 geoAxe <- genGeoAxe()
+#
+attach(paste(chem,"So99.RData",sep=""))
+xydb <- get("So99")
+detach()
+attach(paste(chem,"SRSo.RData",sep=""))
+srdb <- get("SRSo")
+detach()
+#
 #generate a list of plant to simulate from parameters
-pl <- setAdel(pars$axeT,pars$dimT,pars$phenT,pars$earT,pars$ssisenT,geoLeaf,geoAxe,nplants=1)
+pl <- setAdel(pars$axeT,pars$dimT,pars$phenT,pars$earT,pars$ssisenT,geoLeaf,geoAxe,nplants=1,xy_db=xydb,sr_db=srdb)
 #run the model as a whole from plant list to AleaChn
 canopy <- runAdel(1200,pl)[[1]]
+#
+Scanopy <- canL2canS(canopy,srdb)
 #
 chn <- genString(canopy)
 #

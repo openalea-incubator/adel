@@ -65,10 +65,11 @@ predictPed <- function(pheno,phyto,index,nf,earT) {
   
 #setAdel performs the dressing (geometry, tiller number ...) of plants from parameters and duplicate them for a given number of outputed plants
 #
-setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=NULL) {
+setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=NULL,xy_db=NULL,sr_db=NULL) {
   #verif inputs et completion default values
   if (!is.null(seed))
     set.seed(seed)
+  
   if (is.null(earT)) {
     iear <- grep("earIndex",colnames(axeT),fixed=TRUE)
     if (length(iear) > 0)
@@ -119,9 +120,20 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
         phytoT[seq(nf),"Azim",a] <- sapply(seq(nf),function(n) geoLeaf$Azim(a,n,nf-n))
       else
         phytoT[seq(nf),"Azim",a] <- phytoT[seq(nf),"pAngle",a] + (runif(nf) - .5) * phytoT[seq(nf),"dpAngle",a]
-      phytoT[seq(nf),"Lindex",a] <- sapply(seq(nf),function(n) geoLeaf$Lindex(a,n,nf-n))
-      #ICI : affecter directement une feuille de la base !
-      phytoT[seq(nf),"Lseed",a] <- runif(nf)
+      #
+      lindex <- sapply(seq(nf),function(n) geoLeaf$Lindex(a,n,nf-n))
+      lseed <- runif(nf)
+      if (is.null(xy_db)) {
+        phytoT[seq(nf),"Lindex",a] <- lindex
+        phytoT[seq(nf),"Lseed",a] <- lseed
+      }
+      else  {
+        lindex <- sapply(lindex,function(x) ifelse(x %in% seq(xy_db),x,seq(xy_db)[which.min(abs(x - seq(xy_db)))]))
+        lindex <- sapply(lindex,function(x) ifelse(x %in% seq(sr_db),x,seq(sr_db)[which.min(abs(x - seq(sr_db)))]))
+        phytoT[seq(nf),"Lindex",a] <- lindex
+        phytoT[seq(nf),"Lseed",a] <- sapply(seq(lseed),function(x) round(lseed[x] * length(xy_db[[lindex[x]]])))
+      }
+      #
       phytoT[(nf+1):(nf+3),,a] <- 0
       phytoT[(nf+1):(nf+2),"El",a] <- unlist(earT[pT$earIndex[a],c("l_ped","l_ear")])
       phytoT[nf+3,"El",a] <- unlist(earT[pT$earIndex[a],"l_ear_awn"] - earT[pT$earIndex[a],"l_ear"])
@@ -142,7 +154,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
     for (a in seq(nrow(pT)))
       pedT[[a]] <- predictPed(phenoT[[a]],phytoT[,,a],pT$earIndex[a],pT$nf[a],earT)
     
-    out[[p]] <- list(axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT,geoLeaf=geoLeaf)
+    out[[p]] <- list(axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT)
   }
   out
 }

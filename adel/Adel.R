@@ -224,8 +224,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy),dat$Lv/datp$Ll)
         #LcType <- plant$geoLeaf$Lindex(as.numeric(axename),seq(nbphy),nbleaf - seq(nbphy))
       #Epo
-        Epo <- c(rep(1,nbleaf),1,1,3)
-        Epos <- c(rep(2,nbleaf),2,2,4)
+        Epo <- c(rep(1,nbleaf),3,3,3)
+        Epos <- c(rep(2,nbleaf),4,4,4)
         pogreen <- rep(1,nbphy)
         posen <- rep(2,nbphy)
       #

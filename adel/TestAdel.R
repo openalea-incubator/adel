@@ -55,7 +55,7 @@ chn <- genString(canopy)
 #
 #Predict kinetic of extension
 #
-kinExt <- lapply(pl,function(plant) kinL(1000,plant))
+kinExt <- lapply(pl,function(plant) kinL(2000,plant))
 #
 # idem for visible parts
 kinExtv <- lapply(kinExt,kinLvis)

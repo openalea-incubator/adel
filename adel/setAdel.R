@@ -43,9 +43,10 @@ predictPhen <- function(phenT,index,nf,datesf1) {
   phen <- phenT[phenT$index == index,]
   out <- vector("list",ncol(phenT) -2)
   names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
+  names(datesf1) <- c("tip","col","ssi","disp")
   for (i in 1:4) {
     w <- names(out)[i]
-    out[[w]] <- approx(phen$nrel,phen[,w],nout,rule=2)$y + unlist(datesf1)[i] 
+    out[[w]] <- approx(phen$nrel,phen[,w],nout,rule=2)$y + datesf1[[w]] 
   }
   data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
 }

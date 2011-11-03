@@ -73,12 +73,35 @@ def RlistAsDict(Rlist):
 
 def dataframeAsdict(df):
     """ convert an RDataframe to a python dict """
+    if r['is.null'](df)[0]:
+        return None
     try:
         d = dict(zip( df.colnames, numpy.array(df)))
         return d
     except:
         d = dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
         return d
+
+def dataframe(d):
+    """ convert a dict of numbers to an RDataframe  """
+    df = {}
+    if d is None:
+        return r('as.null()')
+    else:
+        for k, v in d.iteritems():
+            df[k] = numpy2ri(numpy.array(v))
+    dataf = r['data.frame'](**df)
+    return dataf
+
+def Rdflist(dictOfdict):
+    """ convert a dict of dict of numpy vectors into a Rlist of Rdataframe  """
+    df_tags = dictOfdict.keys()
+    df_value = dictOfdict.values()
+    return r.list(**dict(zip(df_tags, [dataframe(dft) for dft in df_value])))
+
+def RdflistAsdicts(Rdflist):
+    """ convert a Rlist of Rdataframe into a dict of dict of numpy vectors """
+    return dict(zip([n for n in r.names(Rdflist)],[dataframeAsdict(obj) for obj in Rdflist]))
 
 def csvAsDict(fn,type=1):
     """ returns a dictionnary with the content of csv file as numpy vectors (one colum = one key) """
@@ -93,7 +116,7 @@ def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     p = RsetAdelArv(Rcalage,np,sdlev,RFun)
     return p
 
-def setAdel(RdevT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
+def setAdel(devT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
     """Creates a set of parameter for simulating np plants with adel from R inputs (see adeldoc.R)"""
     if seed is None:
         rseed = r('as.null()')
@@ -109,7 +132,8 @@ def setAdel(RdevT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = 
         rsrdb = r('as.null()')
     else:
         rsrdb = srdb
-        
+
+    RdevT = Rdflist(devT)
     p = RsetAdel(RdevT,RgeoLeaf,RgeoAxe,nplants,rseed,rxydb,rsrdb)
     return p
 
@@ -153,7 +177,8 @@ def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):
         args += (earTfn,)
     if ssi2senTfn is not None:
         args += (ssi2senTfn,)
-    return RdevCsv(*args)
+    Rdat = RdevCsv(*args)
+    return RdflistAsdicts(Rdat)
 
 def genString(RcanopyT):
     """ Generate an Lsystem string from a R dataframe representing the canopy """

@@ -27,28 +27,40 @@ setCanopy <- function(canT, nplants=1, randomize = TRUE, seed = NULL) {
   
 #
 predictDim <- function(dimT,index,nf) {
-  nout <- seq(nf)/nf
-  dim <- dimT[dimT$index == index,]
-  out <- vector("list",ncol(dimT)-2)
-  names(out) <- colnames(dim)[-match(c('index','nrel'),colnames(dim))]
-  for (w in names(out))
-    out[[w]] <- approx(dim$nrel,dim[,w],nout,rule=2)$y
-  data.frame(do.call("cbind",out))
+  res <- NULL
+  if (!index %in% dimT$index)
+    stop(paste("setAdel : dimIndex", index, "not found in dimTable"))
+  else {
+    nout <- seq(nf)/nf 
+    dim <- dimT[dimT$index == index,]
+    out <- vector("list",ncol(dimT)-2)
+    names(out) <- colnames(dim)[-match(c('index','nrel'),colnames(dim))]
+    for (w in names(out))
+      out[[w]] <- approx(dim$nrel,dim[,w],nout,rule=2)$y
+    res <- data.frame(do.call("cbind",out))
+  }
+  res
 }
 #
 predictPhen <- function(phenT,index,nf,datesf1) {
   if (!"disp"%in%colnames(phenT))
-    print("Missing input for leaf desapearance in phenT (see docAdel.txt")
-  nout <- c(0,seq(nf))/nf
-  phen <- phenT[phenT$index == index,]
-  out <- vector("list",ncol(phenT) -2)
-  names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
-  names(datesf1) <- c("tip","col","ssi","disp")
-  for (i in 1:4) {
-    w <- names(out)[i]
-    out[[w]] <- approx(phen$nrel,phen[,w],nout,rule=2)$y + datesf1[[w]] 
+    stop("Missing input for leaf desapearance in phenT (see docAdel.txt")
+  res <- NULL
+  if (!index %in% phenT$index)
+    stop(paste("setAdel : phenIndex", index, "not found in phenTable"))
+  else {
+    nout <- c(0,seq(nf))/nf
+    phen <- phenT[phenT$index == index,]
+    out <- vector("list",ncol(phenT) -2)
+    names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
+    names(datesf1) <- c("tip","col","ssi","disp")
+    for (i in 1:4) {
+      w <- names(out)[i]
+      out[[w]] <- approx(phen$nrel,phen[,w],nout,rule=2)$y + datesf1[[w]] 
+    }
+    res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
   }
-  data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
+  res
 }
 #
 #peduncle elongation
@@ -119,7 +131,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]
-      phytoT[seq(nf),nomsdim,a] <- unlist(predictDim(dimT,pT$dimIndex[a],nf)[,nomsdim])
+      pred <- predictDim(dimT,pT$dimIndex[a],nf)[,nomsdim]
+      if (!is.null(pred))
+        phytoT[seq(nf),nomsdim,a] <- unlist(pred)
       phytoT[seq(nf),"incB",a] <- phytoT[seq(nf),"incB",a] + (runif(nf) - .5) * phytoT[seq(nf),"dincB",a]
       if (useAzim) 
         phytoT[seq(nf),"Azim",a] <- sapply(seq(nf),function(n) geoLeaf$Azim(a,n,nf-n))

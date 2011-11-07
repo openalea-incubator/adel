@@ -39,9 +39,15 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
     ssisenT <- reader(ssisenTfile)
   else
     ssisenT <- NULL
-    
+
+  dimT <- reader(dimTfile)
+  #conversion nouvelle nomencalture
+  conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
+  names(conv) <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
+  old <- match(conv,colnames(dimT))
+  colnames(dimT) <- names(conv)[old]
   list(axeT = axeT,
-       dimT = reader(dimTfile),
+       dimT = dimT,
        phenT = reader(phenTfile),
        earT = earT,
        ssisenT = ssisenT)

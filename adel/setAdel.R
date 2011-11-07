@@ -83,9 +83,13 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
     ssisenT <- data.frame(ndel=1:4,rate1=0.07,dssit1=c(0,1.2,2.5,3),dssit2=c(1.2,2.5,3.7,4))
 
 
+  #prise en chage nouveaux noms
+  conv <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
+  names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
+  old <- match(conv,colnames(dimT))
+  colnames(dimT) <- names(conv)[old] 
   if (!"incB"%in%colnames(dimT)) 
     dimT <- cbind(dimT,incB = -999,dincB = 0)
-
   useAzim <- FALSE
   if (!"pAngle"%in%colnames(dimT)) {
     useAzim <- TRUE

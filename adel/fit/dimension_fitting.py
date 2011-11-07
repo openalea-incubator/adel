@@ -7,6 +7,13 @@ import numpy as np
 import pandas
 from math import *
 from os import chdir
+
+
+def pandadf2adeldict(df):
+    ''' convertit un dataframe panda en dictionaire de vecteur numpy '''
+    d = df.to_dict()
+    return dict((k,np.array([v for v in dv.itervalues()])) for k, dv in d.iteritems())
+
 def dimension_fitting(id_axe_ref, csvdata_to_fit):
 
     def fit_length(tt, L_organ, prim_group):
@@ -101,9 +108,9 @@ def dimension_fitting(id_axe_ref, csvdata_to_fit):
     #dataframe_fitted
 
     ####output est un numpy.ndarray:transforme pandas.dataframe en numpy array
-    nparray_fitted =dataframe_fitted.as_matrix(columns=(['id_dim','index_phytomer','L_blade','W_blade','L_sheath','W_sheath','L_internode','W_internode'])) 
+    #nparray_fitted =dataframe_fitted.as_matrix(columns=(['id_dim','index_phytomer','L_blade','W_blade','L_sheath','W_sheath','L_internode','W_internode'])) 
     
     ####output est un dictionnaire:transforme pandas.dataframe en dictionnaire
-    dict_fitted=dataframe_fitted.to_dict()
+    #dict_fitted=dataframe_fitted.to_dict()
 
-    return dataframe_fitted,nparray_fitted,dict_fitted,
+    return {'dimT' : pandadf2adeldict(dataframe_fitted)},

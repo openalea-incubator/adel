@@ -30,7 +30,7 @@ def dimension_fitting(id_axe_ref, csvdata_to_fit):
             elif max_dtt > tt:
                 return (  ( (max_L - min_L)*(tt-min_dtt) / (max_dtt - min_dtt) ) + min_L  )            
 
-        return prim_group[L_organ][prim_group.index.size-1]
+        return ((max_L - min_L)/(max_dtt - min_dtt)) * tt + ((max_L*min_dtt)-(min_L*max_dtt))/ (min_dtt-max_dtt)
 
     def fit_width(tt, slope, intercept):
         '''

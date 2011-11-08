@@ -185,16 +185,19 @@ def genString(RcanopyT):
     chn = RgenString(RcanopyT)
     return chn[0]
 
-def genGeoAxe(azM,daz,ibmM,dibm,incT,dincT,dep):
+def genGeoAxe(azM=None,daz=None,ibmM=None,dibm=None,incT=None,dinT=None,dep=None):
     """ generate geoAxe function for Adel """
-    
-    return RgenGeoAxe(azM,daz,ibmM,dibm,incT,dincT,dep)
+    try:
+        return RgenGeoAxe(azM,daz,ibmM,dibm,incT,dincT,dep)
+    except:
+        return RgenGeoAxe()
 
-def genGeoLeaf(nlim,dazt,dazb):
+def genGeoLeaf(nlim=None,dazt=None,dazb=None):
     """ generate geoLeaf function for Adel """
-
-    return RgenGeoLeaf(nlim,dazt,dazb)
-
+    try:
+        return RgenGeoLeaf(nlim,dazt,dazb)
+    except:
+        return RgenGeoLeaf()
 
 def freeGeoAxe(rcode):
     """ returns geoAxe object from txt definition """

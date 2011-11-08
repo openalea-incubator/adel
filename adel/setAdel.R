@@ -98,8 +98,8 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
   #prise en chage nouveaux noms
   conv <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
   names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
-  old <- match(conv,colnames(dimT))
-  colnames(dimT) <- names(conv)[old] 
+  colnames(dimT) <- names(conv)[match(colnames(dimT),conv)]
+ 
   if (!"incB"%in%colnames(dimT)) 
     dimT <- cbind(dimT,incB = -999,dincB = 0)
   useAzim <- FALSE

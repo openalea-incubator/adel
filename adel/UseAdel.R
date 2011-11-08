@@ -44,8 +44,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   #conversion nouvelle nomencalture
   conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
   names(conv) <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
-  old <- match(conv,colnames(dimT))
-  colnames(dimT) <- names(conv)[old]
+  colnames(dimT) <- names(conv)[match(colnames(dimT),conv)]
   list(axeT = axeT,
        dimT = dimT,
        phenT = reader(phenTfile),

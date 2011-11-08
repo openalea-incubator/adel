@@ -56,14 +56,14 @@ def dimension_fitting(id_axe_ref, csvdata_to_fit):
         '''
         
         def select_from_id_dim(i):
-            if df['index'][i] == id_dim:
+            if df['id_dim'][i] == id_dim:
                 return True
             return False
 
         id_dim = id_dim_p
         prim_group = df.select(select_from_id_dim)
 
-        all_groups = df.groupby('index').groups
+        all_groups = df.groupby('id_dim').groups
 
         fitted_df = pandas.DataFrame()
 

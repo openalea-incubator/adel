@@ -1,4 +1,4 @@
-index,nrel,tip,col,ssi,disp
+id_phen,index_rel_phytomer,dTT_em_phytomer,dTT_col_phytomer,dTT_sen_phytomer,dTT_del_phytomer
 111,0,-82.25289194,-82.25289194,-60,-60
 111,0.090909091,0,0,0,0
 111,0.181818182,82.25289194,82.25289194,60,60

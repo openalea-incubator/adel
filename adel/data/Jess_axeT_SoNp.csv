@@ -1,4 +1,4 @@
-plant,axe,nf,end,disp,dimIndex,phenIndex,earIndex,emf1,ligf1,senf1 ,dispf1
+id_plt,id_axis,N_phytomer,TT_stop_axis,TT_del_axis,id_dim,id_phen,id_ear,TT_em_phytomer1,TT_col_phytomer1,TT_sen_phytomer1,TT_del_phytomer1
 1,0,11,NaN,NaN,111,111,1,-18.54710618,113.0575209,490.7952082,1090.795208
 1,1,8,NaN,NaN,308,308,1,285.2117623,394.492576,690.4092667,1290.409267
 1,2,8,NaN,NaN,408,408,1,268.5374818,378.9770471,1135.649355,1735.649355

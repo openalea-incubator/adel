@@ -79,6 +79,24 @@ predictPed <- function(pheno,phyto,index,nf,earT) {
 #setAdel performs the dressing (geometry, tiller number ...) of plants from parameters and duplicate them for a given number of outputed plants
 #
 setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=NULL,xy_db=NULL,sr_db=NULL) {
+
+  #prise en chage nouveaux noms
+  conv <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
+  names(conv) <- c("plant","axe","nf","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
+  colnames(axeT)[colnames(axeT) %in% conv] <- names(conv)[na.omit(match(colnames(axeT),conv))]
+  #
+  conv <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
+  names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
+  colnames(dimT)[colnames(dimT) %in% conv] <- names(conv)[na.omit(match(colnames(dimT),conv))]
+  #
+  conv <- c("id_phen","index_rel_phytomer","dTT_em_phytomer","dTT_col_phytomer","dTT_sen_phytomer","dTT_del_phytomer")
+  names(conv) <- c("index","nrel","tip","col","ssi","disp")
+  colnames(phenT)[colnames(phenT) %in% conv] <- names(conv)[na.omit(match(colnames(phenT),conv))]
+  #
+  conv <- c("id_ear","dTT_em_ear","dTT_em_peduncle","TT_z92","L_peduncle","W_peduncle","L_ear","A_ear","L_spike")
+  names(conv) <- c("index","em_ear","em_ped","end_gf","l_ped","d_ped","l_ear","Sp_ear","l_ear_awn")
+  colnames(earT)[colnames(earT) %in% conv] <- names(conv)[na.omit(match(colnames(earT),conv))]
+  
   #verif inputs et completion default values
   if (!is.null(seed))
     set.seed(seed)
@@ -93,12 +111,6 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
   
   if (is.null(ssisenT))
     ssisenT <- data.frame(ndel=1:4,rate1=0.07,dssit1=c(0,1.2,2.5,3),dssit2=c(1.2,2.5,3.7,4))
-
-
-  #prise en chage nouveaux noms
-  conv <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
-  names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
-  colnames(dimT) <- names(conv)[match(colnames(dimT),conv)]
  
   if (!"incB"%in%colnames(dimT)) 
     dimT <- cbind(dimT,incB = -999,dincB = 0)

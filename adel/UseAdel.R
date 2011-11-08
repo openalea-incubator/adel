@@ -28,10 +28,42 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   reader <- get(ifelse(type==1,"read.csv","read.csv2"))
     #type 1 : "." for decimal, "," for separator
     #type 2:  "," for decimal, ";" for separator
-  axeT <- reader(axeTfile)
   
-  if (!is.null(earTfile))
+  #conversion nouvelle nomencalture
+  #axeT
+  axeT <- reader(axeTfile)
+  conv <- c("plant","axe","nf","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
+  names(conv) <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
+  if (all(conv %in% colnames(axeT)))
+    colnames(axeT)[colnames(axeT) %in% conv] <- names(conv)[na.omit(match(colnames(axeT),conv))]
+  else if (!all(names(conv) %in% colnames(axeT)))
+    stop(paste("axeT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(axeT)],collapse=" ")))
+  #dimT
+  dimT <- reader(dimTfile)
+  conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
+  names(conv) <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
+  if (all(conv %in% colnames(dimT)))
+    colnames(dimT)[colnames(dimT) %in% conv] <- names(conv)[na.omit(match(colnames(dimT),conv))]
+  else if (!all(names(conv) %in% colnames(dimT)))
+    stop(paste("dimT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(dimT)],collapse=" ")))
+  # phenT
+  phenT = reader(phenTfile)
+  conv <- c("index","nrel","tip","col","ssi","disp")
+  names(conv) <- c("id_phen","index_rel_phytomer","dTT_em_phytomer","dTT_col_phytomer","dTT_sen_phytomer","dTT_del_phytomer")
+  if (all(conv %in% colnames(phenT)))
+    colnames(phenT)[colnames(phenT) %in% conv] <- names(conv)[na.omit(match(colnames(phenT),conv))]
+  else if (!all(names(conv) %in% colnames(phenT)))
+    stop(paste("phenT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(phenT)],collapse=" ")))
+  # earT
+  if (!is.null(earTfile)) {
     earT <- reader(earTfile)
+    conv <- c("index","em_ear","em_ped","end_gf","l_ped","d_ped","l_ear","Sp_ear","l_ear_awn")
+    names(conv) <- c("id_ear","dTT_em_ear","dTT_em_peduncle","TT_z92","L_peduncle","W_peduncle","L_ear","A_ear","L_spike")
+    if (all(conv %in% colnames(earT)))
+    colnames(earT)[colnames(earT) %in% conv] <- names(conv)[na.omit(match(colnames(earT),conv))]
+  else if (!all(names(conv) %in% colnames(earT)))
+    stop(paste("earT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(earT)],collapse=" ")))
+  }
   else
     earT <- NULL
     
@@ -39,15 +71,9 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
     ssisenT <- reader(ssisenTfile)
   else
     ssisenT <- NULL
-
-  dimT <- reader(dimTfile)
-  #conversion nouvelle nomencalture
-  conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
-  names(conv) <- c("id_dim","index_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
-  colnames(dimT) <- names(conv)[match(colnames(dimT),conv)]
   list(axeT = axeT,
        dimT = dimT,
-       phenT = reader(phenTfile),
+       phenT = phenT,
        earT = earT,
        ssisenT = ssisenT)
 }

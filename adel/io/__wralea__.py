@@ -186,10 +186,12 @@ io_to_plantgl = Factory(name='to_plantgl',
                 category='io',
                 nodemodule='io',
                 nodeclass='to_plantgl',
-                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)}],
+                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, 
+                        {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, 
+                        {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, 
+                        {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)},
+                        dict(name='colors', interface='IDict', desc='dict (vid, rgb color) ')],
                 outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
-                widgetmodule=None,
-                widgetclass=None,
                )
 
 
@@ -244,4 +246,16 @@ mtg2axial_mtg2lpy = Factory(name='mtg2axial',
                )
 
 __all__.append('mtg2axial_mtg2lpy')
+
+apply_property = Factory(name='apply_property',
+                category='data i/o, MTG',
+                nodemodule='io',
+                nodeclass='apply_property',
+                inputs=[{'interface': None, 'name': 'mtg', 'value': None, 'desc': 'MTG'}, 
+                        {'interface': IStr, 'name': 'property name', 'value': '', 'desc': 'A MTG property'}, 
+                        {'interface': IFunction, 'name': 'function', 'desc': 'function to apply on the property'}],
+                outputs=[{'interface': IDict, 'name': 'dict', 'desc': 'the output property'}],
+               )
+
+__all__.append('apply_property')
 

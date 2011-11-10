@@ -127,10 +127,14 @@ def to_aggregation_table(g):
                         ttype = 2 if lab.optical_id <= 2 else 5#sheath or ear
             else:
                 ttype = -1 #unknown
-             
+            
+            
 
             
             indices = (plant_index, axe_index, metamer_index, stem_index, leaf_index, ttype)
+            nid  = g.node(vid)
+            nid.tissue_type = ttype
+
             geom = geometry.get(vid)
             if geom:
                 n = geom.indexListSize()
@@ -141,21 +145,23 @@ def to_aggregation_table(g):
     lines = lines.transpose()
     cols =[c.transpose() for c in lines]
     table = dict(zip(header, cols))
-    return table
+    return table, g
         
 def to_plantgl(g, 
                leaf_material = None,
                stem_material = None,
-               soil_material = None):
+               soil_material = None,
+               colors = None):
     """
     Returns a plantgl scene from an mtg.
     """
-    if leaf_material is None:
-        leaf_material = Material(Color3(0,180,0))
-    if stem_material is None:
-        stem_material = Material(Color3(0,130,0))
-    if soil_material is None:
-        soil_material = Material(Color3(170, 85,0))
+    if colors is None:
+        if leaf_material is None:
+            leaf_material = Material(Color3(0,180,0))
+        if stem_material is None:
+            stem_material = Material(Color3(0,130,0))
+        if soil_material is None:
+            soil_material = Material(Color3(170, 85,0))
 
     geometries = g.property('geometry')
     labels = g.property('can_label')
@@ -174,7 +180,9 @@ def to_plantgl(g,
             shape = mesh
             mesh = mesh.geometry
         label = labels.get(vid)
-        if not label:
+        if colors:
+            shape = Shape(mesh, Material(Color3(* colors.get(vid, [0,0,0]) )))
+        elif not label:
             if not shape:
                 shape = Shape(mesh)
         elif label.is_soil():
@@ -303,6 +311,15 @@ class CanMTG(MTG):
         symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
         g = read_lsystem_string(axial_string, symbols, functions, self)
         self.symbols = symbols
+
+
+def apply_property(g, pname, function):
+    """ Apply a function to each values of a MTG property.
+
+    Returns this values as a dict (vid, new value).
+    """
+    prop = g.property(pname)
+    return dict( (k, function(v)) for k, v in prop.iteritems())
 
 CanMTG.planter = planter
 CanMTG.to_plantgl = to_plantgl

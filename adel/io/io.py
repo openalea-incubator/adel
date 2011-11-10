@@ -7,7 +7,8 @@ from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
 from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict,canL2canS
-from alinea.adel.mtg import mtg_factory, duplicate, thermal_time
+from alinea.adel.mtg import (mtg_factory, duplicate, thermal_time, 
+                             apply_property, to_plantgl, to_canestra)
 from openalea.mtg.io import lpy2mtg, mtg2lpy
 
 def dataframe(d):
@@ -34,11 +35,5 @@ def load_leaf_data(fn):
 
     return leaves,
 
-def to_canestra(can_scene):
-    return can_scene.to_canestra()
 
-def to_plantgl(can_scene, 
-               leaf_material, 
-               stem_material, 
-               soil_material):
-    return can_scene.to_plantgl(leaf_material, stem_material, soil_material)
+

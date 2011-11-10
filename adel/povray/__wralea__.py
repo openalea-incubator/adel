@@ -18,59 +18,45 @@ __institutes__ = 'CIRAD, INRIA'
 
 __all__ = []
 
+color_list=[(0,0,0),
+            (255,0,0),
+            (0,255,0),
+            (0,0,255),
+            (255,255,0),
+            (0,255,255),
+            (255,0,255),
+            (128,255,0),
+            (0,128,255),
+            (255,0,128),
+            (0,255,128),
+            (128,0,255),
+            (255,128,0),
+            (128,128,255),
+            (255,128,128),
+            (128,255,128),
+            (255,255,255)
+            ]
 
 
-fit_fit = Factory(name='fit', 
-                description='fit a leaf (x, y, s, r)', 
-                category='fitting', 
-                nodemodule='fit',
-                nodeclass='fit',
-                inputs=[{'interface': ISequence, 'name': 'x', 'value': [], 'desc': 'midrib axis'}, {'interface': ISequence, 'name': 'y', 'value': [], 'desc': 'midrib ordinate'}, {'interface': ISequence, 'name': 's', 'value': [], 'desc': 'midrib curvilinear abscisse'}, {'interface': ISequence, 'name': 'r', 'value': [], 'desc': 'midrib radius'}, {'interface': IInt, 'name': 'nb_points', 'value': 3, 'desc': 'target number of points after simplification'}],
-                outputs=[{'interface': ISequence, 'name': 'leaf'}],
+povray = Factory(name='povray', 
+                category='image', 
+                nodemodule='povray',
+                nodeclass='povray',
+                outputs=[{'interface': IFileStr, 'name': 'povray image'}],
                 )
 
+__all__.append('povray')
 
-
-
-fit_fit_leaf = Factory(name='fit midrib', 
-                description='Fit a midrib with a spline curve of degree 5.', 
-                category='fitting', 
-                nodemodule='fit',
-                nodeclass='fit_leaf',
-                inputs=[{'interface': ISequence, 'name': 'leaf'}],
-                outputs=[{'interface': ISequence, 'name': 'leaf'}, {'interface': IFloat, 'name': 'surface'}],
-                widgetmodule=None,
-                widgetclass=None,
+color_item = Factory(name='col_item', 
+                category='color', 
+                nodemodule='color',
+                nodeclass='col_item',
+                inputs=[dict(interface='IInt', name='color index', value=None, desc='color index. If None, return a function'),
+                        dict(interface='ISequence', name='color list', value=color_list),
+                        ],
+                outputs=[{'interface': IRGBColor, 'name': 'color list'}],
                 )
 
-
-
-
-fit_simplify = Factory(name='simplification', 
-                description='leaf simplification', 
-                category='fitting', 
-                nodemodule='fit',
-                nodeclass='simplify',
-                inputs=[{'interface': ISequence, 'name': 'leaf', 'value': [], 'desc': 'midrib (x, y, s, r)'}, {'interface': IInt, 'name': 'nb_points', 'value': 3, 'desc': 'target number of points after simplification'}],
-                outputs=[{'interface': ISequence, 'name': 'leaf'}],
-                widgetmodule=None,
-                widgetclass=None,
-                )
-
-
-
-
-fit_leaves = Factory(name='fit leaves', 
-                description='Replace measured midrib by fit and simplified curves', 
-                category='fitting', 
-                nodemodule='fit',
-                nodeclass='fit_leaves',
-                inputs=[{'interface': IDict, 'name': 'leaves', 'value': {}, 'desc': ''}, {'interface': IInt, 'name': 'nb_points', 'value': 7, 'desc': ''}],
-                outputs=[{'interface': IDict, 'name': 'leaves', 'desc': 'New database'}],
-                widgetmodule=None,
-                widgetclass=None,
-                )
-
-
+__all__.append('color_item')
 
 

@@ -10,5 +10,5 @@ s d 0.17
 # fourth and fifth are reflectance and transmittance of lower side
 #  this is not singular i.e. this combination of values is ok.
 # optical species index 1 (the opaque part is indexed by using the - sign)
-e d 0.09   d 0.09 0.04 d 0.09 0.04
-e d 0.09   d 0.09 0.04 d 0.09 0.04
+e d 0.09   d 0.09 0.04 d 0.09 0.04
+e d 0.09   d 0.09 0.04 d 0.09 0.04

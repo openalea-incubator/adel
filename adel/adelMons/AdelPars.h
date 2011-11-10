@@ -1,1 +1,1 @@
-#define GEOMFILE "h:\devel\adel\adel\adelMons\data\08_geomDea_S1B1.h"
+#define GEOMFILE "/home/pradal/devlp/aleapkg/trunk/adel/adel/adelMons/data/05_geomF2_S1B1.h"

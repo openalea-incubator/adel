@@ -787,6 +787,7 @@ def transform(turtle, mesh):
         bo = BaseOrientation(x, z^x)
         matrix = Transform4(bo.getMatrix())
         matrix.translate(turtle.getPosition())
+        #print 'Position ', turtle.getPosition()
         mesh = mesh.transform(matrix)
         return mesh
 
@@ -838,10 +839,10 @@ def mtg_turtle(g, symbols):
 def mtg_turtle_time(g, symbols, time):
     ''' Compute the geometry on each node of the MTG using Turtle geometry. '''
 
-    from openalea.mtg import turtle
-
     g.properties()['geometry'] = {}
     g.properties()['_plant_translation'] = {}
+
+    max_scale = g.max_scale()
 
     def compute_element(n, symbols, time):
         leaf = symbols.get('LeafElement')
@@ -907,8 +908,9 @@ def mtg_turtle_time(g, symbols, time):
             length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
         except:
             length = n.length
-	if ('Leaf' not in n.label) and (length > 0.):
-        	turtle.F(length)
+        if ('Leaf' not in n.label) and (length > 0.):
+            print n.label, length
+            turtle.F(length)
         # Get the azimuth angle
         
 
@@ -917,6 +919,8 @@ def mtg_turtle_time(g, symbols, time):
         times = g.property('time')
         def push_turtle(v):
             n = g.node(v)
+            if 'Leaf' in n.label:
+                return False
             try:
                 if n.start_tt > time:
                     return False
@@ -946,7 +950,8 @@ def mtg_turtle_time(g, symbols, time):
         scene = turtle.getScene()
         return g
 
-    for plant_id in g.component_roots_at_scale(g.root, scale=4):
+    for plant_id in g.component_roots_at_scale(g.root, scale=max_scale):
+        print 'plant_id ', plant_id
         g = traverse_with_turtle_time(g, plant_id, time)
     return g
 

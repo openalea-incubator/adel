@@ -90,8 +90,7 @@ camera {{
     old_dir = os.path.abspath(os.getcwd())
     os.chdir(dirname)
 
-    if not image_name:
-        image_name = dirname / namebase +'.png'
+    image_name = dirname / namebase +'.png'
 
     image_name = path(image_name)
     if image_name.exists():

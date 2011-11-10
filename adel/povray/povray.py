@@ -30,7 +30,7 @@ def povray2(pov_file, height=320, width=280, image_name=''):
 
     return image_name,
 
-def povray(scene, pov_file = './scene.pov', camera_distance=1., fov=45., width=320, height=280, domain = ((0.,0.),(1.,1.)), azimuth=0., zenith= 0., povray_cmd='povray'):
+def povray(scene, pov_file = './scene.pov', camera_distance=1., fov=45., width=320, height=280, domain = ((0.,0.),(1.,1.)), azimuth=0., zenith= 0., camera_type = 'perspective', soil=False, povray_cmd='povray'):
     """    
     Compute povray file based on a scene.
 
@@ -43,6 +43,9 @@ def povray(scene, pov_file = './scene.pov', camera_distance=1., fov=45., width=3
         - domain: scene pattern used by caribu
         - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
         - zenith: angle between the view direction and the vertical
+        - camera type: perspective, orthographic or fisheye
+        - soil: add a soil to the scene
+        - povray cmd : the path of the povray exe
     """
 
     # color elements based on the optical properties
@@ -56,7 +59,7 @@ def povray(scene, pov_file = './scene.pov', camera_distance=1., fov=45., width=3
     #pov_camera = pov_header(...)
     pov_camera = """
 camera {{
-    perspective
+    {camera}
     location <0,0,{tz:.2f}>
     direction <0,0,-1>
     right <{width:d}/{height:d},0,0>
@@ -72,10 +75,10 @@ camera {{
 
     x=0.5*(domain[0][0]+domain[1][0])
     y=0.5*(domain[0][1]+domain[1][1])
-    pov_camera = pov_camera.format(tz=camera_distance, fov=fov, azimuth=azimuth, 
+    pov_camera = pov_camera.format(camera=camera_type, tz=camera_distance, fov=fov, azimuth=azimuth, 
                       zenith=zenith, tx=x, ty=y, width=width, height=height)
     
-    print pov_camera
+    #print pov_camera
 
     f = path(pov_file)
     namebase = f.namebase

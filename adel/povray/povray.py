@@ -1,6 +1,9 @@
 import os
+import platform
 from openalea.core.path import path
 from openalea.plantgl.all import *
+
+windows = platform.system() is 'Windows'
 
 def povray2(pov_file, height=320, width=280, image_name=''):
     '''    
@@ -93,13 +96,19 @@ camera {{
     old_dir = os.path.abspath(os.getcwd())
     os.chdir(dirname)
 
-    image_name = dirname / namebase +'.png'
+    if windows:
+        image_name = dirname / namebase +'.bmp'
+    else:
+        image_name = dirname / namebase +'.png'
 
     image_name = path(image_name)
     if image_name.exists():
         image_name.remove()
 
-    cmdline = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file, height, width)
+    if windows:
+        cmdline = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file, height, width)
+    else:
+        cmdline = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file, height, width)
     os.system(cmdline)
     # return outputs
     os.chdir(old_dir)

@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'mylist_mylist', 'dataFrameAsDict_dataFrameAsDict', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_canL2canS']
+__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_canL2canS']
 
 io_canL2canS = Factory(name='canL2canS',
                 description='transform canopy Table Rdata to Surface canopy Table',
@@ -107,36 +107,6 @@ io_to_canestra = Factory(name='to_canestra',
                 widgetmodule=None,
                 widgetclass=None,
                )
-
-
-
-
-mylist_mylist = Factory(name='mylist',
-                description='convert numpy array inot list',
-                category='Unclassified',
-                nodemodule='mylist',
-                nodeclass='mylist',
-                inputs=[{'interface': None, 'name': 'array', 'value': None, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'list', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-dataFrameAsDict_dataFrameAsDict = Factory(name='dataFrameAsDict',
-                description='',
-                category='Unclassified',
-                nodemodule='dataFrameAsDict',
-                nodeclass='dataFrameAsDict',
-                inputs=[{'interface': None, 'name': 'RDataframe', 'value': None, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'dict', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
 
 
 io_readRData = Factory(name='readRData',

@@ -33,7 +33,13 @@ def povray2(pov_file, height=320, width=280, image_name=''):
 
     return image_name,
 
-def povray(scene, pov_file = './scene.pov', camera_distance=1., fov=45., width=320, height=280, domain = ((0.,0.),(1.,1.)), azimuth=0., zenith= 0., camera_type = 'perspective', soil=False, povray_cmd='povray'):
+def povray(scene, 
+           pov_file = './scene.pov', 
+           camera_distance=1., fov=45., width=320, height=280, 
+           domain = ((0.,0.),(1.,1.)), 
+           azimuth=0., zenith= 0., camera_type = 'perspective', 
+           soil=False, 
+           povray_cmd='povray'):
     """    
     Compute povray file based on a scene.
 
@@ -89,7 +95,7 @@ camera {{
     dirname = f.dirname()
 
     povf = f.open(mode='w')
-    pov_header(povf, pov_camera)
+    pov_header(povf, pov_camera, domain=domain, soil=soil)
     povf.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn))
     povf.close()
 
@@ -115,7 +121,7 @@ camera {{
 
     return image_name,
 
-def pov_header(f, pov_camera, background = (0,0,0), light = (0,0,10)):
+def pov_header(f, pov_camera, background = (0,0,0), light = (10,0,10), domain = ((0.,0.),(1.,1.)), soil=False):
     """ Write the header of  povray file. """
     f.write("/"*80+"\n")
     f.write("#include \"colors.inc\""+"\n\n")
@@ -124,4 +130,29 @@ def pov_header(f, pov_camera, background = (0,0,0), light = (0,0,10)):
     f.write("light_source {{  <{tx},{ty},{tz}> color rgb <1,1,1>}}\n\n".format(tx=x,ty=y,tz=z))
     r,g,b = background
     f.write("background {{ color rgb < {cr},{cg},{cb}> }}\n\n".format(cr=r,cg=g,cb=b))
+    
+    if soil:
+        (x1,y1),(x2,y2) = domain
+        s = """
+#declare T1=
+    texture {{
+      pigment {{ color red 1.0 green 0.75 blue 0.33 }}
+      normal {{bumps 0.4  scale 0.007}} 
+}}
+
+#declare T2=
+ texture{{
+   pigment{{color red 1.0 green 0.75 blue 0.33}}
+   normal {{granite 0.6 scale 0.1 }}
+   finish {{phong 0.8 phong_size 200}} 
+}}
+
+box {{ <{x1}, {y1},  -0.1>,  
+    < {x2}, {y2}, 0>   
+    texture {{T2}} }}
+"""
+        text = s.format(x1=x1,y1=y1,x2=x2,y2=y2)
+        print text
+        f.write(text)
+        
 

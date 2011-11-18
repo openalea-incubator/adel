@@ -3,6 +3,20 @@
 #          R routine for converting a dataframe representation of canopy to String for CanMTG interpreter
 #
 #
+# conventions tissue_ttype :
+ttype <- list(green_lamina=1,sen_lamina=2,green_sheath=3,sen_sheath=4,green_internode=5, sen_internode=6,green_peduncle = 7, sen_peduncule=8, green_ear=9, sen_ear=10)
+# 1 = Green lamina
+# 2 = Senescent Lamina
+# 3 = Green sheath
+# 4 = Senescent sheath1,3,
+# 5 = Green internode
+# 6 = senescent Internode
+# 7 = green peduncule
+# 8 = senescent peduncule
+# 9 = green ear
+# 10 = senescent ear
+#
+#
 StemElement <- function(po, length, dbase, dtop,prec=3) {
   paste("StemElement(",paste(c(po,round(c(length,dbase,dtop),prec)),collapse=","),")",sep="")
 }
@@ -23,18 +37,18 @@ up <- function(ang) paste("^(",round(ang,2),")",sep="")
 Internode <- function(lgreen,lsen,diam,po,pos,epsillon) {
   chn <- ""
   if (lgreen > epsillon)
-    chn <- paste(chn,StemElement(po,lgreen,diam,diam),sep="")
+    chn <- paste(chn,StemElement(ttype$green_internode,lgreen,diam,diam),sep="")
   if (lsen > epsillon)
-    chn <- paste(chn,StemElement(pos,lsen,diam,diam))
+    chn <- paste(chn,StemElement(ttype$sen_internode,lsen,diam,diam))
   chn
 }
 #
 Sheath <- function(lgreen,lsen,diam,po,pos,epsillon) {
   chn <- ""
   if (lgreen > epsillon)
-    chn <- paste(chn,StemElement(po,lgreen,diam,diam),sep="")
+    chn <- paste(chn,StemElement(ttype$green_sheath,lgreen,diam,diam),sep="")
   if (lsen > epsillon)
-    chn <- paste(chn,StemElement(pos,lsen,diam,diam))
+    chn <- paste(chn,StemElement(ttype$sen_sheath,lsen,diam,diam))
   chn
 }
 #
@@ -44,17 +58,17 @@ Blade <- function(lv, lsen, Lf, wM, lsenshrink,lctype, lcindex, incB, po, pos, e
   if (randindex) {#lcindex has not been set by adel)
     if (lgreen > epsillon)
       chn <- paste(chn,
-                   LeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB))
+                   LeafElement(ttype$green_lamina, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB))
     if (lsen > epsillon)
       chn <- paste(chn,
-                   LeafElement(pos, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB))
+                   LeafElement(ttype$sen_lamina, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB))
   } else {
     if (lgreen > epsillon)
       chn <- paste(chn,
-                   indexedLeafElement(po, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB,lcindex))
+                   indexedLeafElement(ttype$green_lamina, Lf, lv, wM, 0, lgreen / lv,lctype, lcindex, incB,lcindex))
     if (lsen > epsillon)
       chn <- paste(chn,
-                   indexedLeafElement(pos, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB,lcindex))
+                   indexedLeafElement(ttype$sen_lamina, Lf, lv, wM * lsenshrink, lgreen / lv, 1, lctype, lcindex, incB,lcindex))
   }
  
   chn

@@ -2,10 +2,10 @@
 Define generic symbols for the different organs.
 
 Symbols are:
-    LeafElement( optical_species (int), 
+    LeafElement( tissue_type (int), 
                  final_length, length, radius_max, s_base, s_top ([0,1]),
                  leaf_id (rank), seed (random) )
-    StemElement( optical_species, length, diam_base, diam_top)
+    StemElement( tissue type (int) , length, diam_base, diam_top)
 """
 # Define symbol classes used by the Turtle like
 # Leaf, Stem, PStem, Apex, ApexR
@@ -21,6 +21,14 @@ from math import degrees, radians, pi, cos, sin
 import numpy
 
 classic = False
+
+def optical(tissue_type):
+    if tissue_type in (1,3,5,7,9):
+        opt = 1
+    elif tissue_type in (2,4,6,8,10):
+        opt = 2
+    return int(opt)
+
 
 class Symbol(object):
     def _mesh(self):
@@ -43,16 +51,18 @@ class LeafElement(Symbol):
         self.seed = seed
         self.relative_angle = relative_angle
 
-    def __call__( self, optical_species, final_length, length, radius_max, s_base, s_top, leaf_rank, seed=1, *args ):
+    def __call__( self, tissue_type, final_length, length, radius_max, s_base, s_top, leaf_rank, seed=1, *args ):
     #def __call__( self, optical_species, final_length, radius_max, s_base, s_top, leaf_rank, seed ):
 
         leaf_rank = max(1, leaf_rank% 999)
+        opt = optical(tissue_type)
         res = {}
 
         
         res['geometry'] = self._mesh(leaf_rank, seed, final_length, length, s_base, s_top, radius_max, *args)
         #res['geometry'] = self._mesh(leaf_rank, seed, final_length, final_length, s_base, s_top, radius_max)
-        res['label'] = self._can_label(leaf_rank, optical_species)
+        res['label'] = self._can_label(leaf_rank, opt)
+        res['tissue_type'] = tissue_type
         return res
 
 
@@ -122,11 +132,13 @@ class StemElement(Symbol):
         self.tessel = pgl.Tesselator()
         self.seed = seed
 
-    def __call__( self, optical_species, length, diameter_base, diameter_top, *args ):
+    def __call__( self, tissue_type, length, diameter_base, diameter_top, *args ):
         leaf_rank = 0
+        opt = optical(tissue_type)
         res = {}
         res['geometry'] = self._mesh(length, diameter_base, diameter_top)
-        res['label'] = self._can_label(leaf_rank, optical_species)
+        res['label'] = self._can_label(leaf_rank, opt)
+        res['tissue_type'] = tissue_type
         return res
 
     def _mesh(self, length, diameter_base, diameter_top):

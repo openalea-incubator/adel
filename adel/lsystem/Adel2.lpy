@@ -6,6 +6,7 @@ TEMP = 20
 DIAM =  0.023 #Diametre de la tige
 TIMESTEP = 1
 nb_plant = 1
+STEPS = 60
 
 alpha =  -1.39
 beta = -2. * (alpha + math.sqrt(-alpha))
@@ -80,32 +81,34 @@ def dTT(temp, dt, temp_base=9.8):
 
 def TINI(rank):
     """ Dates d'apparition des primordias (dd) """
-    return get_development(rank - 1, 0)
+    return float(get_development(rank - 1, 0))
   
 def DIE(rank):
     """ Delai initiation - extension rapide des feuilles (dd) """
-    return get_development(rank - 1, 1)
+    return float(get_development(rank - 1, 1))
    
 def DIA(rank):
     """ Delai initiation - apparition des feuilles (dd) """ 
-    return get_development(rank - 1, 2)
+    return float(get_development(rank - 1, 2))
   
 def DIL(rank):
     """ Delai initiation - ligulation des feuilles (dd) == DIE_EN"""
-    return get_development(rank - 1, 3)
+    return float(get_development(rank - 1, 3))
   
 def DIF_EN(rank) :
     """ Delai initiation - Fin extension Entrenoeud  : a revoir """
-    return DIL(rank) + 0.6 * (DIL(rank) - DIE(rank))
+    return float(DIL(rank) + 0.6 * (DIL(rank) - DIE(rank)))
 
 
 def L_LIMB(rank) :
     """ Profils de longueur de limbe (Fournier and Andrieu, 1998) """
-    return get_dimensions(rank - 1, 0)
+    #return get_dimensions(rank - 1, 0)
+    return 1.
    
 def L_GAINE(rank):
     """ Profils de longueur de gaine (Fournier and Andrieu, 1998) """
-    return get_dimensions(rank - 1, 1)
+    #return get_dimensions(rank - 1, 1)
+    return .1 * rank
 
 def L_ENT(rank):
     """ Profils de longueur d'entrenoeud (Fournier and Andrieu, 1998) """
@@ -117,13 +120,14 @@ def Wmax_LI(rank) :
 
 def AZIM(rank) :
     """ Azimuth des phytomere,parametrisation proposee dans Fournier 1998 a partir de Drouet 1997 """
+    ang = 180. * (rank % 2)
     r = random.random() - 0.5
     if (rank < 6) :
-        return 0.
+        return ang
     elif (rank <= 8):
-        return r * 20.
+        return ang + r * 20.
     else :
-        return r * 60.
+        return ang + r * 60.
    
 
 def yLin(t, tdeb, tfin, ydeb, yfin):
@@ -160,6 +164,10 @@ class EnData:
     self.Tdeb = DIL(self.num)
     self.Tfin = DIF_EN(self.num)
     self.Torg = apex_data.Torg
+    if (self.num > 1):
+      self.hw = L_GAINE(self.num - 1)
+    else : 
+      self.hw = 0
 
 
 class LeafData:
@@ -174,7 +182,9 @@ class LeafData:
     self.l = 0.
     self.g = 0.
     self.wm = Wmax_LI(self.num)
-    self.ltube = 0.
+    self.ltube = 0.# longueur enroulée (limbe + gaine)
+    self.lvis = 0. #longueur visible limbe
+    self.gvis = 0. #longueur visible gaine
     self.IsExtended = False
 
     # Kin Data
@@ -193,18 +203,27 @@ class LeafData:
     # HW Data
     n = min(apex_data.n + 1, apex_data.NF - 1)
     self.Tapptip = DIA(n)
+    self.hwtip = (L_LIMB(n) + L_GAINE(n)) * (DIA(n) - DIE(n)) / (DIL(n) - DIE(n))
     self.Tnextip = TINI(n + 1) - TINI(n) + DIA(n + 1)
     self.hwnextip = (L_LIMB(n+1) + L_GAINE(n+1)) * (DIA(n+1) - DIE(n+1)) / (DIL(n+1) - DIE(n+1))
-    self.Tnextcol = TINI(n + 1) - TINI(n) + DIL(n + 1)
-    self.hwnextcol = max(L_GAINE(n), L_GAINE(n+1))
+    self.Tcol = DIL(n)
+    self.hwcol = L_GAINE(n)
+    
+    if n > 1 : 
+      lgprec = L_GAINE(n-1)
+    else : 
+      lgprec = 0.
+    self.maxGv = min(L_GAINE(n), L_ENT(n) + L_GAINE(n) - lgprec)
+    self.TfinEn = DIF_EN(self.num)
   
 
 def Start():
-	pass
+	global hw
+	hw = 0.
 
 Axiom:  D(0, nb_plant)
 
-derivation length: 400
+derivation length: STEPS
 production:
 
 
@@ -242,22 +261,29 @@ A(ad) :
         ld = LeafData(ad)
         ad.n += 1
         ad.Tini = TINI(ad.n)
-        produce e(ed)[l(ld)]A(ad)
+        produce e(ed) [l(ld)] A(ad)
    elif (ad.n >= ad.NF) : 
         produce
 
 
 l(ld) : 
-   if (not ld.IsExtended) and (ld.age < ld.Tnextcol):
+   if (not ld.IsExtended) and (ld.age < ld.TfinEn):
         ld.l = yLin(ld.age, ld.TdebL, ld.TfinL, 0, ld.L)
         ld.g = yLin(ld.age, ld.TfinL, ld.TfinG, 0, ld.G)
+        ld.lvis = yLin(ld.age, ld.Tapptip, ld.Tcol, 0., ld.L)
+        ld.gvis = yLin(ld.age, ld.Tcol, ld.TfinEn, 0, ld.maxGv)
         if (ld.age <= ld.Tnextip) :
-            ld.ltube = yLin(ld.age, ld.Tapptip, ld.Tnextip, 0, ld.hwnextip)
+            ld.ltube = yLin(ld.age, ld.Tapptip, ld.Tnextip, ld.hwtip, ld.hwnextip)
         else:
-            ld.ltube = yLin(ld.age, ld.Tnextip, ld.Tnextcol, ld.hwnextip, ld.hwnextcol)
-            ld.IsExtended = True
+            ld.ltube = yLin(ld.age, ld.Tnextip, ld.Tcol, ld.hwnextip, ld.hwcol)
+        ld.IsExtended = True
         produce l(ld)
-   elif (ld.age >= ld.Tnextcol):
+   elif (ld.age >= ld.TfinEn):
+        ld.ltube = ld.hwcol
+        ld.l = ld.L
+        ld.g = ld.G
+        ld.lvis = ld.L
+        ld.gvis = ld.maxGv
         produce L(ld)
 
 e(ed) :
@@ -267,24 +293,27 @@ e(ed) :
         ed.l = yLin(ed.age, ed.Tdeb, ed.Tfin, 0, ed.L)
         ed.IsExtended = True
         produce e(ed)
-   elif (ed.age < ed.Tfin):
-	      produce E(ed)  
- 
+   elif (ed.age >= ed.Tfin):
+        ed.l = ed.L
+        produce E(ed)  
+
 homomorphism:
 maximum depth: 2
 
-
 l(ld) :
-   produce ]#(ld.diam)F(ld.ltube)/(180)[#(ld.wm);(2)/(ld.azim)+(45)F(ld.l)
+  produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  
 L(ld) :
-   produce ]#(ld.diam)F(ld.ltube)/(180)[#(ld.wm);(2)/(ld.azim)+(45)F(ld.l)
+  produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  
+e(ed):
+  evis = max(0, ed.l - ed.hw)
+  if evis > 0 :
+     produce _(ed.diam)F(evis)
 
+E(ed):
+  evis = max(0, ed.l - ed.hw)
+  if evis > 0 :
+     produce _(ed.diam)F(evis)
 
-endLsystem:
-
-
-###### INITIALISATION ######
-
-def __initialiseContext__(context):
-	from openalea.plantgl.all import Material,Color3
-	context.options.setSelection("Selection Required",0)
+endlsystem

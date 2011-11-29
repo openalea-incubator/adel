@@ -38,7 +38,7 @@ def fit_leaf(x , y, s, r):
         2.3 normalize :
           + compute max r, s and divide r, s
         2.4 compute leaf surface 
-        2.5 r_t1-> found r(s): interp(s_t1,s_t2, r_t2)
+        2.5 r-t1-> found r(s): interp(s_t1,s_t2, r_t2)
         
         3. fit x(t1), y(t1), r(t1)
         4. return (x, y, r) and surface value 
@@ -466,11 +466,6 @@ def leaf_shape2(leaf, nb_triangles, length_max, length, radius_max ):
     pts, ind = mesh2(leaf_new, length_max, length, radius_max) 
     mesh = plantgl_shape(pts, ind)
 
-    #sc=pgl.SurfComputer(pgl.Discretizer())
-    #mesh.apply(sc)
-    #scale_radius = leaf_surface*length_max*radius_max / (sc.surface)
-    #mesh_final = mesh.transform(pgl.Scaling((1,scale_radius,1)))
-    #mesh_final = mesh
     return mesh
 
 def fit_leaves( leaves, nb_points):

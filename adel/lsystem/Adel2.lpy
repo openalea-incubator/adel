@@ -1,9 +1,17 @@
 import random
 import math
+import os.path
 
+
+# Build the leaves
+import alinea.adel.fitting as fitting
+from alinea.adel.symbol import build_symbols
+import alinea.adel.data as data
+
+pj = os.path.join
 
 TEMP = 20
-DIAM =  0.023 #Diametre de la tige
+DIAM =  0.0023 #Diametre de la tige
 TIMESTEP = 1
 nb_plant = 1
 STEPS = 60
@@ -26,6 +34,36 @@ gamma = 2. * math.sqrt(-alpha) + alpha
 # MatureLeaf : L
 # MatureEn :   E 
 
+def leaves_db():
+    import cPickle as Pickle
+    data_dir = os.path.dirname(data.__file__) 
+    fn = pj(data_dir,'leaves.db')
+    f = open(fn)
+    leaves = Pickle.load(f)
+    f.close()
+    return leaves
+
+leaves = leaves_db()
+
+def leaf(rank, radius_max, length_max, length):
+  global leaves
+  nb_points = 5
+  db = leaves
+  rank_max = max(map(int,db.keys()))
+  rank = min(rank, rank_max)
+  _leaves = db.get(str(rank), db.get(str(rank+1), db.get(str(rank-1), [])))
+  
+  for l in _leaves[2:]:
+    mesh = None
+    try:
+      x,y,s,r = l
+      leaf_new = fitting.fit3(x, y, s, r, nb_points)
+      pts, ind = fitting.mesh2(leaf_new, length_max, length, radius_max) 
+      mesh = fitting.plantgl_shape(pts, ind)
+      break
+    except Exception, e:
+      continue
+  return mesh
 
 
 def get_development(line, col):
@@ -102,13 +140,11 @@ def DIF_EN(rank) :
 
 def L_LIMB(rank) :
     """ Profils de longueur de limbe (Fournier and Andrieu, 1998) """
-    #return get_dimensions(rank - 1, 0)
-    return 1.
-   
+    return get_dimensions(rank - 1, 0)
+
 def L_GAINE(rank):
     """ Profils de longueur de gaine (Fournier and Andrieu, 1998) """
-    #return get_dimensions(rank - 1, 1)
-    return .1 * rank
+    return get_dimensions(rank - 1, 1)
 
 def L_ENT(rank):
     """ Profils de longueur d'entrenoeud (Fournier and Andrieu, 1998) """
@@ -301,10 +337,16 @@ homomorphism:
 maximum depth: 2
 
 l(ld) :
-  produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  #produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  leafg = leaf(ld.num, ld.wm, ld.L, ld.lvis)
+  if leafg:
+    produce ]_(ld.diam)F(ld.gvis)[/(ld.azim);(2)@g(leaf(ld.num, ld.wm, ld.L, ld.lvis))
   
 L(ld) :
-  produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  #produce ]_(ld.diam)F(ld.gvis)[/(ld.azim)_(ld.wm);(2)+(45)F(ld.lvis)
+  leafg = leaf(ld.num, ld.wm, ld.L, ld.lvis)
+  if leafg:
+    produce ]_(ld.diam)F(ld.gvis)[/(ld.azim);(2)@g(leafg)
   
 e(ed):
   evis = max(0, ed.l - ed.hw)

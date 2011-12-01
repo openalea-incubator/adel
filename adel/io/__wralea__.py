@@ -1,5 +1,5 @@
 
-# This file has been generated at Tue Oct 26 13:41:12 2010
+# This file has been generated at Wed Nov 30 16:21:12 2011
 
 from openalea.core import *
 
@@ -17,45 +17,72 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_dataframe', 'io_dataframeAsdict','io_csvAsDict', 'io_saveRData', 'io_RlistAsDict', 'io_to_canestra', 'io_readRData', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_to_plantgl','io_canL2canS']
+__all__ = ['io_duplicate', 'csv2dataframe_csv2dataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'dataframe2csv_dataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
+
+
+
+io_duplicate = Factory(name='duplicate mtg',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='',
+                category='simulation',
+                nodemodule='io',
+                nodeclass='duplicate',
+                inputs=[{'name': 'mtg'}, {'interface': 'IInt', 'name': 'nb_plants', 'value': 1}],
+                outputs=[{'name': 'mtg', 'desc': 'duplicated mtg'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+csv2dataframe_csv2dataframe = Factory(name='csv2dataframe',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='Create a pandas.DataFrame from a csv file',
+                category='data i/o',
+                nodemodule='csv2dataframe',
+                nodeclass='csv2dataframe',
+                inputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The filepath of the csv file to read.'}],
+                outputs=[{'interface': None, 'name': 'dataframe', 'desc': 'A pandas.DataFrame instance which represents the csv file.'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
 
 io_canL2canS = Factory(name='canL2canS',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='transform canopy Table Rdata to Surface canopy Table',
                 category='io',
                 nodemodule='io',
                 nodeclass='canL2canS',
-                inputs=[{'interface': None, 'name': 'canopy table (Rdataframe)', 'desc': ''},{'interface': None, 'name': 'sr database (RList)', 'desc': ''},{'interface': IFloat, 'name': 'senescence leaf shrink', 'desc': '','value': 1}],
+                inputs=[{'interface': None, 'name': 'canopy table (Rdataframe)', 'desc': ''}, {'interface': None, 'name': 'sr database (RList)', 'desc': ''}, {'interface': IFloat, 'name': 'senescence leaf shrink', 'value': 1, 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )
 
 
-io_dataframe = Factory(name='Rdataframe',
-                description='returns a dataframe (rpy2 object) from a dictionary containing named vectors of values',
-                category='io',
+
+
+io_mtg_factory = Factory(name='mtg (params)',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='',
+                category='simulation',
                 nodemodule='io',
-                nodeclass='dataframe',
-                inputs=[{'interface': IDict, 'name': 'Dict', 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
+                nodeclass='mtg_factory',
+                inputs=None,
+                outputs=None,
                 widgetmodule=None,
                 widgetclass=None,
                )
 
-io_dataframeAsdict = Factory(name='dataframeAsdict',
-                description='returns a dictionary containing named vectors of values from adataframe (rpy2 object)',
-                category='io',
-                nodemodule='io',
-                nodeclass='dataframeAsdict',
-                inputs=[{'interface': IDict, 'name': 'dataframe', 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'dict', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
 
 
 
 io_csvAsDict = Factory(name='CsvAsDict',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='returns a dictionary containing the columns of the csv file',
                 category='io',
                 nodemodule='io',
@@ -69,21 +96,8 @@ io_csvAsDict = Factory(name='CsvAsDict',
 
 
 
-io_saveRData = Factory(name='saveRData',
-                description='',
-                category='io',
-                nodemodule='io',
-                nodeclass='saveRData',
-                inputs=[{'name': 'RObject', 'desc': 'R object'}, {'interface': IStr, 'name': 'Name of the savec object', 'value': 'Robj', 'desc': ''}, {'interface': IFileStr, 'name': 'RData file', 'desc': ''}],
-                outputs=[{'interface': IStr, 'name': 'name', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
 io_RlistAsDict = Factory(name='RlistAsDict',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='returns a dictionary containing the Robjects of the Rlist',
                 category='io',
                 nodemodule='io',
@@ -97,7 +111,68 @@ io_RlistAsDict = Factory(name='RlistAsDict',
 
 
 
+io_dataframeAsdict = Factory(name='dataframeAsdict',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='returns a dictionary containing named vectors of values from adataframe (rpy2 object)',
+                category='io',
+                nodemodule='io',
+                nodeclass='dataframeAsdict',
+                inputs=[{'interface': IDict, 'name': 'dataframe', 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dict', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+io_dataframe = Factory(name='Rdataframe',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='returns a dataframe (rpy2 object) from a dictionary containing named vectors of values',
+                category='io',
+                nodemodule='io',
+                nodeclass='dataframe',
+                inputs=[{'interface': IDict, 'name': 'Dict', 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'dataframe', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+dataframe2csv_dataframe2csv = Factory(name='dataframe2csv',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='Export a pandas.DataFrame to a csv file',
+                category='data i/o',
+                nodemodule='dataframe2csv',
+                nodeclass='dataframe2csv',
+                inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The pandas.DataFrame instance to export.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The csv filepath where the pandas.DataFrame instance is exported.'}],
+                outputs=[],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+io_thermal_time = Factory(name='update thermal time',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='',
+                category='simulation',
+                nodemodule='io',
+                nodeclass='thermal_time',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
 io_to_canestra = Factory(name='to_canestra',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Convert Canestra Scene to a CanFile format stream.',
                 category='io',
                 nodemodule='io',
@@ -109,7 +184,40 @@ io_to_canestra = Factory(name='to_canestra',
                )
 
 
+
+
+io_saveRData = Factory(name='saveRData',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='',
+                category='io',
+                nodemodule='io',
+                nodeclass='saveRData',
+                inputs=[{'name': 'RObject', 'desc': 'R object'}, {'interface': IStr, 'name': 'Name of the savec object', 'value': 'Robj', 'desc': ''}, {'interface': IFileStr, 'name': 'RData file', 'desc': ''}],
+                outputs=[{'interface': IStr, 'name': 'name', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+io_lpy2mtg = Factory(name='lpy2mtg',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='aggregate lpy outputs into an mtg',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='lpy2mtg',
+                inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
 io_readRData = Factory(name='readRData',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='return a dictionary containing the Robject of the RData file',
                 category='io',
                 nodemodule='io',
@@ -123,7 +231,23 @@ io_readRData = Factory(name='readRData',
 
 
 
+io_apply_property = Factory(name='apply_property',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='',
+                category='data i/o, MTG',
+                nodemodule='io',
+                nodeclass='apply_property',
+                inputs=[{'interface': None, 'name': 'mtg', 'value': None, 'desc': 'MTG'}, {'interface': IStr, 'name': 'property name', 'value': '', 'desc': 'A MTG property'}, {'interface': IFunction, 'name': 'function', 'desc': 'function to apply on the property'}],
+                outputs=[{'interface': IDict, 'name': 'dict', 'desc': 'the output property'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
 GetAdelString_GetAdelString = Factory(name='GetAdelString',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Reurn the content of a numbered lsystem string file',
                 category='io',
                 nodemodule='GetAdelString',
@@ -138,6 +262,7 @@ GetAdelString_GetAdelString = Factory(name='GetAdelString',
 
 
 io_load_leaf_data = Factory(name='load leaf data',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Load leaf data obtained by measurement',
                 category='io',
                 nodemodule='io',
@@ -151,60 +276,8 @@ io_load_leaf_data = Factory(name='load leaf data',
 
 
 
-io_to_plantgl = Factory(name='to_plantgl',
-                description='Adapt a Canestra scene to a PlantGL scene',
-                category='io',
-                nodemodule='io',
-                nodeclass='to_plantgl',
-                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, 
-                        {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, 
-                        {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, 
-                        {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)},
-                        dict(name='colors', interface='IDict', desc='dict (vid, rgb color) ')],
-                outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
-               )
-
-
-
-params2mtg = Factory(name='mtg (params)',
-                category='simulation',
-                nodemodule='io',
-                nodeclass='mtg_factory',
-               )
-__all__.append('params2mtg')
-
-tht = Factory(name='update thermal time',
-                category='simulation',
-                nodemodule='io',
-                nodeclass='thermal_time',
-               )
-__all__.append('tht')
-
-duplicate = Factory(name='duplicate mtg',
-                category='simulation',
-                nodemodule='io',
-                nodeclass='duplicate',
-                inputs=[dict(name='mtg'), dict(name='nb_plants', interface='IInt', value=1)],
-                outputs=[{'name': 'mtg', 'desc': 'duplicated mtg'}],
-               )
-__all__.append('duplicate')
-
-
-lpy2mtg_lpy2mtg = Factory(name='lpy2mtg',
-                description='aggregate lpy outputs into an mtg',
-                category='data i/o',
-                nodemodule='io',
-                nodeclass='lpy2mtg',
-                inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-__all__.append('lpy2mtg_lpy2mtg')
-
-mtg2axial_mtg2lpy = Factory(name='mtg2axial',
+io_mtg2lpy = Factory(name='mtg2axial',
+                authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Convert MTg to axial tree along with spec in lysystem',
                 category='data i/o',
                 nodemodule='io',
@@ -215,17 +288,21 @@ mtg2axial_mtg2lpy = Factory(name='mtg2axial',
                 widgetclass=None,
                )
 
-__all__.append('mtg2axial_mtg2lpy')
 
-apply_property = Factory(name='apply_property',
-                category='data i/o, MTG',
+
+
+io_to_plantgl = Factory(name='to_plantgl',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='Adapt a Canestra scene to a PlantGL scene',
+                category='io',
                 nodemodule='io',
-                nodeclass='apply_property',
-                inputs=[{'interface': None, 'name': 'mtg', 'value': None, 'desc': 'MTG'}, 
-                        {'interface': IStr, 'name': 'property name', 'value': '', 'desc': 'A MTG property'}, 
-                        {'interface': IFunction, 'name': 'function', 'desc': 'function to apply on the property'}],
-                outputs=[{'interface': IDict, 'name': 'dict', 'desc': 'the output property'}],
+                nodeclass='to_plantgl',
+                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)}, {'interface': 'IDict', 'name': 'colors', 'desc': 'dict (vid, rgb color) '}],
+                outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
+                widgetmodule=None,
+                widgetclass=None,
                )
 
-__all__.append('apply_property')
+
+
 

@@ -23,9 +23,9 @@ import numpy
 classic = False
 
 def optical(tissue_type):
-    if tissue_type in (1,3,5,7,9):
+    if tissue_type in (1,3,5,7,9,11):
         opt = 1
-    elif tissue_type in (2,4,6,8,10):
+    elif tissue_type in (2,4,6,8,10,12):
         opt = 2
     return int(opt)
 

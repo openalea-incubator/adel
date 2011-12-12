@@ -3,8 +3,11 @@
 #          R routine for converting a dataframe representation of canopy to String for CanMTG interpreter
 #
 #
+# To DO : traiter a part les 3 derniers
+#
+#
 # conventions tissue_ttype :
-ttype <- list(green_lamina=1,sen_lamina=2,green_sheath=3,sen_sheath=4,green_internode=5, sen_internode=6,green_peduncle = 7, sen_peduncule=8, green_ear=9, sen_ear=10)
+ttype <- list(green_lamina=1,sen_lamina=2,green_sheath=3,sen_sheath=4,green_internode=5, sen_internode=6,green_peduncle = 7, sen_peduncule=8, green_ear=9, sen_ear=10, green_awn = 11, sen_awn = 12)
 # 1 = Green lamina
 # 2 = Senescent Lamina
 # 3 = Green sheath
@@ -40,6 +43,33 @@ Internode <- function(lgreen,lsen,diam,po,pos,epsillon) {
     chn <- paste(chn,StemElement(ttype$green_internode,lgreen,diam,diam),sep="")
   if (lsen > epsillon)
     chn <- paste(chn,StemElement(ttype$sen_internode,lsen,diam,diam))
+  chn
+}
+#
+Peduncle <- function(lgreen,lsen,diam,po,pos,epsillon) {
+  chn <- ""
+  if (lgreen > epsillon)
+    chn <- paste(chn,StemElement(ttype$green_peduncle,lgreen,diam,diam),sep="")
+  if (lsen > epsillon)
+    chn <- paste(chn,StemElement(ttype$sen_peduncle,lsen,diam,diam))
+  chn
+}
+#
+Ear <- function(lgreen,lsen,diam,po,pos,epsillon) {
+  chn <- ""
+  if (lgreen > epsillon)
+    chn <- paste(chn,StemElement(ttype$green_ear,lgreen,diam,diam),sep="")
+  if (lsen > epsillon)
+    chn <- paste(chn,StemElement(ttype$sen_ear,lsen,diam,diam))
+  chn
+}
+#
+Awn <- function(lgreen,lsen,diam,po,pos,epsillon) {
+  chn <- ""
+  if (lgreen > epsillon)
+    chn <- paste(chn,StemElement(ttype$green_awn,lgreen,diam,diam),sep="")
+  if (lsen > epsillon)
+    chn <- paste(chn,StemElement(ttype$sen_awn,lsen,diam,diam))
   chn
 }
 #
@@ -89,10 +119,23 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  "[",
                  roll(azm),
                  "newAxe")
-    for (n in axil$numphy) {
+    nf <- nrow(axil) - 3
+    for (n in axil$numphy[1:nf]) {
       chn <- paste(chn,Metamer(axil[axil$numphy == n,],epsillon,azaxil))
       azaxil = azaxil + axil$Laz[axil$numphy == n]
     }
+    #add Peduncle
+    if (axil$Ev[nf + 1] > epsillon)
+      chn <- paste(chn,
+                 Peduncle(axil$Ev[nf + 1]-axil$Esen[nf + 1],axil$Esen[nf + 1],axil$Ed[nf + 1],axil$Epo[nf + 1],axil$Epos[nf + 1],epsillon))
+    #add ear
+    if (axil$Ev[nf + 2] > epsillon)
+      chn <- paste(chn,
+                 Ear(axil$Ev[nf + 2]-axil$Esen[nf + 2],axil$Esen[nf + 2],axil$Ed[nf + 2],axil$Epo[nf + 2],axil$Epos[nf + 2],epsillon))
+    #add awn
+    if (axil$Ev[nf + 3] > epsillon)
+      chn <- paste(chn,
+                 Awn(axil$Ev[nf + 3]-axil$Esen[nf + 3],axil$Esen[nf + 3],axil$Ed[nf + 3],axil$Epo[nf + 3],axil$Epos[nf + 3],epsillon))
     chn <- paste(chn,
                  "]")
   }
@@ -125,13 +168,27 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
     azcum <- 0
     chn <- paste(chn,
                  "[ newPlant newAxe")
-    for (m in axe$numphy) {
+    # stringify main stem and delegates to Metamer axilary branches, if any
+    nf <- nrow(axe) - 3
+    for (m in axe$numphy[1:nf]) {
       if (m %in% axes)
         chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
       else
         chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))
       azcum <- azcum + axe$Laz[axe$numphy == m]
     }
+    #add Peduncle
+    if (axe$Ev[nf + 1] > epsillon)
+      chn <- paste(chn,
+                 Peduncle(axe$Ev[nf + 1]-axe$Esen[nf + 1],axe$Esen[nf + 1],axe$Ed[nf + 1],axe$Epo[nf + 1],axe$Epos[nf + 1],epsillon))
+    #add ear
+    if (axe$Ev[nf + 2] > epsillon)
+      chn <- paste(chn,
+                 Ear(axe$Ev[nf + 2]-axe$Esen[nf + 2],axe$Esen[nf + 2],axe$Ed[nf + 2],axe$Epo[nf + 2],axe$Epos[nf + 2],epsillon))
+    #add awn
+    if (axe$Ev[nf + 3] > epsillon)
+      chn <- paste(chn,
+                 Awn(axe$Ev[nf + 3]-axe$Esen[nf + 3],axe$Esen[nf + 3],axe$Ed[nf + 3],axe$Epo[nf + 3],axe$Epos[nf + 3],epsillon))
    chn <- paste(chn,"]")
   }
   chn

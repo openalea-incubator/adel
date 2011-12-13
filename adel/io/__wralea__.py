@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed Nov 30 16:21:12 2011
+# This file has been generated at Fri Dec 02 13:47:25 2011
 
 from openalea.core import *
 
@@ -148,7 +148,7 @@ dataframe2csv_dataframe2csv = Factory(name='dataframe2csv',
                 nodemodule='dataframe2csv',
                 nodeclass='dataframe2csv',
                 inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The pandas.DataFrame instance to export.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The csv filepath where the pandas.DataFrame instance is exported.'}],
-                outputs=[],
+                outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The csv filepath where the pandas.DataFrame instance is exported.'}],
                 widgetmodule=None,
                 widgetclass=None,
                )

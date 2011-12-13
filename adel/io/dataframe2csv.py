@@ -13,5 +13,5 @@ def dataframe2csv(dataframe, csv_filepath):
         - `csv_filepath` : str
     
     '''
-    dataframe.to_csv(path(csv_filepath), na_rep='NA', index_label='date')
-   
+    dataframe.to_csv(path(csv_filepath), na_rep='NA', index_label='date')
+    return csv_filepath   

@@ -37,7 +37,7 @@ gamma = 2. * math.sqrt(-alpha) + alpha
 def leaves_db():
     import cPickle as Pickle
     data_dir = os.path.dirname(data.__file__) 
-    fn = pj(data_dir,'leaves.db')
+    fn = pj(data_dir,'leaves_simple.db')
     f = open(fn)
     leaves = Pickle.load(f)
     f.close()
@@ -53,7 +53,7 @@ def leaf(rank, radius_max, length_max, length):
   rank = min(rank, rank_max)
   _leaves = db.get(str(rank), db.get(str(rank+1), db.get(str(rank-1), [])))
   
-  for l in _leaves[2:]:
+  for l in _leaves:
     mesh = None
     try:
       x,y,s,r = l
@@ -218,7 +218,7 @@ class LeafData:
     self.l = 0.
     self.g = 0.
     self.wm = Wmax_LI(self.num)
-    self.ltube = 0.# longueur enroulée (limbe + gaine)
+    self.ltube = 0.# longueur enroulee (limbe + gaine)
     self.lvis = 0. #longueur visible limbe
     self.gvis = 0. #longueur visible gaine
     self.IsExtended = False
@@ -253,6 +253,14 @@ class LeafData:
     self.TfinEn = DIF_EN(self.num)
   
 
+
+module P(n) : scale = 1
+module A(ad) : scale = 2
+module e(ed) : scale = 2
+module E(ed) : scale = 2
+module l(ld) : scale = 2
+module L(ld) : scale = 2
+
 def Start():
 	global hw
 	hw = 0.
@@ -284,12 +292,12 @@ maximum depth: 100
 D(done, todo) : 
    if (todo > 0):
       data = ApexData(done+1) 
-      produce S [ P(done + 1)A(data) ] D(done + 1, todo - 1)
+      produce  P(done + 1)A(data)  D(done + 1, todo - 1)
 
 
 D(done, todo) : 
    if (todo <= 0):
-      produce 
+      produce *
 
 A(ad) :
    if ((ad.age >= ad.Tini) and (ad.n < ad.NF)) :
@@ -299,7 +307,7 @@ A(ad) :
         ad.Tini = TINI(ad.n)
         produce e(ed) [l(ld)] A(ad)
    elif (ad.n >= ad.NF) : 
-        produce
+        produce *
 
 
 l(ld) : 
@@ -323,9 +331,7 @@ l(ld) :
         produce L(ld)
 
 e(ed) :
-   if (ed.L <= 0):
-        produce
-   elif (not ed.IsExtended) and (ed.age < ed.Tfin):
+   if (not ed.IsExtended) and (ed.age < ed.Tfin):
         ed.l = yLin(ed.age, ed.Tdeb, ed.Tfin, 0, ed.L)
         ed.IsExtended = True
         produce e(ed)

@@ -47,8 +47,8 @@ RsetCanopy = robj.globalEnv['setCanopy']
 RsetAdel = robj.globalEnv['setAdeluser']
 RdevCsv = robj.globalEnv['devTcsv']
 RreadCsv = robj.globalEnv['readCsv']
-RgenGeoAxe = robj.globalEnv['genGeoAxe']
-RgenGeoLeaf = robj.globalEnv['genGeoLeaf']
+#RgenGeoAxe = robj.globalEnv['genGeoAxe']
+#RgenGeoLeaf = robj.globalEnv['genGeoLeaf']
 RsetAdelArv = robj.globalEnv['setAdelArv']
 RgenString = robj.globalEnv['genString']
 RcanL2canS = robj.globalEnv['canL2canS']
@@ -116,7 +116,7 @@ def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     p = RsetAdelArv(Rcalage,np,sdlev,RFun)
     return p
 
-def setAdel(devT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
+def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
     """Creates a set of parameter for simulating np plants with adel from R inputs (see adeldoc.R)"""
     if seed is None:
         rseed = r('as.null()')
@@ -134,7 +134,11 @@ def setAdel(devT,RgeoLeaf,RgeoAxe,nplants = 1,seed = None, xydb = None, srdb = N
         rsrdb = srdb
 
     RdevT = Rdflist(devT)
-    p = RsetAdel(RdevT,RgeoLeaf,RgeoAxe,nplants,rseed,rxydb,rsrdb)
+    r(RcodegeoAxe)
+    geoAxe = robj.globalEnv['geoAxe']
+    r(RcodegeoLeaf)
+    geoLeaf = robj.globalEnv['geoLeaf']
+    p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,rseed,rxydb,rsrdb)
     return p
 
 def canL2canS(RcanT,srdb,shrink):
@@ -185,32 +189,55 @@ def genString(RcanopyT):
     chn = RgenString(RcanopyT)
     return chn[0]
 
-def genGeoAxe(azM=None,daz=None,ibmM=None,dibm=None,incT=None,dinT=None,dep=None):
-    """ generate geoAxe function for Adel """
-    try:
-        return RgenGeoAxe(azM,daz,ibmM,dibm,incT,dincT,dep)
-    except:
-        return RgenGeoAxe()
+def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7):
+    """ generate geoAxe R code for Adel """
+    rcode = """
+    geoAxe <- list(
+    azT = function(a) {{
+          ifelse(a == 0,
+          runif(1) * 360,#plant azimuth
+          {azTM:.2f} + (runif(1) - .5) * {dazT:.2f})
+       }},
+    incT = function(a) {{
+       ifelse(a == 0,
+              {incBmM:.2f} + (runif(1) - .5) * {dincBm:.2f},
+              {incT:.2f} + (runif(1) - .5) * {dincT:.2f})
+              }},
+    dredT = function(a) {{
+         #1.5 is an offset to avoid tiller superposed to mainstem
+          ifelse(a == 0,
+                 0,
+                 1.5 + runif(1) * ({depMax:.2f}-1.5))
+        }}
+       )
+       """
+    return rcode.format(azTM = azM, dazT = daz, incBmM = ibmM, dincBm = dibm, incT = incT, dincT = dinT, depMax = dep)
 
-def genGeoLeaf(nlim=None,dazt=None,dazb=None):
+def genGeoLeaf(nlim=4,dazt=60,dazb=10):
     """ generate geoLeaf function for Adel """
-    try:
-        return RgenGeoLeaf(nlim,dazt,dazb)
-    except:
-        return RgenGeoLeaf()
+    rcode = """
+    geoLeaf <- list(
+     Azim = function(a,n,ntop) {{
+            ifelse(ntop <= {ntoplim:d},
+            180 + {dazTop:.2f} * (runif(1) - .5),
+            180 + {dazBase:.2f} * (runif(1) - .5))
+            }},
+     Lindex = function(a,n,ntop) {{
+              ntop + 1}}
+              )
+        """
+    return rcode.format(ntoplim = nlim, dazTop = dazt, dazBase = dazb)
 
 def freeGeoAxe(rcode):
-    """ returns geoAxe object from txt definition """
+    """ returns geoAxe code from txt definition """
 
-    r(rcode)
+    return rcode
 
-    return robj.globalEnv['geoAxe']
 
 def freeGeoLeaf(rcode):
-    """ returns geoLeaf object from txt definition """
+    """ returns geoLeaf code from txt definition """
 
-    r(rcode)
-    
-    return robj.globalEnv['geoLeaf']
+    return rcode
+
 
 

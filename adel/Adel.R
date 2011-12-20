@@ -138,49 +138,51 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
 #hauteur du tube = depuis la base de l'entreneoud, pour chaque phyto
 #
 htube <- function(kin,ht0) {
-  if (dim(kin)[1] == 1) {
-    stem <- matrix(cumsum(kin[,,"El"]),nrow=1)
-  } else {
-    stem <- t(apply(kin[,,"El"],1,cumsum))
-  }
-  hcol <- stem + kin[,,"Gl"]
-  hcol <- cbind(matrix(ht0,ncol=1,nrow=nrow(hcol)),hcol)
-  htube <- t(apply(hcol,1,function(hc) {
-    res <- hc[-1]
-    for (i in seq(along=res))
-      res[i] <- max(hc[1:i])
-    res
-  }))
-  htube - stem + kin[,,"El"]
+  stem <- cumsum(kin$El)
+  hcol <- stem + kin$Gl
+  #ajout ht0,=>parcours hcol de 1 a n-1
+  htube <- sapply(seq(along=hcol),function(i) max(c(ht0,hcol)[1:i]))
+  pmax(0,htube - stem + kin$El)
 }
 #
+#Hmax : hauteur max axe si feuille verticale (pour calcul visibilite talles)
+#
+Hmax <- function(kin) {
+  kin <- data.frame(kin)
+  max(cumsum(kin$El)+kin$Gl+kin$Ll)
+}
 #model: kinlist is the output of kinL
 #
 kinLvis <- function(kinlist,pars=NULL) {
   res <- kinlist
-  for (a in seq(kinlist)) {
-    kin <- kinlist[[a]]
-    kinLv <- kin
-    ht <- htube(kin,0)
-    #calcul Lvis
-    zero <- kin[,,1]
-    if (length(dim(zero)) > 0)
-      zero[,] <- 0
-    else
-      zero[] <- 0
-    kinLv[,,"Ll"] <- pmin(pmax(zero,kin[,,"Ll"] + kin[,,"Gl"] + kin[,,"El"] - ht),kin[,,"Ll"])
-    kinLv[,,"Gl"] <- pmin(pmax(zero,kin[,,"Gl"] + kin[,,"El"] - ht),kin[,,"Gl"])
-    kinLv[,,"El"] <- pmin(pmax(zero,kin[,,"El"] - ht),kin[,,"El"])
-    kinLv[,,"Llsen"] <- pmin(kinLv[,,"Ll"],kin[,,"Llsen"])
-    kinLv[,,"Glsen"] <- pmin(kinLv[,,"Gl"],kin[,,"Glsen"])
-    kinLv[,,"Elsen"] <- pmin(kinLv[,,"El"],kin[,,"Elsen"])
-    res[[a]] <- kinLv
+  axes <- as.numeric(names(kinlist))
+  for (d in seq(dim(kinlist[[1]])[1])) {
+    #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
+    for (a in seq(kinlist)) {
+      kin <- data.frame(kinlist[[a]][d,,])
+    # calcul visibilite : talles doivent emerger du tube de la gaine axilante
+      if (axes[a] == 0) {
+        ht <- htube(kin,0)
+        htbm <- ht
+      } else {
+        ht <- htube(kin,htbm[axes[a]])
+      }
+                                        #calcul Lvis
+      res[[a]][d,,"Ll"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - ht),kin$Ll)
+      res[[a]][d,,"Gl"] <- pmin(pmax(0,kin$Gl + kin$El - ht),kin$Gl)
+      res[[a]][d,,"El"] <- pmin(pmax(0,kin$El - ht),kin$El)
+      res[[a]][d,,"Llsen"] <- pmin(res[[a]][d,,"Ll"],kin$Llsen)
+      res[[a]][d,,"Glsen"] <- pmin(res[[a]][d,,"Gl"],kin$Glsen)
+      res[[a]][d,,"Elsen"] <- pmin(res[[a]][d,,"El"],kin$Elsen)
+    }
   }
-  res
+       res
 }
 #
 # Converting kinetics -> Canopy desc table
-
+#
+#
+#
 #generate desc table(s) for one plant at time t
 getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6),t=1) {
   epsillon = pars$epsillon
@@ -194,7 +196,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     for (a in seq(kin)) {
       axename <- names(kin)[a]
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llsen","Glsen","Elsen")])
-      if (sum(dat) > epsillon) {
+      if (sum(dat) > epsillon) {#do not represent empty axes
         colnames(dat) <- c("Lv","Gv","Ev","Lsen","Gsen","Esen")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,axename])
@@ -210,22 +212,28 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         Einc[1] <- incT 
       # redressement (if any)
         if (dataxe$dredT > 0) {
-          dincd <- incT / dataxe$dredT
-          n <- 2
-          while (incT > 0 & n <= nbphy) {
-            lprec <- dat$Gv[n-1]
-            d <- lprec * cos(incT * pi / 180)
-            dinc <- min(d * dincd, incT)
-            Einc[n] <- (-dinc)
-            incT <- incT - dinc
-            lprec <- dat$Ev[n]
-            d <- lprec * cos(incT * pi / 180)
-            dinc <- min(d * dincd, incT)
-            Ginc[n] <- (-dinc)
-            incT <- incT - dinc
-            n <- n + 1
+          #distance inserton talle -> extremite gaine du phyto
+          alpha <- (90 - incT) * pi / 180
+          hc <- cumsum(dat$Ev + dat$Gv)
+          dc <- hc * cos(alpha)
+          #phytomer a redresser
+          if (any(dc >= dataxe$dredT)) {
+            nd <- min(which(dc >= dataxe$dredT))
+            #beta : angle entre l'horizontale et le phyto nd pour que son extremite tombe a  dredT
+            if (nd > 1) {
+              beta <- acos( (dataxe$dredT - dc[nd - 1]) / (hc[nd] - hc[nd - 1]) )
+              Einc[nd] <- -(beta - alpha) / pi * 180
+              if (nd < length(Einc))
+                Einc[nd + 1] <- - (pi / 2 - beta) / pi * 180
+            } else {#incT too large
+              beta <- acos(dataxe$dredT / hc[1])
+              Einc[1] <- (90 - beta) / pi * 180
+              if (length(Einc) > 1)
+                Einc[2] <- -Einc[1]
+            }
           }
-        }
+        }           
+         
 
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim
@@ -260,7 +268,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Ginc=Ginc,
                                          Gpo=pogreen,
                                          Gpos=posen,
-                                         El=datp$Gl,
+                                         El=datp$El,
                                          Ed=datp$Ed,
                                          Einc=Einc,
                                          Epo=Epo,

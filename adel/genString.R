@@ -3,9 +3,6 @@
 #          R routine for converting a dataframe representation of canopy to String for CanMTG interpreter
 #
 #
-# To DO : traiter a part les 3 derniers
-#
-#
 # conventions tissue_ttype :
 ttype <- list(green_lamina=1,sen_lamina=2,green_sheath=3,sen_sheath=4,green_internode=5, sen_internode=6,green_peduncle = 7, sen_peduncule=8, green_ear=9, sen_ear=10, green_awn = 11, sen_awn = 12)
 # 1 = Green lamina
@@ -18,8 +15,8 @@ ttype <- list(green_lamina=1,sen_lamina=2,green_sheath=3,sen_sheath=4,green_inte
 # 8 = senescent peduncule
 # 9 = green ear
 # 10 = senescent ear
-#
-#
+# 11 = green awn
+# 12 = senescent awn
 StemElement <- function(po, length, dbase, dtop,prec=3) {
   paste("StemElement(",paste(c(po,round(c(length,dbase,dtop),prec)),collapse=","),")",sep="")
 }
@@ -112,6 +109,25 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
   if (abs(dat$Einc) > 0)
     chn <- paste(chn,
                  up(dat$Einc))
+
+  if (dat$Ev > epsillon)
+  chn <- paste(chn,
+                 Internode(dat$Ev-dat$Esen,dat$Esen,dat$Ed,dat$Epo,dat$Epos,epsillon))
+
+  if (abs(dat$Ginc) > 0)
+    chn <- paste(chn,
+                 up(dat$Ginc))
+
+  if (dat$Gv > epsillon)
+    chn <- paste(chn,
+                 Sheath(dat$Gv-dat$Gsen,dat$Gsen,dat$Gd,dat$Gpo,dat$Gpos,epsillon))
+
+  if (dat$Lv > epsillon) 
+    chn <- paste(chn,
+                 "[",
+                 roll(azm),
+                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1)),
+                 "]")
   
   if (!is.null(axil)) {
     azaxil <- 0
@@ -124,7 +140,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
       chn <- paste(chn,Metamer(axil[axil$numphy == n,],epsillon,azaxil))
       azaxil = azaxil + axil$Laz[axil$numphy == n]
     }
-    #add Peduncle
+       #add Peduncle
     if (axil$Ev[nf + 1] > epsillon)
       chn <- paste(chn,
                  Peduncle(axil$Ev[nf + 1]-axil$Esen[nf + 1],axil$Esen[nf + 1],axil$Ed[nf + 1],axil$Epo[nf + 1],axil$Epos[nf + 1],epsillon))
@@ -138,23 +154,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  Awn(axil$Ev[nf + 3]-axil$Esen[nf + 3],axil$Esen[nf + 3],axil$Ed[nf + 3],axil$Epo[nf + 3],axil$Epos[nf + 3],epsillon))
     chn <- paste(chn,
                  "]")
-  }
-  
- if (dat$Ev > epsillon)
-  chn <- paste(chn,
-                 Internode(dat$Ev-dat$Esen,dat$Esen,dat$Ed,dat$Epo,dat$Epos,epsillon))
-  if (abs(dat$Ginc) > 0)
-    chn <- paste(chn,
-                 up(dat$Ginc))
-  if (dat$Gv > epsillon)
-    chn <- paste(chn,
-                 Sheath(dat$Gv-dat$Gsen,dat$Gsen,dat$Gd,dat$Gpo,dat$Gpos,epsillon))
-  if (dat$Lv > epsillon) 
-    chn <- paste(chn,
-                 "[",
-                 roll(azm),
-                 Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1)),
-                 "]")
+  } 
   chn
 }
 #

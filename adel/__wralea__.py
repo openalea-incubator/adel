@@ -17,6 +17,18 @@ __institutes__ = 'INRA, CIRAD'
 __icon__ = 'adel.png'
 
 
-__all__ = []
+__all__ = ['lpy2mtg_lpy2mtg']
 
+
+lpy2mtg_lpy2mtg = Factory(name='lpy2mtg',
+                authors='C. Fournier and C. Pradal (wralea authors)',
+                description='',
+                category='Unclassified',
+                nodemodule='lpy2mtg',
+                nodeclass='lpy2mtg',
+                inputs=[{'interface': ITextStr, 'name': 'AxialTree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'LSystem', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 

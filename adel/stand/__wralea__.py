@@ -17,7 +17,7 @@ __institutes__ = 'CIRAD, INRA, INRIA'
 __icon__ = ''
 
 
-__all__ = ['stand_agronomicplot', 'stand_sample_selection', 'stand_regularband', 'stand_planter', 'stand_concentric', 'stand_regular', 'CanMTGPlanter_CanMTGPlanter']
+__all__ = ['stand_agronomicplot', 'stand_agronomicplotwithdistribution', 'stand_sample_selection', 'stand_regularband', 'stand_planter', 'stand_concentric', 'stand_regular', 'CanMTGPlanter_CanMTGPlanter']
 
 
 
@@ -27,12 +27,23 @@ stand_agronomicplot = Factory(name='agronomic plot',
                 category='Unclassified',
                 nodemodule='stand',
                 nodeclass='agronomicplot',
-                inputs=[{'interface': IFloat, 'name': 'Plot length (m)', 'value': 1, 'desc': 'plot dimension along row direction'}, {'interface': IFloat, 'name': 'Plot width (m)', 'value': 1, 'desc': 'plot dimension across row direction'}, {'interface': IFloat, 'name': 'sowing density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'actual plant density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'inter row (m)', 'value': 0.125, 'desc': 'Distance between ranks'}, {'interface': IFloat, 'name': 'noise (%)', 'value': 0, 'desc': ''}, {'interface': IInt, 'name': 'conversion factor from m to output unit', 'value': 100, 'desc': ''}],
+                inputs=[{'interface': IFloat, 'name': 'Plot length (m)', 'value': 1, 'desc': 'plot dimension along row direction'}, {'interface': IFloat, 'name': 'Plot width (m)', 'value': 1, 'desc': 'plot dimension across row direction'}, {'interface': IFloat, 'name': 'sowing density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'actual plant density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'inter row (m)', 'value': 0.125, 'desc': 'Distance between ranks'},{'interface': IFloat, 'name': 'mu (-)', 'value': 0.0, 'desc': 'von Mises parameter -> mean'}, {'interface': IFloat, 'name': 'kappa (-)', 'value': 3.0, 'desc': 'von Mises parameter -> concentration'},{'interface': IFloat, 'name': 'noise (%)', 'value': 0, 'desc': ''}, {'interface': IInt, 'name': 'conversion factor from m to output unit', 'value': 100, 'desc': ''}],
                 outputs=[{'interface': IInt, 'name': 'number of plants', 'desc': ''}, {'interface': ISequence, 'name': 'positions', 'desc': 'List of plant positions'}, {'interface': ISequence, 'name': 'domain', 'desc': '2D bounding box of the stand'},{'interface': IInt, 'name': 'simulated density', 'desc': 'density of the simulated plot'}],
                 widgetmodule=None,
                 widgetclass=None,
                )
 
+stand_agronomicplotwithdistribution = Factory(name='agronomic plot with distributions',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='Returns the number of plants, the positions, azmuthal orientations, and the domain of a plot specified with agronomical variables',
+                category='Unclassified',
+                nodemodule='stand',
+                nodeclass='agronomicplotwithdistributions',
+                inputs=[{'interface': IFloat, 'name': 'Plot length (m)', 'value': 1, 'desc': 'plot dimension along row direction'}, {'interface': IFloat, 'name': 'Plot width (m)', 'value': 1, 'desc': 'plot dimension across row direction'}, {'interface': IFloat, 'name': 'sowing density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'actual plant density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'inter row (m)', 'value': 0.125, 'desc': 'Distance between ranks'}, {'interface': IFloat, 'name': 'noise (%)', 'value': 0, 'desc': ''}, {'interface': IInt, 'name': 'conversion factor from m to output unit', 'value': 100, 'desc': ''}],
+                outputs=[{'interface': IInt, 'name': 'number of plants', 'desc': ''}, {'interface': ISequence, 'name': 'positions', 'desc': 'List of plant positions'}, {'interface': ISequence, 'name': 'azimuths', 'desc': 'List of plant azimuths'}, {'interface': ISequence, 'name': 'domain', 'desc': '2D bounding box of the stand'},{'interface': IInt, 'name': 'simulated density', 'desc': 'density of the simulated plot'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
 
 

@@ -4,6 +4,7 @@ from math import pi, sqrt
 from openalea.plantgl.all import Translation, Vector3, AxisRotation, Transform4
 from alinea.adel import symbol
 from random import random,sample
+from numpy.random import vonmises
 
 def regular(nb_plants, nb_rank, dx, dy):
     
@@ -34,6 +35,37 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
 
     return n_emerged, positions, domain, density
 
+def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu, kappa, noise = 0,convunit=100):
+    """
+    Returns the
+        - number of plants
+        - the positions
+        - azimuthal orientation of each plant
+        - the domain
+        - the simulated density
+        of a micro-plot specified with agronomical variables
+       
+    Inputs:
+        - length (m) is plot dimension along row direction
+        - width (m) is plot dimension perpendicular to row direction
+        - sowing density is the density of seeds sawn
+        - plant_density is the density of plants that are present (after loss due to bad emergence, early death...)
+        - inter_row (m) is for the  distance between rows
+        - mu, kappa are the von Mises parameters of the azimuthal distribution
+        - noise (%), indicates the precision of the sowing for the inter plant spacing
+        - unit (m or cm) is for the unit of the position and domain
+    """
+    inter_plant = 1. / inter_row / sowing_density
+    nrow = max(1, int(float(width) / inter_row))
+    plant_per_row = max(1,int(float(length) / inter_plant))
+    nplants = nrow * plant_per_row
+    positions, domain = regular(nplants, nrow, inter_plant * convunit, inter_row * convunit)
+    n_emerged = int(nplants * plant_density / sowing_density)
+    positions = sample(positions, n_emerged)
+    density = int(n_emerged / ( abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit))
+    azimuths = vonmises(mu, kappa, nplants)
+    return n_emerged, positions, azimuths, domain, density, 
+    
 
 def regularband(nb_plants, nb_rank, dx, dy):
     

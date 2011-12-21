@@ -35,7 +35,7 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
 
     return n_emerged, positions, domain, density
 
-def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu, kappa, noise = 0,convunit=100):
+def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu=0.0, kappa=3.0, noise = 0,convunit=100):
     """
     Returns the
         - number of plants
@@ -64,7 +64,7 @@ def agronomicplotwithdistributions(length, width, sowing_density, plant_density,
     positions = sample(positions, n_emerged)
     density = int(n_emerged / ( abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit))
     azimuths = vonmises(mu, kappa, nplants)
-    return n_emerged, positions, azimuths, domain, density, 
+    return n_emerged, positions, azimuths, domain, density
     
 
 def regularband(nb_plants, nb_rank, dx, dy):

@@ -514,15 +514,15 @@ def to_canestra(g):
     lines.append('')
     return '\n'.join(lines)
 
-def planter(g, distribution, random_seed=0):
+def planter(g, distribution, random_seed=0, azimuths = None):
     """
     Transform a set of plants with given point distributions.
 
     :Parameters: 
         - g: MTG
         - distribution: a list of 2D positions
-        - random_seed: add a random rotation to each plant if the value is positive.
-          In this case, random_seed is used as a seed.
+        - random_seed: add a random rotation to each plant if the value is positive.In this case, random_seed is used as a seed.
+        - azimuth : a list defining plant azimuths (in radians). The list is recycled to achieve positioning of all the plants
     """
     #assert g.nb_vertices(scale=1) == len(distribution)
     geometry = g.property('geometry')
@@ -536,14 +536,12 @@ def planter(g, distribution, random_seed=0):
     if random_seed > 0:
         random.seed(random_seed)
 
-    def pt2transfo(pt, previous_pt):
+    def pt2transfo(pt, previous_pt,rotation):
         matrix = Translation(pt).getMatrix()
-        rotation = 0
-        if random_seed > 0:
-            rotation = random.random()*pi
+        if rotation is not 0:
             r = AxisRotation((0,0,1), rotation).getMatrix()
             matrix = matrix * r * Translation(previous_pt).getMatrix()
-        return Transform4(matrix), pt, rotation
+        return Transform4(matrix), pt
 
     def transform_geom(geom, transfo, translation, rotation):
         if isinstance(geom, list):
@@ -566,8 +564,13 @@ def planter(g, distribution, random_seed=0):
         translations[root_elt] = distribution[i]
 
         #displacement = Vector3(distribution[i])-Vector3(previous_translation)
-
-        transfo, translation, rotation = pt2transfo(Vector3(distribution[i]), -Vector3(previous_translation))
+        rotation = 0
+        if azimuths is not None:
+            rotation = azimuths[i]
+        elif random_seed > 0:
+            rotation = random.random()*pi
+        
+        transfo, translation = pt2transfo(Vector3(distribution[i]), -Vector3(previous_translation), rotation)
         l = (vid for vid in g.vertices(scale=max_scale) if g.complex_at_scale(vid, scale=1) == root_elt) 
         #for vid in g.components_at_scale(root_elt, 4):
         for vid in l:

@@ -17,6 +17,9 @@ TIMESTEP = 1
 nb_plant = 5
 STEPS = 60
 
+#plastochron
+PLAST = 21
+
 # control of plant azimuth
 mu = 0
 kappa = 0.00005
@@ -70,7 +73,16 @@ def leaf(rank, radius_max, length_max, length):
       continue
   return mesh
 
-
+# development:
+#
+# 1 line per phytomer giving TTINI (date of phytomer initiation), DIE (delay between initiation and start of extension), DIA (delay between initiation and tip apprearance), and DIL (delay between initiation and collar appearance).
+#
+# These can be approximated from phenological notation/model of tip appearance and collar appearance :
+# TTINI(n) = Date of appearance of leaf  n/2
+# DIE(n) = (0.8 * date tip apperance of leaf n) - TTINI(n)
+# DIA(n) = date tip apperance of leaf n - TTINI(n)
+# DIL(n) = date collar apperance of leaf n - TTINI(n)
+#
 def get_development(line, col):
 
   tab = [[0,0,0,81,],
@@ -88,6 +100,10 @@ def get_development(line, col):
 
   return tab[line][col]
   
+
+#
+# dimension : one line per phytomer giving Lamina length(m), sheath legnth(m), internode length(m) and lamina maximal width
+# These can be approximated with equations given in Fournier et al paper (98) :
 
 def get_dimensions(line, col):
   """ 
@@ -124,7 +140,8 @@ def dTT(temp, dt, temp_base=9.8):
 
 def TINI(rank):
     """ Dates d'apparition des primordias (dd) """
-    return float(get_development(rank - 1, 0))
+    return PLAST * rank
+    #return float(get_development(rank - 1, 0))
   
 def DIE(rank):
     """ Delai initiation - extension rapide des feuilles (dd) """
@@ -270,7 +287,7 @@ def Start():
 	global hw
 	hw = 0.
 
-Axiom:  D(0, nb_plant)
+Axiom:  D(0)
 
 derivation length: STEPS
 production:
@@ -294,14 +311,14 @@ e(ed) :
 decomposition:
 maximum depth: 100
 
-D(done, todo) : 
-   if (todo > 0):
+D(done) : 
+   if (done < nb_plant):
       data = ApexData(done+1) 
-      produce  [P(done + 1)A(data)]  D(done + 1, todo - 1)
+      produce  [P(done + 1)A(data)]  D(done + 1)
 
 
-D(done, todo) : 
-   if (todo <= 0):
+D(done) : 
+   if (done >= 0):
       produce *
 
 A(ad) :

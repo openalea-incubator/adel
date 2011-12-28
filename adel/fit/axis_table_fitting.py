@@ -16,36 +16,36 @@ except:
     from scipy import stats
 
 
-def create_plant_ids_column(plant_ids, axes_column):
+def create_index_plt_list(plant_ids, index_axis_list):
     '''
     Create plant indexes column.
     :Parameters:
         - `plant_ids` : the plant indexes.
-        - `axes_column` : the axes column.
+        - `index_axis_list` : the axes column.
     :Types:
         - `plant_ids` : list
-        - `axes_column` : list
+        - `index_axis_list` : list
         
     :return: The plant indexes column.
     :rtype: list
     '''
-    plant_ids_column = []
+    index_plt_list = []
     current_plant_index = 0
     for plant_id in plant_ids:
         start_index = current_plant_index + 1
-        if 1 in axes_column[start_index:]:
-            next_plant_first_row = axes_column.index(1, start_index)
+        if 1 in index_axis_list[start_index:]:
+            next_plant_first_row = index_axis_list.index(1, start_index)
         else:
-            next_plant_first_row = len(axes_column)
-        current_plant_axes = axes_column[current_plant_index:next_plant_first_row]
-        plant_ids_column.extend([plant_id for current_plant_axis in current_plant_axes])
+            next_plant_first_row = len(index_axis_list)
+        current_plant_axes = index_axis_list[current_plant_index:next_plant_first_row]
+        index_plt_list.extend([plant_id for current_plant_axis in current_plant_axes])
         current_plant_index = next_plant_first_row
-    return plant_ids_column
+    return index_plt_list
 
 
-def create_axes_column(plant_ids, 
-                       cohort_probabilities={'3': 1.0, '4': 1.0, '5': 0.6, '6': 0.0, 
-                                             '7': 0.0, '8': 0.0, '9': 0.0, '10': 0.0}):
+def create_index_axis_list(plant_ids, 
+                           cohort_probabilities={'3': 1.0, '4': 1.0, '5': 0.6, '6': 0.0, 
+                                                 '7': 0.0, '8': 0.0, '9': 0.0, '10': 0.0}):
     '''
     Create axes column.
     :Parameters:
@@ -58,12 +58,12 @@ def create_axes_column(plant_ids,
     :return: The axes column.
     :rtype: list
     '''
-    axes_column = []
+    index_axis_list = []
     for plant_id in plant_ids:
         cohort_numbers = _find_child_cohort_numbers(cohort_probabilities)
         cohort_numbers.sort()
-        axes_column.extend(cohort_numbers)
-    return axes_column
+        index_axis_list.extend(cohort_numbers)
+    return index_axis_list
 
 
 def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
@@ -99,29 +99,29 @@ def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
     return child_cohort_numbers
               
               
-def create_nff_column(axes_column, 
-                      main_stem_leaves_number_probability_distribution={'10': 0.1, '11': 0.1, '12': 0.1, 
-                                                                       '13': 0.1, '14': 0.6},
-                      secondary_stem_leaves_number_coefficients={'a_1': 0.9423, 'a_2': 0.555}):
+def create_N_phyt_list(index_axis_list, 
+                       main_stem_leaves_number_probability_distribution={'10': 0.1, '11': 0.1, '12': 0.1, 
+                                                                         '13': 0.1, '14': 0.6},
+                       secondary_stem_leaves_number_coefficients={'a_1': 0.9423, 'a_2': 0.555}):
     '''
     Create nff column.
     :Parameters:
-        - `axes_column` : the axes column.
+        - `index_axis_list` : the axes column.
         - `main_stem_leaves_number_probability_distribution` : the probability distribution of 
         the main stem leaves number.
         - `secondary_stem_leaves_number_coefficients` : the coefficients of the secondary stem leaves number.
     :Types:
-        - `axes_column` : list
+        - `index_axis_list` : list
         - `main_stem_leaves_number_probability_distribution` : dict
         - `secondary_stem_leaves_number_coefficients` : dict
         
     :return: The nff column.
     :rtype: list
     '''
-    nff_column = []
+    N_phyt_list = []
     main_stem_leaves_number = 0.0
     # for each plant...
-    for cohort_number in axes_column:
+    for cohort_number in index_axis_list:
         # calculate the leaves number of each axis
         leaves_number_float = 0.0
         if cohort_number == 1:
@@ -145,19 +145,19 @@ def create_nff_column(axes_column,
             leaves_number_int = int(math.ceil(leaves_number_float))
         else:
             leaves_number_int = int(integer_part)
-        nff_column.append(leaves_number_int)
+        N_phyt_list.append(leaves_number_int)
      
-    return nff_column
+    return N_phyt_list
 
 
-def create_emf_1_column(axes_column, emf_1_main_stem_standard_deviation=30.0):
+def create_T_em_leaf1_list(index_axis_list, emf_1_main_stem_standard_deviation=30.0):
     '''
     Create emf_1 column.
     :Parameters:
-        - `axes_column` : the axes column.
+        - `index_axis_list` : the axes column.
         - `emf_1_main_stem_standard_deviation` : the standard deviation used to calculate main stem emf_1 value.
     :Types:
-        - `axes_column` : list
+        - `index_axis_list` : list
         - `emf_1_main_stem_standard_deviation` : float
         
     :return: The emf_1 column.
@@ -165,8 +165,8 @@ def create_emf_1_column(axes_column, emf_1_main_stem_standard_deviation=30.0):
     '''
     mu=0.0
     sigma=emf_1_main_stem_standard_deviation
-    emf_1_column = []
-    for cohort_number in axes_column:
+    T_em_leaf1_list = []
+    for cohort_number in index_axis_list:
         emf_1 = 0.0
         if cohort_number == 1:
             # then it is the main stem
@@ -176,88 +176,88 @@ def create_emf_1_column(axes_column, emf_1_main_stem_standard_deviation=30.0):
         else:
             # it is a secondary stem
             emf_1 = None # TODO: will be modified.
-        emf_1_column.append(emf_1)
-    return emf_1_column
+        T_em_leaf1_list.append(emf_1)
+    return T_em_leaf1_list
 
 
-def create_id_dim_column(axes_column, nff_column):
+def create_id_dim_list(index_axis_list, N_phyt_list):
     '''
     Create id_dim column.
     :Parameters:
-        - `axes_column` : the axes column.
-        - `nff_column` : the nff column.
+        - `index_axis_list` : the axes column.
+        - `N_phyt_list` : the nff column.
     :Types:
-        - `axes_column` : list
-        - `nff_column` : list
+        - `index_axis_list` : list
+        - `N_phyt_list` : list
         
     :return: The id_dim column.
     :rtype: list
     '''
-    return _create_id_column(axes_column, nff_column)
+    return _create_ids(index_axis_list, N_phyt_list)
 
 
-def create_id_phen_column(axes_column, nff_column):
+def create_id_phen_list(index_axis_list, N_phyt_list):
     '''
     Create id_phen column.
     :Parameters:
-        - `axes_column` : the axes column.
-        - `nff_column` : the nff column.
+        - `index_axis_list` : the axes column.
+        - `N_phyt_list` : the nff column.
     :Types:
-        - `axes_column` : list
-        - `nff_column` : list
+        - `index_axis_list` : list
+        - `N_phyt_list` : list
         
     :return: The id_phen column.
     :rtype: list
     '''
-    return _create_id_column(axes_column, nff_column)
+    return _create_ids(index_axis_list, N_phyt_list)
 
 
-def _create_id_column(axes_column, nff_column):
+def _create_ids(index_axis_list, N_phyt_list):
     '''
     Create id column.
     :Parameters:
-        - `axes_column` : the axes column.
-        - `nff_column` : the nff column.
+        - `index_axis` : the axes column.
+        - `N_phyt_list` : the nff column.
     :Types:
-        - `axes_column` : list
-        - `nff_column` : list
+        - `index_axis` : list
+        - `N_phyt_list` : list
         
     :return: The id column.
     :rtype: list
     '''
-    id_column = []
-    for i in range(len(axes_column)):
-        id_column.append(''.join([str(axes_column[i]), str(nff_column[i]).zfill(2)]))
-    return id_column
+    id_list = []
+    for i in range(len(index_axis_list)):
+        id_list.append(''.join([str(index_axis_list[i]), str(N_phyt_list[i]).zfill(2)]))
+    return id_list
 
 
-def create_id_ear_column(plant_ids_column):
+def create_id_ear_list(index_plt_list):
     '''
     Create id_ear column.
     :Parameters:
-        - `plant_ids_column` : the plant ids column.
+        - `index_plt_list` : the plant ids column.
     :Types:
-        - `plant_ids_column` : list
+        - `index_plt_list` : list
         
     :return: The id_ear column.
     :rtype: list
     '''
-    return ['1' for plant_id in plant_ids_column]
+    return ['1' for plant_id in index_plt_list]
     
     
-def create_end_column(max_axes_number, min_axes_number, emf_1_column, bolting_date=500, flowering_date=1000):
+def create_T_stop_axis_list(max_axes_number, min_axes_number, T_em_leaf1_list, bolting_date=500, flowering_date=1000):
     '''
     Create end column.
     :Parameters:
         - `max_axes_number` : The maximum number of existing axes. Must be positive or null, and greater than min_axes_number.
         - `min_axes_number` : The minimum number of existing axes. Must be positive or null, and lesser than max_axes_number.
-        - `emf_1_column` : The emf_1 column.
+        - `T_em_leaf1_list` : The emf_1 column.
         - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
         - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
     :Types:
         - `max_axes_number` : int
         - `min_axes_number` : int
-        - `emf_1_column` : list
+        - `T_em_leaf1_list` : list
         - `bolting_date` : int
         - `flowering_date` : int
         
@@ -271,49 +271,53 @@ def create_end_column(max_axes_number, min_axes_number, emf_1_column, bolting_da
     
     slope, intercept, r_value, p_value, std_err = stats.linregress([bolting_date, flowering_date],[max_axes_number, min_axes_number])              
     remaining_axes_number = max_axes_number
-    emf_1_column_tuples = zip(emf_1_column[:], range(len(emf_1_column)))
-    emf_1_column_tuples.sort()
-    end_column_tuples = []
+    T_em_leaf1_tuples = zip(T_em_leaf1_list[:], range(len(T_em_leaf1_list)))
+    T_em_leaf1_tuples.sort()
+    T_stop_axis_tuples = []
     for tt in range(bolting_date, flowering_date + 1):
         simulated_axes_number = int(slope * tt + intercept)
         axes_to_delete_number = remaining_axes_number - simulated_axes_number
         while axes_to_delete_number >= 0:
-            max_emf_1, axis_row_number = emf_1_column_tuples.pop()
-            end_column_tuples.append((axis_row_number, tt))
+            max_emf_1, axis_row_number = T_em_leaf1_tuples.pop()
+            T_stop_axis_tuples.append((axis_row_number, tt))
             axes_to_delete_number -= 1
             remaining_axes_number -= 1
         if remaining_axes_number == 0:
             break 
-    end_column_tuples.sort()
-    end_row_number = [end_column_tuple[0] for end_column_tuple in end_column_tuples]
-    end_column = [end_column_tuple[1] for end_column_tuple in end_column_tuples]
-    for i in range(len(emf_1_column)):
+    T_stop_axis_tuples.sort()
+    end_row_number = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
+    T_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
+    for i in range(len(T_em_leaf1_list)):
         if i not in end_row_number:
-            end_column.insert(i, None) 
-    return end_column 
+            T_stop_axis_list.insert(i, None) 
+    return T_stop_axis_list 
 
 
 if __name__ == "__main__":
     
     plant_ids = range(1,101)
-
-    axes_column = create_axes_column(plant_ids)
-    plant_ids_column = create_plant_ids_column(plant_ids, axes_column)
-    nff_column = create_nff_column(axes_column)
-    emf_1_column = create_emf_1_column(axes_column)
-    end_column = create_end_column(len(axes_column), int(len(axes_column)/2), emf_1_column)
-    id_dim_column = create_id_dim_column(axes_column, nff_column)
-    id_phen_column = create_id_phen_column(axes_column, nff_column)
-    id_ear_column = create_id_ear_column(plant_ids_column)
     
-    axis_array = numpy.array([plant_ids_column, axes_column, nff_column, end_column, id_dim_column, id_phen_column, id_ear_column, emf_1_column]).transpose()
+    index_axis_list = create_index_axis_list(plant_ids)
+    index_plt_list = create_index_plt_list(plant_ids, index_axis_list)
+    N_phyt_list = create_N_phyt_list(index_axis_list)
+    T_em_leaf1_list = create_T_em_leaf1_list(index_axis_list)
+    T_stop_axis_list = create_T_stop_axis_list(len(index_axis_list), int(len(index_axis_list)/2), T_em_leaf1_list)
+    id_dim_list = create_id_dim_list(index_axis_list, N_phyt_list)
+    id_phen_list = create_id_phen_list(index_axis_list, N_phyt_list)
+    id_ear_list = create_id_ear_list(index_plt_list)
     
+    axis_array = numpy.array([index_plt_list, index_axis_list, N_phyt_list, T_stop_axis_list, id_dim_list, id_phen_list, id_ear_list, T_em_leaf1_list]).transpose()
+    axis_table_dataframe = pandas.DataFrame(axis_array, columns=['index_plt', 'index_axis', 'N_phyt', 'T_stop_axis', 'id_dim', 'id_phen', 'id_ear', 'T_em_leaf1'])
+        
     import tempfile
     from openalea.core.path import path
-    axis_table_directory = path(tempfile.mkdtemp(suffix='_axis_table_filling_test'))
+    fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
+    axis_table_filepath = fitting_results_directory/'axis_table_random.csv'
     
-    axis_dataframe = pandas.DataFrame(axis_array, columns=['plant', 'axe', 'nff', 'end', 'id_dim', 'id_phen', 'id_ear', 'emf_1'])
-    axis_dataframe.to_csv(axis_table_directory/'axis_table_filling_test.csv', na_rep='NA', index=False)  
+    axis_table_dataframe.to_csv(axis_table_filepath, na_rep='NA', index=False)  
     
-    print 'The results has been saved in %s' % axis_table_directory
+    print 'The results has been saved in %s' % fitting_results_directory
+    
+    import os
+    os.system("start %s" % axis_table_filepath.abspath())
 

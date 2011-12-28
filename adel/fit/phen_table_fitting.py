@@ -60,7 +60,7 @@ def create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe
         - `TT_parameters_dataframe` : A table of parameters with the following headers: 
             * id_phen: The identifier made from concatenation of cohort number and N_phyt. This column is ordered in descending order and contains no duplicate.
             * a_cohort: The slope of phytomer emergence. This parameter has to be specified for (at least) the first dataframe row. 
-            * TT_HS_0: The Thermal Time for Haun Stage equal to 0. This parameter has to be specified for (at least) the first dataframe row. 
+            * TT_col_0: The Thermal Time for Haun Stage equal to 0. This parameter has to be specified for (at least) the first dataframe row. 
                        Hypothesis: Same cohort axes have the same emergence date. Thus, for each cohort, only the first observation 
                        has to be filled. Filling several observations for the same cohort is unexpected. 
             * TT_HS_break: The Thermal Time when the slope of phytomers emergence is changing. This parameter has to be specified for (at 
@@ -87,23 +87,23 @@ def create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe
     # The a_cohort value is always specified for the first row. 
     # For each following row, propagate last valid value forward to next valid.
     TT_parameters_dataframe['a_cohort'] = TT_parameters_dataframe['a_cohort'].fillna()
-    # Fill TT_parameters_dataframe['TT_HS_0].
-    # The TT_HS_0 value is always specified for the first row and same cohort axes have the same emergence date.
+    # Fill TT_parameters_dataframe['TT_col_0].
+    # The TT_col_0 value is always specified for the first row and same cohort axes have the same emergence date.
     TT_parameters_dataframe['cohort_number'] = TT_parameters_dataframe['id_phen'].astype(str)
     TT_parameters_grouped_dataframe = TT_parameters_dataframe.groupby('cohort_number')
     for name, group in TT_parameters_grouped_dataframe:
         if name == '1':
             # It's the main stems (i.e. the first cohort axes): propagate last valid value forward to next valid.
-            filled_group = group['TT_HS_0'].fillna()
-            TT_parameters_dataframe['TT_HS_0'] = TT_parameters_dataframe['TT_HS_0'].combine_first(filled_group)
+            filled_group = group['TT_col_0'].fillna()
+            TT_parameters_dataframe['TT_col_0'] = TT_parameters_dataframe['TT_col_0'].combine_first(filled_group)
         else:
-            # It's a secondary cohort: TT_HS_0 is identical whatever N_phyt value.
+            # It's a secondary cohort: TT_col_0 is identical whatever N_phyt value.
             current_cohort = float(name)
             current_a_cohort = group['a_cohort'][0]
-            main_stem_TT_HS_0 = TT_parameters_grouped_dataframe.get_group('1')['TT_HS_0'][0]
-            current_cohort_TT_HS_0 = main_stem_TT_HS_0 + (current_cohort - (1.6 * current_a_cohort)) / current_a_cohort # TODO: check with Mariem that it's the good equation.
-            filled_group = group['TT_HS_0'].fillna(current_cohort_TT_HS_0)
-            TT_parameters_dataframe['TT_HS_0'] = TT_parameters_dataframe['TT_HS_0'].combine_first(filled_group)
+            main_stem_TT_col_0 = TT_parameters_grouped_dataframe.get_group('1')['TT_col_0'][0]
+            current_cohort_TT_col_0 = main_stem_TT_col_0 + (current_cohort - (1.6 * current_a_cohort)) / current_a_cohort # TODO: check with Mariem that it's the good equation.
+            filled_group = group['TT_col_0'].fillna(current_cohort_TT_col_0)
+            TT_parameters_dataframe['TT_col_0'] = TT_parameters_dataframe['TT_col_0'].combine_first(filled_group)
     # Fill TT_parameters_dataframe['TT_HS_break']. 
     # The TT_HS_break value is always specified for the first row. 
     # For each following row, propagate last valid value forward to next valid.
@@ -130,25 +130,25 @@ def create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe
     TT_col_phytomer_list = []
     if calculation_method == 'linear':
         for i in TT_parameters_dataframe.index:
-            TT_HS_0_i = TT_parameters_dataframe['TT_HS_0'][i]
+            TT_col_0_i = TT_parameters_dataframe['TT_col_0'][i]
             a_cohort_i = TT_parameters_dataframe['a_cohort'][i]
             phytomer_indexes = range(int(str(int(TT_parameters_dataframe['id_phen'][i]))[-2:]) + 1)
             for j in phytomer_indexes:
-                TT_col_phytomer_i_j = TT_HS_0_i + j / a_cohort_i
+                TT_col_phytomer_i_j = TT_col_0_i + j / a_cohort_i
                 TT_col_phytomer_list.append(TT_col_phytomer_i_j)
     else: # bilinear calculation method
         for i in TT_parameters_dataframe.index:
             a_cohort_i = TT_parameters_dataframe['a_cohort'][i]
             TT_HS_break_i = TT_parameters_dataframe['TT_HS_break'][i]
-            TT_HS_0_i = TT_parameters_dataframe['TT_HS_0'][i]
-            HS_break_i = a_cohort_i * (TT_HS_break_i - TT_HS_0_i)
+            TT_col_0_i = TT_parameters_dataframe['TT_col_0'][i]
+            HS_break_i = a_cohort_i * (TT_HS_break_i - TT_col_0_i)
             N_phyt_i = int(str(int(TT_parameters_dataframe['id_phen'][i]))[-2:])
             TT_HS_NFF_i = TT_parameters_dataframe['TT_HS_NFF'][i]
             b_cohort_i = (N_phyt_i - HS_break_i) / (TT_HS_NFF_i - TT_HS_break_i)
             phytomer_indexes = range(N_phyt_i + 1)
             for j in phytomer_indexes: 
                 if j <= HS_break_i:
-                    TT_col_phytomer_i_j = TT_HS_0_i + j / a_cohort_i
+                    TT_col_phytomer_i_j = TT_col_0_i + j / a_cohort_i
                 else:
                     TT_col_phytomer_i_j = TT_HS_break_i + (j - HS_break_i) / b_cohort_i
                 TT_col_phytomer_list.append(TT_col_phytomer_i_j)
@@ -199,14 +199,14 @@ if __name__ == "__main__":
     id_phen_without_duplicate_list.sort()
     a_cohort_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     a_cohort_list.insert(0, 1.102)
-    TT_HS_0_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
-    TT_HS_0_list.insert(0, 0.2)
+    TT_col_0_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
+    TT_col_0_list.insert(0, 0.2)
     TT_HS_break_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     TT_HS_break_list.insert(0, 5.0)
     TT_HS_NFF_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     TT_HS_NFF_list.insert(0, 1078.0)
-    TT_parameters_array = numpy.array([id_phen_without_duplicate_list, a_cohort_list, TT_HS_0_list, TT_HS_break_list, TT_HS_NFF_list]).transpose()
-    TT_parameters_dataframe = pandas.DataFrame(TT_parameters_array, columns=['id_phen', 'a_cohort', 'TT_HS_0', 'TT_HS_break', 'TT_HS_NFF'], dtype=float)
+    TT_parameters_array = numpy.array([id_phen_without_duplicate_list, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list]).transpose()
+    TT_parameters_dataframe = pandas.DataFrame(TT_parameters_array, columns=['id_phen', 'a_cohort', 'TT_col_0', 'TT_HS_break', 'TT_HS_NFF'], dtype=float)
     most_frequent_id_phen_list = find_most_frequent_id_phen_list(id_phen_from_axis_table_list)
     dTT_flo_MS_list = [i * 7.0 for i in range(1, len(most_frequent_id_phen_list) + 1)]
     flowering_dTT_array = numpy.array([most_frequent_id_phen_list, dTT_flo_MS_list]).transpose()

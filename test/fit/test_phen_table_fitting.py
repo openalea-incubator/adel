@@ -33,14 +33,14 @@ def test_create_TT_col_phytomer_list():
     id_phen_without_duplicate_list.sort()
     a_cohort_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     a_cohort_list.insert(0, 1.102)
-    TT_HS_0_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
-    TT_HS_0_list.insert(0, 0.2)
+    TT_col_0_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
+    TT_col_0_list.insert(0, 0.2)
     TT_HS_break_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     TT_HS_break_list.insert(0, 5.0)
     TT_HS_NFF_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list) - 1)]
     TT_HS_NFF_list.insert(0, 1078.0)
-    TT_parameters_array = numpy.array([id_phen_without_duplicate_list, a_cohort_list, TT_HS_0_list, TT_HS_break_list, TT_HS_NFF_list]).transpose()
-    TT_parameters_dataframe = pandas.DataFrame(TT_parameters_array, columns=['id_phen', 'a_cohort', 'TT_HS_0', 'TT_HS_break', 'TT_HS_NFF'], dtype=float)
+    TT_parameters_array = numpy.array([id_phen_without_duplicate_list, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list]).transpose()
+    TT_parameters_dataframe = pandas.DataFrame(TT_parameters_array, columns=['id_phen', 'a_cohort', 'TT_col_0', 'TT_HS_break', 'TT_HS_NFF'], dtype=float)
     dTT_flo_MS_list = [i * 7.0 for i in range(1, len(expected_most_frequent_id_phen_list) + 1)]
     flowering_dTT_array = numpy.array([expected_most_frequent_id_phen_list, dTT_flo_MS_list]).transpose()
     flowering_dTT_dataframe = pandas.DataFrame(flowering_dTT_array, columns=['id_phen', 'dTT_flo_MS'], dtype=float)

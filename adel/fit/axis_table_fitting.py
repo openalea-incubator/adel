@@ -44,8 +44,8 @@ def create_index_plt_list(plant_ids, index_axis_list):
 
 
 def create_index_axis_list(plant_ids, 
-                           cohort_probabilities={'3': 1.0, '4': 1.0, '5': 0.6, '6': 0.0, 
-                                                 '7': 0.0, '8': 0.0, '9': 0.0, '10': 0.0}):
+                           cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, 
+                                                 '7': 0.083, '8': 0.0, '9': 0.0, '10': 0.0}):
     '''
     Create axes column.
     :Parameters:
@@ -100,8 +100,8 @@ def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
               
               
 def create_N_phyt_list(index_axis_list, 
-                       main_stem_leaves_number_probability_distribution={'10': 0.1, '11': 0.1, '12': 0.1, 
-                                                                         '13': 0.1, '14': 0.6},
+                       main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, 
+                                                                         '13': 0.0, '14': 0.0},
                        secondary_stem_leaves_number_coefficients={'a_1': 0.9423, 'a_2': 0.555}):
     '''
     Create nff column.
@@ -301,13 +301,16 @@ if __name__ == "__main__":
     index_plt_list = create_index_plt_list(plant_ids, index_axis_list)
     N_phyt_list = create_N_phyt_list(index_axis_list)
     T_em_leaf1_list = create_T_em_leaf1_list(index_axis_list)
+
+'''Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles) '''
+
     T_stop_axis_list = create_T_stop_axis_list(len(index_axis_list), int(len(index_axis_list)/2), T_em_leaf1_list)
     id_dim_list = create_id_dim_list(index_axis_list, N_phyt_list)
     id_phen_list = create_id_phen_list(index_axis_list, N_phyt_list)
     id_ear_list = create_id_ear_list(index_plt_list)
     
     axis_array = numpy.array([index_plt_list, index_axis_list, N_phyt_list, T_stop_axis_list, id_dim_list, id_phen_list, id_ear_list, T_em_leaf1_list]).transpose()
-    axis_table_dataframe = pandas.DataFrame(axis_array, columns=['index_plt', 'index_axis', 'N_phyt', 'T_stop_axis', 'id_dim', 'id_phen', 'id_ear', 'T_em_leaf1'])
+    axis_table_dataframe = pandas.DataFrame(axis_array, columns=['id_plt', 'id_axis', 'N_phytomer', 'TT_stop_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1'])
         
     import tempfile
     from openalea.core.path import path

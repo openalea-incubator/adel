@@ -302,7 +302,7 @@ if __name__ == "__main__":
     N_phyt_list = create_N_phyt_list(index_axis_list)
     T_em_leaf1_list = create_T_em_leaf1_list(index_axis_list)
 
-'''Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles) '''
+	# Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles)
 
     T_stop_axis_list = create_T_stop_axis_list(len(index_axis_list), int(len(index_axis_list)/2), T_em_leaf1_list)
     id_dim_list = create_id_dim_list(index_axis_list, N_phyt_list)

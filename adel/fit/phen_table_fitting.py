@@ -85,11 +85,13 @@ def create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe
     '''
     assert calculation_method in ('linear', 'bilinear')
     # Fill TT_parameters_dataframe['a_cohort]. 
-    # The a_cohort value is always specified for the first row. 
-    # For each following row, propagate last valid value forward to next valid.
+    # --> The user fills at least one row for the main stem (i.e. 'a_cohort', 'TT_col_0', 'TT_HS_break', 'TT_HS_NFF')
+    # The a_cohort value is always specified for the first row. --> wrong
+    # For each following row, propagate last valid value forward to next valid. --> wrong
+    # 
     TT_parameters_dataframe['a_cohort'] = TT_parameters_dataframe['a_cohort'].fillna()
     # Fill TT_parameters_dataframe['TT_col_0].
-    # The TT_col_0 value is always specified for the first row and same cohort axes have the same emergence date.
+    # The TT_col_0 value is always specified for the first row and same cohort axes have the same emergence date. --> wrong
     TT_parameters_dataframe['cohort_number'] = TT_parameters_dataframe['id_phen'].astype(str)
     TT_parameters_grouped_dataframe = TT_parameters_dataframe.groupby('cohort_number')
     for name, group in TT_parameters_grouped_dataframe:
@@ -106,8 +108,8 @@ def create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe
             filled_group = group['TT_col_0'].fillna(current_cohort_TT_col_0)
             TT_parameters_dataframe['TT_col_0'] = TT_parameters_dataframe['TT_col_0'].combine_first(filled_group)
     # Fill TT_parameters_dataframe['TT_HS_break']. 
-    # The TT_HS_break value is always specified for the first row. 
-    # For each following row, propagate last valid value forward to next valid.
+    # The TT_HS_break value is always specified for the first row. -> wrong
+    # For each following row, propagate last valid value forward to next valid. -> wrong
     TT_parameters_dataframe['TT_HS_break'] = TT_parameters_dataframe['TT_HS_break'].fillna()
     # Fill TT_parameters_dataframe['TT_HS_NFF']. 
     # The TT_HS_NFF value is always specified for the first row.
@@ -196,7 +198,7 @@ if __name__ == "__main__":
 
     index_rel_phytomer_list = create_index_rel_phytomer_list(id_phen_list)
     
-    # prepare the minimum input data for TT_col_phytomer_list creation
+    # prepare the minimum parameters for TT_col_phytomer_list creation
     id_phen_without_duplicate_list = list(set(id_phen_list))
     id_phen_without_duplicate_list.sort()
     
@@ -227,7 +229,6 @@ if __name__ == "__main__":
     # create TT_col_phytomer_list with bilinear calculation method
     TT_col_phytomer_bilinear_list = create_TT_col_phytomer_list(TT_parameters_dataframe, flowering_dTT_dataframe, calculation_method='bilinear')
     
-    
     phen_table_linear_array = numpy.array([id_phen_list, index_rel_phytomer_list, TT_col_phytomer_linear_list]).transpose()
     phen_table_linear_dataframe = pandas.DataFrame(phen_table_linear_array, columns=['id_phen', 'index_rel_phytomer', 'TT_col_phytomer'])
     
@@ -238,6 +239,12 @@ if __name__ == "__main__":
     from openalea.core.path import path
     fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
     
+    TT_parameters_filepath = fitting_results_directory/'TT_parameters.csv'
+    TT_parameters_dataframe.to_csv(TT_parameters_filepath, na_rep='NA', index=False)
+    
+    flowering_dTT_filepath = fitting_results_directory/'flowering_dTT.csv'
+    flowering_dTT_dataframe.to_csv(flowering_dTT_filepath, na_rep='NA', index=False)
+    
     phen_table_linear_filepath = fitting_results_directory/'phen_table_linear.csv'
     phen_table_linear_dataframe.to_csv(phen_table_linear_filepath, na_rep='NA', index=False)
     
@@ -247,6 +254,8 @@ if __name__ == "__main__":
     print 'The results has been saved in %s' % fitting_results_directory
     
     import os
+    os.system("start %s" % TT_parameters_filepath.abspath())
+    os.system("start %s" % flowering_dTT_filepath.abspath())
     os.system("start %s" % phen_table_linear_filepath.abspath())
     os.system("start %s" % phen_table_bilinear_filepath.abspath())
     

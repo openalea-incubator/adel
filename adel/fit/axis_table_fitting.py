@@ -6,9 +6,7 @@ Created on 28 nov. 2011
 @author: cchambon
 '''
 
-import pandas
 import random
-import numpy
 import math
 try:
     from scipy import stats
@@ -44,8 +42,7 @@ def create_index_plt_list(plant_ids, index_axis_list):
 
 
 def create_index_axis_list(plant_ids, 
-                           cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, 
-                                                 '7': 0.083, '8': 0.0, '9': 0.0, '10': 0.0}):
+                           cohort_probabilities):
     '''
     Create axes column.
     :Parameters:
@@ -100,9 +97,8 @@ def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
               
               
 def create_N_phyt_list(index_axis_list, 
-                       main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, 
-                                                                         '13': 0.0, '14': 0.0},
-                       secondary_stem_leaves_number_coefficients={'a_1': 0.9423, 'a_2': 0.555}):
+                       main_stem_leaves_number_probability_distribution,
+                       secondary_stem_leaves_number_coefficients):
     '''
     Create nff column.
     :Parameters:
@@ -150,7 +146,7 @@ def create_N_phyt_list(index_axis_list,
     return N_phyt_list
 
 
-def create_T_em_leaf1_list(index_axis_list, emf_1_main_stem_standard_deviation=30.0):
+def create_T_em_leaf1_list(index_axis_list, emf_1_main_stem_standard_deviation):
     '''
     Create emf_1 column.
     :Parameters:
@@ -245,7 +241,7 @@ def create_id_ear_list(index_plt_list):
     return ['1' for plant_id in index_plt_list]
     
     
-def create_T_stop_axis_list(max_axes_number, min_axes_number, T_em_leaf1_list, bolting_date=500, flowering_date=1000):
+def create_T_stop_axis_list(max_axes_number, min_axes_number, T_em_leaf1_list, bolting_date, flowering_date):
     '''
     Create end column.
     :Parameters:
@@ -291,36 +287,23 @@ def create_T_stop_axis_list(max_axes_number, min_axes_number, T_em_leaf1_list, b
         if i not in end_row_number:
             T_stop_axis_list.insert(i, None) 
     return T_stop_axis_list 
-
-
-if __name__ == "__main__":
     
-    plant_ids = range(1,101)
     
-    index_axis_list = create_index_axis_list(plant_ids)
-    index_plt_list = create_index_plt_list(plant_ids, index_axis_list)
-    N_phyt_list = create_N_phyt_list(index_axis_list)
-    T_em_leaf1_list = create_T_em_leaf1_list(index_axis_list)
-
-	# Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles)
-
-    T_stop_axis_list = create_T_stop_axis_list(len(index_axis_list), int(len(index_axis_list)/2), T_em_leaf1_list)
-    id_dim_list = create_id_dim_list(index_axis_list, N_phyt_list)
-    id_phen_list = create_id_phen_list(index_axis_list, N_phyt_list)
-    id_ear_list = create_id_ear_list(index_plt_list)
-    
-    axis_array = numpy.array([index_plt_list, index_axis_list, N_phyt_list, T_stop_axis_list, id_dim_list, id_phen_list, id_ear_list, T_em_leaf1_list]).transpose()
-    axis_table_dataframe = pandas.DataFrame(axis_array, columns=['id_plt', 'id_axis', 'N_phytomer', 'TT_stop_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1'])
+def create_axis_frequency_list(id_phen_from_axis_table_list, id_phen_without_duplicate_list):
+    '''
+    Create a list of axis frequency.
+    :Parameters:
+        - `id_phen_from_axis_table_list` : the id_phen identifiers from AxisTable.
+        - `id_phen_without_duplicate_list` : the id_phen identifiers from AxisTable without duplicate.
+    :Types:
+        - `id_phen_from_axis_table_list` : list
+        - `id_phen_without_duplicate_list` : list
         
-    import tempfile
-    from openalea.core.path import path
-    fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
-    axis_table_filepath = fitting_results_directory/'axis_table_random.csv'
-    
-    axis_table_dataframe.to_csv(axis_table_filepath, na_rep='NA', index=False)  
-    
-    print 'The results has been saved in %s' % fitting_results_directory
-    
-    import os
-    os.system("start %s" % axis_table_filepath.abspath())
+    :return: the list of axis frequency.
+    :rtype: list
+    '''
+    axis_frequency_list = []
+    for id_phen in id_phen_without_duplicate_list:
+        axis_frequency_list.append(id_phen_from_axis_table_list.count(id_phen))
+    return axis_frequency_list
 

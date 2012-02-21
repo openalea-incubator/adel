@@ -193,16 +193,16 @@ def test_fit_adel_input_data_first():
           
   
     for key in expected_fit_adel_input_data_first_dict.iterkeys():  
-        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
-        import tempfile
-        from openalea.core.path import path
-        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
-        test_table_filepath = path(fitting_results_directory/'test_first_%s.csv' % key)
-        fit_adel_input_data_first_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
-        print 'The results has been saved in %s' % fitting_results_directory
-        import os
-        os.system("start %s" % test_table_filepath.abspath())
-        # end   
+#        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
+#        import tempfile
+#        from openalea.core.path import path
+#        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
+#        test_table_filepath = path(fitting_results_directory/'test_first_%s.csv' % key)
+#        fit_adel_input_data_first_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
+#        print 'The results has been saved in %s' % fitting_results_directory
+#        import os
+#        os.system("start %s" % test_table_filepath.abspath())
+#        # end   
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_first_dict[key].values,
                                                 expected_fit_adel_input_data_first_dict[key].values)
                 
@@ -218,16 +218,16 @@ def test_fit_adel_input_data_second_linear():
                                                                  user_parameters_dataframe)
     
     for key in linear_expected_fit_adel_input_data_second_dict.iterkeys():  
-        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
-        import tempfile
-        from openalea.core.path import path
-        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
-        test_table_filepath = path(fitting_results_directory/'linear_test_second_%s.csv' % key)
-        fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
-        print 'The results has been saved in %s' % fitting_results_directory
-        import os
-        os.system("start %s" % test_table_filepath.abspath())
-        # end   
+#        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
+#        import tempfile
+#        from openalea.core.path import path
+#        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
+#        test_table_filepath = path(fitting_results_directory/'linear_test_second_%s.csv' % key)
+#        fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
+#        print 'The results has been saved in %s' % fitting_results_directory
+#        import os
+#        os.system("start %s" % test_table_filepath.abspath())
+#        # end   
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_second_dict[key].values,
                                                 linear_expected_fit_adel_input_data_second_dict[key].values)
         
@@ -242,16 +242,16 @@ def test_fit_adel_input_data_second_bilinear():
                                                                  user_parameters_dataframe)
     
     for key in bilinear_expected_fit_adel_input_data_second_dict.iterkeys():  
-        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
-        import tempfile
-        from openalea.core.path import path
-        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
-        test_table_filepath = path(fitting_results_directory/'bilinear_test_second_%s.csv' % key)
-        fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
-        print 'The results has been saved in %s' % fitting_results_directory
-        import os
-        os.system("start %s" % test_table_filepath.abspath())
-        # end   
+#        # uncomment the following lines (until "end") to save the results to csv files and open the csv files with the system default editor. 
+#        import tempfile
+#        from openalea.core.path import path
+#        fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
+#        test_table_filepath = path(fitting_results_directory/'bilinear_test_second_%s.csv' % key)
+#        fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
+#        print 'The results has been saved in %s' % fitting_results_directory
+#        import os
+#        os.system("start %s" % test_table_filepath.abspath())
+#        # end   
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_second_dict[key].values,
                                                 bilinear_expected_fit_adel_input_data_second_dict[key].values)
         

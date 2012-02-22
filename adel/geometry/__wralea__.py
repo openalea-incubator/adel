@@ -108,7 +108,16 @@ geometry_leaf_element = Factory(name='leaf element',
                                 widgetclass=None,
                                 )
 
-
+mesh2scene = Factory(name='meshes to shapes',
+                                authors='C. Pradal (wralea authors)',
+                                description='convert scene with meshes into a set of shapes',
+                                category='graphic',
+                                nodemodule='geometry',
+                                nodeclass='mesh2shapes',
+                                inputs=[{ 'name': 'scene', 'desc': 'Scene to convert'},],
+                                outputs=[{'name': 'scene', 'desc': 'New scene'}],
+                                )
+__all__.append('mesh2scene')
 geometry_LeafElement = Factory(name='LeafElement',
                                authors='C. Fournier',
                                description='simulate the behavior of a call to Leaf Element',

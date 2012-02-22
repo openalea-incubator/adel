@@ -1194,7 +1194,9 @@ def mtg_turtle_time(g, symbols, time):
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
         if g.edge_type(v) == '+':
-            angle = n.inclination
+            angle = n.Ginc or n.Einc
+            angle = float(angle) if angle is not None else 0.
+            #angle = n.inclination
             angle = float(angle) if angle is not None else 0.
             turtle.up(angle)
 
@@ -1212,7 +1214,6 @@ def mtg_turtle_time(g, symbols, time):
         except:
             length = n.length
         if ('Leaf' not in n.label) and (length > 0.):
-            print n.label, length
             turtle.F(length)
         # Get the azimuth angle
         
@@ -1222,8 +1223,8 @@ def mtg_turtle_time(g, symbols, time):
         times = g.property('time')
         def push_turtle(v):
             n = g.node(v)
-            if 'Leaf' in n.label:
-                return False
+            #if 'Leaf' in n.label:
+                #    return False
             try:
                 if n.start_tt > time:
                     return False

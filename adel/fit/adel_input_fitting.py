@@ -13,32 +13,31 @@ import adel.fit.axis_table_fitting as axis_table_fitting
     
 import adel.fit.phen_table_fitting as phen_table_fitting
 
-default_dTT_MS_cohort_series = pandas.Series({3: 1.6173, 4: 2.5181, 5: 3.4189, 6: 4.5576, 7: 5.8097})
+# the coefficients of the secondary stem leaves number.
+secondary_stem_leaves_number_coefficients = {'a_1': 0.9423, 'a_2': 0.555}
+#the standard deviation used to calculate main stem emf_1 value.
+emf_1_main_stem_standard_deviation = 30.0
+#the Leaf number delay between Main Stem and the cohort.
+leaf_number_delay_MS_cohort_dict = {'3': 1.6173, '4': 2.5181, '5': 3.4189, '6': 4.5576, '7': 5.8097}
 
-def fit_adel_input_data_first(plant_ids=range(1,101), 
+def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083, '8': 0.0, '9': 0.0, '10': 0.0}, 
                               main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0}, 
-                              secondary_stem_leaves_number_coefficients={'a_1': 0.9423, 'a_2': 0.555}, 
-                              emf_1_main_stem_standard_deviation=30.0, 
                               bolting_date=500, 
                               flowering_date=1000):
     '''
     Fit the axis table data and initialize the parameters for PhenTable fitting.
     :Parameters:
-        - `plant_ids` : the plant indexes.
+        - `plant_number` : the number of plants.
         - `cohort_probabilities` : the cohort probabilities.
         - `main_stem_leaves_number_probability_distribution` : the probability distribution of 
           the main stem leaves number.
-        - `secondary_stem_leaves_number_coefficients` : the coefficients of the secondary stem leaves number.
-        - `emf_1_main_stem_standard_deviation` : the standard deviation used to calculate main stem emf_1 value.
         - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
         - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
     :Types:
-        - `plant_ids` : The plant indexes.
+        - `plant_number` : int.
         - `cohort_probabilities` : dict.
         - `main_stem_leaves_number_probability_distribution` : dict
-        - `secondary_stem_leaves_number_coefficients` : dict
-        - `emf_1_main_stem_standard_deviation` : float
         - `bolting_date` : int
         - `flowering_date` : int
 
@@ -46,6 +45,7 @@ def fit_adel_input_data_first(plant_ids=range(1,101),
     :rtype: a dict of pandas.DataFrame
     '''    
     #Create and fit AxisTable 
+    plant_ids = range(1,plant_number + 1)
     index_axis_list = axis_table_fitting.create_index_axis_list(plant_ids, cohort_probabilities)
     index_plt_list = axis_table_fitting.create_index_plt_list(plant_ids, index_axis_list)
     N_phyt_list = axis_table_fitting.create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, secondary_stem_leaves_number_coefficients)
@@ -93,7 +93,7 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_phen_table_param
     '''
     
     # Fit the parameters provided by the user
-    fitted_parameter_dataframe = _fit_user_parameters(user_phen_table_parameter_dataframe)
+    fitted_parameter_dataframe = _fit_user_parameters(user_phen_table_parameter_dataframe, leaf_number_delay_MS_cohort_dict)
     
     # Create absolute PhenTable
     id_phen_list = phen_table_fitting.create_id_phen_list(fitted_parameter_dataframe)
@@ -125,7 +125,7 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_phen_table_param
             'relative_phen_table': relative_phen_table_dataframe, 'parameters': fitted_parameter_dataframe}
 
 
-def _fit_user_parameters(user_phen_table_parameter_dataframe):
+def _fit_user_parameters(user_phen_table_parameter_dataframe, leaf_number_delay_MS_cohort_dict):
     '''
     Fit user observations. A minimal set of observations must be provided. 
     If the user does not provide complete observations, the missing observations are fitted, using the minimal set of 
@@ -146,7 +146,7 @@ def _fit_user_parameters(user_phen_table_parameter_dataframe):
                         - or specified for the first row only. In this case, the following TT_col_0 observations are fitted 
                           using this hypothesis: 
                             - same cohort axes have the same emergence date, thus the same TT_col_0 observation.
-                            - TT_col_0[i] = TT_col_0[0] + (default_dTT_MS_cohort_series[N_cohort] / a_cohort[0]), 
+                            - TT_col_0[i] = TT_col_0[0] + (leaf_number_delay_MS_cohort_dict[N_cohort] / a_cohort[0]), 
                               with i the row number. 
             * TT_col_break: The Thermal Time when the slope of phytomers emergence is changing. This parameter can be either: 
                             - specified for each row. In this case, the TT_col_break observations are not fitted.
@@ -167,8 +167,10 @@ def _fit_user_parameters(user_phen_table_parameter_dataframe):
                                   dTT_MS_cohort[N_cohort][j] = dTT_MS_cohort[N_cohort][0] + (id_axis[N_cohort][j] - id_axis[N_cohort][0]) / (4 * a_cohort[N_cohort][0]),
                                   with j the line number relative to N_cohort.
           The table is ordered by frequency.   
+        - `leaf_number_delay_MS_cohort_dict` : the Leaf number delay between Main Stem and the cohort.
     :Types:
         - `user_phen_table_parameter_dataframe` : pandas.DataFrame
+        - `leaf_number_delay_MS_cohort_dict` : dict.
         
     :return: A (fitted) copy of user_phen_table_parameter_dataframe. 
     :rtype: pandas.DataFrame
@@ -184,7 +186,7 @@ def _fit_user_parameters(user_phen_table_parameter_dataframe):
         # Fit copy_dataframe['TT_col_0'].
         for name, group in copy_dataframe.groupby('N_cohort'):
             if name != 1.0:
-                copy_dataframe['TT_col_0'][group.index[0]] = copy_dataframe['TT_col_0'][0] + (default_dTT_MS_cohort_series[group['N_cohort'][0]] / copy_dataframe['a_cohort'][0])
+                copy_dataframe['TT_col_0'][group.index[0]] = copy_dataframe['TT_col_0'][0] + (leaf_number_delay_MS_cohort_dict[str(int(group['N_cohort'][0]))] / copy_dataframe['a_cohort'][0])
         copy_dataframe['TT_col_0'] = copy_dataframe['TT_col_0'].fillna()
         
     if copy_dataframe['TT_col_break'].count() != copy_dataframe['TT_col_break'].size:

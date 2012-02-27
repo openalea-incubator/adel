@@ -101,7 +101,7 @@ def create_absolute_TT_col_phytomer_list(fitted_parameter_dataframe):
             Nff_i = fitted_parameter_dataframe['Nff'][i]
             a_cohort_i = fitted_parameter_dataframe['a_cohort'][i]
             TT_col_0_i = fitted_parameter_dataframe['TT_col_0'][i]
-            phytomer_indexes = range(Nff_i + 1)
+            phytomer_indexes = range(int(Nff_i + 1))
             HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
             a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
             for j in phytomer_indexes: 

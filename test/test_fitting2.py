@@ -59,8 +59,8 @@ def test_fit_adel_input_data_first():
         fit_adel_input_data_first_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
         print 'The results has been saved in %s' % fitting_results_directory
         #uncomment the 2 next lines to open the csv result file with the default editor. ATTENTION: for windows only.
-        import os
-        os.system("start %s" % test_table_filepath)
+        #import os
+        #os.system("start %s" % test_table_filepath)
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_first_dict[key].values,
                                                 expected_fit_adel_input_data_first_dict[key].values)
                 
@@ -76,8 +76,8 @@ def test_fit_adel_input_data_second_linear():
         fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
         print 'The results has been saved in %s' % fitting_results_directory
         #uncomment the 2 next lines to open the csv result file with the default editor. ATTENTION: for windows only.
-        import os
-        os.system("start %s" % test_table_filepath)
+        #import os
+        #os.system("start %s" % test_table_filepath)
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_second_dict[key].values,
                                                 linear_expected_fit_adel_input_data_second_dict[key].values)
         
@@ -92,8 +92,8 @@ def test_fit_adel_input_data_second_bilinear():
         fit_adel_input_data_second_dict[key].to_csv(test_table_filepath, na_rep='NA', index=False)  
         print 'The results has been saved in %s' % fitting_results_directory
         #uncomment the 2 next lines to open the csv result file with the default editor. ATTENTION: for windows only.
-        import os
-        os.system("start %s" % test_table_filepath)
+        #import os
+        #os.system("start %s" % test_table_filepath)
         numpy.testing.assert_array_almost_equal(fit_adel_input_data_second_dict[key].values,
                                                 bilinear_expected_fit_adel_input_data_second_dict[key].values)
     

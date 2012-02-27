@@ -69,11 +69,13 @@ def fit_adel_input_data_first(plant_number=100,
     TT_HS_NFF_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list))]
     dTT_MS_cohort_list = [numpy.nan for i in range(len(id_phen_without_duplicate_list))]
     phen_table_parameter_array = numpy.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list]).transpose()
-    phen_table_parameter_dataframe = pandas.DataFrame(phen_table_parameter_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort'], dtype=float)
-    phen_table_parameter_dataframe = phen_table_parameter_dataframe.sort_index(by='frequency', ascending=False)
-    phen_table_parameter_dataframe = phen_table_parameter_dataframe.sort_index(by='N_cohort')
+    unsorted_phen_table_parameter_dataframe = pandas.DataFrame(phen_table_parameter_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort'], dtype=float)
+    sorted_phen_table_parameter_dataframe = pandas.DataFrame(columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort'], dtype=float)
+    for name, group in unsorted_phen_table_parameter_dataframe.groupby('N_cohort'):
+        sorted_group = group.sort_index(by='frequency', ascending=False)
+        sorted_phen_table_parameter_dataframe = sorted_phen_table_parameter_dataframe.append(sorted_group)
 
-    return {'axis_table': axis_table_dataframe, 'parameters': phen_table_parameter_dataframe}
+    return {'axis_table': axis_table_dataframe, 'parameters': sorted_phen_table_parameter_dataframe}
 
 
 def fit_adel_input_data_second(first_axis_table_dataframe, user_phen_table_parameter_dataframe):

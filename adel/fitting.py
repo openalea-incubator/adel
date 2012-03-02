@@ -118,8 +118,9 @@ def fit2(x , y, s, r):
     """
     global debug 
     # spline parameters
-    smooth=3.0 # smoothness parameter
-    k=5 # spline order
+    smooth=len(x)-sqrt(2*len(x)) # smoothness parameter
+    smooth = 0.01
+    k=3 # spline order
     nest=-1 # estimate of number of knots needed (-1 = maximal)
     
     #if debug:
@@ -143,7 +144,7 @@ def fit2(x , y, s, r):
 
     # 2.1
     try:
-        tckp2, v = splprep([s,r],s=smooth,k=k,nest=nest)
+        tckp2, v = splprep([s,r],s=smooth/100.,k=k,nest=nest)
     except:
         tckp2, v = splprep([s,r])
     

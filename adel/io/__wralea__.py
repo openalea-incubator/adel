@@ -1,5 +1,5 @@
 
-# This file has been generated at Fri Dec 02 13:47:25 2011
+# This file has been generated at Tue Mar 06 18:55:26 2012
 
 from openalea.core import *
 
@@ -38,11 +38,11 @@ io_duplicate = Factory(name='duplicate mtg',
 
 csv2dataframe_csv2dataframe = Factory(name='csv2dataframe',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Create a pandas.DataFrame from a csv file',
+                description='Read CSV (comma-separated) file into DataFrame.',
                 category='data i/o',
                 nodemodule='csv2dataframe',
                 nodeclass='csv2dataframe',
-                inputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The filepath of the csv file to read.'}],
+                inputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The filepath of the csv file to import.'}, {'interface': ISequence, 'name': 'index_col', 'value': None, 'desc': 'Column to use as the row labels of the DataFrame. If a sequence is given, a MultiIndex is used.'}, {'interface': ISequence, 'name': 'na_values', 'value': None, 'desc': 'List of additional strings to recognize as NA/NaN.'}, {'interface': IBool, 'name': 'parse_dates', 'value': False, 'desc': 'Attempt to parse dates in the index column(s).'}],
                 outputs=[{'interface': None, 'name': 'dataframe', 'desc': 'A pandas.DataFrame instance which represents the csv file.'}],
                 widgetmodule=None,
                 widgetclass=None,
@@ -143,12 +143,12 @@ io_dataframe = Factory(name='Rdataframe',
 
 dataframe2csv_dataframe2csv = Factory(name='dataframe2csv',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Export a pandas.DataFrame to a csv file',
+                description='Write a DataFrame to a comma-separated values (csv) file.',
                 category='data i/o',
                 nodemodule='dataframe2csv',
                 nodeclass='dataframe2csv',
-                inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The pandas.DataFrame instance to export.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The csv filepath where the pandas.DataFrame instance is exported.'}],
-                outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The csv filepath where the pandas.DataFrame instance is exported.'}],
+                inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The DataFrame to write.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The file path where the Dataframe is written.'}, {'interface': IStr, 'name': 'na_rep', 'value': None, 'desc': 'Missing data replacement.'}, {'interface': IBool, 'name': 'index', 'value': True, 'desc': 'Write row names (index)'}, {'interface': ISequence, 'name': 'index_label', 'value': None, 'desc': 'Column label for index column(s) if desired. If None is given, and header and index are True, then the index names are used. A sequence should be given if the DataFrame uses MultiIndex.'}],
+                outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The file path where the Dataframe is written.'}],
                 widgetmodule=None,
                 widgetclass=None,
                )

@@ -52,22 +52,26 @@ def stress_sr(s, r, d):
         if i.max < j.min:
             intervals[Interval(i.max, j.min)]=1
 
-    print intervals.keys()
+
     keys = list(sorted(intervals))
+    print keys
     i = 0
     interval = keys[i]
     factor = intervals[interval]
     p_min = interval.min
-
+    # p_min
     l = []
     for p in s:
         if p not in interval:
-            p_min = (interval.max-interval.min)*factor
+            # accumulate values by taking account of the size of the previous interval modified by the factor
+            p_min += (interval.max-interval.min)*factor
             i+=1
             interval = keys[i]
             factor = intervals[interval]
         l.append(p_min + (p-interval.min) *factor)
 
+    print s
+    print l
     new_s = np.array(l)
     p_max = new_s.max()
 

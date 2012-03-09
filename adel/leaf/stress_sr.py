@@ -1,5 +1,4 @@
 import numpy as np
-from collections import OrderedDict
 
 class Interval(object):
     def __init__(self, min_, max_):

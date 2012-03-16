@@ -19,15 +19,19 @@ def curvature(crv, n=100):
     s/= L
     x/= L
     y/= L
+    ds = np.diff(s)
     dx, dy = np.diff(x), np.diff(y)
+    #dx /= ds
+    #dy /= ds
     theta = np.arctan2(dy,dx)
-    dtheta = np.diff(theta)
+    
+    dtheta = np.diff(theta) / ds[1:]
     return (x[0], y[0]), theta[0], s, dtheta
 
 def curvature2xy(p0, angle, s, dtheta):
     x0, y0 = p0
     ds = np.diff(s)
-    theta = angle+np.cumsum([0]+list(dtheta))
+    theta = angle+np.cumsum([0]+list(dtheta*ds[1:]))
     
     dx = ds*np.cos(theta)
     dy = ds*np.sin(theta)

@@ -72,7 +72,7 @@ def interpolate_curvature(curvatures, times, kind='cubic'):
 
     # compute a common parametrisation s
     # We conserve the last parametrisation because the result is very sensitive
-    if False:
+    if True:
         min_s = min(np.diff(s).min() for s in curv_abs)
         s_new = np.unique(np.array(curv_abs).flatten())
         ds = np.diff(s_new)

@@ -71,7 +71,23 @@ geometry_leaf_to_mesh = Factory(name='leaf to mesh',
                 widgetclass=None,
                )
 
+geometry_leaf_to_mesh_new = Factory(name='leaf to mesh (new)',
+                authors='C. Pradal (wralea authors)',
+                description='convert a midrib data to a mesh with twist or cycloid',
+                category='graphic',
+                nodemodule='geometry',
+                nodeclass='leaf_to_mesh_new',
+                inputs=[{'interface': ISequence, 'name': 'leaf', 'value': [], 'desc': ''}, {'interface': IFloat, 'name': 'length_max', 'value': 1.0, 'desc': ''}, {'interface': IFloat, 'name': 'length', 'value': 1.0, 'desc': ''}, {'interface': IFloat, 'name': 'radius', 'value': 1.0, 'desc': ''}, 
+                {'interface': IBool, 'name': 'twist', 'value': True},
+                {'interface': IFloat, 'name': 'nb_twist', 'value': 1.},
+                {'interface': IFloat, 'name': 'nb_waves', 'value': 8.},
+],
+                outputs=[{'interface': IInterface, 'name': 'mesh', 'desc': 'A plantgl mesh'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
+__all__.append('geometry_leaf_to_mesh_new')
 
 
 setGeometry_setGeometry = Factory(name='setGeometry',

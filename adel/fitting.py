@@ -223,25 +223,66 @@ def mesh(leaf, nb_polygones, length_max, length, radius_max):
     rf *= radius_max
     return leaf_to_mesh(xf, yf, rf)
 
+
 def mesh3(leaf, length_max, length, radius_max):
-    if length <= 0.: return
-    if length > length_max:
-        length = length_max
-
-    x, y, s, r = leaf
-    param = float(length) / length_max
-
-    n = len(x)
-
-    sample = linspace(0, param, num=n)
-    xn = interp(sample, s, x) * length_max
-    yn = interp(sample, s, y) * length_max
-    rn = interp(linspace(1.-param, 1., num=n), s, r) * radius_max
-
-    return leaf_to_mesh(xn, yn, rn)
-
+    return _mesh(leaf, length_max, length, radius_max)
     
-def leaf_to_mesh(x, y, r):
+def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
+    #twist = True
+    #nb_twist = 1.
+
+    # test sin
+    # 7.64 is the length of a sin arc from 0 to 2pi
+    s = curvilinear_abscisse(x,y)
+    L = s.max()
+    s/=L
+
+    nb_oscillation = nb_waves
+    diff_length = 2.
+    dt = list(arctan2(diff(y),diff(x)))
+    dt.append(0.)
+    dt=array(dt)
+    if twist:
+        angle = 2*pi*nb_twist*s
+    else:
+        angle = pi*nb_oscillation*s
+    if not twist:
+        waves1_x = 0
+        waves1_y = sin(angle)*r/2.*s
+        waves2_x = 0
+        waves2_y = sin(angle+pi)*r/2.*s
+        waves_z = 1
+    else: 
+        scalar = r/2.
+        waves1_y =-sin(angle)
+        waves1_x =0*scalar  
+        waves2_x =0*scalar 
+        waves2_y =sin(angle)
+        waves_z= cos(angle)
+    
+    n = len(x)
+    points = zip(x+waves1_x, -r/2.*waves_z, y+waves1_y)
+    points.extend(zip(x, zeros(n), y))
+    points.extend(zip(x+waves2_x, r/2.*waves_z, y+waves2_y))
+
+    ind = array(xrange(n-2))
+    indices = zip(ind, ind+n, ind+(n+1))
+    indices.extend(zip(ind, ind+(n+1), ind+1))
+    indices.extend(zip(ind+n, ind+2*n, ind+2*n+1))
+    indices.extend(zip(ind+n, ind+2*n+1, ind+n+1))
+
+    # add only one triangle at the end !!
+    if r[-1] < 0.001:
+        indices.append((n-2, 3*n-2, 2*n-1))
+    else:
+        indices.append((n-2, 2*n-2, 2*n-1))
+        indices.append((n-2, 2*n-1, n-1))
+        indices.append((2*n-2, 3*n-2, 3*n-1))
+        indices.append((2*n-2, 3*n-1, 2*n-1))
+
+    return points, indices
+
+def leaf_to_mesh(x, y, r, **kwds):
     n = len(x)
     points = zip(x, -r/2., y)
     points.extend(zip(x, r/2., y))
@@ -259,6 +300,22 @@ def leaf_to_mesh(x, y, r):
 
     return points, indices
 
+def _mesh(leaf, length_max, length, radius_max, functor=leaf_to_mesh, **kwds):
+    if length <= 0.: return
+    if length > length_max:
+        length = length_max
+
+    x, y, s, r = leaf
+    param = float(length) / length_max
+
+    n = len(x)
+
+    sample = linspace(0, param, num=n)
+    xn = interp(sample, s, x) * length_max
+    yn = interp(sample, s, y) * length_max
+    rn = interp(linspace(1.-param, 1., num=n), s, r) * radius_max
+
+    return functor(xn, yn, rn, **kwds)
 
 def mesh2(leaf, length_max, length, radius_max):
     return mesh4(leaf, length_max, length, 0., 1., radius_max)

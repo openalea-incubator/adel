@@ -7,6 +7,20 @@ def leaf_to_mesh(leaf, lmax, l, rmax):
     mesh = fitting.plantgl_shape(pts, ind)
     return mesh
 
+def leaf_to_mesh_new(leaf, lmax, l, rmax, twist=False, nb_twist=1.,
+    nb_waves=8):
+    pts, ind = fitting._mesh(leaf, lmax, l, rmax, 
+                            functor=fitting.leaf_to_mesh_new, 
+                            twist=twist, nb_twist=nb_twist, nb_waves=nb_waves)
+    mesh = fitting.plantgl_shape(pts, ind)
+    return mesh
+
+def leaf_to_mesh_cicloid_twist(leaf, lmax, l, rmax, 
+                               twist=True, nb_twist=2, nb_waves=8):
+    pts, ind = fitting.mesh3(leaf, lmax, l, rmax)
+    mesh = fitting.plantgl_shape(pts, ind)
+    return mesh
+
 def leaf_element(leaf, lmax, l, s_base, s_top,  rmax):
     pts, ind = fitting.mesh4(leaf, lmax, l, s_base, s_top, rmax)
     mesh = fitting.plantgl_shape(pts, ind)

@@ -1139,8 +1139,17 @@ def mtg_turtle(g, symbols):
     return gt
     
 
-def mtg_turtle_time(g, symbols, time):
-    ''' Compute the geometry on each node of the MTG using Turtle geometry. '''
+def mtg_turtle_time(g, symbols, time, update_visitor=None ):
+    ''' Compute the geometry on each node of the MTG using Turtle geometry. 
+    
+    Update_visitor is a function called on each node in a pre order (parent before children).
+    This function allow to update the parameters and state variables of the vertices.
+    
+    :Example:
+
+        >>> def grow(node, time):
+                
+    '''
 
     g.properties()['geometry'] = {}
     g.properties()['_plant_translation'] = {}
@@ -1153,16 +1162,36 @@ def mtg_turtle_time(g, symbols, time):
 
         leaf_rank = int(n.complex().index())
         optical_species = int(n.po)
-        final_length = n.final_length
-        try :
-            length = final_length * (time - n.start_tt) / (n.end_tt - n.start_tt) if n.end_tt and time < n.end_tt else n.length
-        except:
+
+        metamer = n.complex()
+
+        # Length computation
+        if update_visitor:
             length = n.length
-        s_base = n.srb
+            final_length = metamer.final_length
+        else:
+            final_length = n.final_length
+            try :
+                length = final_length * (time - n.start_tt) / (n.end_tt - n.start_tt) if n.end_tt and time < n.end_tt else n.length
+            except:
+                length = n.length
+
+        if update_visitor and  n.label.startswith('L'):
+            if metamer.final_length is None:
+                metamer.final_length = n.final_length
+                metamer.length = n.length
+            prev_length = metamer.final_length * (n.start_tt - metamer.start_tt) / (metamer.end_tt -metamer.start_tt)
+            s_base = (metamer.length - prev_length - n.length) / metamer.length
+        else:
+            s_base = n.srb
         s_top = n.srt
         seed = n.LcIndex
         #relative leaf inclination
-        linc = n.Linc
+
+        if update_visitor and  n.label.startswith('L'):
+            linc = metamer.insertion_angle
+        else:
+            linc = n.Linc
  
         element = {} 
         if n.label.startswith('L'):
@@ -1191,6 +1220,11 @@ def mtg_turtle_time(g, symbols, time):
         # 1. retriev the node
 
         n = g.node(v)
+
+        # Update visitor to compute or modified the node parameters
+        if update_visitor is not None:
+            update_visitor(n, time)
+        
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
         if g.edge_type(v) == '+':
@@ -1205,14 +1239,19 @@ def mtg_turtle_time(g, symbols, time):
         if mesh:
             n.geometry = transform(turtle, mesh)
             n.can_label = can_label
+        else:
+            print 'No mesh for vid ', n._vid
 
         # 3. Update the turtle
         turtle.setId(v)
 
-        try:
-            length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
-        except:
+        if update_visitor:
             length = n.length
+        else:
+            try:
+                length = n.length * (time - n.start_tt) / (n.end_tt - n.start_tt) if time < n.end_tt else n.length
+            except:
+                length = n.length
         if ('Leaf' not in n.label) and (length > 0.):
             turtle.F(length)
         # Get the azimuth angle
@@ -1220,13 +1259,13 @@ def mtg_turtle_time(g, symbols, time):
 
     def traverse_with_turtle_time(g, vid, time, visitor=adel_visitor):
         turtle = PglTurtle()
-        times = g.property('time')
         def push_turtle(v):
             n = g.node(v)
             #if 'Leaf' in n.label:
                 #    return False
             try:
-                if n.start_tt > time:
+                start_tt = n.complex().start_tt
+                if start_tt > time:
                     return False
             except: 
                 pass
@@ -1237,44 +1276,69 @@ def mtg_turtle_time(g, symbols, time):
         def pop_turtle(v):
             n = g.node(v)
             try:
-                if n.start_tt > time:
-                    return 
+                start_tt = n.complex().start_tt
+                if start_tt > time:
+                    return False
             except: 
                 pass
             if g.edge_type(v) == '+':
                 turtle.pop()
 
-        visitor(g,vid,turtle,time)
-        turtle.push()
-	plant_id = g.complex_at_scale(vid, scale=1)
+        if g.node(vid).start_tt <= time:
+            visitor(g,vid,turtle,time)
+            turtle.push()
+        plant_id = g.complex_at_scale(vid, scale=1)
         for v in pre_order2_with_filter(g, vid, None, push_turtle, pop_turtle):
             if v == vid: continue
+            # Done for the leaves
+            if g.node(v).start_tt > time:
+                print 'Do not consider ', v, time
+                continue
             visitor(g,v,turtle,time)
 
         scene = turtle.getScene()
         return g
 
     for plant_id in g.component_roots_at_scale(g.root, scale=max_scale):
-        print 'plant_id ', plant_id
         g = traverse_with_turtle_time(g, plant_id, time)
     return g
 
-def thermal_time(g):
+def thermal_time(g, phyllochrone=110., leaf_duration=1.6, stem_duration=1.6 ):
     """ Dummy function to test adel with a thermal time parameter.
     """
 
     plants = g.vertices(scale=1)
     metamer_scale = g.max_scale()-1
-    dtt = 10.
 
     for plant in plants:
         tt = 0
         v = g.component_roots_at_scale(g.root, scale=metamer_scale).next()
         for metamer in pre_order2(g, v):
+            end_leaf = tt + phyllochrone*leaf_duration
             nm = g.node(metamer)
-            for node in nm.components():
-                node.start_tt = tt
-                node.end_tt = tt+dtt
-            tt += dtt
+            nm.start_tt = tt
+            nm.end_tt = end_leaf
+            sectors = [node for node in nm.components() if 'Leaf' in node.label]
+            stems = [node for node in nm.components() if 'Stem' in node.label]
+            
+            nb_stems = len(stems)
+            stem_tt = end_leaf
+            dtt = phyllochrone*stem_duration / nb_stems
+            for stem in stems:
+                stem.start_tt = stem_tt
+                stem.end_tt = stem_tt+dtt
+                stem_tt += dtt
+
+            nb_sectors = len(sectors)
+            sector_tt = end_leaf
+            dtt = phyllochrone*leaf_duration/nb_sectors 
+            for sector in sectors:
+                sector.start_tt = sector_tt - dtt
+                sector.end_tt = sector_tt
+                sector_tt -= dtt
+
+            tt += phyllochrone
+
     return g
+
 

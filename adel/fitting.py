@@ -355,7 +355,7 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
     s_valid = compress(s_valid >= s_base, s_valid)
 
     # delete small intervals COMIT from  Here !
-    eps = 1./(len(s)*2)
+    eps = (s_top-s_base)/(len(s)*2)
     ds = s_valid[1:] - s_valid[:-1]
     error = ds >= eps
     s_val = compress(error, s_valid[1:])

@@ -53,7 +53,10 @@ geometry_mtg_turtle_time = Factory(name='MTG Interpreter time',
                 category='geometry',
                 nodemodule='geometry',
                 nodeclass='mtg_turtle_time',
-                inputs=[{'name': 'g' }, {'name': 'symbols'}, {'name': 'thermal time', 'interface' : 'IInt'} ],
+                inputs=[{'name': 'g' }, 
+                        {'name': 'symbols'}, 
+                        {'name': 'thermal time', 'interface' : 'IInt'},
+                        {'name': 'update_function', 'interface' : 'IFunction'},],
                 outputs=[{'interface': None, 'name': 'g', 'desc': 'MTG with geometry'}],
                )
 

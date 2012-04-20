@@ -1258,8 +1258,14 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
         if update_visitor is not None:
             update_visitor(n, time)
 
-        angle = float(n.Laz) if n.Laz else 0.
-        turtle.rollL(angle)
+            if 'Leaf' in n.label:
+                metamer = n.complex()
+                if (n.start_tt <= time < n.end_tt) or ((time >= metamer.end_tt) and n.edge_type()=='+'):
+                    angle = float(metamer.Laz) if metamer.Laz else 0.
+                    turtle.rollL(angle)
+        else:
+            angle = float(n.Laz) if n.Laz else 0.
+            turtle.rollL(angle)
         
         if g.edge_type(v) == '+':
             angle = n.Ginc or n.Einc

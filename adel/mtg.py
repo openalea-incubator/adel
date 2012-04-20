@@ -448,6 +448,7 @@ def to_plantgl(g,
 
     geometries = g.property('geometry')
     labels = g.property('can_label')
+    colors = g.property('color')
     scene = Scene()
 
 

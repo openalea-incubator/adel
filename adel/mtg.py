@@ -836,9 +836,9 @@ def mtg_factory(params, sectors = 1):
         * diam and final_diam (resp. width)
         * function reset length
         * function phenology(g, table) -> dynamic parameters (start_thermaltime, end_thermaltime)
-        * function growth_thermaltime(g, tt, d_tt): tt=thermaltime du couvert
-        * function growth_thermaltime(g, tt, d_tt, stress factor)
-        * stress_factor: offre/demande
+        * function growthThermaltime(g, tt, dtt): tt=thermaltime du couvert
+        * function growthThermaltime(g, tt, dtt, stress factor)
+        * stress factor: offre/demande
             - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
             - offre : :math:`sum{E_abs}*\eps_b`
             => ds = ds_predit* stress_factor
@@ -1011,50 +1011,54 @@ def mtg_factory(params, sectors = 1):
 
         # Lamina
         if args['Lv'] > 0.:
+            l_node = vid_node
             tissue='lamina'
-	    ds = 1. / sectors
+            ds = 1. / sectors
             # Only one senescent LeafElement
             if args['Lsen'] > args['Lv']:
-		for i in range(sectors):
-		    l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],final_length=args['Ll'],
-					po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
-					LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
-					Laz=args['Laz'], srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
+                edge_type = '+'
+                for i in range(1,sectors):
+                    l_node= g.add_child(l_node, label='LeafElement', edge_type=edge_type,length=args['Lv'],final_length=args['Ll'],
+                                        po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
+                                        LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
+                                        Laz=args['Laz'], srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
+                    edge_type = '<'
             else:
                 # one green LeafElement followed eventually by one senescent
-		srlim = 1-(args['Lsen']/args['Lv'])
-		st = ds
-		# produce green sectors
-		while (st < srlim):
-		    l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
-					 length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
-					 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-					 LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-					 srb=st-ds, srt=st, tissue=tissue)
-		    st += ds
-		if srlim >= st:
-		    break
-		# eventualy split last green sector at srlim
-		l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
-					 length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
-					 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-					 LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-					 srb=st-ds, srt=srlim, tissue=tissue)
-		l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
-                        length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
-                        Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                        LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-                        srt=st, srb=srlim, sen=True, tissue=tissue)
-		st += ds
-		#add senescent sectors
+                srlim = 1.-(args['Lsen']/args['Lv'])
+                st = ds
+                edge_type = '+'
+                # produce green sectors
+                while (st-ds < srlim):
+                    l_node = g.add_child(l_node, label='LeafElement', edge_type=edge_type,
+                                         length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
+                                         Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                                         LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                                         srb=st-ds, srt=st, tissue=tissue)
+                    st += ds
+                    edge_type = '<'
+
+                # eventualy split last green sector at srlim
+#X                 l_node = g.add_child(l_node, label='LeafElement', edge_type='+',
+#X                                      length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
+#X                                      Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+#X                                      LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+#X                                      srb=st-ds, srt=srlim, tissue=tissue)
+#X                 l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
+#X                         length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
+#X                         Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+#X                         LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+#X                         srt=st, srb=srlim, sen=True, tissue=tissue)
+#X                 st += ds
+                #add senescent sectors
                 if args['Lsen'] > 0.:
-		    while (st < srlim):
-			l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
-					     length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
-					     Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-					     LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-					     srb=st-ds, srt=st, sen=True, tissue=tissue)
-			st += ds
+                    while (st < 1.):
+                        l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
+                                             length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
+                                             Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                                             LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                                             srb=st-ds, srt=st if (st+ds)<=1. else 1., sen=True, tissue=tissue)
+                        st += ds
 
         
         prev_plant = plant
@@ -1065,7 +1069,7 @@ def mtg_factory(params, sectors = 1):
     return fat_mtg(g)
 
 
-def _check_adel_parameters( params):
+def _check_adel_parameters(params):
     return True
 
 def compute_element(n, symbols):
@@ -1204,6 +1208,7 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             if metamer.final_length is None:
                 metamer.final_length = n.final_length
                 metamer.length = n.length
+            length = metamer.length
             prev_length = metamer.final_length * (n.start_tt - metamer.start_tt) / (metamer.end_tt -metamer.start_tt)
             s_base = (metamer.length - prev_length - n.length) / metamer.length
         else:

@@ -796,10 +796,10 @@ def internode(g, vid_axe, vid_metamer, prev_node, props, epsilon):
     if props['Ev'] < epsilon:
         return prev_node
 
-def mtg_factory(params):
+def mtg_factory(params, sectors = 1):
     """ Construct a MTG from a dictionary.
 
-    The dictionary contains the parameters and a list of elements.
+    The dictionary contains the parameters and a list of elements. Sector is an integer giving the number of LeafElements per Leaf
     The keys of params are:
         - plant: indx of plant
         - axe: 
@@ -1012,25 +1012,49 @@ def mtg_factory(params):
         # Lamina
         if args['Lv'] > 0.:
             tissue='lamina'
+	    ds = 1. / sectors
             # Only one senescent LeafElement
             if args['Lsen'] > args['Lv']:
-                l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],final_length=args['Ll'],
-                    po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
-                    LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
-                    Laz=args['Laz'], srb=0, srt=1, tissue=tissue, sen=True)
+		for i in range(sectors):
+		    l_node= g.add_child(vid_node, label='LeafElement', edge_type='+',length=args['Lv'],final_length=args['Ll'],
+					po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
+					LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
+					Laz=args['Laz'], srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
             else:
                 # one green LeafElement followed eventually by one senescent
-                l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
-                    length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
-                    Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                    LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-                    srb=0, srt=1-(args['Lsen']/args['Lv']), tissue=tissue)
-                if args['Lsen'] > 0.:
-                    l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
+		srlim = 1-(args['Lsen']/args['Lv'])
+		st = ds
+		# produce green sectors
+		while (st < srlim):
+		    l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
+					 length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
+					 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+					 LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+					 srb=st-ds, srt=st, tissue=tissue)
+		    st += ds
+		if srlim >= st:
+		    break
+		# eventualy split last green sector at srlim
+		l_node = g.add_child(vid_node, label='LeafElement', edge_type='+',
+					 length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
+					 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+					 LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+					 srb=st-ds, srt=srlim, tissue=tissue)
+		l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
                         length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
                         Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
                         LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
-                        srt=1, srb=1-(args['Lsen']/args['Lv']), sen=True, tissue=tissue)
+                        srt=st, srb=srlim, sen=True, tissue=tissue)
+		st += ds
+		#add senescent sectors
+                if args['Lsen'] > 0.:
+		    while (st < srlim):
+			l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
+					     length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
+					     Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+					     LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+					     srb=st-ds, srt=st, sen=True, tissue=tissue)
+			st += ds
 
         
         prev_plant = plant

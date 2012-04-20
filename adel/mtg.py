@@ -1017,26 +1017,30 @@ def mtg_factory(params, sectors = 1):
             # Only one senescent LeafElement
             if args['Lsen'] > args['Lv']:
                 edge_type = '+'
+                Laz = args['Laz']
                 for i in range(1,sectors):
                     l_node= g.add_child(l_node, label='LeafElement', edge_type=edge_type,length=args['Lv'],final_length=args['Ll'],
                                         po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
                                         LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
-                                        Laz=args['Laz'], srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
+                                        Laz=Laz, srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
                     edge_type = '<'
+                    Laz = 0
             else:
                 # one green LeafElement followed eventually by one senescent
                 srlim = 1.-(args['Lsen']/args['Lv'])
                 st = ds
                 edge_type = '+'
+                Laz = args['Laz']
                 # produce green sectors
                 while (st-ds < srlim):
                     l_node = g.add_child(l_node, label='LeafElement', edge_type=edge_type,
                                          length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
                                          Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                                         LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                                         LcIndex=args['LcIndex'], inclination=0., Laz=Laz,Linc=args['Linc'], 
                                          srb=st-ds, srt=st, tissue=tissue)
                     st += ds
                     edge_type = '<'
+                    Laz = 0
 
                 # eventualy split last green sector at srlim
 #X                 l_node = g.add_child(l_node, label='LeafElement', edge_type='+',
@@ -1056,7 +1060,7 @@ def mtg_factory(params, sectors = 1):
                         l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
                                              length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
                                              Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                                             LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+                                             LcIndex=args['LcIndex'], inclination=0., Laz=Laz,Linc=args['Linc'], 
                                              srb=st-ds, srt=st if (st+ds)<=1. else 1., sen=True, tissue=tissue)
                         st += ds
 
@@ -1253,9 +1257,10 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
         # Update visitor to compute or modified the node parameters
         if update_visitor is not None:
             update_visitor(n, time)
-        
+
         angle = float(n.Laz) if n.Laz else 0.
         turtle.rollL(angle)
+        
         if g.edge_type(v) == '+':
             angle = n.Ginc or n.Einc
             angle = float(angle) if angle is not None else 0.

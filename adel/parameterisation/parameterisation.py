@@ -208,6 +208,71 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
 
     return dout
 
+		
+def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,16.55,19.8,25.175,28.8,24.1],
+				  'Lamina_width':[0.3,0.325,0.4,0.45,0.55,0.75,1,1.2,1.28,1.425,1.8],
+				  'Sheath_length':[3,3.05,3.05,3.4,4.2,6.225,9.125,12,14.2,17.2,18.675],
+				  'Internode_length':[0,0,0,0,0,0.1,1.9,6.1,9.675,14.45,16.95],
+				  'Stem_diameter':[0.14,0.18,0.21,0.24,0.29,0.34,0.36,0.4,0.48,0.54,0.73]},
+		       scale_stem = 1, scale_leaf = 1, scale_stem_diameter = 1, scale_leaf_width = 1):
+
+    """
+    Generate a simple wheat axe geometric model with leaves and stems scaled from an Axedim dictionary and fixed azimutal parameterisation
+    """
+
+    nb_phy = len(axedim['Lamina_length'])
+    
+    hfeu = np.array([0] + axedim['Sheath_length']) + np.array([0] + axedim['Internode_length'])
+
+    
+    
+    dTags = ["plante","phytomere","longFeu","largFeu","inclinaisonFeu","azimuthFeu","longTige","diamTige"]
+    dVals = [ [1] * nb_phy,
+	      range(1, nb_phy + 1),
+	      np.array(axedim['Lamina_length']) * scale_leaf,
+	      np.array(axedim['Lamina_width']) * scale_leaf_width,
+	      [0] * nb_phy,
+	      [i * 180 for i in range(nb_phy)],
+	      np.diff(hfeu) * scale_stem,
+	      np.array(axedim['Stem_diameter']) * scale_stem_diameter
+	      ]
+
+    dVals = map(np.array,dVals)
+    d = dict(zip(dTags,dVals))
+
+    nrow = len(d['plante'])
+    zero = np.zeros(nrow)
+
+    canT = {'plant' : d['plante'],
+            'axe' : zero,
+            'numphy' : d['phytomere'],
+            'Lv' : d['longFeu'],
+            'Ll' : d['longFeu'],
+            'Lsen' : zero,
+            'Lw' : d['largFeu'],
+            'LcType' : d['phytomere'],
+            'LcIndex' : zero,
+            'Linc' : d['inclinaisonFeu'],
+            'Laz' : d['azimuthFeu'],
+            'Lpo' : zero + 1,
+            'Lpos' : zero + 2,
+            'Gl' : zero,
+            'Gv' : zero,
+            'Gsen' : zero,
+            'Gpo' : zero + 1,
+            'Gpos' : zero + 2,
+            'Gd' : zero,
+            'Ginc' : zero,
+            'El' : d['longTige'],
+            'Ev' : d['longTige'],
+            'Esen' : zero,
+            'Ed' : d['diamTige'],
+            'Einc' : zero,
+            'Epo' : zero + 1,
+            'Epos' : zero + 2
+            }
+    return canT
+
 
 def simpleMais_plan(d, step=0):
     params = ['S','H', 'Hps', 'NbPhy', 'NbJ', 'Skew', 'pmax', 'HLips', 'HLi', 'az', 'phib', 'phit', 'db', 'dt', 'lwr', 'ff']

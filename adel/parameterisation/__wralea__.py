@@ -293,3 +293,21 @@ p_bell_shaped_dist = Factory(name='bell_shaped_dist',
                 nodeclass='bell_shaped_dist',
                )
 
+
+p_MonoAxeWheat = Factory(name='MonoAxeWheat',
+                description='Return a parametrisation dict with scaled wheat dimensions',
+                category='simulation',
+                nodemodule='parameterisation',
+                nodeclass='MonoAxeWheat_param',
+                inputs=[{'interface': IDict, 'name': 'Axe dimensions', 'value': {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,16.55,19.8,25.175,28.8,24.1],
+				  'Lamina_width':[0.3,0.325,0.4,0.45,0.55,0.75,1,1.2,1.28,1.425,1.8],
+				  'Sheath_length':[3,3.05,3.05,3.4,4.2,6.225,9.125,12,14.2,17.2,18.675],
+				  'Internode_length':[0,0,0,0,0,0.1,1.9,6.1,9.675,14.45,16.95],
+				  'Stem_diameter':[0.14,0.18,0.21,0.24,0.29,0.34,0.36,0.4,0.48,0.54,0.73]}, 'desc': ''},
+			{'name': 'scale stem', 'value' : 1.0},
+			{'name': 'scale leaf', 'value' : 1.0},
+			{'name': 'scale width', 'value' : 1.0},
+			{'name': 'scale diameter', 'value' : 1.0}],
+		outputs=[{'interface': IDict, 'name': 'Parameters', 'desc': ''}],
+               )
+__all__.append('p_MonoAxeWheat')

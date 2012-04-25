@@ -214,7 +214,7 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
 				  'Sheath_length':[3,3.05,3.05,3.4,4.2,6.225,9.125,12,14.2,17.2,18.675],
 				  'Internode_length':[0,0,0,0,0,0.1,1.9,6.1,9.675,14.45,16.95],
 				  'Stem_diameter':[0.14,0.18,0.21,0.24,0.29,0.34,0.36,0.4,0.48,0.54,0.73]},
-		       scale_stem = 1, scale_leaf = 1, scale_stem_diameter = 1, scale_leaf_width = 1):
+		       inclination = 30,scale_stem = 1, scale_leaf = 1, scale_stem_diameter = 1, scale_leaf_width = 1):
 
     """
     Generate a simple wheat axe geometric model with leaves and stems scaled from an Axedim dictionary and fixed azimutal parameterisation
@@ -231,7 +231,7 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
 	      range(1, nb_phy + 1),
 	      np.array(axedim['Lamina_length']) * scale_leaf,
 	      np.array(axedim['Lamina_width']) * scale_leaf_width,
-	      [0] * nb_phy,
+	      [inclination] * nb_phy,
 	      [i * 180 for i in range(nb_phy)],
 	      np.diff(hfeu) * scale_stem,
 	      np.array(axedim['Stem_diameter']) * scale_stem_diameter
@@ -250,7 +250,7 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
             'Ll' : d['longFeu'],
             'Lsen' : zero,
             'Lw' : d['largFeu'],
-            'LcType' : d['phytomere'],
+            'LcType' : zero + 1,
             'LcIndex' : zero,
             'Linc' : d['inclinaisonFeu'],
             'Laz' : d['azimuthFeu'],

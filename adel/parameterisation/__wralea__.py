@@ -303,11 +303,35 @@ p_MonoAxeWheat = Factory(name='MonoAxeWheat',
 				  'Lamina_width':[0.3,0.325,0.4,0.45,0.55,0.75,1,1.2,1.28,1.425,1.8],
 				  'Sheath_length':[3,3.05,3.05,3.4,4.2,6.225,9.125,12,14.2,17.2,18.675],
 				  'Internode_length':[0,0,0,0,0,0.1,1.9,6.1,9.675,14.45,16.95],
-				  'Stem_diameter':[0.14,0.18,0.21,0.24,0.29,0.34,0.36,0.4,0.48,0.54,0.73]}, 'desc': ''},
-			{'name': 'scale stem', 'value' : 1.0},
-			{'name': 'scale leaf', 'value' : 1.0},
-			{'name': 'scale width', 'value' : 1.0},
-			{'name': 'scale diameter', 'value' : 1.0}],
+				  'Stem_diameter':[0.14,0.18,0.21,0.24,0.29,0.34,0.36,0.4,0.48,0.54,0.73]}, 'desc': ''},
+			{'interface': IInt,'name': 'Leaf inclination', 'value' : 30},
+			{'interface': IFloat,'name': 'scale stem', 'value' : 1.0},
+			{'interface': IFloat,'name': 'scale leaf', 'value' : 1.0},
+			{'interface': IFloat,'name': 'scale width', 'value' : 1.0},
+			{'interface': IFloat,'name': 'scale diameter', 'value' : 1.0}],
 		outputs=[{'interface': IDict, 'name': 'Parameters', 'desc': ''}],
                )
 __all__.append('p_MonoAxeWheat')
+
+p_simpleSR = Factory(name='simple sr',
+                description='Return a Nurbs2D for sr parameterisation',
+                category='simulation',
+                nodemodule='LeafModels',
+                nodeclass='simpleNurbs_sr',
+                inputs=[{'interface': IFloat,'name': 'lw', 'value' : 0.1}],
+		outputs = [{'name': 'Nurbs'}],
+		)
+__all__.append('p_simpleSR')
+
+p_simpleXY = Factory(name='simple xy',
+                description='Return a Nurbs2D for xy parameterisation',
+                category='simulation',
+                nodemodule='LeafModels',
+                nodeclass='simpleNurbs_xy',
+                inputs=[{'interface': IFloat,'name': 'xins', 'value' : 0.2},
+			{'interface': IFloat,'name': 'xtop', 'value' : 0.6},
+			{'interface': IFloat,'name': 'xend', 'value' : 1.0},
+			{'interface': IFloat,'name': 'yend', 'value' : 1.0}],
+		outputs = [{'name': 'Nurbs'}],
+		)
+__all__.append('p_simpleXY')

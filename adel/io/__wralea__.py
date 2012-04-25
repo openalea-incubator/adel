@@ -1,5 +1,5 @@
 
-# This file has been generated at Tue Mar 06 18:55:26 2012
+# This file has been generated at Wed Apr 25 08:10:00 2012
 
 from openalea.core import *
 
@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_duplicate', 'csv2dataframe_csv2dataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'dataframe2csv_dataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
+__all__ = ['io_duplicate', 'csv2dataframe_csv2dataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'dataframe2csv_dataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'PairAsDict_PairAsDict', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
 
 
 
@@ -72,7 +72,7 @@ io_mtg_factory = Factory(name='mtg (params)',
                 category='simulation',
                 nodemodule='io',
                 nodeclass='mtg_factory',
-                inputs=[{'name':'Canopy table', 'interface':IDict},{'interface':IInt, 'name': 'number of sectors','value':1}],
+                inputs=[{'interface': IDict, 'name': 'Canopy table'}, {'interface': IInt, 'name': 'number of sectors', 'value': 1}],
                 outputs=None,
                 widgetmodule=None,
                 widgetclass=None,
@@ -209,6 +209,21 @@ io_lpy2mtg = Factory(name='lpy2mtg',
                 nodeclass='lpy2mtg',
                 inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+PairAsDict_PairAsDict = Factory(name='PairAsDict',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='returns a dict from a key,value pair',
+                category='data i/o',
+                nodemodule='PairAsDict',
+                nodeclass='PairAsDict',
+                inputs=[{'interface': ITuple, 'name': 'Pair', 'value': None, 'desc': ''}],
+                outputs=[{'interface': IDict, 'name': 'dict', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )

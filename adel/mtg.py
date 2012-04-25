@@ -1022,7 +1022,7 @@ def mtg_factory(params, sectors = 1):
                 for i in range(1,sectors):
                     l_node= g.add_child(l_node, label='LeafElement', edge_type=edge_type,length=args['Lv'],final_length=args['Ll'],
                                         po=args['Lpos'], Ll=args['Ll'], Lw=args['Lw'], 
-                                        LcType=args['LcType'], LcIndex=args['LcIndex'], inclination=0.,Linc=args['Linc'], 
+                                        LcType=args['LcType'], LcIndex=args['LcIndex'],Linc=args['Linc'], 
                                         Laz=Laz, srb=i * ds, srt=(i+1) * ds, tissue=tissue, sen=True)
                     edge_type = '<'
                     Laz = 0
@@ -1037,7 +1037,7 @@ def mtg_factory(params, sectors = 1):
                     l_node = g.add_child(l_node, label='LeafElement', edge_type=edge_type,
                                          length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
                                          Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                                         LcIndex=args['LcIndex'], inclination=0., Laz=Laz,Linc=args['Linc'], 
+                                         LcIndex=args['LcIndex'], Laz=Laz,Linc=args['Linc'], 
                                          srb=st-ds, srt=st, tissue=tissue)
                     st += ds
                     edge_type = '<'
@@ -1047,12 +1047,12 @@ def mtg_factory(params, sectors = 1):
 #X                 l_node = g.add_child(l_node, label='LeafElement', edge_type='+',
 #X                                      length=args['Lv']-args['Lsen'],final_length=args['Ll'],po=args['Lpo'],
 #X                                      Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-#X                                      LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+#X                                      LcIndex=args['LcIndex'], Laz=args['Laz'],Linc=args['Linc'], 
 #X                                      srb=st-ds, srt=srlim, tissue=tissue)
 #X                 l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
 #X                         length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
 #X                         Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-#X                         LcIndex=args['LcIndex'], inclination=0., Laz=args['Laz'],Linc=args['Linc'], 
+#X                         LcIndex=args['LcIndex'], Laz=args['Laz'],Linc=args['Linc'], 
 #X                         srt=st, srb=srlim, sen=True, tissue=tissue)
 #X                 st += ds
                 #add senescent sectors
@@ -1061,7 +1061,7 @@ def mtg_factory(params, sectors = 1):
                         l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
                                              length=args['Lsen'],final_length=args['Ll'],po=args['Lpos'],
                                              Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
-                                             LcIndex=args['LcIndex'], inclination=0., Laz=Laz,Linc=args['Linc'], 
+                                             LcIndex=args['LcIndex'], Laz=Laz,Linc=args['Linc'], 
                                              srb=st-ds, srt=st if (st+ds)<=1. else 1., sen=True, tissue=tissue)
                         st += ds
 
@@ -1088,7 +1088,7 @@ def compute_element(n, symbols):
     s_base = n.srb
     s_top = n.srt
     seed = n.LcIndex
-    #relative leaf inclination
+    #leaf inclination
     linc = n.Linc
     
     element = {} 
@@ -1220,7 +1220,7 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             s_base = n.srb
         s_top = n.srt
         seed = n.LcIndex
-        #relative leaf inclination
+        #leaf inclination
 
         if update_visitor and  n.label.startswith('L'):
             linc = metamer.insertion_angle
@@ -1344,8 +1344,12 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
         g = traverse_with_turtle_time(g, plant_id, time)
     return g
 
-def thermal_time(g, phyllochrone=110., leaf_duration=1.6, stem_duration=1.6 ):
-    """ Dummy function to test adel with a thermal time parameter.
+def thermal_time(g, phyllochron=110., leaf_duration=1.6, stem_duration=1.6, leaf_falling_rate = 10):
+    """
+    Add dynamic properties on the mtg to simulate developpement
+    leaf_duration is the phyllochronic time for a leaf to develop from tip appearance to collar appearance
+    stem_duration is the phyllochronic time for a stem to develop
+    falling_rate (degrees / phyllochron) is the rate at which leaves fall after colar appearance
     """
 
     plants = g.vertices(scale=1)
@@ -1355,16 +1359,17 @@ def thermal_time(g, phyllochrone=110., leaf_duration=1.6, stem_duration=1.6 ):
         tt = 0
         v = g.component_roots_at_scale(g.root, scale=metamer_scale).next()
         for metamer in pre_order2(g, v):
-            end_leaf = tt + phyllochrone*leaf_duration
+            end_leaf = tt + phyllochron*leaf_duration
             nm = g.node(metamer)
             nm.start_tt = tt
             nm.end_tt = end_leaf
+	    nm.frate = leaf_falling_rate / phyllochron
             sectors = [node for node in nm.components() if 'Leaf' in node.label]
             stems = [node for node in nm.components() if 'Stem' in node.label]
             
             nb_stems = len(stems)
             stem_tt = end_leaf
-            dtt = phyllochrone*stem_duration / nb_stems
+            dtt = phyllochron*stem_duration / nb_stems
             for stem in stems:
                 stem.start_tt = stem_tt
                 stem.end_tt = stem_tt+dtt
@@ -1372,13 +1377,13 @@ def thermal_time(g, phyllochrone=110., leaf_duration=1.6, stem_duration=1.6 ):
 
             nb_sectors = len(sectors)
             sector_tt = end_leaf
-            dtt = phyllochrone*leaf_duration/nb_sectors 
+            dtt = phyllochron*leaf_duration/nb_sectors 
             for sector in sectors:
                 sector.start_tt = sector_tt - dtt
                 sector.end_tt = sector_tt
                 sector_tt -= dtt
 
-            tt += phyllochrone
+            tt += phyllochron
 
     return g
 

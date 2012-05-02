@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pandas
 from pandas.core.datetools import Hour
 import math
@@ -157,9 +157,9 @@ def parton_logan(dailyMinMaxTemp, latitude=55, param="air150cm"):
     Tsunset = daily_series.map(calc_Tsunset)    
     
     # sunset temperature at the day before
-    Tsunsetb = pandas.Series(numpy.concatenate(([Tsunset.values[0]], Tsunset.values[:-1])), index=Tsunset.index)
+    Tsunsetb = pandas.Series(np.concatenate(([Tsunset.values[0]], Tsunset.values[:-1])), index=Tsunset.index)
     # minimal temperature at the day after
-    Tmina = pandas.Series(numpy.concatenate((Tmin.values[1:], [Tmin.values[-1]])), index=Tsunset.index)
+    Tmina = pandas.Series(np.concatenate((Tmin.values[1:], [Tmin.values[-1]])), index=Tsunset.index)
     
     hourly_idx = pandas.DateRange(Tmin.index[0], Tmin.index[-1] + 23 * Hour(), offset=Hour())
 
@@ -187,14 +187,14 @@ def linear_TT(Th, Tb=0.0):
         - `Tb` : ???
 
     :Types:
-        - `Th` : numpy.array
+        - `Th` : np.array
         - `Tb` : float
   
     :return: Cumulated hourly thermal time increment.
-    :rtype: numpy.array
+    :rtype: np.array
     
     '''
-    dsT_24 = numpy.maximum(numpy.zeros_like(Th), Th - Tb) / 24.0
+    dsT_24 = np.maximum(np.zeros_like(Th), Th - Tb) / 24.0
     return dsT_24.cumsum()
 
 
@@ -219,7 +219,7 @@ def loiT(TK, k, EaR, DSR, DHR):
     :rtype: float
 
     '''
-    return k * TK * numpy.power(math.e, -EaR / TK) / (1 + numpy.power(math.e, DSR - DHR / TK))
+    return k * TK * np.power(math.e, -EaR / TK) / (1 + np.power(math.e, DSR - DHR / TK))
 
 
 def compensated_TT(Tair, TCref=12.0, k=3.8088e10, EaR=8899.6, DSR=68.0, DHR=20736.0):
@@ -234,7 +234,7 @@ def compensated_TT(Tair, TCref=12.0, k=3.8088e10, EaR=8899.6, DSR=68.0, DHR=2073
         - `DSR` : ???
 
     :Types:
-        - `Tair` : numpy.array
+        - `Tair` : np.array
         - `TCref` : float
         - `k` : float
         - `EaR` : float
@@ -242,7 +242,7 @@ def compensated_TT(Tair, TCref=12.0, k=3.8088e10, EaR=8899.6, DSR=68.0, DHR=2073
         - `DSR` : float
   
     :return: Cumulated hourly thermal time compensated increment.
-    :rtype: numpy.array
+    :rtype: np.array
 
     '''
     TKref = 273.0 + TCref

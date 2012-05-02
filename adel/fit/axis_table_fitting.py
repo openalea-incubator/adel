@@ -8,7 +8,7 @@ Created on 28 nov. 2011
 
 import random
 import math
-import numpy
+import numpy as np
 import pandas
 
 # the coefficients of the secondary stem leaves number.
@@ -17,7 +17,7 @@ secondary_stem_leaves_number_coefficients = {'a_1': 0.9423, 'a_2': 0.555}
 emf_1_main_stem_standard_deviation = 30.0
 
 
-def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution, bolting_date, flowering_date):
+def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
     '''
     Fit the axis table: first step.
     :Parameters:
@@ -25,14 +25,10 @@ def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_nu
         - `cohort_probabilities` : the cohort probabilities.
         - `main_stem_leaves_number_probability_distribution` : the probability distribution of 
           the main stem leaves number.
-        - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
-        - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
     :Types:
         - `plant_number` : int.
         - `cohort_probabilities` : dict.
         - `main_stem_leaves_number_probability_distribution` : dict
-        - `bolting_date` : int
-        - `flowering_date` : int
         
     :return: The first axis table.
     :rtype: pandas.DataFrame
@@ -41,38 +37,60 @@ def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_nu
     index_axis_list = _create_index_axis_list(plant_ids, cohort_probabilities)
     index_plt_list = _create_index_plt_list(plant_ids, index_axis_list)
     N_phyt_list = _create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, secondary_stem_leaves_number_coefficients)
-    T_em_leaf1_list = _create_T_em_leaf1_list(index_axis_list, emf_1_main_stem_standard_deviation)
     # Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles)
-    T_stop_axis_list = _create_T_stop_axis_list(len(index_axis_list), int(len(index_axis_list)/2), T_em_leaf1_list, bolting_date, flowering_date)
+    TT_stop_axis_list = [np.nan for i in range(len(index_axis_list))]
+    TT_del_axis_list = [np.nan for i in range(len(index_axis_list))]
     id_dim_list = _create_id_dim_list(index_axis_list, N_phyt_list)
     id_phen_list = _create_id_phen_list(index_axis_list, N_phyt_list)
     id_ear_list = _create_id_ear_list(index_plt_list)
-    axis_table_array = numpy.array([index_plt_list, index_axis_list, N_phyt_list, T_stop_axis_list, id_dim_list, id_phen_list, id_ear_list, T_em_leaf1_list]).transpose()
-    return pandas.DataFrame(axis_table_array, columns=['id_plt', 'id_axis', 'N_phytomer', 'TT_stop_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1'], dtype=float)
+    TT_em_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
+    TT_col_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
+    TT_sen_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
+    TT_del_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
+    axis_table_array = np.array([index_plt_list, index_axis_list, N_phyt_list, TT_stop_axis_list, TT_del_axis_list, id_dim_list, id_phen_list, id_ear_list, TT_em_phytomer1_list, TT_col_phytomer1_list, TT_sen_phytomer1_list, TT_del_phytomer1_list]).transpose()
+    return pandas.DataFrame(axis_table_array, columns=['id_plt', 'id_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'], dtype=float)
 
 
-def fit_axis_table_second(first_axis_table_dataframe):
+def fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number):
     '''
     Fit the axis table: second step.
     :Parameters:
         - `first_axis_table_dataframe` : The first axis table.
+        - `first_leaf_phen_table_dataframe` : the first leaf phen table.
+        - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
+        - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
+        - `delais_TT_stop_del_axis` : ???
+        - `final_axes_number` : the final number of axes
     :Types:
-        - `first_axis_table_dataframe` : pandas.DataFrame.
+        - `first_axis_table_dataframe` : pandas.DataFrame
+        - `first_leaf_phen_table_dataframe` : pandas.Dataframe
+        - `bolting_date` : int
+        - `flowering_date` : int
+        - `delais_TT_stop_del_axis` : int
+        - `final_axes_number` : int
         
     :return: The second axis table.
     :rtype: pandas.DataFrame
     '''
-    return first_axis_table_dataframe.copy()
+    second_axis_table_dataframe = first_axis_table_dataframe.copy()
+    (second_axis_table_dataframe['TT_em_phytomer1'], 
+     second_axis_table_dataframe['TT_col_phytomer1'], 
+     second_axis_table_dataframe['TT_sen_phytomer1'],
+     second_axis_table_dataframe['TT_del_phytomer1']) = _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe)
+    second_axis_table_dataframe['TT_stop_axis'] = _create_TT_stop_axis_list(first_axis_table_dataframe.index.size, final_axes_number, second_axis_table_dataframe['TT_em_phytomer1'].tolist(), bolting_date, flowering_date)
+    second_axis_table_dataframe['TT_del_axis'] = _create_TT_del_axis_list(second_axis_table_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
+    
+    return second_axis_table_dataframe
     
 
-def _create_index_plt_list(first_axis_table_plant_ids, first_axis_table_index_axis_list):
+def _create_index_plt_list(plant_ids, first_axis_table_index_axis_list):
     '''
     Create plant indexes column.
     :Parameters:
-        - `first_axis_table_plant_ids` : the plant indexes.
+        - `plant_ids` : the plant indexes.
         - `first_axis_table_index_axis_list` : the axes column.
     :Types:
-        - `first_axis_table_plant_ids` : list
+        - `plant_ids` : list
         - `first_axis_table_index_axis_list` : list
         
     :return: The plant indexes column.
@@ -80,7 +98,7 @@ def _create_index_plt_list(first_axis_table_plant_ids, first_axis_table_index_ax
     '''
     index_plt_list = []
     current_plant_index = 0
-    for plant_id in first_axis_table_plant_ids:
+    for plant_id in plant_ids:
         start_index = current_plant_index + 1
         if 1 in first_axis_table_index_axis_list[start_index:]:
             next_plant_first_row = first_axis_table_index_axis_list.index(1, start_index)
@@ -196,34 +214,62 @@ def _create_N_phyt_list(first_axis_table_index_axis_list,
     return N_phyt_list
 
 
-def _create_T_em_leaf1_list(first_axis_table_index_axis_list, emf_1_main_stem_standard_deviation):
+def _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe):
     '''
-    Create emf_1 column.
+    Create TT_em_phytomer1, TT_col_phytomer1, TT_sen_phytomer1 and TT_del_phytomer1.
     :Parameters:
-        - `first_axis_table_index_axis_list` : the axes column.
+        - `first_axis_table_dataframe` : the first axis table.
         - `emf_1_main_stem_standard_deviation` : the standard deviation used to calculate main stem emf_1 value.
+        - `first_leaf_phen_table_dataframe` : the first leaf phen table dataframe.
     :Types:
-        - `first_axis_table_index_axis_list` : list
+        - `first_axis_table_dataframe` : pandas.DataFrame
         - `emf_1_main_stem_standard_deviation` : float
+        - `first_leaf_phen_table_dataframe` : pandas.DataFrame
         
-    :return: The emf_1 column.
-    :rtype: list
+    :return: The TT_em_phytomer1, TT_col_phytomer1, TT_sen_phytomer1 and TT_del_phytomer1 data.
+    :rtype: tuple of pandas.Series
     '''
-    mu=0.0
-    sigma=emf_1_main_stem_standard_deviation
-    T_em_leaf1_list = []
-    for cohort_number in first_axis_table_index_axis_list:
-        emf_1 = 0.0
-        if cohort_number == 1:
-            # then it is the main stem
-            emf_1 = random.normalvariate(mu, sigma)
-            while abs(emf_1) > sigma / 2.0:
-                emf_1 = random.normalvariate(mu, sigma)
-        else:
-            # it is a secondary stem
-            emf_1 = None # TODO: will be modified.
-        T_em_leaf1_list.append(emf_1)
-    return T_em_leaf1_list
+    sigma = emf_1_main_stem_standard_deviation
+    sigma_div_2 = sigma / 2.0
+    TT_em_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
+    TT_col_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
+    TT_sen_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
+    TT_del_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
+    first_leaf_phen_table_dataframe['id_axis'] = pandas.Series(index=first_leaf_phen_table_dataframe.index)
+    for i in first_leaf_phen_table_dataframe.index:
+        first_leaf_phen_table_dataframe['id_axis'][i] = float(str(int(first_leaf_phen_table_dataframe['id_phen'][i]))[:-2])
+    
+    axis_list = []
+    mu_TT_em_phytomer_list = []
+    mu_TT_col_phytomer_list = []
+    mu_TT_sen_phytomer_list = []
+    mu_TT_del_phytomer_list = []
+    for id_axis, first_leaf_phen_table_dataframe_group in first_leaf_phen_table_dataframe.groupby(by='id_axis'):
+        axis_list.append(id_axis)
+        mu_TT_em_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_em_phytomer'].mean())
+        mu_TT_col_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_col_phytomer'].mean())
+        mu_TT_sen_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_sen_phytomer'].mean())
+        mu_TT_del_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_del_phytomer'].mean())
+    
+    mu_dataframe = pandas.DataFrame({'id_axis': axis_list, 
+                                     'mu_TT_em_phytomer': mu_TT_em_phytomer_list, 
+                                     'mu_TT_col_phytomer': mu_TT_col_phytomer_list, 
+                                     'mu_TT_sen_phytomer': mu_TT_sen_phytomer_list, 
+                                     'mu_TT_del_phytomer': mu_TT_del_phytomer_list})
+
+    for (id_plt, id_axis), first_axis_table_dataframe_group in first_axis_table_dataframe.groupby(['id_plt', 'id_axis']):
+        normal_distribution = random.normalvariate(0.0, sigma)
+        while abs(normal_distribution) > sigma_div_2:
+            normal_distribution = random.normalvariate(0.0, sigma)
+        current_axis_mu_dataframe = mu_dataframe[mu_dataframe['id_axis'] == id_axis]
+        TT_em_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_em_phytomer'][current_axis_mu_dataframe.first_valid_index()]
+        TT_col_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_col_phytomer'][current_axis_mu_dataframe.first_valid_index()]
+        TT_sen_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_sen_phytomer'][current_axis_mu_dataframe.first_valid_index()]
+        TT_del_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_del_phytomer'][current_axis_mu_dataframe.first_valid_index()]
+        
+    first_leaf_phen_table_dataframe = first_leaf_phen_table_dataframe.drop(['id_axis'], 1)
+        
+    return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 
 def _create_id_dim_list(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
@@ -291,40 +337,40 @@ def _create_id_ear_list(first_axis_table_index_plt_list):
     return ['1' for plant_id in first_axis_table_index_plt_list]
     
     
-def _create_T_stop_axis_list(max_axes_number, min_axes_number, first_axis_table_T_em_leaf1_list, bolting_date, flowering_date):
+def _create_TT_stop_axis_list(max_axes_number, min_axes_number, first_axis_table_TT_em_phytomer1, bolting_date, flowering_date):
     '''
-    Create end column.
+    Create TT_stop_axis column.
     :Parameters:
         - `max_axes_number` : The maximum number of existing axes. Must be positive or null, and greater than min_axes_number.
         - `min_axes_number` : The minimum number of existing axes. Must be positive or null, and lesser than max_axes_number.
-        - `first_axis_table_T_em_leaf1_list` : The emf_1 column.
+        - `first_axis_table_TT_em_phytomer1` : The TT_em_phytomer1 column.
         - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
         - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
     :Types:
         - `max_axes_number` : int
         - `min_axes_number` : int
-        - `first_axis_table_T_em_leaf1_list` : list
+        - `first_axis_table_TT_em_phytomer1` : list
         - `bolting_date` : int
         - `flowering_date` : int
         
-    :return: The end column.
-    :rtype: list
+    :return: The TT_stop_axis column.
+    :rtype: pandas.Series
     '''
     
     assert max_axes_number >= 0 and min_axes_number >=0 and bolting_date >= 0 and flowering_date >= 0
-    assert bolting_date < flowering_date
-    assert min_axes_number < max_axes_number
+    assert bolting_date <= flowering_date
+    assert min_axes_number <= max_axes_number
     
-    polynomial_coefficient_array = numpy.polyfit([flowering_date, bolting_date], [min_axes_number, max_axes_number], 1)
+    polynomial_coefficient_array = np.polyfit([flowering_date, bolting_date], [min_axes_number, max_axes_number], 1)
                 
     remaining_axes_number = max_axes_number
-    T_em_leaf1_tuples = zip(first_axis_table_T_em_leaf1_list[:], range(len(first_axis_table_T_em_leaf1_list)))
+    T_em_leaf1_tuples = zip(first_axis_table_TT_em_phytomer1[:], range(len(first_axis_table_TT_em_phytomer1)))
     T_em_leaf1_tuples.sort()
     T_stop_axis_tuples = []
     for tt in range(bolting_date, flowering_date + 1):
-        simulated_axes_number = int(numpy.polyval(polynomial_coefficient_array, tt))
+        simulated_axes_number = int(np.polyval(polynomial_coefficient_array, tt))
         axes_to_delete_number = remaining_axes_number - simulated_axes_number
-        while axes_to_delete_number >= 0:
+        while axes_to_delete_number > 0:
             max_emf_1, axis_row_number = T_em_leaf1_tuples.pop()
             T_stop_axis_tuples.append((axis_row_number, tt))
             axes_to_delete_number -= 1
@@ -332,11 +378,52 @@ def _create_T_stop_axis_list(max_axes_number, min_axes_number, first_axis_table_
         if remaining_axes_number == 0:
             break 
     T_stop_axis_tuples.sort()
-    end_row_number = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
-    T_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
-    for i in range(len(first_axis_table_T_em_leaf1_list)):
-        if i not in end_row_number:
-            T_stop_axis_list.insert(i, None) 
-    return T_stop_axis_list 
+    T_stop_axis_row_number_list = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
+    TT_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
+    for i in range(len(first_axis_table_TT_em_phytomer1)):
+        if i not in T_stop_axis_row_number_list:
+            TT_stop_axis_list.insert(i, np.nan)
+    return TT_stop_axis_list 
     
+    
+def _create_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
+    '''
+    Create TT_del_axis column.
+    :Parameters:
+        - `TT_stop_axis_series` : The TT_stop_axis column.
+        - `delais_TT_stop_del_axis` : ???
+
+    :Types:
+        - `TT_stop_axis_series` : pandas.Series
+        - `delais_TT_stop_del_axis` : int
+        
+    :return: The end column.
+    :rtype: list
+    '''
+    return TT_stop_axis_series + delais_TT_stop_del_axis
+
+
+def create_tillering_dynamic_dataframe(initial_date, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number):
+    '''
+    Create the relative phen table table dataframe from the absolute one. 
+    :Parameters:
+        - `initial_date` : the absolute phen table dataframe.
+        - `bolting_date` : the bolting date
+        - `flowering_date` : the flowering date
+        - `plant_number` : the number of plants
+        - `axis_table_dataframe` : the first axis table dataframe
+        - `final_axes_number` : the final number of axes.
+    :Types:
+        - `initial_date` : int
+        - `bolting_date` : int
+        - `flowering_date` : int
+        - `plant_number` : int
+        - `axis_table_dataframe` : pandas.DataFrame
+        - `final_axes_number` : int
+        
+    :return: the tillering dynamic dataframe.
+    :rtype: pandas.Dataframe
+    '''
+    return pandas.DataFrame({'TT': [initial_date, bolting_date, flowering_date], 'NbrAxes': [plant_number, axis_table_dataframe.index.size, final_axes_number]}, columns=['TT', 'NbrAxes'])
+
 

@@ -3,7 +3,7 @@ try:
     from scipy import stats
 except:
     from scipy import stats
-import numpy as np
+import numpy as np as np
 import pandas
 from math import *
 from os import chdir
@@ -107,7 +107,7 @@ def dimension_fitting(id_axe_ref, csvdata_to_fit):
     #### output est un pandasDataFrame
     #dataframe_fitted
 
-    ####output est un numpy.ndarray:transforme pandas.dataframe en numpy array
+    ####output est un np.ndarray:transforme pandas.dataframe en numpy array
     #nparray_fitted =dataframe_fitted.as_matrix(columns=(['id_dim','index_phytomer','L_blade','W_blade','L_sheath','W_sheath','L_internode','W_internode'])) 
     
     ####output est un dictionnaire:transforme pandas.dataframe en dictionnaire

@@ -19,8 +19,7 @@ delais_TT_stop_del_axis = int(config._sections['delais_TT_stop_del_axis']['delai
 final_axes_number = int(config._sections['final_axes_number']['final_axes_number'])
 
 import tempfile
-#fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
-fitting_results_directory = path('/home/cchambon/workspace/openaleapkg_tr/adel/test/results')
+fitting_results_directory = path(tempfile.mkdtemp(suffix='_fitting_results'))
 relative_tolerance = 10e-3
 absolute_tolerance = 10e-3
 #TODO: check with Mariem that is sufficient

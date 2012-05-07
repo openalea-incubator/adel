@@ -228,47 +228,26 @@ def _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_st
         
     :return: The TT_em_phytomer1, TT_col_phytomer1, TT_sen_phytomer1 and TT_del_phytomer1 data.
     :rtype: tuple of pandas.Series
-    '''
+    '''    
     sigma = emf_1_main_stem_standard_deviation
     sigma_div_2 = sigma / 2.0
     TT_em_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
     TT_col_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
     TT_sen_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
     TT_del_phytomer1_series = pandas.Series(index=first_axis_table_dataframe.index)
-    first_leaf_phen_table_dataframe['id_axis'] = pandas.Series(index=first_leaf_phen_table_dataframe.index)
-    for i in first_leaf_phen_table_dataframe.index:
-        first_leaf_phen_table_dataframe['id_axis'][i] = float(str(int(first_leaf_phen_table_dataframe['id_phen'][i]))[:-2])
-    
-    axis_list = []
-    mu_TT_em_phytomer_list = []
-    mu_TT_col_phytomer_list = []
-    mu_TT_sen_phytomer_list = []
-    mu_TT_del_phytomer_list = []
-    for id_axis, first_leaf_phen_table_dataframe_group in first_leaf_phen_table_dataframe.groupby(by='id_axis'):
-        axis_list.append(id_axis)
-        mu_TT_em_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_em_phytomer'].mean())
-        mu_TT_col_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_col_phytomer'].mean())
-        mu_TT_sen_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_sen_phytomer'].mean())
-        mu_TT_del_phytomer_list.append(first_leaf_phen_table_dataframe_group['TT_del_phytomer'].mean())
-    
-    mu_dataframe = pandas.DataFrame({'id_axis': axis_list, 
-                                     'mu_TT_em_phytomer': mu_TT_em_phytomer_list, 
-                                     'mu_TT_col_phytomer': mu_TT_col_phytomer_list, 
-                                     'mu_TT_sen_phytomer': mu_TT_sen_phytomer_list, 
-                                     'mu_TT_del_phytomer': mu_TT_del_phytomer_list})
 
-    for (id_plt, id_axis), first_axis_table_dataframe_group in first_axis_table_dataframe.groupby(['id_plt', 'id_axis']):
+    for id_plt, first_axis_table_grouped_by_id_plt_dataframe in first_axis_table_dataframe.groupby('id_plt'):
         normal_distribution = random.normalvariate(0.0, sigma)
         while abs(normal_distribution) > sigma_div_2:
             normal_distribution = random.normalvariate(0.0, sigma)
-        current_axis_mu_dataframe = mu_dataframe[mu_dataframe['id_axis'] == id_axis]
-        TT_em_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_em_phytomer'][current_axis_mu_dataframe.first_valid_index()]
-        TT_col_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_col_phytomer'][current_axis_mu_dataframe.first_valid_index()]
-        TT_sen_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_sen_phytomer'][current_axis_mu_dataframe.first_valid_index()]
-        TT_del_phytomer1_series[first_axis_table_dataframe_group.index] = normal_distribution + current_axis_mu_dataframe['mu_TT_del_phytomer'][current_axis_mu_dataframe.first_valid_index()]
-        
-    first_leaf_phen_table_dataframe = first_leaf_phen_table_dataframe.drop(['id_axis'], 1)
-        
+        for id_phen, first_axis_table_grouped_by_id_plt_and_id_phen_dataframe in first_axis_table_grouped_by_id_plt_dataframe.groupby('id_phen'):
+            current_first_leaf_phen_table_dataframe_row = first_leaf_phen_table_dataframe[first_leaf_phen_table_dataframe['id_phen']==id_phen]
+            first_valid_index = current_first_leaf_phen_table_dataframe_row.first_valid_index()
+            TT_em_phytomer1_series[first_axis_table_grouped_by_id_plt_and_id_phen_dataframe.index] = normal_distribution + current_first_leaf_phen_table_dataframe_row['TT_em_phytomer'][first_valid_index]
+            TT_col_phytomer1_series[first_axis_table_grouped_by_id_plt_and_id_phen_dataframe.index] = normal_distribution + current_first_leaf_phen_table_dataframe_row['TT_col_phytomer'][first_valid_index]
+            TT_sen_phytomer1_series[first_axis_table_grouped_by_id_plt_and_id_phen_dataframe.index] = normal_distribution + current_first_leaf_phen_table_dataframe_row['TT_sen_phytomer'][first_valid_index]
+            TT_del_phytomer1_series[first_axis_table_grouped_by_id_plt_and_id_phen_dataframe.index] = normal_distribution + current_first_leaf_phen_table_dataframe_row['TT_del_phytomer'][first_valid_index]
+                
     return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 

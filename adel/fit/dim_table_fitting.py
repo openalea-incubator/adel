@@ -185,7 +185,10 @@ def _fit_length(user_dim_table_TT_em_phytomer_series, user_dim_table_L_series, f
     polynomial_coefficient_array = np.polyfit(user_dim_table_TT_em_phytomer_series[:first_axis_rows_number].values, user_dim_table_L_series[:first_axis_rows_number].values, 6)
     fitted_length_series = user_dim_table_L_series.copy()
     fitted_length_series[first_axis_rows_number:] = np.polyval(polynomial_coefficient_array, user_dim_table_TT_em_phytomer_series[first_axis_rows_number:])
-    return fitted_length_series.clip_lower(0.0)
+    main_stem_last_TT_em_phytomer = user_dim_table_TT_em_phytomer_series[first_axis_rows_number - 1]
+    indexes_to_change = user_dim_table_TT_em_phytomer_series[user_dim_table_TT_em_phytomer_series > main_stem_last_TT_em_phytomer].index
+    fitted_length_series[indexes_to_change] = user_dim_table_L_series[first_axis_rows_number - 1]
+    return fitted_length_series
 
 
 def _fit_weight(user_dim_table_TT_em_phytomer_sub_series, first_axis_W_tuple):

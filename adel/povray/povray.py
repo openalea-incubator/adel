@@ -115,7 +115,10 @@ camera {{
         cmdline = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file, height, width)
     else:
         cmdline = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file, height, width)
+    
     os.system(cmdline)
+    if not os.path.isfile(image_name):
+        print 'Error: Image not created. Check that povray is installed and set in the path.'
     # return outputs
     os.chdir(old_dir)
 

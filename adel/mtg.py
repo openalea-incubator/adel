@@ -445,12 +445,11 @@ def to_plantgl(g,
             stem_material = Material(Color3(0,130,0))
         if soil_material is None:
             soil_material = Material(Color3(170, 85,0))
-
+        colors = g.property('color')
+        
     geometries = g.property('geometry')
     labels = g.property('can_label')
-    colors = g.property('color')
     scene = Scene()
-
 
     def geom2shape(vid, mesh, scene):
         shape = None

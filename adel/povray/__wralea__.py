@@ -58,14 +58,15 @@ povray = Factory(name='povray',
                 dict(name='command', interface=IStr, value='povray'),
 
                 ],
-                outputs=[{'interface': IFileStr, 'name': 'povray image'}],
+                outputs=[{'interface': IFileStr, 'name': 'povray image'},
+                {'interface': IFileStr, 'name': 'stand box image'}],
                 )
 
 __all__.append('povray')
 
 color_item = Factory(name='col_item', 
                 category='color', 
-                nodemodule='color',
+                nodemodule='povray',
                 nodeclass='col_item',
                 inputs=[dict(interface='IInt', name='color index', value=None, desc='color index. If None, return a function'),
                         dict(interface='ISequence', name='color list', value=color_list),
@@ -74,5 +75,29 @@ color_item = Factory(name='col_item',
                 )
 
 __all__.append('color_item')
+
+
+domain3D = Factory(name='domain3D', 
+                category='image', 
+                nodemodule='povray',
+                nodeclass='domain3D',
+                inputs=[dict(interface='ITuple', name='domain2D', value=()),
+                        dict(interface=None, name='scene', value=None),
+                        ],
+                outputs=[{'interface': ITuple, 'name': 'domain3D'}],
+                )
+
+__all__.append('domain3D')
+
+
+stand_box = Factory(name='stand_box', 
+                category='image', 
+                nodemodule='povray',
+                nodeclass='stand_box',
+                inputs=[dict(interface='ITuple', name='domain', value=((0, 0, 0), (1, 1, 1)))],
+                outputs=[{'interface': None, 'name': 'stand_box'}],
+                )
+
+__all__.append('stand_box')
 
 

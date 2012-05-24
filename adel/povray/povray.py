@@ -41,7 +41,7 @@ def povray(scene,
            soil=False, 
            povray_cmd='povray'):
     """    
-    Compute povray file based on a scene.
+    Compute povray files based both on a scene and its stand box.
 
     :Parameters:
         - scene: a plantgl scene
@@ -63,7 +63,17 @@ def povray(scene,
     mesh_fn = pov_file[0:-4]+'_mesh.pov'
     pov = PovFilePrinter(mesh_fn, t)
     scene.apply(pov)
-
+    
+    d3D = domain3D(domain, scene)
+    
+    scene_box = Scene()
+    scene_box.add(stand_box(d3D))
+    Viewer.display(scene_box)
+    
+    mesh_fn_box = pov_file[0:-4]+'_mesh_box.pov'
+    pov_box = PovFilePrinter(mesh_fn_box, t)
+    scene_box.apply(pov_box)
+    
     # Write the camera in the main pov file
     #pov_camera = pov_header(...)
     pov_camera = """
@@ -93,37 +103,55 @@ camera {{
     namebase = f.namebase
     ext = f.ext
     dirname = f.dirname()
+    f_box = dirname / namebase + '_box' + ext  
 
     povf = f.open(mode='w')
     pov_header(povf, pov_camera, domain=domain, soil=soil)
     povf.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn))
     povf.close()
+    
+    povf_box = f_box.open(mode='w')
+    pov_header(povf_box, pov_camera, domain=domain)
+    povf_box.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn_box))
+    povf_box.close()
 
     old_dir = os.path.abspath(os.getcwd())
     os.chdir(dirname)
 
     if windows:
-        image_name = dirname / namebase +'.bmp'
+        image_name = dirname / namebase + '.bmp'
+        image_name_box = dirname / namebase + '_box' + '.bmp'
     else:
-        image_name = dirname / namebase +'.png'
+        image_name = dirname / namebase + '.png'
+        image_name_box = dirname / namebase + '_box' + '.png'
 
+    image_name_box = path(image_name_box)
     image_name = path(image_name)
     if image_name.exists():
         image_name.remove()
-
+    if image_name_box.exists():
+        image_name_box.remove()
+    
+    pov_file_box = pov_file[0:-4] +'_box.pov'
     if windows:
         cmdline = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file, height, width)
+        cmdline_box = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file_box, height, width)
     else:
         cmdline = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file, height, width)
+        cmdline_box = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file_box, height, width)
     
     os.system(cmdline)
+    os.system(cmdline_box)
     if not os.path.isfile(image_name):
         print 'Error: Image not created. Check that povray is installed and set in the path.'
+    if not os.path.isfile(image_name_box):
+        print 'Error: Image box not created. Check that povray is installed and set in the path.'
     # return outputs
     os.chdir(old_dir)
 
-    return image_name,
+    return image_name, image_name_box
 
+    
 def pov_header(f, pov_camera, background = (0,0,0), light = (10,0,10), domain = ((0.,0.),(1.,1.)), soil=False):
     """ Write the header of  povray file. """
     f.write("/"*80+"\n")
@@ -159,3 +187,86 @@ box {{ <{x1}, {y1},  -0.1>,
         f.write(text)
         
 
+def domain3D(domain2D, scene):
+    t=Tesselator()
+    bbc = BBoxComputer(t)
+    bbc.process(scene)
+    bbox = bbc.result
+    z_top = bbox.getZMax()
+    domain3D = (domain2D[0] + (z_top,), domain2D[1] + (z_top,))
+    return domain3D
+        
+        
+def stand_box(domain):
+    '''
+    
+    domain: 3D bounding box of the stand    
+    '''
+    # list of points
+    z_base = domain[0][2]
+    z_top = domain[1][2]
+    points = [domain[0], # coordinates of bottom right corner
+              (domain[1][0], domain[0][1], z_base),
+              (domain[1][0], domain[1][1], z_base),
+              (domain[0][0], domain[1][1], z_base),
+              (domain[0][0], domain[0][1], z_top), # coordinates of bottom right corner
+              (domain[1][0], domain[0][1], z_top),
+              (domain[1][0], domain[1][1], z_top),    # coordinates of top left corner
+              (domain[0][0], domain[1][1], z_top)]
+
+    # list of indices to make the quads from the points
+    indices = [(0, 1, 2, 3), # indices for bottom face
+               (0, 1, 5, 4), #
+               (1, 2, 6, 5), # indices for 
+               (2, 3, 7, 6), # side faces
+               (3, 0, 4, 7)] #
+
+    # list of colors
+    side_color = Color4(255, 0, 0)
+    bottom_color = Color4(0, 0, 255)
+    colors = [bottom_color,
+              side_color,
+              side_color,
+              side_color,
+              side_color]
+
+    # construction of the geometry
+    box = QuadSet(points, indices)
+    # adding information to the geometry
+    box.colorList = colors
+
+    # list of indices to associate a vertex in a face to a color
+    # here each face will be associated to only one color of the list 
+    box.colorIndexList = [(0,0,0,0), 
+                           (1,1,1,1),
+                           (2,2,2,2),
+                           (3,3,3,3),
+                           (4,4,4,4)]
+    
+    return box
+    
+    
+color_list=[(0,0,0),
+            (255,0,0),
+            (0,255,0),
+            (0,0,255),
+            (255,255,0),
+            (0,255,255),
+            (255,0,255),
+            (128,255,0),
+            (0,128,255),
+            (255,0,128),
+            (0,255,128),
+            (128,0,255),
+            (255,128,0),
+            (128,128,255),
+            (255,128,128),
+            (128,255,128),
+            (255,255,255)
+            ]
+
+def col_item (ind, color_list=color_list) :
+    if ind is None:
+        return lambda x: color_list[(x-1) % len(color_list)]
+    else:
+        return color_list[(ind-1) % len(color_list)],

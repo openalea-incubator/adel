@@ -68,7 +68,6 @@ def povray(scene,
     
     scene_box = Scene()
     scene_box.add(stand_box(d3D))
-    Viewer.display(scene_box)
     
     mesh_fn_box = pov_file[0:-4]+'_mesh_box.pov'
     pov_box = PovFilePrinter(mesh_fn_box, t)
@@ -111,7 +110,7 @@ camera {{
     povf.close()
     
     povf_box = f_box.open(mode='w')
-    pov_header(povf_box, pov_camera, domain=domain)
+    pov_header(povf_box, pov_camera, domain=domain,light = (x,y,camera_distance))
     povf_box.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn_box))
     povf_box.close()
 
@@ -152,13 +151,13 @@ camera {{
     return image_name, image_name_box
 
     
-def pov_header(f, pov_camera, background = (0,0,0), light = (10,0,10), domain = ((0.,0.),(1.,1.)), soil=False):
+def pov_header(f, pov_camera, background = (0,0,0), light = (10,0,10), domain = ((0.,0.),(1.,1.)), soil=False,light_color=(1,1,1)):
     """ Write the header of  povray file. """
     f.write("/"*80+"\n")
     f.write("#include \"colors.inc\""+"\n\n")
     f.write(pov_camera+"\n")
     x,y,z=light
-    f.write("light_source {{  <{tx},{ty},{tz}> color rgb <1,1,1>}}\n\n".format(tx=x,ty=y,tz=z))
+    f.write("light_source {{  <{tx},{ty},{tz}> color rgb <{r},{g},{b}>}}\n\n".format(tx=x,ty=y,tz=z,r=light_color[0],g=light_color[1],b=light_color[2]))
     r,g,b = background
     f.write("background {{ color rgb < {cr},{cg},{cb}> }}\n\n".format(cr=r,cg=g,cb=b))
     
@@ -192,58 +191,62 @@ def domain3D(domain2D, scene):
     bbc = BBoxComputer(t)
     bbc.process(scene)
     bbox = bbc.result
+
+    z_base = bbox.getZMin()
     z_top = bbox.getZMax()
-    domain3D = (domain2D[0] + (z_top,), domain2D[1] + (z_top,))
+    domain3D = (domain2D[0] + (z_base,), domain2D[1] + (z_top,))
     return domain3D
         
         
 def stand_box(domain):
     '''
     
-    domain: 3D bounding box of the stand    
+    domain: 3D bounding box of the stand
     '''
     # list of points
     z_base = domain[0][2]
     z_top = domain[1][2]
-    points = [domain[0], # coordinates of bottom right corner
-              (domain[1][0], domain[0][1], z_base),
-              (domain[1][0], domain[1][1], z_base),
-              (domain[0][0], domain[1][1], z_base),
-              (domain[0][0], domain[0][1], z_top), # coordinates of bottom right corner
-              (domain[1][0], domain[0][1], z_top),
-              (domain[1][0], domain[1][1], z_top),    # coordinates of top left corner
-              (domain[0][0], domain[1][1], z_top)]
+    sides_points = [domain[0], # coordinates of bottom right corner
+                  (domain[1][0], domain[0][1], z_base),
+                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
+                  (domain[0][0], domain[1][1], z_base),
+                  (domain[0][0], domain[0][1], z_top), # coordinates of top right corner
+                  (domain[1][0], domain[0][1], z_top),
+                  (domain[1][0], domain[1][1], z_top),    # coordinates of top left corner
+                  (domain[0][0], domain[1][1], z_top)]
+                  
+    bottom_points = [domain[0], # coordinates of bottom right corner
+                  (domain[1][0], domain[0][1], z_base),
+                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
+                  (domain[0][0], domain[1][1], z_base)]
 
-    # list of indices to make the quads from the points
-    indices = [(0, 1, 2, 3), # indices for bottom face
-               (0, 1, 5, 4), #
+    # list of indices to make the quads of the sides from the points
+    side_indices = [(0, 1, 5, 4), #
                (1, 2, 6, 5), # indices for 
                (2, 3, 7, 6), # side faces
-               (3, 0, 4, 7)] #
+               (3, 0, 4, 7)] #         
+     
+    # list of indices to make the quads of the bottom from the points
+    bottom_indices = [(0, 1, 2, 3)] # indices for bottom face
 
     # list of colors
-    side_color = Color4(255, 0, 0)
-    bottom_color = Color4(0, 0, 255)
-    colors = [bottom_color,
-              side_color,
-              side_color,
-              side_color,
-              side_color]
+    side_color = Color3(0, 0, 0)
+    bottom_color = Color3(255, 255, 255)
 
-    # construction of the geometry
-    box = QuadSet(points, indices)
-    # adding information to the geometry
-    box.colorList = colors
-
-    # list of indices to associate a vertex in a face to a color
-    # here each face will be associated to only one color of the list 
-    box.colorIndexList = [(0,0,0,0), 
-                           (1,1,1,1),
-                           (2,2,2,2),
-                           (3,3,3,3),
-                           (4,4,4,4)]
+    # construction of the geometry for the sides
+    side_box = QuadSet(sides_points, side_indices)
+    # construction of the geometry for the bottom
+    bottom_box = QuadSet(bottom_points, bottom_indices)
+                           
+    # create 2 shapes: 1 with side_color, 1 with bottom_color 
+    sides_shape = Shape(side_box, Material(side_color))
+    bottom_shape = Shape(bottom_box, Material(bottom_color))
     
-    return box
+    scene = Scene()
+    scene.add(sides_shape)
+    scene.add(bottom_shape)
+    
+    return scene
     
     
 color_list=[(0,0,0),
@@ -270,3 +273,5 @@ def col_item (ind, color_list=color_list) :
         return lambda x: color_list[(x-1) % len(color_list)]
     else:
         return color_list[(ind-1) % len(color_list)],
+
+        

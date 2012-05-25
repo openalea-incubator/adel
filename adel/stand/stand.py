@@ -13,7 +13,7 @@ def regular(nb_plants, nb_rank, dx, dy):
     domain = ((0,0),(nx*dx, ny*dy))
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
 
-def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100):
+def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,pcentral=0.6):
     """ Returns the number of plants, the positions, the domain and the simulated density of a micro-plot specified with agronomical variables
     length (m) is plot dimension along row direction
     width (m) is plot dimension perpendicular to row direction
@@ -26,14 +26,18 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     
     inter_plant = 1. / inter_row / sowing_density
     nrow = max(1, int(float(width) / inter_row))
+    dx = inter_plant * convunit
+    dy = inter_row * convunit
     plant_per_row = max(1,int(float(length) / inter_plant))
     nplants = nrow * plant_per_row
-    positions, domain = regular(nplants, nrow, inter_plant * convunit, inter_row * convunit)
+    positions, domain = regular(nplants, nrow, dx, dy)
     n_emerged = int(nplants * plant_density / sowing_density)
     positions = sample(positions, n_emerged)
     density = int(n_emerged / ( abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit))
+    bord = (1. - pcentral) / 2.
+    central_domain = ((bord * plant_per_row * dx,dy / 2.),((1 - bord) * plant_per_row * dx,(nrow - 1) * dy +dy / 2.))
 
-    return n_emerged, positions, domain, density
+    return n_emerged, positions, domain, density, central_domain
 
 def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu=0.0, kappa=3.0, noise = 0,convunit=100):
     """

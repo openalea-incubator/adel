@@ -72,16 +72,17 @@ def fit_dim_table_second(user_dim_table_dataframe, absolute_second_phen_table_da
     first_axis_rows_number = int(str(int(user_dim_table_dataframe['id_dim'][0]))[-2:])
     for column_name in user_dim_table_dataframe:
         assert user_dim_table_dataframe[column_name][:first_axis_rows_number].map(lambda x: x == 0.0 and 1.0 or x).fillna(0.0).all()
+    first_row_number_to_fit = user_dim_table_dataframe['L_blade'].last_valid_index() + 1
     dim_table_copy_dataframe = user_dim_table_dataframe.copy()
     dim_table_copy_dataframe['TT_em_phytomer'] = pandas.Series(absolute_second_phen_table_dataframe.drop(absolute_second_phen_table_dataframe.groupby('index_phytomer').groups[0.0])['TT_em_phytomer'].values)
-    dim_table_copy_dataframe['L_blade'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_blade'], first_axis_rows_number)
-    dim_table_copy_dataframe['L_sheath'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_sheath'], first_axis_rows_number)
-    dim_table_copy_dataframe['L_internode'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_internode'], first_axis_rows_number)
+    dim_table_copy_dataframe['L_blade'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_blade'], first_axis_rows_number, first_row_number_to_fit)
+    dim_table_copy_dataframe['L_sheath'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_sheath'], first_axis_rows_number, first_row_number_to_fit)
+    dim_table_copy_dataframe['L_internode'] = _fit_length(dim_table_copy_dataframe['TT_em_phytomer'], dim_table_copy_dataframe['L_internode'], first_axis_rows_number, first_row_number_to_fit)
     
     first_axis_W_blade_tuple = (dim_table_copy_dataframe['W_blade'][0], dim_table_copy_dataframe['W_blade'][first_axis_rows_number - 1])
     first_axis_W_sheath_tuple = (dim_table_copy_dataframe['W_sheath'][0], dim_table_copy_dataframe['W_sheath'][first_axis_rows_number - 1])
     first_axis_W_internode_tuple = (dim_table_copy_dataframe['W_internode'][0], dim_table_copy_dataframe['W_internode'][first_axis_rows_number - 1])
-    for name, group in dim_table_copy_dataframe[first_axis_rows_number:].groupby(by='id_dim'):
+    for name, group in dim_table_copy_dataframe[first_row_number_to_fit:].groupby(by='id_dim'):
         dim_table_copy_dataframe['W_blade'][group.index] = _fit_weight(group['TT_em_phytomer'], first_axis_W_blade_tuple)
         dim_table_copy_dataframe['W_sheath'][group.index] = _fit_weight(group['TT_em_phytomer'], first_axis_W_sheath_tuple)
         dim_table_copy_dataframe['W_internode'][group.index] = _fit_weight(group['TT_em_phytomer'], first_axis_W_internode_tuple)
@@ -167,26 +168,29 @@ def _create_absolute_index_phytomer_list(first_parameters_table_id_dim_list):
     return absolute_index_phytomer_list
 
 
-def _fit_length(user_dim_table_TT_em_phytomer_series, user_dim_table_L_series, first_axis_rows_number):
+def _fit_length(user_dim_table_TT_em_phytomer_series, user_dim_table_L_series, first_axis_rows_number, first_row_number_to_fit):
     '''
     Fit L_series.
     :Parameters:
         - `user_dim_table_TT_em_phytomer_series` : The TT_em_phytomer data.
         - `user_dim_table_L_series` : The lengths to fit.
         - `first_axis_rows_number` : The number of rows of the first axis. These rows are used to fit the other rows. 
+        - `first_row_number_to_fit` : The number of the first row to fit. 
     :Types:
         - `user_dim_table_TT_em_phytomer_series` : pandas.Series
         - `user_dim_table_L_series` : pandas.Series
         - `first_axis_rows_number` : int
+        - `first_row_number_to_fit` : int 
         
     :return: The fitted lengths.
     :rtype: pandas.Series
     '''
     polynomial_coefficient_array = np.polyfit(user_dim_table_TT_em_phytomer_series[:first_axis_rows_number].values, user_dim_table_L_series[:first_axis_rows_number].values, 6)
     fitted_length_series = user_dim_table_L_series.copy()
-    fitted_length_series[first_axis_rows_number:] = np.polyval(polynomial_coefficient_array, user_dim_table_TT_em_phytomer_series[first_axis_rows_number:])
+    fitted_length_series[first_row_number_to_fit:] = np.polyval(polynomial_coefficient_array, user_dim_table_TT_em_phytomer_series[first_row_number_to_fit:])
     main_stem_last_TT_em_phytomer = user_dim_table_TT_em_phytomer_series[first_axis_rows_number - 1]
     indexes_to_change = user_dim_table_TT_em_phytomer_series[user_dim_table_TT_em_phytomer_series > main_stem_last_TT_em_phytomer].index
+    indexes_to_change = indexes_to_change[indexes_to_change >= first_row_number_to_fit]
     fitted_length_series[indexes_to_change] = user_dim_table_L_series[first_axis_rows_number - 1]
     return fitted_length_series
 

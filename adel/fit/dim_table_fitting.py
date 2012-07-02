@@ -15,26 +15,7 @@ def fit_dim_table_first(first_parameters_table_dataframe):
     Fit the dim table: first step.
     :Parameters:
         - `first_parameters_table_dataframe` : the first parameters table.
-            * N_cohort: the cohort number.
-            * id_axis: the identifier made from concatenation of N_cohort and Nff.
-            * frequency: the occurrence frequency of id_axis.
-            * Nff: the final leaves number of the current axis.
-            * a_cohort: The slope of phytomer emergence.
-            * TT_col_0: The Thermal Time for Haun Stage equal to 0.
-            * TT_col_break: The Thermal Time when the slope of phytomers emergence is changing.
-            * TT_col_nff: The Thermal Time when Haun Stage is equal to the total number of vegetative phytomers formed on an axis.
-            * dTT_MS_cohort: The thermal time delta between the main stem flowering and the current raw tiller flowering.
-            * n0: ???
-            * n1: ???
-            * n2: ???
-            * t0: ???
-            * t1: ???
-            * t2: ???
-            * hs_t1: ???
-            * a: ???
-            * c: ???
-            * d: ???
-            
+          
     :Types:
         - `first_parameters_table_dataframe` : pandas.DataFrame
         
@@ -87,23 +68,6 @@ def fit_dim_table_second(user_dim_table_dataframe, absolute_second_phen_table_da
         dim_table_copy_dataframe['W_sheath'][group.index] = _fit_weight(group['TT_em_phytomer'], first_axis_W_sheath_tuple)
         dim_table_copy_dataframe['W_internode'][group.index] = _fit_weight(group['TT_em_phytomer'], first_axis_W_internode_tuple)
     
-#    # uncomment for dimTable validation
-#    for column_name in ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']:
-#        from matplotlib import pyplot
-#        from openalea.core.path import path
-#        pyplot.figure()
-#        legend_list = []
-#        for id_dim, group in dim_table_copy_dataframe.groupby(by='id_dim'):
-#            current_column_array = group[column_name].values
-#            legend_list.append(str(int(id_dim)))
-#            pyplot.plot(current_column_array, group['index_phytomer'].values)
-#
-#        pyplot.xlabel(column_name)
-#        pyplot.ylabel('index_phytomer')
-#        pyplot.title(column_name)
-#        pyplot.legend(legend_list, 'best')
-#        pyplot.savefig(path('data/test_fitting2/dimTable_validation/%s.png') % column_name)
-    
     return dim_table_copy_dataframe.drop(['TT_em_phytomer'], axis=1)
 
 
@@ -112,25 +76,6 @@ def _create_id_dim_list(first_parameters_dataframe):
     Create id_dim list.
     :Parameters:
         - `first_parameters_dataframe` : the first observations table, with the following headers: 
-            * N_cohort: the cohort number.
-            * id_axis: the identifier made from concatenation of N_cohort and Nff.
-            * frequency: the occurrence frequency of id_axis.
-            * Nff: the final leaves number of the current axis.
-            * a_cohort: The slope of phytomer emergence.
-            * TT_col_0: The Thermal Time for Haun Stage equal to 0.
-            * TT_col_break: The Thermal Time when the slope of phytomers emergence is changing.
-            * TT_col_nff: The Thermal Time when Haun Stage is equal to the total number of vegetative phytomers formed on an axis.
-            * dTT_MS_cohort: The thermal time delta between the main stem flowering and the current raw tiller flowering.
-            * n0: ???
-            * n1: ???
-            * n2: ???
-            * t0: ???
-            * t1: ???
-            * t2: ???
-            * hs_t1: ???
-            * a: ???
-            * c: ???
-            * d: ???
             
     :Types:
         - `first_parameter_dataframe` : pandas.DataFrame

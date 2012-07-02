@@ -292,11 +292,6 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i)
         phytomer_indexes_i = np.arange(int(Nff_i) + 1)
-#        # Uncomment to create the plots from roots calculation
-#        TT_to_plot_method_2 = []
-#        HS_to_plot_method_2 = []
-#        GL_to_plot_method_2 = []
-#        SSI_to_plot_method_2 = []
 
         for j in phytomer_indexes_i:
             # define HS according to j
@@ -343,25 +338,6 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
                             if SSI_root_array.size == 0 or SSI_root_array[0] <= t2_i:
                                 raise Exception('ERROR !!!!! This shouldn\'t occurred')   
                 TT_sen_phytomer_i_list.append(SSI_root_array[0])
-                
-#            # Uncomment to create the plots from roots calculation
-#            TT_to_plot_method_2.append(TT_sen_phytomer_i_list[-1])
-#            HS_to_plot_method_2.append(HS(TT_sen_phytomer_i_list[-1]))
-#            GL_to_plot_method_2.append(GL(TT_sen_phytomer_i_list[-1]))
-#            SSI_to_plot_method_2.append(j)
-#        # Uncomment to create the plots
-#        from matplotlib import pyplot
-#        from openalea.core.path import path
-#        pyplot.figure(int(id_axis_i))
-#        pyplot.plot(TT_to_plot_method_2, HS_to_plot_method_2, 'b', marker='o')
-#        pyplot.plot(TT_to_plot_method_2, GL_to_plot_method_2, 'g', marker='o')
-#        pyplot.plot(TT_to_plot_method_2, SSI_to_plot_method_2, 'r', marker='o')
-#        pyplot.xlabel('TT')
-#        pyplot.ylabel('Phytomer')
-#        pyplot.title('SSI')
-#        pyplot.legend(('HS_method_1', 'GL_method_1', 'SSI_method_1', 'HS_method_2', 'GL_method_2', 'SSI_method_2'), 'best')
-#        pyplot.axis([0, 2500, -2, 12])
-#        pyplot.savefig(path('data/test_fitting2/SSI_GL_HS/%d_HS_GL_SSI.png') % int(id_axis_i))
         
         TT_sen_phytomer_list += TT_sen_phytomer_i_list
     

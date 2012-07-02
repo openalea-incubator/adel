@@ -20,6 +20,15 @@ emf_1_main_stem_standard_deviation = 30.0
 def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
     '''
     Fit the axis table: first step.
+    Compute the following columns: 
+        - id_axis: the axis ids for each plant.   
+        - id_plt: the plant ids.
+        - N_phytomer: the final leave numbers for each axis.
+        - id_dim: the keys referring to a group of lines in the table of the 
+          organ dimensions.
+        - id_phen: the keys referring to a group of lines in the phenological 
+          table. 
+        - id_ear: the keys referring to a group of lines in the table of ear appearance dates.    
     :Parameters:
         - `plant_number` : the number of plants.
         - `cohort_probabilities` : the cohort probabilities.
@@ -37,7 +46,6 @@ def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_nu
     index_axis_list = _create_index_axis_list(plant_ids, cohort_probabilities)
     index_plt_list = _create_index_plt_list(plant_ids, index_axis_list)
     N_phyt_list = _create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, secondary_stem_leaves_number_coefficients)
-    # Remarque: avant de remplir la colonne TT_stop_axis il faut que la colonne TT_em_leaf1 soit totalement remplie (MB et Talles)
     TT_stop_axis_list = [np.nan for i in range(len(index_axis_list))]
     TT_del_axis_list = [np.nan for i in range(len(index_axis_list))]
     id_dim_list = _create_id_dim_list(index_axis_list, N_phyt_list)
@@ -131,7 +139,7 @@ def _create_index_axis_list(first_axis_table_plant_ids, cohort_probabilities):
     return index_axis_list
 
 
-def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
+def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1, first_child_delay=2):
     '''
     Find (recursively) the child cohort numbers of a parent cohort, according to the cohort probabilities and 
     the parent cohort number. The main stem always exists.
@@ -146,12 +154,12 @@ def _find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1):
     :rtype: list
     '''
     child_cohort_numbers = []
-    first_possible_cohort_number = parent_cohort_number + 2
+    first_possible_cohort_number = parent_cohort_number + first_child_delay
     if first_possible_cohort_number == 1:
         # The main stem always exists, then add it.
         child_cohort_numbers.append(first_possible_cohort_number)
         child_cohort_numbers.extend(_find_child_cohort_numbers(cohort_probabilities, 
-                                                                   first_possible_cohort_number))
+                                                               first_possible_cohort_number))
     else:
         # Find the secondary stem children.
         for cohort_number_str, cohort_probability in cohort_probabilities.iteritems():
@@ -217,6 +225,7 @@ def _create_N_phyt_list(first_axis_table_index_axis_list,
 def _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe):
     '''
     Create TT_em_phytomer1, TT_col_phytomer1, TT_sen_phytomer1 and TT_del_phytomer1.
+    For each plant, define a delay of emergence, and for each axis add this delay to the first leaf development schedule.
     :Parameters:
         - `first_axis_table_dataframe` : the first axis table.
         - `emf_1_main_stem_standard_deviation` : the standard deviation used to calculate main stem emf_1 value.
@@ -384,7 +393,7 @@ def _create_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
 
 def create_tillering_dynamic_dataframe(initial_date, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number):
     '''
-    Create the relative phen table table dataframe from the absolute one. 
+    Create the tillering dynamic dataframe. 
     :Parameters:
         - `initial_date` : the absolute phen table dataframe.
         - `bolting_date` : the bolting date

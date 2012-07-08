@@ -76,10 +76,13 @@ def dataframeAsdict(df):
     if r['is.null'](df)[0]:
         return None
     try:
-        d = dict(zip( df.colnames, numpy.array(df)))
+        d = dict(zip( df.colnames, numpy.array(df)))#works only without NA
         return d
     except:
-        d = dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+        try:
+            d = dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+        except:
+            d = dict([(k,numpy.array(df.rx(k)[0])) for k in r.colnames(df)])# r delegator is replaced by rx in new rpy2
         return d
 
 def dataframe(d):

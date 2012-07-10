@@ -17,13 +17,20 @@
 from math import sqrt
 import numpy
 import rpy2.robjects as robj
-from rpy2.robjects.numpy2ri import numpy2ri #force conversion mode of Robject
 r = robj.r
+
+from rpy2.robjects.numpy2ri import numpy2ri
+try:
+    numpy2ri.activate()#force auto-conversion mode of Robject to array
+except:
+    pass
 
 try: 
     robj.globalEnv = robj.globalenv
 except:
     pass
+
+
 #content of rfiles using setuptools pkg_resources utility
 from pkg_resources import resource_string
 
@@ -65,24 +72,33 @@ def saveRData(Robj,name,fn):
     """ name and write the Robj to RData file """
     r.assign(name,Robj)
     r.save(list = name,file = fn)
-    return(name)
+    return(fn)
 
 def RlistAsDict(Rlist):
     """returns a dictionary containing the elements of the Rlist"""
     return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
+
+def _rvect_asarray(rvect):
+    """"
+    convert a r_vector into an array of numeric values or into an array of string if NA are present (numpy2ri replaces NA with numeric values otherwise) . Will be deprecated when numpy will offer true NA type """
+
+    if r['length'](r['which'](r['is.na'](rvect)))[0] > 0:
+        return numpy.array(r['as.character'](rvect))
+    else:
+        return numpy.array(rvect)
 
 def dataframeAsdict(df):
     """ convert an RDataframe to a python dict """
     if r['is.null'](df)[0]:
         return None
     try:
-        d = dict(zip( df.colnames, numpy.array(df)))#works only without NA
+        d = dict(zip( df.colnames, numpy.array(df)))
         return d
     except:
         try:
-            d = dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+            d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
         except:
-            d = dict([(k,numpy.array(df.rx(k)[0])) for k in r.colnames(df)])# r delegator is replaced by rx in new rpy2
+            d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx in new rpy2
         return d
 
 def dataframe(d):
@@ -92,7 +108,7 @@ def dataframe(d):
         return r('as.null()')
     else:
         for k, v in d.iteritems():
-            df[k] = numpy2ri(numpy.array(v))
+            df[k] = r['as.numeric'](numpy2ri(numpy.array(v)))
     dataf = r['data.frame'](**df)
     return dataf
 

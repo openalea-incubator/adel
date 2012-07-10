@@ -189,18 +189,20 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
   fshrink = pars$senescence_leaf_shrink
   res <- NULL
   for (p in seq(kinlist)) {
+    #print(p)
     kin <- kinlist[[p]]
     plant <- plantlist[[p]]
     pldesc <- NULL
     
     for (a in seq(kin)) {
+      #print(paste("axe",a))
       axename <- names(kin)[a]
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llsen","Glsen","Elsen")])
       if (sum(dat) > epsillon) {#do not represent empty axes
         colnames(dat) <- c("Lv","Gv","Ev","Lsen","Gsen","Esen")
                                         #  infos brutes de plant parameters
-        datp <- data.frame(plant$phytoT[,,axename])
-        dataxe <- plant$axeT[plant$axeT$axe == as.numeric(axename),]
+        datp <- data.frame(plant$phytoT[,,a])
+        dataxe <- plant$axeT[a,]
         nbleaf <- dataxe$nf
         nbphy <- nrow(dat)#inclus ear,ped et awn
         datp <- datp[1:nbphy,]
@@ -251,7 +253,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         posen <- rep(2,nbphy)
       #
         pldesc <- rbind(pldesc,
-                        cbind(data.frame(
+                        cbind(data.frame(axe_id = rep(a,nbphy),
                                          axe=rep(as.numeric(axename),nbphy),
                                          numphy=1:nbphy,
                                          Ll=datp$Ll,

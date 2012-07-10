@@ -120,10 +120,15 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
     dimT <- cbind(dimT,pAngle = -999,dpAngle = 0)
   }
   
-  out <- vector("list",nplants)
-  plantdb <- by(axeT,list(axeT$plant),function(x) x)
+  plantdb <- by(axeT,list(axeT$plant),function(x) {
+    if (! 0 %in% x$axe)
+      print(paste("No main stem found for plant",x$plant[1],", Check axeT table"))
+    x})
   #sampling nplants in the database
   plnb <- ceiling(runif(nplants) * length(unique(axeT$plant)))
+  #
+  out <- vector("list",nplants)
+  names(out) <- names(plantdb)[plnb]
   for (p in seq(out)) {
     #axeTable from axeT and geoAxe or dimT if azim/azdev in colums
     pT <- plantdb[[plnb[p]]]

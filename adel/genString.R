@@ -129,32 +129,36 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  Blade(dat$Lv, dat$Lsen, dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1)),
                  "]")
   
-  if (!is.null(axil)) {
-    azaxil <- 0
-    chn <- paste(chn,
+  if (!is.null(axil))
+    for (i in seq(along=unique(axil$axe_id))) {
+      ax <- axil[axil$axe_id == unique(axil$axe_id)[i],]
+      azaxil <- 0
+      if (i > 1)
+        azaxil = azaxil + 170
+      chn <- paste(chn,
                  "[",
                  roll(azm),
                  "newAxe")
-    nf <- nrow(axil) - 3
-    for (n in axil$numphy[1:nf]) {
-      chn <- paste(chn,Metamer(axil[axil$numphy == n,],epsillon,azaxil))
-      azaxil = azaxil + axil$Laz[axil$numphy == n]
-    }
-       #add Peduncle
-    if (axil$Ev[nf + 1] > epsillon)
-      chn <- paste(chn,
-                 Peduncle(axil$Ev[nf + 1]-axil$Esen[nf + 1],axil$Esen[nf + 1],axil$Ed[nf + 1],axil$Epo[nf + 1],axil$Epos[nf + 1],epsillon))
-    #add ear
-    if (axil$Ev[nf + 2] > epsillon)
-      chn <- paste(chn,
-                 Ear(axil$Ev[nf + 2]-axil$Esen[nf + 2],axil$Esen[nf + 2],axil$Ed[nf + 2],axil$Epo[nf + 2],axil$Epos[nf + 2],epsillon))
+      nf <- nrow(ax) - 3
+      for (n in ax$numphy[1:nf]) {
+        chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
+        azaxil = azaxil + ax$Laz[ax$numphy == n]
+      }
+                                        #add Peduncle
+      if (ax$Ev[nf + 1] > epsillon)
+        chn <- paste(chn,
+                 Peduncle(ax$Ev[nf + 1]-ax$Esen[nf + 1],ax$Esen[nf + 1],ax$Ed[nf + 1],ax$Epo[nf + 1],ax$Epos[nf + 1],epsillon))
+                                        #add ear
+      if (ax$Ev[nf + 2] > epsillon)
+        chn <- paste(chn,
+                 Ear(ax$Ev[nf + 2]-ax$Esen[nf + 2],ax$Esen[nf + 2],ax$Ed[nf + 2],ax$Epo[nf + 2],ax$Epos[nf + 2],epsillon))
     #add awn
-    if (axil$Ev[nf + 3] > epsillon)
+      if (ax$Ev[nf + 3] > epsillon)
+        chn <- paste(chn,
+                 Awn(ax$Ev[nf + 3]-ax$Esen[nf + 3],ax$Esen[nf + 3],ax$Ed[nf + 3],ax$Epo[nf + 3],ax$Epos[nf + 3],epsillon))
       chn <- paste(chn,
-                 Awn(axil$Ev[nf + 3]-axil$Esen[nf + 3],axil$Esen[nf + 3],axil$Ed[nf + 3],axil$Epo[nf + 3],axil$Epos[nf + 3],epsillon))
-    chn <- paste(chn,
                  "]")
-  } 
+    } 
   chn
 }
 #
@@ -164,32 +168,34 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
   for (p in unique(can$plant)) {
     pl <- can[can$plant == p,]
     axes <- unique(pl$axe)
-    axe <- pl[pl$axe == axes[1],]
-    azcum <- 0
-    chn <- paste(chn,
+    axe <- pl[pl$axe == 0,]#main stem
+    if (nrow(axe) > 0) {
+      azcum <- 0
+      chn <- paste(chn,
                  "[ newPlant newAxe")
     # stringify main stem and delegates to Metamer axilary branches, if any
-    nf <- nrow(axe) - 3
-    for (m in axe$numphy[1:nf]) {
-      if (m %in% axes)
-        chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
-      else
-        chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))
-      azcum <- azcum + axe$Laz[axe$numphy == m]
-    }
-    #add Peduncle
-    if (axe$Ev[nf + 1] > epsillon)
-      chn <- paste(chn,
+      nf <- nrow(axe) - 3
+      for (m in axe$numphy[1:nf]) {
+        if (m %in% axes)
+          chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
+        else
+          chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))
+        azcum <- azcum + axe$Laz[axe$numphy == m]
+      }
+                                        #add Peduncle
+      if (axe$Ev[nf + 1] > epsillon)
+        chn <- paste(chn,
                  Peduncle(axe$Ev[nf + 1]-axe$Esen[nf + 1],axe$Esen[nf + 1],axe$Ed[nf + 1],axe$Epo[nf + 1],axe$Epos[nf + 1],epsillon))
-    #add ear
-    if (axe$Ev[nf + 2] > epsillon)
-      chn <- paste(chn,
+                                        #add ear
+      if (axe$Ev[nf + 2] > epsillon)
+        chn <- paste(chn,
                  Ear(axe$Ev[nf + 2]-axe$Esen[nf + 2],axe$Esen[nf + 2],axe$Ed[nf + 2],axe$Epo[nf + 2],axe$Epos[nf + 2],epsillon))
-    #add awn
-    if (axe$Ev[nf + 3] > epsillon)
-      chn <- paste(chn,
+                                        #add awn
+      if (axe$Ev[nf + 3] > epsillon)
+        chn <- paste(chn,
                  Awn(axe$Ev[nf + 3]-axe$Esen[nf + 3],axe$Esen[nf + 3],axe$Ed[nf + 3],axe$Epo[nf + 3],axe$Epos[nf + 3],epsillon))
-   chn <- paste(chn,"]")
+      chn <- paste(chn,"]")
+    }
   }
   chn
 }

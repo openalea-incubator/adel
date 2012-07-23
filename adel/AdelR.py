@@ -125,7 +125,7 @@ def RdflistAsdicts(Rdflist):
 def csvAsDict(fn,type=1):
     """ returns a dictionnary with the content of csv file as numpy vectors (one colum = one key) """
     df = RreadCsv(fn,type)
-    return dict([(k,numpy.array(df.r[k][0])) for k in r.colnames(df)])
+    return dataframeAsdict(df)
 
 def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     """Creates a set of parameter for simulating np plants with adel from arvalis calage Rdata (deprecated)"""

@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_duplicate', 'csv2dataframe_csv2dataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'dataframe2csv_dataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'PairAsDict_PairAsDict', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
+__all__ = ['io_duplicate', 'io_csv2pandasDataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'io_pandasDataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'PairAsDict_PairAsDict', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
 
 
 
@@ -36,12 +36,12 @@ io_duplicate = Factory(name='duplicate mtg',
 
 
 
-csv2dataframe_csv2dataframe = Factory(name='csv2dataframe',
+io_csv2pandasDataframe = Factory(name='csv2pandasDataframe',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Read CSV (comma-separated) file into DataFrame.',
                 category='data i/o',
-                nodemodule='csv2dataframe',
-                nodeclass='csv2dataframe',
+                nodemodule='io',
+                nodeclass='csv2pandasDataframe',
                 inputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The filepath of the csv file to import.'}, {'interface': ISequence, 'name': 'index_col', 'value': None, 'desc': 'Column to use as the row labels of the DataFrame. If a sequence is given, a MultiIndex is used.'}, {'interface': ISequence, 'name': 'na_values', 'value': None, 'desc': 'List of additional strings to recognize as NA/NaN.'}, {'interface': IBool, 'name': 'parse_dates', 'value': False, 'desc': 'Attempt to parse dates in the index column(s).'}],
                 outputs=[{'interface': None, 'name': 'dataframe', 'desc': 'A pandas.DataFrame instance which represents the csv file.'}],
                 widgetmodule=None,
@@ -141,12 +141,12 @@ io_dataframe = Factory(name='Rdataframe',
 
 
 
-dataframe2csv_dataframe2csv = Factory(name='dataframe2csv',
+io_pandasDataframe2csv = Factory(name='pandasDataframe2csv',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Write a DataFrame to a comma-separated values (csv) file.',
                 category='data i/o',
-                nodemodule='dataframe2csv',
-                nodeclass='dataframe2csv',
+                nodemodule='io',
+                nodeclass='pandasDataframe2csv',
                 inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The DataFrame to write.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The file path where the Dataframe is written.'}, {'interface': IStr, 'name': 'na_rep', 'value': None, 'desc': 'Missing data replacement.'}, {'interface': IBool, 'name': 'index', 'value': True, 'desc': 'Write row names (index)'}, {'interface': ISequence, 'name': 'index_label', 'value': None, 'desc': 'Column label for index column(s) if desired. If None is given, and header and index are True, then the index names are used. A sequence should be given if the DataFrame uses MultiIndex.'}],
                 outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The file path where the Dataframe is written.'}],
                 widgetmodule=None,

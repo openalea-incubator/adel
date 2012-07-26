@@ -80,7 +80,8 @@ def RlistAsDict(Rlist):
 
 def _rvect_asarray(rvect):
     """"
-    convert a r_vector into an array of numeric values or into an array of string if NA are present (numpy2ri replaces NA with numeric values otherwise) . Will be deprecated when numpy will offer true NA type """
+    convert a r_vector into an array of numeric values or into an array of string if NA are present (numpy2ri replaces NA with numeric values otherwise) . 
+    Will be deprecated when numpy will offer true NA type """
 
     if r['length'](r['which'](r['is.na'](rvect)))[0] > 0:
         return numpy.array(r['as.character'](rvect))

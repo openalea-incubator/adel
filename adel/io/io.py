@@ -11,7 +11,6 @@ from alinea.adel.mtg import (mtg_factory, duplicate, thermal_time,
                              apply_property, to_plantgl, to_canestra)
 from openalea.mtg.io import lpy2mtg, mtg2lpy
 
-import pandas
 from openalea.core.path import path
 
 def dataframe(d):
@@ -57,6 +56,7 @@ def csv2pandasDataframe(csv_filepath, index_col=None, na_values=None, parse_date
     :rtype: pandas.DataFrame
     
     '''
+    import pandas
     return pandas.read_csv(path(csv_filepath), index_col=index_col, na_values=na_values, parse_dates=parse_dates)
 
 

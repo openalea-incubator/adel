@@ -15,10 +15,10 @@ for key,value in metadata.iteritems():
 
 
 if("win32" in sys.platform):
-    install_requires = []
+    install_requires = ['pandas <= 0.7.3']
     setup_requires = install_requires + []
 else:
-    install_requires = []
+    install_requires = ['pandas <= 0.7.3']
     setup_requires = []
     
 pkg_name = 'alinea.adel'

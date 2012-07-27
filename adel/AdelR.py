@@ -191,7 +191,10 @@ def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'s
     #chn = RrunAdel(x,plant_parameters,ap)
     #return [c[0] for c in chn]
     res = RrunAdel(x,plant_parameters,ap)
-    d = dataframeAsdict(res[0])
+    if len(res) <= 0:#empty canopy
+        d = None
+    else:
+        d = dataframeAsdict(res[0])
     return d
 
 def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):

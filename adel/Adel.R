@@ -278,8 +278,10 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                               dat))
       }
     }
-    res <- rbind(res,cbind(plant=p,pldesc))
+    if (!is.null(pldesc))
+      res <- rbind(res,cbind(plant=p,pldesc))
   }
+  
   res
 }
   

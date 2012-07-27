@@ -7,4 +7,4 @@ def CanMTGInterpreter(symbols, lsystem_string):
     # write the node code here.
 
     # return outputs
-    return g
+    return g,

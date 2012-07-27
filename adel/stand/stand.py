@@ -22,6 +22,8 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     inter_row (m) is for the  distance between rows
     noise (%), indicates the precision of the sowing for the inter plant spacing
     unit (m or cm) is for the unit of the position and domain
+    
+    Length and Width will be adjusted to  produce a canopy centered in its domain
     """
     
     inter_plant = 1. / inter_row / sowing_density
@@ -33,11 +35,12 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     positions, domain = regular(nplants, nrow, dx, dy)
     n_emerged = int(nplants * plant_density / sowing_density)
     positions = sample(positions, n_emerged)
-    density = int(n_emerged / ( abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit))
+    domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
+    density = int(n_emerged / domain_area)
     bord = (1. - pcentral) / 2.
     central_domain = ((bord * plant_per_row * dx,dy / 2.),((1 - bord) * plant_per_row * dx,(nrow - 1) * dy +dy / 2.))
 
-    return n_emerged, positions, domain, density, central_domain
+    return n_emerged, positions, domain, domain_area, central_domain
 
 def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu=0.0, kappa=3.0, noise = 0,convunit=100):
     """

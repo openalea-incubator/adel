@@ -153,5 +153,7 @@ def sample_regular_gaps(points, pattern = [0,1]):
     p = pattern
     length = len(points)
     p = p * (length / len(p)) + [p[i] for i in range(length % len(p))]
-    return list(compress(points,p))
+    
+    #selection = compress(points,p) only python >= 2.7
+    return [point for point,i in izip(points,p) if i]
     

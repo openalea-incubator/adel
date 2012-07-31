@@ -1,10 +1,9 @@
 from numpy import linspace, cos, sin
 from itertools import *
 from math import pi, sqrt
-from openalea.plantgl.all import Translation, Vector3, AxisRotation, Transform4
-from alinea.adel import symbol
 from random import random,sample
 from numpy.random import vonmises
+
 
 def regular(nb_plants, nb_rank, dx, dy):
     
@@ -23,8 +22,10 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     noise (%), indicates the precision of the sowing for the inter plant spacing
     unit (m or cm) is for the unit of the position and domain
     
-    Length and Width will be adjusted to  produce a canopy centered in its domain
+    Rows are parrallel to x-axis
+    Length and Width are adjusted to produce a canopy centered in its domain and compliant with infinitisation
     """
+    from operator import itemgetter
     
     inter_plant = 1. / inter_row / sowing_density
     nrow = max(1, int(float(width) / inter_row))
@@ -35,6 +36,8 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     positions, domain = regular(nplants, nrow, dx, dy)
     n_emerged = int(nplants * plant_density / sowing_density)
     positions = sample(positions, n_emerged)
+    # sorting by ranks
+    positions = sorted(positions,key= itemgetter(0,1))
     domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
     density = int(n_emerged / domain_area)
     bord = (1. - pcentral) / 2.
@@ -103,6 +106,9 @@ def planter(scene, distribution):
     """
     Returns a CanestraScene by positionning all elements.
     """
+    from openalea.plantgl.all import Translation, Vector3, AxisRotation, Transform4
+    from alinea.adel import symbol
+
     new_scene = symbol.CanScene()
     def transfo(plant,pt):
         r = AxisRotation((0,0,1), random()*pi).getMatrix()
@@ -135,3 +141,17 @@ def clumping_selection(points, nb_clumps, radius_mu, radius_sigma):
         # filter to select all the poit in a ball of radius r2
         # Add these points to the result
 
+def sample_regular_gaps(points, pattern = [0,1]):
+    """ Sample points along pattern.
+    Pattern is replicated to become as long as points and then used as a filter (0= gap) on points
+    
+    """
+    
+    if not isinstance(points, list):
+        points = [points]
+    
+    p = pattern
+    length = len(points)
+    p = p * (length / len(p)) + [p[i] for i in range(length % len(p))]
+    return list(compress(points,p))
+    

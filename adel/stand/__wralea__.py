@@ -23,7 +23,7 @@ __all__ = ['stand_agronomicplot', 'stand_agronomicplotwithdistribution', 'stand_
 
 stand_agronomicplot = Factory(name='agronomic plot',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Returns the number of plants, the positions and the domain of a plot specified with agronomical variables',
+                description='Compute positions of plants for a standard agronomic row-based stand',
                 category='Unclassified',
                 nodemodule='stand',
                 nodeclass='agronomicplot',
@@ -142,8 +142,19 @@ stand_regular = Factory(name='regular',
                 widgetclass=None,
                )
 
-
-
+stand_sample_regular_gaps = Factory(name='regular gaps',
+                authors='C. Pradal, C. Fournier (wralea authors)',
+                description='Choose a regular sample from a list of points.',
+                category='scene',
+                nodemodule='stand',
+                nodeclass='sample_regular_gaps',
+                inputs=[{'interface': ISequence, 'name': 'points', 'desc': 'List of points'}, 
+                {'interface': ISequence, 'name': 'pattern', 'value': [0,1],'desc': 'selection pattern (0=gap)'}],
+                outputs=[{'interface': ISequence, 'name': 'positions', 'desc': 'List of plant positions'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+__all__.append('stand_sample_regular_gaps')
 
 CanMTGPlanter_CanMTGPlanter = Factory(name='CanMTGPlanter',
                 authors='C. Pradal, C. Fournier (wralea authors)',

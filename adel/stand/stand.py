@@ -37,7 +37,7 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     n_emerged = int(nplants * plant_density / sowing_density)
     positions = sample(positions, n_emerged)
     # sorting by ranks
-    positions = sorted(positions,key= itemgetter(0,1))
+    positions = sorted(positions,key= itemgetter(1,0))
     domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
     density = int(n_emerged / domain_area)
     bord = (1. - pcentral) / 2.

@@ -144,7 +144,7 @@ def clumping_selection(points, nb_clumps, radius_mu, radius_sigma):
 def sample_regular_gaps(points, pattern = [0,1]):
     """ Sample points along pattern.
     Pattern is replicated to become as long as points and then used as a filter (0= gap) on points
-    
+    Returns positions of plants and gaps 
     """
     
     if not isinstance(points, list):
@@ -155,5 +155,5 @@ def sample_regular_gaps(points, pattern = [0,1]):
     p = p * (length / len(p)) + [p[i] for i in range(length % len(p))]
     
     #selection = compress(points,p) only python >= 2.7
-    return [point for point,i in izip(points,p) if i]
+    return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
     

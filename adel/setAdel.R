@@ -122,7 +122,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
   
   plantdb <- by(axeT,list(axeT$plant),function(x) {
     if (! 0 %in% x$axe)
-      print(paste("No main stem found for plant",x$plant[1],", Check axeT table"))
+      stop(paste("No main stem found for plant",x$plant[1],", Check axeT table"))
     x})
   #sampling nplants in the database
   plnb <- ceiling(runif(nplants) * length(unique(axeT$plant)))

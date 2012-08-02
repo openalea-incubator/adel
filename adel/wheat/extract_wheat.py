@@ -7,6 +7,8 @@ from numpy import transpose
 
 def RlistAsDict(Rlist):
     """returns a dictionary containing the elements of the Rlist"""
+    if r['is.null'](Rlist.names)[0]:
+        Rlist.names = r['seq'](Rlist)
     return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
 
 def extract_leaf_info(rdata_xy, rdata_sr):
@@ -20,7 +22,7 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     #sr = r.load(rdata_sr)[0]
     xy = r.load(rdata_xy)[0]
     sr = r.load(rdata_sr)[0]
-   # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
+    # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
     r('names(%s) = seq(%s)'%(xy,xy))
     r('names(%s) = seq(%s)'%(sr,sr))
 
@@ -39,9 +41,15 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     for k in rank:
         xyk = RlistAsDict(xy[k])
         leaves_id = xyk.keys()
-        s, radius = transpose(np.array(sr[k]))
+        try: 
+            s, radius = transpose(np.array(sr[k]))
+        except ValueError:#sr is a dataframe
+            s, radius = np.array(sr[k][0]),np.array(sr[k][1])
         for leaf_id in leaves_id:
-            x, y = transpose(np.array(xyk[leaf_id]))
+            try:
+                x, y = transpose(np.array(xyk[leaf_id])) #xy is a matrix
+            except ValueError:#xy is a dataframe
+                x, y = np.array(xyk[leaf_id][0]),np.array(xyk[leaf_id][1])
             leaves.setdefault(k,[]).append((x,y,s,radius))
 
     return leaves

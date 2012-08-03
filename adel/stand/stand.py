@@ -12,15 +12,16 @@ def regular(nb_plants, nb_rank, dx, dy):
     domain = ((0,0),(nx*dx, ny*dy))
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
 
-def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,pcentral=0.6):
-    """ Returns the number of plants, the positions, the domain and the simulated density of a micro-plot specified with agronomical variables
+def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,center_scene = True):
+    """ Returns the number of plants, the positions, the domain and the domain area of a micro-plot specified with agronomical variables
     length (m) is plot dimension along row direction
     width (m) is plot dimension perpendicular to row direction
     sowing density is the density of seeds sawn
     plant_density is the density of plants that are present (after loss due to bad emergence, early death...)
     inter_row (m) is for the  distance between rows
     noise (%), indicates the precision of the sowing for the inter plant spacing
-    unit (m or cm) is for the unit of the position and domain
+    convunit is the conversion factor from meter to scene unit
+    center_scene allows to center the position arround origin. If False, the scene is in the x+,y+ sector, the origin being at the lower left corner of the domain
     
     Rows are parrallel to x-axis
     Length and Width are adjusted to produce a canopy centered in its domain and compliant with infinitisation
@@ -39,11 +40,13 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     # sorting by ranks
     positions = sorted(positions,key= itemgetter(1,0))
     domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
-    density = int(n_emerged / domain_area)
-    bord = (1. - pcentral) / 2.
-    central_domain = ((bord * plant_per_row * dx,dy / 2.),((1 - bord) * plant_per_row * dx,(nrow - 1) * dy +dy / 2.))
-
-    return n_emerged, positions, domain, domain_area, central_domain
+    if center_scene:
+        xc = float(domain[1][0] + domain[0][0]) / 2
+        yc = float(domain[1][1] + domain[0][1]) / 2
+        positions = [(x - xc, y - yc, z) for x,y,z in positions]
+        domain = ((domain[0][0] - xc,domain[0][1] - yc),(domain[1][0] - xc,domain[1][1] - yc))
+    
+    return n_emerged, positions, domain, domain_area
 
 def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu=0.0, kappa=3.0, noise = 0,convunit=100):
     """

@@ -146,12 +146,14 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     if xydb is None:
         rxydb = r('as.null()')
     else:
-        rxydb = xydb
+        rxydb = r.load(xydb)[0]
+        rxydb = r(rxydb)
         
     if srdb is None:
         rsrdb = r('as.null()')
     else:
-        rsrdb = srdb
+        rsrdb = r.load(srdb)[0]
+        rsrdb = r(rsrdb)
 
     RdevT = Rdflist(devT)
     r(RcodegeoAxe)
@@ -162,7 +164,9 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     return p
 
 def canL2canS(RcanT,srdb,shrink):
-    res = RcanL2canS(RcanT,srdb,shrink)
+    sr = r.load(srdb)[0]
+    sr=r(sr)
+    res = RcanL2canS(RcanT,sr,shrink)
     d = dataframeAsdict(res)
     return d
 

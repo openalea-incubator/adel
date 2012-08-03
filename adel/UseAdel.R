@@ -142,31 +142,29 @@ leafSurface <- function(shape,scL,scW,from=0,to=1) {
   res
 }
 #
-canL2canS <- function(canT,sr_db,leaf_shrink=NULL) {
-  res <- canT
-  if (all(canT$LcIndex <= 1))#leaf shape has not been set by setAdel
-    {
-      print("canL2canS : can't compute Blade surfaces : SR data not connected to setAdel!!!")
-      res[,c("Lv","Lsen","Ll")] <- NA
-    }
-  else {
-    rg <- ifelse(is.na(canT$LcType) | canT$LcType == 0, 1,canT$LcType)
-    res[,"Ll"] <- sapply(seq(nrow(canT)),function(x) leafSurface(sr_db[[rg[x]]],canT$Ll[x],canT$Lw[x]))
-    #
-    base <- canT$Ll - canT$Lsen - canT$Lv
-    top <- canT$Ll - canT$Lsen
-    res[,"Lv"] <- sapply(seq(nrow(canT)),function(x) leafSurface(sr_db[[rg[x]]],canT$Ll[x],canT$Lw[x],base[x] / canT$Ll[x],top[x] / canT$Ll[x]))
-    #
-    base <- canT$Ll - canT$Lsen
-    res[,"Lsen"] <- sapply(seq(nrow(canT)),function(x) leafSurface(sr_db[[rg[x]]],canT$Ll[x],canT$Lw[x]*canT$LsenShrink[x],base[x] / canT$Ll[x],1))
+canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
+  canS <- canL
+  if (all(canS$LcIndex <= 1)) {#leaf shape has not been set by setAdel
+    print("canL2canS : can't compute Blade surfaces : SR data not connected to setAdel!!!")
   }
-  names(res)[match(c("Ll","Lsen","Lv"),names(res))] <- c("SLl","SLsen","SLv")
+  else {
+    rg <- ifelse(is.na(canS$LcType) | canS$LcType == 0, 1,canS$LcType)
+    canS$SLl <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x]))
+                                        #
+    base <- canS$Ll - canS$Lsen - canS$Lv
+    top <- canS$Ll - canS$Lsen
+    canS$Slv <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x],base[x] / canS$Ll[x],top[x] / canS$Ll[x]))
+    #
+    base <- canS$Ll - canS$Lsen
+    canS$SLsen <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x]*canS$LsenShrink[x],base[x] / canS$Ll[x],1))
+  }
+  #names(res)[match(c("Ll","Lsen","Lv"),names(res))] <- c("SLl","SLsen","SLv")
   #
-  res[,c("Gl","Gv","Gsen")] <- res[,c("Gl","Gv","Gsen")] * pi * res$Gd^2
-  res[,c("El","Ev","Esen")] <- res[,c("El","Ev","Esen")] * pi * res$Ed^2
-  names(res)[match(c("Gl","Gsen","Gv","El","Ev","Esen"),names(res))] <- c("SGl","SGsen","SGv","SEl","SEv","SEsen")
-  #
-  res
+  for (w in c("Gl","Gv","Gsen"))
+    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Gd^2
+  for (w in c("El","Ev","Esen"))
+    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Ed^2
+  canS
 }
              
                          

@@ -483,7 +483,7 @@ def to_plantgl(g,
 
     for vid, mesh in geometries.iteritems():
         geom2shape(vid, mesh, scene)
-    return scene
+    return scene,
 
 
 def _line(ind, pts, label):

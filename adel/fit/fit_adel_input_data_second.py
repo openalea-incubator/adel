@@ -293,8 +293,11 @@ def _fit_n1_series(copy_dataframe):
             if name == 1.0: # main stem
                 copy_dataframe['n1'][group.index[1:]] = copy_dataframe['n1'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
             else: # tillers
-                copy_dataframe['n1'][group.index] = copy_dataframe['n1'][0]
-
+                #TODO: check this with Bruno
+                if np.isnan(group['n1'][group.index[0]]):
+                    copy_dataframe['n1'][group.index] = copy_dataframe['n1'][0]
+                else:
+                    copy_dataframe['n1'][group.index[1:]] = group['n1'][group.index[0]]
 
 def _calculate_decimal_elongated_internode_number(user_dim_table_dataframe):
     # Calculate decimal_elongated_internode_number.
@@ -333,6 +336,7 @@ def _fit_n0_series(copy_dataframe):
             if name == 1.0: # main stem
                 copy_dataframe['n0'][group.index[1:]] = copy_dataframe['n0'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
             else: # tillers
+                #TODO: check this with Bruno
                 n1_hs_t1_dataframe = group[['n1', 'hs_t1']]
                 copy_dataframe['n0'][group.index] = n1_hs_t1_dataframe.apply(np.min, 1)
 
@@ -344,8 +348,12 @@ def _fit_n2_series(copy_dataframe):
             if name == 1.0: # main stem
                 copy_dataframe['n2'][group.index[1:]] = copy_dataframe['n2'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
             else: # tillers
-                copy_dataframe['n2'][group.index] = copy_dataframe['n2'][0] * (1.0 - n2_MS_div_n2_cohort)
-
+                #TODO: check this with Bruno
+                if np.isnan(group['n2'][group.index[0]]):
+                    copy_dataframe['n2'][group.index] = copy_dataframe['n2'][0] * (1.0 - n2_MS_div_n2_cohort)
+                else:
+                    copy_dataframe['n2'][group.index[1:]] = group['n2'][group.index[0]] * (1.0 - n2_MS_div_n2_cohort)
+                    
 
 def _fit_t0_series(copy_dataframe):
     '''

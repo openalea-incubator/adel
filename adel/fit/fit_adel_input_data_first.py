@@ -88,6 +88,7 @@ def fit_user_parameters_first(first_axis_table_id_phen_list):
     for name, group in unsorted_parameters_table_dataframe.groupby('N_cohort'):
         sorted_group = group.sort_index(by='frequency', ascending=False)
         sorted_parameters_table_dataframe = sorted_parameters_table_dataframe.append(sorted_group)
+    sorted_parameters_table_dataframe.index = range(sorted_parameters_table_dataframe.index.size)
     return sorted_parameters_table_dataframe
 
 

@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May  2 20:31:02 2012
+# This file has been generated at Tue Sep  4 14:23:02 2012
 
 from openalea.core import *
 
@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_fit_leaf', 'fit_fit', 'dimension_fitting_dimension_fitting', 'fit_adel_input_data_first_fit_adel_input_data_first', 'fit_adel_input_data_second_fit_adel_input_data_second']
+__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_adel_input_data_fit_adel_input_data', 'fit_fit_leaf', 'dimension_fitting_dimension_fitting', 'fit_fit']
 
 
 
@@ -66,6 +66,7 @@ fit_simplify = Factory(name='simplification',
 
 
 
+
 fit_fit_leaf = Factory(name='fit midrib',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Fit a midrib with a spline curve of degree 5.',
@@ -79,16 +80,37 @@ fit_fit_leaf = Factory(name='fit midrib',
                )
 
 
+        
 
-
-fit_fit = Factory(name='fit',
+fit_adel_input_data_fit_adel_input_data = Factory(name='fit_adel_input_data',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='fit a leaf (x, y, s, r)',
-                category='fitting',
-                nodemodule='fit',
-                nodeclass='fit',
-                inputs=[{'interface': ISequence, 'name': 'x', 'value': [], 'desc': 'midrib axis'}, {'interface': ISequence, 'name': 'y', 'value': [], 'desc': 'midrib ordinate'}, {'interface': ISequence, 'name': 's', 'value': [], 'desc': 'midrib curvilinear abscisse'}, {'interface': ISequence, 'name': 'r', 'value': [], 'desc': 'midrib radius'}, {'interface': IInt, 'name': 'nb_points', 'value': 3, 'desc': 'target number of points after simplification'}],
-                outputs=[{'interface': ISequence, 'name': 'leaf'}],
+                description='Fit ADEL input data.',
+                category='data processing',
+                nodemodule='fit_adel_input_data',
+                nodeclass='fit_adel_input_data',
+                inputs=({'interface': None, 'name': 'user_dims', 'desc': 'a table describing the organ dimensions set by the user.'},
+                        {'interface': IInt, 'name': 'plant_number', 'value': 100, 'desc': 'the number of plants.'},
+                        {'interface': IDict, 'name': 'cohort_probabilities', 'value': {'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117, '8': 0.0, '9': 0.0, '10': 0.0}, 'desc': 'the probability of emergence of a child axis when the parent axis is present. This probability is related to the cohort of the child axis.'},
+                        {'interface': IDict, 'name': 'main_stem_leaves_number_probability_distribution', 'value': {'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0}, 'desc': 'the probability distribution of the main stem leaves number.'},
+                        {'interface': IInt, 'name': 'bolting_date', 'value': 500, 'desc': 'The bolting date. Must be positive or null, and lesser than flowering_date.'},
+                        {'interface': IInt, 'name': 'flowering_date', 'value': 1400, 'desc': 'The flowering date. Must be positive or null, and greater than bolting_date.'},
+                        {'interface': IInt, 'name': 'final_axes_number', 'value': 250, 'desc': 'the final number of axes which have an ear, per square meter.'},
+                        {'interface': IDict, 'name': 'GL_number', 'value': {1117.0:5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 'desc': 'the GL decimal number measured at several thermal time (including the senescence end).'},
+                        {'interface': IInt, 'name': 'delais_TT_stop_del_axis', 'value': 600, 'desc': 'Thermal time during which a tiller remains present on the plant after the tiller has stopped growing.'},
+                        {'interface': IDict, 'name': 'dTT_MS_cohort', 'value': {'4': 70, '5': 80, '6': 90, '7': 100, '8': 110, '9': 120, '10': 130}, 'desc': '???'},
+                        {'interface': IFloat, 'name': 'TT_col_break', 'value': 0.0, 'desc': '???'},
+                        {'interface': None, 'name': 'user_parameters', 'value': {'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'TT_col_nff': 1078.0, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8}, 'desc': 'the parameters set by the user. Can be either a path or a table.'},
+                        {'interface': IInt, 'name': 'user_parameters_completeness', 'value': 1, 'desc': 'the level of completeness of the parameters set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.'},
+                        {'interface': IInt, 'name': 'user_dims_completeness', 'value': 1, 'desc': 'the level of completeness of the organ dimensions set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.'}),
+                outputs=({'interface': IInt, 'name': 'axis_table', 'desc': 'the axis table'},
+                         {'interface': IInt, 'name': 'absolute_phen_table', 'desc': 'the absolute phen table'},
+                         {'interface': IInt, 'name': 'relative_phen_table', 'desc': 'the relative phen table'},
+                         {'interface': IInt, 'name': 'absolute_dim_table', 'desc': 'the absolute dim table'},
+                         {'interface': IInt, 'name': 'parameters_table', 'desc': 'the parameters table'},
+                         {'interface': IInt, 'name': 'first_leaf_phen_table', 'desc': 'the first leaf phen table'},
+                         {'interface': IInt, 'name': 'HS_GL_SSI_dynamic_table', 'desc': 'the HS_GL_SSI dynamic table'},
+                         {'interface': IInt, 'name': 'relative_dim_table', 'desc': 'the relative dim table'},
+                         {'interface': IInt, 'name': 'tillering_dynamic_table', 'desc': 'the tillering dynamic table'}),
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -111,33 +133,17 @@ dimension_fitting_dimension_fitting = Factory(name='dimension_fitting',
 
 
 
-fit_adel_input_data_first_fit_adel_input_data_first = Factory(name='fit_adel_input_data_first',
+fit_fit = Factory(name='fit',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Fit the axis table data, initialize the parameters for PhenTable fitting and initialize the dim table.',
-                category='data processing',
-                nodemodule='fit_adel_input_data_first',
-                nodeclass='fit_adel_input_data_first',
-                inputs=[{'interface': IInt, 'name': 'plant_number', 'value': 100, 'desc': 'the number of plants.'}, {'interface': IDict, 'name': 'cohort_probabilities', 'value': {'10': 0.0, '3': 0.0, '5': 0.967, '4': 0.9, '7': 0.083, '6': 0.817, '9': 0.0, '8': 0.0}, 'desc': 'the cohort probabilities.'}, {'interface': IDict, 'name': 'main_stem_leaves_number_probability_distribution', 'value': {'11': 0.818, '10': 0.145, '13': 0.0, '12': 0.036, '14': 0.0}, 'desc': 'the probability distribution of\nthe main stem leaves number.'}, {'interface': IInt, 'name': 'bolting_date', 'value': 500, 'desc': 'The bolting date. Must be positive or null, and lesser than flowering_date.'}, {'interface': IInt, 'name': 'flowering_date', 'value': 1440, 'desc': 'The flowering date. Must be positive or null, and greater than bolting_date.'}, {'interface': IInt, 'name': 'final_axes_number', 'value': 250, 'desc': 'final_axes_number'}],
-                outputs=[{'interface': None, 'name': 'axis_table', 'desc': 'The fitted axis table'}, {'interface': None, 'name': 'dim_table', 'desc': 'the initialized dim table'}, {'interface': None, 'name': 'parameters_table', 'desc': 'the initialized parameters table'}, {'interface': None, 'name': 'tillering_dynamic_table', 'desc': 'The tillering dynamic table'}],
+                description='fit a leaf (x, y, s, r)',
+                category='fitting',
+                nodemodule='fit',
+                nodeclass='fit',
+                inputs=[{'interface': ISequence, 'name': 'x', 'value': [], 'desc': 'midrib axis'}, {'interface': ISequence, 'name': 'y', 'value': [], 'desc': 'midrib ordinate'}, {'interface': ISequence, 'name': 's', 'value': [], 'desc': 'midrib curvilinear abscisse'}, {'interface': ISequence, 'name': 'r', 'value': [], 'desc': 'midrib radius'}, {'interface': IInt, 'name': 'nb_points', 'value': 3, 'desc': 'target number of points after simplification'}],
+                outputs=[{'interface': ISequence, 'name': 'leaf'}],
                 widgetmodule=None,
                 widgetclass=None,
                )
-
-
-
-
-fit_adel_input_data_second_fit_adel_input_data_second = Factory(name='fit_adel_input_data_second',
-                authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Fit the parameters provided by the user, create the absolute and relative phen tables, complete the axis table fitting, and complete dim table.',
-                category='data processing',
-                nodemodule='fit_adel_input_data_second',
-                nodeclass='fit_adel_input_data_second',
-                inputs=[{'interface': None, 'name': 'first_axis_table_dataframe', 'value': None, 'desc': 'the axis table from calculated with fit_adel_input_data_first.'}, {'interface': None, 'name': 'user_dim_table_dataframe', 'value': None, 'desc': 'the initial dim table provided by the user.'}, {'interface': None, 'name': 'user_parameter_table_dataframe', 'value': None, 'desc': 'parameters provided by the user for for PhenTable fitting.'}, {'interface': IDict, 'name': 'GL_number', 'value': {1880.0: 0.0, 1212.1: 5.4, 1368.7: 4.9, 1686.8: 2.4, 1117.0: 5.6}, 'desc': 'GL_number'}, {'interface': IInt, 'name': 'bolting_date', 'value': 500, 'desc': ''}, {'interface': IInt, 'name': 'flowering_date', 'value': 1440, 'desc': ''}, {'interface': IInt, 'name': 'delais_TT_stop_del_axis', 'value': 600, 'desc': ''}, {'interface': IInt, 'name': 'final_axes_number', 'value': 250, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'axis_table', 'desc': 'The completed fitted axis table data'}, {'interface': None, 'name': 'absolute_phen_table', 'desc': 'the absolute fitted phen table data'}, {'interface': None, 'name': 'relative_phen_table', 'desc': 'the relative fitted phen table data'}, {'interface': None, 'name': 'dim_table', 'desc': 'the completed fitted dim table dataframe'}, {'interface': None, 'name': 'parameters', 'desc': 'the fitted parameters'}, {'interface': None, 'name': 'first_leaf_phen_table', 'desc': ''}, {'interface': None, 'name': 'HS_GL_SSI_dynamic_table', 'desc': ''}, {'interface': None, 'name': 'relative_dim_table', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
 
 
 

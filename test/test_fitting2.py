@@ -1,9 +1,11 @@
 import random
+
 from adel.fit import axis_table_fitting, dim_table_fitting, phen_table_fitting, fit_adel_input_data_first, fit_adel_input_data_second,\
     fit_adel_input_data, parameters_table_fitting
 import numpy as np
 import pandas
 from openalea.core.path import path
+from openalea.core.alea import *
 from nose.tools import with_setup
 
 random.seed(1234)
@@ -325,4 +327,14 @@ def _check_results(to_compare, user_parameters_completeness, user_dims_completen
         result_table.to_csv(result_table_filepath, na_rep='NA', index=False)  
         print 'The results have been saved to %s' % result_table_filepath
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
+
+
+# test the visualea node
+pm = PackageManager()
+pm.init(verbose=False)
+
+def test_fit_adel_input_data():
+    res = run(('alinea.adel.Tutorials','fit_adel_input_data'), {}, pm=pm)
+    assert res == []
+    
 

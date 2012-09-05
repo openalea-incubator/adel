@@ -17,7 +17,7 @@ secondary_stem_leaves_number_coefficients = {'a_1': 0.9423, 'a_2': 0.555}
 emf_1_main_stem_standard_deviation = 30.0
 
 
-def fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
+def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
     '''
     Fit the axis table: first step.
     Compute the following columns: 

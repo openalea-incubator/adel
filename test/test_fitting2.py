@@ -40,9 +40,9 @@ def reinit_random_state():
 
 
 @with_setup(reinit_random_state)
-def test_fit_axis_table_first():
+def test_generate_axes():
     expected_axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
-    axis_table_dataframe = axis_table_fitting.fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
+    axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     test_table_filepath = default_results.joinpath('linear_first_axis_table.csv')
     axis_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath

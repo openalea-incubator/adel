@@ -38,7 +38,7 @@ def fit_adel_input_data_first(plant_number=100,
     :rtype: a tuple of pandas.DataFrame
     '''    
     # Create and fit AxisTable
-    axis_table_dataframe = axis_table_fitting.fit_axis_table_first(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
+    axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     # Initialize the parameters table
     first_parameters_table_dataframe = fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable

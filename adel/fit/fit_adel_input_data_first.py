@@ -5,11 +5,10 @@ Created on Feb 7, 2012
 
 @author: cchambon
 '''  
-import numpy as np
-import pandas
 
 import adel.fit.axis_table_fitting as axis_table_fitting
 import adel.fit.dim_table_fitting as dim_table_fitting
+import adel.fit.parameters_table_fitting as parameters_table_fitting
 
 def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083, '8': 0.0, '9': 0.0, '10': 0.0}, 
@@ -40,7 +39,7 @@ def fit_adel_input_data_first(plant_number=100,
     # Create and fit AxisTable
     axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     # Initialize the parameters table
-    first_parameters_table_dataframe = fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    first_parameters_table_dataframe = parameters_table_fitting.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable
     first_dim_table_dataframe = dim_table_fitting.fit_dim_table_first(first_parameters_table_dataframe)
     # Create a table with tillering dynamic: TT,NbrAxes
@@ -49,64 +48,4 @@ def fit_adel_input_data_first(plant_number=100,
     return axis_table_dataframe, first_dim_table_dataframe, first_parameters_table_dataframe, tillering_dynamic_dataframe
 
 
-def fit_user_parameters_first(first_axis_table_id_phen_list):
-    '''
-    Initialize the parameters table.
-    :Parameters:
-        - `first_axis_table_id_phen_list` : the number of plants.
-
-    :Types:
-        - `first_axis_table_id_phen_list` : int.
-
-    :return: The initialized parameters table.
-    :rtype: pandas.DataFrame
-    ''' 
-    id_phen_without_duplicate_list = list(set(first_axis_table_id_phen_list))
-    N_cohort = [float(str(int(id_phen))[:-2]) for id_phen in id_phen_without_duplicate_list]
-    axis_frequency_list = _create_axis_frequency_list(first_axis_table_id_phen_list, id_phen_without_duplicate_list)
-    Nff = [float(str(int(id_phen))[-2:]) for id_phen in id_phen_without_duplicate_list]
-    a_cohort_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    TT_col_0_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    TT_HS_break_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    TT_HS_NFF_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    dTT_MS_cohort_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    n0_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    n1_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    n2_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    t0_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    t1_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    t2_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    hs_t1_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    a_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    c_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    d_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    RMSE_gl_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, t2_list, hs_t1_list, a_list, c_list, d_list, RMSE_gl_list]).transpose()
-    # sort parameters table according N_cohort (ascending order) then frequency (descending order).
-    unsorted_parameters_table_dataframe = pandas.DataFrame(parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 't2', 'hs_t1', 'a', 'c', 'd', 'RMSE_gl'], dtype=float)
-    sorted_parameters_table_dataframe = pandas.DataFrame(columns=unsorted_parameters_table_dataframe.columns, dtype=float)
-    for name, group in unsorted_parameters_table_dataframe.groupby('N_cohort'):
-        sorted_group = group.sort_index(by='frequency', ascending=False)
-        sorted_parameters_table_dataframe = sorted_parameters_table_dataframe.append(sorted_group)
-    sorted_parameters_table_dataframe.index = range(sorted_parameters_table_dataframe.index.size)
-    return sorted_parameters_table_dataframe
-
-
-def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_table_id_phen_without_duplicate_list):
-    '''
-    Create a list of axis frequency.
-    :Parameters:
-        - `first_axis_table_id_phen_from_list` : the id_phen identifiers from AxisTable.
-        - `first_axis_table_id_phen_without_duplicate_list` : the id_phen identifiers from AxisTable without duplicate.
-    :Types:
-        - `first_axis_table_id_phen_from_list` : list
-        - `first_axis_table_id_phen_without_duplicate_list` : list
-        
-    :return: the list of axis frequency.
-    :rtype: list
-    '''
-    axis_frequency_list = []
-    for id_phen in first_axis_table_id_phen_without_duplicate_list:
-        axis_frequency_list.append(first_axis_table_id_phen_from_list.count(id_phen))
-    return axis_frequency_list
 

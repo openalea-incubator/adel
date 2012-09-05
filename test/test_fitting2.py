@@ -1,6 +1,6 @@
 import random
 from adel.fit import axis_table_fitting, dim_table_fitting, phen_table_fitting, fit_adel_input_data_first, fit_adel_input_data_second,\
-    fit_adel_input_data
+    fit_adel_input_data, parameters_table_fitting
 import numpy as np
 import pandas
 from openalea.core.path import path
@@ -53,7 +53,7 @@ def test_generate_axes():
 def test_fit_user_parameters_first():
     axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
     expected_parameters_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_parameters_table.csv')
-    parameters_table_dataframe = fit_adel_input_data_first.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    parameters_table_dataframe = parameters_table_fitting.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
     test_table_filepath = default_results.joinpath('linear_first_parameters_table.csv')
     parameters_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -76,7 +76,7 @@ def test_fit_user_parameters_second_linear():
     user_parameter_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_parameters_table.csv')
     user_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_dim_table.csv')
     expected_fitted_parameter_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_parameters_table.csv')
-    second_parameters_dataframe = fit_adel_input_data_second.fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
+    second_parameters_dataframe = parameters_table_fitting.fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
     test_table_filepath = default_results.joinpath('linear_second_parameters_table.csv')
     second_parameters_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath

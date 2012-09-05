@@ -7,7 +7,8 @@ class DataCompleteness:
     FULL=3
 
 
-def fit_adel_input_data(user_dims,
+def fit_adel_input_data(user_parameters,
+                        user_dims,
                         plant_number=100, 
                         cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117, '8': 0.0, '9': 0.0, '10': 0.0}, 
                         main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0},
@@ -18,7 +19,6 @@ def fit_adel_input_data(user_dims,
                         delais_TT_stop_del_axis=600,
                         dTT_MS_cohort={'4': 70, '5': 80, '6': 90, '7': 100, '8': 110, '9': 120, '10': 130},
                         TT_col_break=0.0,
-                        user_parameters={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'TT_col_nff': 1078.0, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8},
                         user_parameters_completeness=DataCompleteness.MIN,
                         user_dims_completeness=DataCompleteness.MIN,
                         ):
@@ -26,6 +26,7 @@ def fit_adel_input_data(user_dims,
     Fit ADEL input data.
     
     :Parameters:
+        - `user_parameters` : the parameters set by the user. Can be either a dict or a table.  
         - `user_dims` : a table describing the organ dimensions set by the user.
         - `plant_number` : the number of plants.
         - `cohort_probabilities` : the probability of emergence of a child axis when the parent axis is present. This probability is 
@@ -38,11 +39,11 @@ def fit_adel_input_data(user_dims,
         - `delais_TT_stop_del_axis` : Thermal time during which a tiller remains present on the plant after the tiller has stopped growing.
         - `dTT_MS_cohort` : ???
         - `TT_col_break` : ???
-        - `user_parameters` : the parameters set by the user. Can be either a dict or a table.  
         - `user_parameters_completeness` : the level of completeness of the parameters set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.
         - `user_dims_completeness` : the level of completeness of the organ dimensions set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.
         
     :Types:
+        - `user_parameters` : dict | pandas.DataFrame      
         - `user_dims` : pandas.DataFrame
         - `plant_number` : int
         - `cohort_probabilities` : dict of str:float
@@ -54,7 +55,6 @@ def fit_adel_input_data(user_dims,
         - `delais_TT_stop_del_axis` : int
         - `dTT_MS_cohort` : dict of str:float
         - `TT_col_break` : float 
-        - `user_parameters` : dict | pandas.DataFrame      
         - `user_parameters_completeness` : int
         - `user_dims_completeness` : int
         

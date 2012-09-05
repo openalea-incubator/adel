@@ -186,7 +186,8 @@ def test_fit_adel_input_data_min_min():
                        'n1': 3.24283148,
                        'n2': 5.8}
     user_dims = pandas.read_csv(min_min_expected_results_dir/'user_dim_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_dims, 
+    results = fit_adel_input_data.fit_adel_input_data(user_parameters,
+                                                      user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
                                                       main_stem_leaves_number_probability_distribution, 
@@ -197,7 +198,6 @@ def test_fit_adel_input_data_min_min():
                                                       delais_TT_stop_del_axis, 
                                                       dTT_MS_cohort, 
                                                       TT_col_break,
-                                                      user_parameters, 
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)
     
@@ -231,7 +231,8 @@ def test_fit_adel_input_data_short_short():
     TT_col_break = 0.0
     user_parameters = pandas.read_csv(short_short_expected_results_dir/'user_parameters_table.csv')
     user_dims = pandas.read_csv(short_short_expected_results_dir/'user_dim_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_dims, 
+    results = fit_adel_input_data.fit_adel_input_data(user_parameters,
+                                                      user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
                                                       main_stem_leaves_number_probability_distribution, 
@@ -241,8 +242,7 @@ def test_fit_adel_input_data_short_short():
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
                                                       dTT_MS_cohort, 
-                                                      TT_col_break,
-                                                      user_parameters, 
+                                                      TT_col_break, 
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)
     
@@ -276,7 +276,8 @@ def test_fit_adel_input_data_full_full():
     TT_col_break = 0.0
     user_parameters = pandas.read_csv(full_full_expected_results_dir/'user_parameters_table.csv')
     user_dims = pandas.read_csv(full_full_expected_results_dir/'user_dim_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_dims,
+    results = fit_adel_input_data.fit_adel_input_data(user_parameters,
+                                                      user_dims,
                                                       plant_number, 
                                                       cohort_probabilities, 
                                                       main_stem_leaves_number_probability_distribution, 
@@ -287,7 +288,6 @@ def test_fit_adel_input_data_full_full():
                                                       delais_TT_stop_del_axis, 
                                                       dTT_MS_cohort, 
                                                       TT_col_break,
-                                                      user_parameters, 
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)
     

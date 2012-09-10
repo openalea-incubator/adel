@@ -186,7 +186,8 @@ def test_fit_adel_input_data_min_min():
                        'TT_col_nff': 1078.0, 
                        'n0': 4.871559739,
                        'n1': 3.24283148,
-                       'n2': 5.8}
+                       'n2': 5.8,
+                       'dTT_MS_cohort': dTT_MS_cohort}
     user_dims = pandas.read_csv(min_min_expected_results_dir/'user_dim_table.csv')
     results = fit_adel_input_data.fit_adel_input_data(user_parameters,
                                                       user_dims, 
@@ -198,7 +199,6 @@ def test_fit_adel_input_data_min_min():
                                                       final_axes_number, 
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
-                                                      dTT_MS_cohort, 
                                                       TT_col_break,
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)
@@ -243,7 +243,6 @@ def test_fit_adel_input_data_short_short():
                                                       final_axes_number, 
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
-                                                      dTT_MS_cohort, 
                                                       TT_col_break, 
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)
@@ -288,7 +287,6 @@ def test_fit_adel_input_data_full_full():
                                                       final_axes_number, 
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
-                                                      dTT_MS_cohort, 
                                                       TT_col_break,
                                                       user_parameters_completeness, 
                                                       user_dims_completeness)

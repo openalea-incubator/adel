@@ -17,7 +17,6 @@ def fit_adel_input_data(user_parameters,
                         final_axes_number=250,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
-                        dTT_MS_cohort={'4': 70, '5': 80, '6': 90, '7': 100},
                         TT_col_break=0.0,
                         user_parameters_completeness=DataCompleteness.MIN,
                         user_dims_completeness=DataCompleteness.MIN,
@@ -85,7 +84,7 @@ def fit_adel_input_data(user_parameters,
             if N_cohort_int == 1:
                 current_dTT_MS_cohort = 0.0
             else:
-                current_dTT_MS_cohort = dTT_MS_cohort[str(N_cohort_int)]
+                current_dTT_MS_cohort = user_parameters['dTT_MS_cohort'][str(N_cohort_int)]
             index_to_set = parameters_table_dataframe_grouped_by_N_cohort.index[0]
             parameters_table_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort        
         parameters_table_dataframe.ix[0]['n0'] = user_parameters['n0']

@@ -16,11 +16,11 @@ TT_del_Fhaut = 3000
 Nbr_Fhaut_persistant = 5
 
 
-def fit_phen_table_second(second_parameters_table_dataframe):
+def fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe):
     '''
     Fit the phen table: first step.
     :Parameters:
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers: 
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers: 
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -41,27 +41,27 @@ def fit_phen_table_second(second_parameters_table_dataframe):
             * c: ???
             * d: ??
     :Types:
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The phen table. 
     :rtype: pandas.DataFrame
     '''
-    assert second_parameters_table_dataframe.count().max() == second_parameters_table_dataframe.count().min() == second_parameters_table_dataframe.index.size
-    id_phen_list = _create_id_phen_list(second_parameters_table_dataframe)
+    assert second_leaf_dynamic_parameters_table_dataframe.count().max() == second_leaf_dynamic_parameters_table_dataframe.count().min() == second_leaf_dynamic_parameters_table_dataframe.index.size
+    id_phen_list = _create_id_phen_list(second_leaf_dynamic_parameters_table_dataframe)
     absolute_index_phytomer_list = _create_absolute_index_phytomer_list(id_phen_list)
-    absolute_TT_col_phytomer_list = _create_absolute_TT_col_phytomer_list(second_parameters_table_dataframe)
-    absolute_TT_em_phytomer_list = _create_absolute_TT_em_phytomer_list(absolute_TT_col_phytomer_list, second_parameters_table_dataframe)
-    absolute_TT_sen_phytomer_list = _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe)
-    absolute_TT_del_phytomer_list = _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer_list, second_parameters_table_dataframe)
+    absolute_TT_col_phytomer_list = _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_dataframe)
+    absolute_TT_em_phytomer_list = _create_absolute_TT_em_phytomer_list(absolute_TT_col_phytomer_list, second_leaf_dynamic_parameters_table_dataframe)
+    absolute_TT_sen_phytomer_list = _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_dataframe)
+    absolute_TT_del_phytomer_list = _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer_list, second_leaf_dynamic_parameters_table_dataframe)
     absolute_phen_table_array = np.array([id_phen_list, absolute_index_phytomer_list, absolute_TT_em_phytomer_list, absolute_TT_col_phytomer_list, absolute_TT_sen_phytomer_list, absolute_TT_del_phytomer_list]).transpose()
     return pandas.DataFrame(absolute_phen_table_array, columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'], dtype=float)
 
 
-def _create_id_phen_list(second_parameters_table_dataframe):
+def _create_id_phen_list(second_leaf_dynamic_parameters_table_dataframe):
     '''
     Create list of id_phen.
     :Parameters:
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers: 
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers: 
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -82,12 +82,12 @@ def _create_id_phen_list(second_parameters_table_dataframe):
             * c: ???
             * d: ??
     :Types:
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The new completed id_phen list.
     :rtype: list
     '''
-    sorted_id_axis = second_parameters_table_dataframe['id_axis']
+    sorted_id_axis = second_leaf_dynamic_parameters_table_dataframe['id_axis']
     id_phen_list = []
     for id_phen in sorted_id_axis:
         N_phyt = int(str(int(id_phen))[-2:])
@@ -96,32 +96,32 @@ def _create_id_phen_list(second_parameters_table_dataframe):
     return id_phen_list
 
 
-def _create_absolute_index_phytomer_list(second_parameters_table_id_phen_list):
+def _create_absolute_index_phytomer_list(second_leaf_dynamic_parameters_table_id_phen_list):
     '''
     Create list of absolute phytomer index.
     :Parameters:
-        - `second_parameters_table_id_phen_list` : the id_phen list.
+        - `second_leaf_dynamic_parameters_table_id_phen_list` : the id_phen list.
     :Types:
-        - `second_parameters_table_id_phen_list` : list
+        - `second_leaf_dynamic_parameters_table_id_phen_list` : list
         
     :return: The absolute_index_phytomer list.
     :rtype: list
     '''
     absolute_index_phytomer_list = []
     i = 0
-    while i < len(second_parameters_table_id_phen_list):
-        N_phyt = int(str(int(second_parameters_table_id_phen_list[i]))[-2:])
+    while i < len(second_leaf_dynamic_parameters_table_id_phen_list):
+        N_phyt = int(str(int(second_leaf_dynamic_parameters_table_id_phen_list[i]))[-2:])
         for j in range(N_phyt + 1):
             absolute_index_phytomer_list.append(j)    
         i = i + j + 1
     return absolute_index_phytomer_list
 
 
-def _create_absolute_TT_col_phytomer_list(second_parameters_table_dataframe):
+def _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_dataframe):
     '''
     Create list of TT_col_phytomer. 
     :Parameters:
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers: 
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers: 
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -143,14 +143,14 @@ def _create_absolute_TT_col_phytomer_list(second_parameters_table_dataframe):
             * d: ??
           The table is completely filled and ordered by frequency. 
     :Types:
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The TT_col_phytomer list.
     :rtype: list
     '''
     TT_col_phytomer_list = []
-    for i in second_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_parameters_table_dataframe.ix[i].tolist()
+    for i in second_leaf_dynamic_parameters_table_dataframe.index:
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = range(int(Nff_i + 1))
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
@@ -164,12 +164,12 @@ def _create_absolute_TT_col_phytomer_list(second_parameters_table_dataframe):
     return TT_col_phytomer_list
     
     
-def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second_parameters_table_dataframe):
+def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second_leaf_dynamic_parameters_table_dataframe):
     '''
     Create list of TT_em_phytomer. 
     :Parameters:
         - `phen_table_TT_col_phytomer_list` : The TT_col_phytomer list.
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers: 
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers: 
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -192,15 +192,15 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
           The table is completely filled and ordered by frequency. 
     :Types:
         - `phen_table_TT_col_phytomer_list` : list
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The TT_em_phytomer list.
     :rtype: list
     '''
     TT_em_phytomer_list = []
     current_TT_em_phytomer_row_index = 0
-    for i in second_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_parameters_table_dataframe.ix[i].tolist()
+    for i in second_leaf_dynamic_parameters_table_dataframe.index:
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = np.arange(int(Nff_i) + 1) + current_TT_em_phytomer_row_index
         j = 0
         for j in phytomer_indexes: 
@@ -221,7 +221,7 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
     return TT_em_phytomer_list
 
 
-def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
+def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_dataframe):
     '''
     Create list of TT_sen_phytomer. To compute TT_sen_phytomer values, the algorithm main steps are:
         - calculate HS(TT):
@@ -251,7 +251,7 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
         - find TT_sen_phytomer so that j = SSI(TT_sen_phytomer), i.e. SSI(TT_sen_phytomer) - j = 0
         In all this algorithm, TT is the linear thermal time, i is an axis identifier and j is a phytomer of i.
     :Parameters:
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers:
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers:
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -273,7 +273,7 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
             * d: ???
           The table is completely filled and ordered by frequency. 
     :Types:
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The TT_em_phytomer list.
     :rtype: list
@@ -286,9 +286,9 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
         real_solutions = map(lambda x: x.real, null_imag_solutions)
         return np.array(real_solutions)
         
-    for i in second_parameters_table_dataframe.index:
+    for i in second_leaf_dynamic_parameters_table_dataframe.index:
         TT_sen_phytomer_i_list = []        
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i)
         phytomer_indexes_i = np.arange(int(Nff_i) + 1)
@@ -344,13 +344,13 @@ def _create_absolute_TT_sen_phytomer_list(second_parameters_table_dataframe):
     return TT_sen_phytomer_list
 
 
-def _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer_list, second_parameters_table_dataframe):
+def _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer_list, second_leaf_dynamic_parameters_table_dataframe):
     '''
     Create list of TT_del_phytomer.
     :Parameters:
         - `id_phen_list` : The id_phen list.
         - `absolute_TT_sen_phytomer_list` : The TT_sen_phytomer list.
-        - `second_parameters_table_dataframe` : the fitted observations table, with the following headers:
+        - `second_leaf_dynamic_parameters_table_dataframe` : the fitted observations table, with the following headers:
             * N_cohort: the cohort number.
             * id_axis: the identifier made from concatenation of N_cohort and Nff.
             * frequency: the occurrence frequency of id_axis.
@@ -374,15 +374,15 @@ def _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer
     :Types:
         - `id_phen_list` : list.
         - `absolute_TT_sen_phytomer_list` : list
-        - `second_parameters_table_dataframe` : pandas.DataFrame
+        - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
     '''
     TT_del_phytomer_series = pandas.Series(np.nan, index=range(len(id_phen_list)))
     df = pandas.DataFrame({'id_phen': id_phen_list, 'TT_sen_phytomer': absolute_TT_sen_phytomer_list})
     for name, group in df.groupby('id_phen'):
-        second_parameters_table_dataframe_i = second_parameters_table_dataframe[second_parameters_table_dataframe['id_axis'] == name]
-        a_cohort_i = second_parameters_table_dataframe_i['a_cohort'][second_parameters_table_dataframe_i.first_valid_index()]
-        Nff_i = second_parameters_table_dataframe_i['Nff'][second_parameters_table_dataframe_i.first_valid_index()]
-        N_cohort_i = second_parameters_table_dataframe_i['N_cohort'][second_parameters_table_dataframe_i.first_valid_index()]
+        second_leaf_dynamic_parameters_table_dataframe_i = second_leaf_dynamic_parameters_table_dataframe[second_leaf_dynamic_parameters_table_dataframe['id_axis'] == name]
+        a_cohort_i = second_leaf_dynamic_parameters_table_dataframe_i['a_cohort'][second_leaf_dynamic_parameters_table_dataframe_i.first_valid_index()]
+        Nff_i = second_leaf_dynamic_parameters_table_dataframe_i['Nff'][second_leaf_dynamic_parameters_table_dataframe_i.first_valid_index()]
+        N_cohort_i = second_leaf_dynamic_parameters_table_dataframe_i['N_cohort'][second_leaf_dynamic_parameters_table_dataframe_i.first_valid_index()]
         TT_del_Fhaut_phytomer_index = Nff_i - Nbr_Fhaut_persistant + N_cohort_i
         TT_del_phytomer_series[group.index[:TT_del_Fhaut_phytomer_index]] = group[:TT_del_Fhaut_phytomer_index]['TT_sen_phytomer'] + delais_phyll_sen_disp / a_cohort_i
         TT_del_phytomer_series[group.index[TT_del_Fhaut_phytomer_index:]] = TT_del_Fhaut
@@ -466,11 +466,11 @@ def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
 
-def create_HS_GL_SSI_dynamic_dataframe(second_parameters_table_dataframe):
+def create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe):
     
     HS_GL_SSI_dynamic_dataframe = pandas.DataFrame(columns=['id_axis', 'TT', 'HS', 'GL', 'SSI'])
-    for i in second_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_parameters_table_dataframe.ix[i].tolist()
+    for i in second_leaf_dynamic_parameters_table_dataframe.index:
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i)
         

@@ -10,19 +10,19 @@ import pandas
 import numpy as np
 
 
-def fit_dim_table_first(first_parameters_table_dataframe):
+def fit_dim_table_first(first_leaf_dynamic_parameters_table_dataframe):
     '''
     Fit the dim table: first step.
     :Parameters:
-        - `first_parameters_table_dataframe` : the first parameters table.
+        - `first_leaf_dynamic_parameters_table_dataframe` : the first parameters table.
           
     :Types:
-        - `first_parameters_table_dataframe` : pandas.DataFrame
+        - `first_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
     :return: The first dim table.
     :rtype: pandas.DataFrame
     '''
-    id_dim_list = _create_id_dim_list(first_parameters_table_dataframe)
+    id_dim_list = _create_id_dim_list(first_leaf_dynamic_parameters_table_dataframe)
     absolute_index_phytomer_list = _create_absolute_index_phytomer_list(id_dim_list)
     L_blade_list = [np.nan for i in range(len(id_dim_list))]
     W_blade_list = [np.nan for i in range(len(id_dim_list))]
@@ -96,7 +96,7 @@ def _create_id_dim_list(first_parameters_dataframe):
     return id_dim_list
 
 
-def _create_absolute_index_phytomer_list(first_parameters_table_id_dim_list):
+def _create_absolute_index_phytomer_list(first_leaf_dynamic_parameters_table_id_dim_list):
     '''
     Create list of absolute phytomer index.
     :Parameters:
@@ -109,8 +109,8 @@ def _create_absolute_index_phytomer_list(first_parameters_table_id_dim_list):
     '''
     absolute_index_phytomer_list = []
     i = 0
-    while i < len(first_parameters_table_id_dim_list):
-        N_phyt = int(str(int(first_parameters_table_id_dim_list[i]))[-2:])
+    while i < len(first_leaf_dynamic_parameters_table_id_dim_list):
+        N_phyt = int(str(int(first_leaf_dynamic_parameters_table_id_dim_list[i]))[-2:])
         for j in range(1, N_phyt + 1):
             absolute_index_phytomer_list.append(j)    
         i = i + j

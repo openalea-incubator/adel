@@ -67,47 +67,47 @@ def fit_adel_input_data(user_parameters,
         
     (first_axis_table_dataframe, 
     dim_table_dataframe, 
-    parameters_table_dataframe, 
+    leaf_dynamic_parameters_table_dataframe, 
     tillering_dynamic_dataframe) = fit_adel_input_data_first(plant_number, 
                                                              cohort_probabilities, 
                                                              main_stem_leaves_number_probability_distribution, 
                                                              bolting_date, 
                                                              flowering_date, 
                                                              final_axes_number) 
-    parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break   
+    leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break   
     if user_parameters_completeness == DataCompleteness.MIN:
-        parameters_table_dataframe.ix[0]['a_cohort'] = user_parameters['a_cohort']
-        parameters_table_dataframe.ix[0]['TT_col_0'] = user_parameters['TT_col_0']
-        parameters_table_dataframe.ix[0]['TT_col_nff'] = user_parameters['TT_col_nff']
-        for N_cohort, parameters_table_dataframe_grouped_by_N_cohort in parameters_table_dataframe.groupby('N_cohort'):
+        leaf_dynamic_parameters_table_dataframe.ix[0]['a_cohort'] = user_parameters['a_cohort']
+        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_0'] = user_parameters['TT_col_0']
+        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_nff'] = user_parameters['TT_col_nff']
+        for N_cohort, leaf_dynamic_parameters_table_dataframe_grouped_by_N_cohort in leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
             N_cohort_int = int(N_cohort)
             if N_cohort_int == 1:
                 current_dTT_MS_cohort = 0.0
             else:
                 current_dTT_MS_cohort = user_parameters['dTT_MS_cohort'][str(N_cohort_int)]
-            index_to_set = parameters_table_dataframe_grouped_by_N_cohort.index[0]
-            parameters_table_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort        
-        parameters_table_dataframe.ix[0]['n0'] = user_parameters['n0']
-        parameters_table_dataframe.ix[0]['n1'] = user_parameters['n1']
-        parameters_table_dataframe.ix[0]['n2'] = user_parameters['n2']
+            index_to_set = leaf_dynamic_parameters_table_dataframe_grouped_by_N_cohort.index[0]
+            leaf_dynamic_parameters_table_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort        
+        leaf_dynamic_parameters_table_dataframe.ix[0]['n0'] = user_parameters['n0']
+        leaf_dynamic_parameters_table_dataframe.ix[0]['n1'] = user_parameters['n1']
+        leaf_dynamic_parameters_table_dataframe.ix[0]['n2'] = user_parameters['n2']
     elif user_parameters_completeness == DataCompleteness.SHORT:
         user_grouped = user_parameters.groupby('N_cohort')
-        for N_cohort, generated_group in parameters_table_dataframe.groupby('N_cohort'):
+        for N_cohort, generated_group in leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
             if N_cohort not in user_grouped.groups:
                 continue
             index_to_get = user_grouped.get_group(N_cohort).index[0]
             index_to_set = generated_group.index[0]
             columns_to_set = user_parameters.columns
-            parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]        
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]        
     elif user_parameters_completeness == DataCompleteness.FULL:
         user_grouped = user_parameters.groupby(['N_cohort', 'Nff'])
-        for (N_cohort, Nff), generated_group in parameters_table_dataframe.groupby(['N_cohort', 'Nff']):
+        for (N_cohort, Nff), generated_group in leaf_dynamic_parameters_table_dataframe.groupby(['N_cohort', 'Nff']):
             if (N_cohort, Nff) not in user_grouped.groups:
                 continue
             index_to_get = user_grouped.get_group((N_cohort, Nff)).index[0]
             index_to_set = generated_group.index[0]
             columns_to_set = user_parameters.columns
-            parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
     else:
         raise Exception('''%s is an unknown user data completeness value. \
 The values can be one of %s''', (str(user_parameters_completeness), 
@@ -153,12 +153,12 @@ The values can be one of %s''', (str(user_dims_completeness),
      absolute_second_phen_table_dataframe, 
      relative_second_phen_table_dataframe,
      absolute_dim_table_dataframe, 
-     second_parameters_table_dataframe, 
+     second_leaf_dynamic_parameters_table_dataframe, 
      first_leaf_phen_table_dataframe,
      HS_GL_SSI_dynamic_dataframe, 
      relative_dim_table_dataframe) = fit_adel_input_data_second(first_axis_table_dataframe, 
                                                                 dim_table_dataframe, 
-                                                                parameters_table_dataframe, 
+                                                                leaf_dynamic_parameters_table_dataframe, 
                                                                 GL_number, 
                                                                 bolting_date, 
                                                                 flowering_date, 
@@ -166,7 +166,7 @@ The values can be one of %s''', (str(user_dims_completeness),
                                                                 final_axes_number)
     
     return second_axis_table_dataframe, absolute_second_phen_table_dataframe, relative_second_phen_table_dataframe, \
-           absolute_dim_table_dataframe, second_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
+           absolute_dim_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
            HS_GL_SSI_dynamic_dataframe, relative_dim_table_dataframe, tillering_dynamic_dataframe
     
     

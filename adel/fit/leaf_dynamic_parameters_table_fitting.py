@@ -43,15 +43,15 @@ def fit_user_parameters_first(first_axis_table_id_phen_list):
     c_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     d_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     RMSE_gl_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, t2_list, hs_t1_list, a_list, c_list, d_list, RMSE_gl_list]).transpose()
+    leaf_dynamic_parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, t2_list, hs_t1_list, a_list, c_list, d_list, RMSE_gl_list]).transpose()
     # sort parameters table according N_cohort (ascending order) then frequency (descending order).
-    unsorted_parameters_table_dataframe = pandas.DataFrame(parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 't2', 'hs_t1', 'a', 'c', 'd', 'RMSE_gl'], dtype=float)
-    sorted_parameters_table_dataframe = pandas.DataFrame(columns=unsorted_parameters_table_dataframe.columns, dtype=float)
-    for name, group in unsorted_parameters_table_dataframe.groupby('N_cohort'):
+    unsorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(leaf_dynamic_parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 't2', 'hs_t1', 'a', 'c', 'd', 'RMSE_gl'], dtype=float)
+    sorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(columns=unsorted_leaf_dynamic_parameters_table_dataframe.columns, dtype=float)
+    for name, group in unsorted_leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
         sorted_group = group.sort_index(by='frequency', ascending=False)
-        sorted_parameters_table_dataframe = sorted_parameters_table_dataframe.append(sorted_group)
-    sorted_parameters_table_dataframe.index = range(sorted_parameters_table_dataframe.index.size)
-    return sorted_parameters_table_dataframe
+        sorted_leaf_dynamic_parameters_table_dataframe = sorted_leaf_dynamic_parameters_table_dataframe.append(sorted_group)
+    sorted_leaf_dynamic_parameters_table_dataframe.index = range(sorted_leaf_dynamic_parameters_table_dataframe.index.size)
+    return sorted_leaf_dynamic_parameters_table_dataframe
 
 
 def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_table_id_phen_without_duplicate_list):

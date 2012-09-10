@@ -8,7 +8,7 @@ Created on Feb 7, 2012
 
 import adel.fit.axis_table_fitting as axis_table_fitting
 import adel.fit.dim_table_fitting as dim_table_fitting
-import adel.fit.parameters_table_fitting as parameters_table_fitting
+import adel.fit.leaf_dynamic_parameters_table_fitting as leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 
@@ -39,13 +39,13 @@ def fit_adel_input_data_first(plant_number=100,
     # Create and fit AxisTable
     axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     # Initialize the parameters table
-    first_parameters_table_dataframe = parameters_table_fitting.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable
-    first_dim_table_dataframe = dim_table_fitting.fit_dim_table_first(first_parameters_table_dataframe)
+    first_dim_table_dataframe = dim_table_fitting.fit_dim_table_first(first_leaf_dynamic_parameters_table_dataframe)
     # Create a table with tillering dynamic: TT,NbrAxes
     tillering_dynamic_dataframe =  axis_table_fitting.create_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
 
-    return axis_table_dataframe, first_dim_table_dataframe, first_parameters_table_dataframe, tillering_dynamic_dataframe
+    return axis_table_dataframe, first_dim_table_dataframe, first_leaf_dynamic_parameters_table_dataframe, tillering_dynamic_dataframe
 
 
 

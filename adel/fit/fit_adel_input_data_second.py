@@ -8,7 +8,7 @@ Created on Feb 7, 2012
 import adel.fit.axis_table_fitting as axis_table_fitting
 import adel.fit.phen_table_fitting as phen_table_fitting
 import adel.fit.dim_table_fitting as dim_table_fitting
-import adel.fit.parameters_table_fitting as parameters_table_fitting
+import adel.fit.leaf_dynamic_parameters_table_fitting as leaf_dynamic_parameters_table_fitting
 
 
 def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_dataframe, user_parameter_table_dataframe, 
@@ -50,9 +50,9 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     :rtype: a tuple of pandas.DataFrame
     '''
     # Fit the parameters provided by the user
-    second_parameters_table_dataframe = parameters_table_fitting.fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
+    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
     # Fit absolute PhenTable
-    absolute_second_phen_table_dataframe = phen_table_fitting.fit_phen_table_second(second_parameters_table_dataframe)
+    absolute_second_phen_table_dataframe = phen_table_fitting.fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe)
     # Extract the first leaves data from absolute_second_phen_table_dataframe
     first_leaf_phen_table_dataframe = phen_table_fitting.create_first_leaf_phen_table_dataframe(absolute_second_phen_table_dataframe)
     # Fit relative PhenTable
@@ -64,10 +64,10 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     # Fit relative dimTable
     relative_dim_table_dataframe = dim_table_fitting.create_dim_table_relative_dataframe(absolute_dim_table_dataframe)
     # Create a table with the following columns: id_axis,TT,HS,GL,SSI
-    HS_GL_SSI_dynamic_dataframe = phen_table_fitting.create_HS_GL_SSI_dynamic_dataframe(second_parameters_table_dataframe)
+    HS_GL_SSI_dynamic_dataframe = phen_table_fitting.create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe)
     
     return second_axis_table_dataframe, absolute_second_phen_table_dataframe, relative_second_phen_table_dataframe, \
-           absolute_dim_table_dataframe, second_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
+           absolute_dim_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
            HS_GL_SSI_dynamic_dataframe, relative_dim_table_dataframe
     
     

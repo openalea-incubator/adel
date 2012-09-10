@@ -20,7 +20,7 @@ flowering_date = 1440
 final_axes_number = 250
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
-dTT_MS_cohort = {'4': 70, '5': 80, '6': 90, '7': 100, '8': 110, '9': 120, '10': 130}
+dTT_MS_cohort = {'4': 70, '5': 80, '6': 90, '7': 100}
 
 expected_results_dir = path('data/test_fitting2')
 default_expected_results_dir = expected_results_dir.joinpath('default')

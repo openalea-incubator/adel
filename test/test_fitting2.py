@@ -1,6 +1,6 @@
 import random
 
-from adel.fit import axis_table_fitting, dim_table_fitting, phen_table_fitting, fit_adel_input_data_first, fit_adel_input_data_second,\
+from adel.fit import axis_table_fitting, dim_table_fitting, phen_table_fitting, \
     fit_adel_input_data, leaf_dynamic_parameters_table_fitting
 import numpy as np
 import pandas

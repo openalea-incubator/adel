@@ -10,7 +10,7 @@ class DataCompleteness:
 def fit_adel_input_data(user_parameters,
                         user_dims,
                         plant_number=100, 
-                        cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117, '8': 0.0, '9': 0.0, '10': 0.0}, 
+                        cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                         main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0},
                         bolting_date=500,
                         flowering_date=1440,

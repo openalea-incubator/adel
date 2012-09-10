@@ -10,12 +10,7 @@ import random
 import numpy as np
 import pandas
 
-from adel.fit import fitting_tools
-
-# the coefficients of the secondary stem leaves number.
-secondary_stem_leaves_number_coefficients = {'a_1': 0.9423, 'a_2': 0.555}
-#the standard deviation used to calculate main stem emf_1 value.
-emf_1_main_stem_standard_deviation = 30.0
+from adel.fit import fitting_tools, fit_config
 
 
 def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
@@ -46,7 +41,7 @@ def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_pr
     plant_ids = range(1,plant_number + 1)
     index_axis_list = _create_index_axis_list(plant_ids, cohort_probabilities)
     index_plt_list = _create_index_plt_list(plant_ids, index_axis_list)
-    N_phyt_list = fitting_tools.create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, secondary_stem_leaves_number_coefficients)
+    N_phyt_list = fitting_tools.create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, fit_config.secondary_stem_leaves_number_coefficients)
     TT_stop_axis_list = [np.nan for i in range(len(index_axis_list))]
     TT_del_axis_list = [np.nan for i in range(len(index_axis_list))]
     id_dim_list = _create_id_dim_list(index_axis_list, N_phyt_list)
@@ -85,7 +80,7 @@ def fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_data
     (second_axis_table_dataframe['TT_em_phytomer1'], 
      second_axis_table_dataframe['TT_col_phytomer1'], 
      second_axis_table_dataframe['TT_sen_phytomer1'],
-     second_axis_table_dataframe['TT_del_phytomer1']) = _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe)
+     second_axis_table_dataframe['TT_del_phytomer1']) = _create_all_TT_phytomer1_list(first_axis_table_dataframe, fit_config.emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe)
     second_axis_table_dataframe['TT_stop_axis'] = fitting_tools.dead_or_alive_decision(first_axis_table_dataframe.index.size, final_axes_number, second_axis_table_dataframe['TT_em_phytomer1'].tolist(), bolting_date, flowering_date)
     second_axis_table_dataframe['TT_del_axis'] = _create_TT_del_axis_list(second_axis_table_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
     

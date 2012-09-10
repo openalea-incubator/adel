@@ -7,9 +7,8 @@ import numpy as np
 import pandas
 from scipy.optimize import leastsq
 
-#the Leaf number delay between Main Stem and the cohort.
-leaf_number_delay_MS_cohort_dict = {'3': 1.6173, '4': 2.5181, '5': 3.4189, '6': 4.5576, '7': 5.8097}
-n2_MS_div_n2_cohort = 0.15
+from adel.fit import fit_config
+
 
 def fit_user_parameters_first(first_axis_table_id_phen_list):
     '''
@@ -73,7 +72,7 @@ def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_t
     return axis_frequency_list
 
 
-def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=leaf_number_delay_MS_cohort_dict):
+def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
     '''
     Fit user observations. A minimal set of observations must be provided. 
     If the user does not provide complete observations, the missing observations are fitted, using the minimal set of 
@@ -226,7 +225,7 @@ def _fit_TT_col_0_series(copy_dataframe):
         # Fit copy_dataframe['TT_col_0'].
         for name, group in copy_dataframe.groupby('N_cohort'):
             if name != 1.0 and np.isnan(copy_dataframe['TT_col_0'][group.index[0]]):
-                copy_dataframe['TT_col_0'][group.index[0]] = copy_dataframe['TT_col_0'][0] + (leaf_number_delay_MS_cohort_dict[str(int(group['N_cohort'][group.index[0]]))] / copy_dataframe['a_cohort'][0])
+                copy_dataframe['TT_col_0'][group.index[0]] = copy_dataframe['TT_col_0'][0] + (fit_config.leaf_number_delay_MS_cohort_dict[str(int(group['N_cohort'][group.index[0]]))] / copy_dataframe['a_cohort'][0])
         copy_dataframe['TT_col_0'] = copy_dataframe['TT_col_0'].fillna()
         
         
@@ -345,9 +344,9 @@ def _fit_n2_series(copy_dataframe):
             else: # tillers
                 #TODO: check this with Bruno
                 if np.isnan(group['n2'][group.index[0]]):
-                    copy_dataframe['n2'][group.index] = copy_dataframe['n2'][0] * (1.0 - n2_MS_div_n2_cohort)
+                    copy_dataframe['n2'][group.index] = copy_dataframe['n2'][0] * (1.0 - fit_config.n2_MS_div_n2_cohort)
                 else:
-                    copy_dataframe['n2'][group.index[1:]] = group['n2'][group.index[0]] * (1.0 - n2_MS_div_n2_cohort)
+                    copy_dataframe['n2'][group.index[1:]] = group['n2'][group.index[0]] * (1.0 - fit_config.n2_MS_div_n2_cohort)
                     
 
 def _fit_t0_series(copy_dataframe):

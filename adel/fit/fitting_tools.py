@@ -59,9 +59,9 @@ def create_N_phyt_list(first_axis_table_index_axis_list,
         
     :return: The nff column.
     :rtype: list
-    '''
+    '''    
     N_phyt_list = []
-    main_stem_leaves_number = 0.0
+    MS_final_leaves_number = 0.0
     # for each plant...
     for cohort_number in first_axis_table_index_axis_list:
         # calculate the leaves number of each axis
@@ -69,19 +69,11 @@ def create_N_phyt_list(first_axis_table_index_axis_list,
         if cohort_number == 1:
             # It is the main stem, then the leaves number has to satisfy the probability distribution defined  
             # in main_stem_leaves_number_probability_distribution
-            random_value = random.random()
-            probabilities_sum = 0.0
-            for leaves_number_str, leaves_probability in main_stem_leaves_number_probability_distribution.iteritems():
-                probabilities_sum += leaves_probability
-                if random_value <= probabilities_sum:
-                    main_stem_leaves_number = float(leaves_number_str)
-                    break
-            leaves_number_float = main_stem_leaves_number
+            MS_final_leaves_number = _fit_MS_final_leaves_number(main_stem_leaves_number_probability_distribution)
+            leaves_number_float = MS_final_leaves_number
         else:
             # it is a secondary stem (i.e. a tiller)
-            a_1 = secondary_stem_leaves_number_coefficients['a_1']
-            a_2 = secondary_stem_leaves_number_coefficients['a_2']
-            leaves_number_float = a_1* main_stem_leaves_number - a_2 * cohort_number
+            leaves_number_float = _fit_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients)
         fractional_part, integer_part = math.modf(leaves_number_float)
         if random.random() <= fractional_part:
             leaves_number_int = int(math.ceil(leaves_number_float))
@@ -91,6 +83,23 @@ def create_N_phyt_list(first_axis_table_index_axis_list,
      
     return N_phyt_list
 
+
+def _fit_MS_final_leaves_number(main_stem_leaves_number_probability_distribution):
+    random_value = random.random()
+    probabilities_sum = 0.0
+    for leaves_number_str, leaves_probability in main_stem_leaves_number_probability_distribution.iteritems():
+        probabilities_sum += leaves_probability
+        if random_value <= probabilities_sum:
+            MS_final_leaves_number = float(leaves_number_str)
+            break
+    return MS_final_leaves_number
+
+
+def _fit_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients):
+    a_1 = secondary_stem_leaves_number_coefficients['a_1']
+    a_2 = secondary_stem_leaves_number_coefficients['a_2']
+    return a_1* MS_final_leaves_number - a_2 * cohort_number
+    
 
 def dead_or_alive_decision(max_axes_number, min_axes_number, first_axis_table_TT_em_phytomer1, bolting_date, flowering_date):
     '''

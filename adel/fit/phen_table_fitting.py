@@ -1,12 +1,20 @@
-# -*- coding: latin-1 -*-
+# -*- python -*-
+#
+#       Adel.Fit
+#
+#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#
+#       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
+'''This module provides functions to calculate PhenTable.
 '''
-This module provides functions to calculate PhenTable.
-
-Created on 28 nov. 2011
-
-@author: cchambon
-'''
-
 import numpy as np
 import pandas
 

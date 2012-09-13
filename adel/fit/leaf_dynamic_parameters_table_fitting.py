@@ -1,8 +1,18 @@
-'''
-Created on 5 sept. 2012
-
-@author: cchambon
-'''
+# -*- python -*-
+#
+#       Adel.Fit
+#
+#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#
+#       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
 import numpy as np
 import pandas
 from scipy.optimize import leastsq

@@ -1,9 +1,19 @@
-'''
-This module is a facade for the first step of Adel input data fitting .
-
-Created on Feb 7, 2012
-
-@author: cchambon
+# -*- python -*-
+#
+#       Adel.Fit
+#
+#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#
+#       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
+'''This module is a facade for the first step of Adel input data fitting .
 '''  
 
 from adel.fit import axis_table_fitting, dim_table_fitting, leaf_dynamic_parameters_table_fitting

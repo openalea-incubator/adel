@@ -5,11 +5,7 @@ Created on Feb 7, 2012
 
 @author: cchambon
 '''  
-import adel.fit.axis_table_fitting as axis_table_fitting
-import adel.fit.phen_table_fitting as phen_table_fitting
-import adel.fit.dim_table_fitting as dim_table_fitting
-import adel.fit.leaf_dynamic_parameters_table_fitting as leaf_dynamic_parameters_table_fitting
-
+from adel.fit import axis_table_fitting, phen_table_fitting, dim_table_fitting, leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_dataframe, user_parameter_table_dataframe, 
                                GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 

@@ -6,9 +6,7 @@ Created on Feb 7, 2012
 @author: cchambon
 '''  
 
-import adel.fit.axis_table_fitting as axis_table_fitting
-import adel.fit.dim_table_fitting as dim_table_fitting
-import adel.fit.leaf_dynamic_parameters_table_fitting as leaf_dynamic_parameters_table_fitting
+from adel.fit import axis_table_fitting, dim_table_fitting, leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 

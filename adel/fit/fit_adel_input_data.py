@@ -13,6 +13,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 ###############################################################################
+import numpy as np
+import pandas
+
 from adel.fit.fit_adel_input_data_first import fit_adel_input_data_first
 from adel.fit.fit_adel_input_data_second import fit_adel_input_data_second
 
@@ -79,7 +82,67 @@ def fit_adel_input_data(user_parameters,
     
     :rtype: tuple of pandas.DataFrame
     '''
-        
+    # 1. check input parameters validity
+    assert user_parameters_completeness in DataCompleteness.__dict__.values()
+    assert user_dims_completeness in DataCompleteness.__dict__.values()
+    assert isinstance(TT_col_break, float)
+    if user_parameters_completeness == DataCompleteness.MIN:
+        # check user_parameters validity
+        expected_user_parameters_keys_value_types = {'a_cohort': float, 
+                                                     'TT_col_0': float, 
+                                                     'TT_col_nff': float, 
+                                                     'n0': float,
+                                                     'n1': float,
+                                                     'n2': float,
+                                                     'dTT_MS_cohort': dict}
+        user_parameters_keys_value_types = dict(zip(user_parameters.keys(), 
+                                                    [type(value) for value in user_parameters.values()]))
+        assert expected_user_parameters_keys_value_types == user_parameters_keys_value_types
+        # check user_dims validity
+        assert isinstance(user_dims, pandas.DataFrame)
+        expected_user_dims_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (user_dims.columns == expected_user_dims_columns).all()
+        assert user_dims.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        assert user_dims['index_phytomer'].unique().size == user_dims['index_phytomer'].size
+    elif user_parameters_completeness == DataCompleteness.SHORT:
+        # check user_parameters validity
+        assert isinstance(user_parameters, pandas.DataFrame)
+        expected_user_parameters_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2']
+        assert (user_parameters.columns == expected_user_parameters_columns).all()
+        assert user_parameters.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        assert user_parameters['N_cohort'].unique().size == user_parameters['N_cohort'].size
+        # check user_dims validity
+        assert isinstance(user_dims, pandas.DataFrame)
+        expected_user_dims_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (user_dims.columns == expected_user_dims_columns).all()
+        assert user_dims.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = user_dims.groupby(['id_axis', 'index_phytomer'])
+        assert len(grouped.groups) == user_dims.index.size            
+    elif user_parameters_completeness == DataCompleteness.FULL:
+        # check user_parameters validity
+        assert isinstance(user_parameters, pandas.DataFrame)
+        expected_user_parameters_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2']
+        assert (user_parameters.columns == expected_user_parameters_columns).all()
+        assert user_parameters.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = user_parameters.groupby(['N_cohort', 'Nff'])
+        assert len(grouped.groups) == user_parameters.index.size    
+        # check user_dims validity
+        assert isinstance(user_dims, pandas.DataFrame)
+        expected_user_dims_columns = ['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (user_dims.columns == expected_user_dims_columns).all()
+        assert user_dims.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = user_dims.groupby(['id_dim', 'index_phytomer'])
+        assert len(grouped.groups) == user_dims.index.size    
+    assert isinstance(plant_number, int)
+    assert isinstance(cohort_probabilities, dict)
+    assert isinstance(main_stem_leaves_number_probability_distribution, dict)
+    assert isinstance(bolting_date, int)
+    assert isinstance(flowering_date, int)
+    assert isinstance(final_axes_number, int)
+    assert isinstance(GL_number, dict)
+    assert isinstance(delais_TT_stop_del_axis, int) 
+    
+    # 2. first step of the fit process
     (first_axis_table_dataframe, 
     dim_table_dataframe, 
     leaf_dynamic_parameters_table_dataframe, 
@@ -89,6 +152,8 @@ def fit_adel_input_data(user_parameters,
                                                              bolting_date, 
                                                              flowering_date, 
                                                              final_axes_number) 
+    
+    # 3. complete the user_parameters table
     leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break   
     if user_parameters_completeness == DataCompleteness.MIN:
         leaf_dynamic_parameters_table_dataframe.ix[0]['a_cohort'] = user_parameters['a_cohort']
@@ -129,7 +194,8 @@ The values can be one of %s''', (str(user_parameters_completeness),
                                  str([DataCompleteness.MIN, 
                                       DataCompleteness.SHORT, 
                                       DataCompleteness.FULL])))
-            
+    
+    # 4. complete the user_dims table
     organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
     if user_dims_completeness == DataCompleteness.MIN:
         index_to_set = dim_table_dataframe[dim_table_dataframe['id_dim']==dim_table_dataframe['id_dim'][0]].index
@@ -163,7 +229,8 @@ The values can be one of %s''', (str(user_dims_completeness),
                                  str([DataCompleteness.MIN, 
                                       DataCompleteness.SHORT, 
                                       DataCompleteness.FULL])))
-        
+    
+    # 5. second step of the fit process    
     (second_axis_table_dataframe, 
      absolute_second_phen_table_dataframe, 
      relative_second_phen_table_dataframe,

@@ -209,99 +209,271 @@ def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_da
     assert user_parameter_table_dataframe['id_axis'].count() == user_parameter_table_dataframe['id_axis'].size
     assert user_parameter_table_dataframe['frequency'].count() == user_parameter_table_dataframe['frequency'].size
     assert user_parameter_table_dataframe['Nff'].count() == user_parameter_table_dataframe['Nff'].size
-    copy_dataframe = user_parameter_table_dataframe.copy()
-    _fit_TT_col_0_series(copy_dataframe)
-    _fit_TT_col_break_series(copy_dataframe)
-    _fit_dTT_MS_cohort_series(copy_dataframe)
-    _fit_TT_col_nff_series(copy_dataframe)
-    _fit_a_cohort_series(copy_dataframe)
-    _fit_n1_series(copy_dataframe)
+    MS_df = user_parameter_table_dataframe[user_parameter_table_dataframe['N_cohort'] == 1.0]
+    most_frequent_MS_df = MS_df.ix[0:0]
     decimal_elongated_internode_number = _calculate_decimal_elongated_internode_number(user_dim_table_dataframe)
-    _fit_t1_series(copy_dataframe, decimal_elongated_internode_number)
-    _fit_hs_t1_series(copy_dataframe)
-    _fit_n0_series(copy_dataframe)
-    _fit_n2_series(copy_dataframe)
-    _fit_t0_series(copy_dataframe)
-    _fit_t2_series(copy_dataframe)
-    _fit_d_series(copy_dataframe)
-    _fit_c_series(copy_dataframe, decimal_elongated_internode_number)
-    _fit_a_series(copy_dataframe, GL_number)
-        
-    return copy_dataframe
-
-
-def _fit_TT_col_0_series(copy_dataframe):
-    if copy_dataframe['TT_col_0'].count() != copy_dataframe['TT_col_0'].size:
-        # Fit copy_dataframe['TT_col_0'].
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            if name != 1.0 and np.isnan(copy_dataframe['TT_col_0'][group.index[0]]):
-                copy_dataframe['TT_col_0'][group.index[0]] = copy_dataframe['TT_col_0'][0] + (fit_config.leaf_number_delay_MS_cohort_dict[str(int(group['N_cohort'][group.index[0]]))] / copy_dataframe['a_cohort'][0])
-        copy_dataframe['TT_col_0'] = copy_dataframe['TT_col_0'].fillna()
-        
-        
-def _fit_TT_col_break_series(copy_dataframe):
-    if copy_dataframe['TT_col_break'].count() != copy_dataframe['TT_col_break'].size:
-        # Fit copy_dataframe['TT_col_break'].
-        copy_dataframe['TT_col_break'] = copy_dataframe['TT_col_break'].fillna()    
+    most_frequent_MS_df = _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number)
+    other_MS_df = MS_df.ix[1:]
+    other_MS_df = _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df)
+    other_MS_df = _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df)
+    tiller_axes_df = user_parameter_table_dataframe[user_parameter_table_dataframe['N_cohort'] != 1.0]
+    grouped = tiller_axes_df.groupby('N_cohort')
+    most_frequent_tiller_axes = []
+    for N_cohort, group_indexes in grouped.groups.iteritems():
+        most_frequent_tiller_axes.append(tiller_axes_df.ix[group_indexes[0:1]])
+    most_frequent_tiller_axes_df = pandas.concat(most_frequent_tiller_axes)
+    most_frequent_tiller_axes_df = _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
+    most_frequent_tiller_axes_df = _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
+    other_tiller_axes_df = tiller_axes_df.drop(most_frequent_tiller_axes_df.index)
+    other_tiller_axes_df = _fit_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
+    other_tiller_axes_df = _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
     
+    return pandas.concat([most_frequent_MS_df, other_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df]).sort()
     
-def _fit_dTT_MS_cohort_series(copy_dataframe):
-    if copy_dataframe['dTT_MS_cohort'].count() != copy_dataframe['dTT_MS_cohort'].size:
-        tmp_series = pandas.Series(copy_dataframe.index)
-        # Fit copy_dataframe['dTT_MS_cohort'].
-        def fit_dTT_MS_cohort(i):
-            if i == group.index[0]:
-                result = group['dTT_MS_cohort'][group.index[0]]
-            else:
-                result =  group['dTT_MS_cohort'][group.index[0]] + (group['id_axis'][i] - group['id_axis'][group.index[0]]) / (4 * copy_dataframe['a_cohort'][0])
-            return result
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            copy_dataframe['dTT_MS_cohort'][group.index] = tmp_series[group.index].map(fit_dTT_MS_cohort)
+
+def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number):
+    '''return fitted version of most_frequent_MS_df.'''
+    # t1
+    most_frequent_MS_df = most_frequent_MS_df.copy()
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        most_frequent_MS_df['t1'] = most_frequent_MS_df['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS_df['a_cohort']
+    else: # bilinear mode
+        HS_break_0 = most_frequent_MS_df['a_cohort'][0] * (most_frequent_MS_df['TT_col_break'][0] - most_frequent_MS_df['TT_col_0'][0])
+        a2_0 = (most_frequent_MS_df['Nff'][0] - HS_break_0) / (most_frequent_MS_df['TT_col_nff'][0] - most_frequent_MS_df['TT_col_break'][0])
+        if decimal_elongated_internode_number < HS_break_0:
+            most_frequent_MS_df['t1'] = most_frequent_MS_df['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS_df['a_cohort']
+        else:
+            most_frequent_MS_df['t1'] = (decimal_elongated_internode_number - HS_break_0) / a2_0 + most_frequent_MS_df['TT_col_break']
+    # hs_t1
+    most_frequent_MS_df['hs_t1'] = most_frequent_MS_df['a_cohort'] * (most_frequent_MS_df['t1'] - most_frequent_MS_df['TT_col_0'])
+    # t0
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        most_frequent_MS_df['t0'] = most_frequent_MS_df['TT_col_0'] + most_frequent_MS_df['n0'] / most_frequent_MS_df['a_cohort']
+    else: # bilinear mode
+        HS_break = most_frequent_MS_df['a_cohort'] * (most_frequent_MS_df['TT_col_break'] - most_frequent_MS_df['TT_col_0'])
+        a2 = (most_frequent_MS_df['Nff'] - most_frequent_MS_df['HS_break']) / (most_frequent_MS_df['TT_col_nff'] - most_frequent_MS_df['TT_col_break'])
+        n0_smaller_than_HS_break_indexes = most_frequent_MS_df[most_frequent_MS_df['n0'] < HS_break].index
+        n0_greater_than_HS_break_indexes = most_frequent_MS_df[most_frequent_MS_df['n0'] >= HS_break].index
+        most_frequent_MS_df['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_MS_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_MS_df['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_MS_df['a_cohort'][n0_smaller_than_HS_break_indexes]
+        most_frequent_MS_df['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_MS_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_MS_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
+    # t2
+    most_frequent_MS_df['t2'] = most_frequent_MS_df['TT_col_nff']
+    # d
+    most_frequent_MS_df['d'] = most_frequent_MS_df['n2']
+    # c
+    most_frequent_MS_df['c'] = -((most_frequent_MS_df['Nff'] - decimal_elongated_internode_number) - (most_frequent_MS_df['n2'] - most_frequent_MS_df['n1'])) / (most_frequent_MS_df['t2'] - most_frequent_MS_df['t1'])
+    # a
+    t2_0 = most_frequent_MS_df['t2'][0]
+    n2_0 = most_frequent_MS_df['n2'][0]
+    x_meas_array = np.array([t2_0] + GL_number.keys()) - t2_0
+    y_meas_array = np.array([n2_0] + GL_number.values())
+    b, c, d =  0.0, most_frequent_MS_df['c'][0], most_frequent_MS_df['d'][0]
+    def residuals(p, y, x):
+        a, = p
+        err = y - peval(x, a)
+        return err
+    def peval(x, a):
+        return np.poly1d([a, b, c, d])(x)
+    p0 = [-4.0e-9]
+    p, cov, infodict, mesg, ier = leastsq(residuals, p0, args=(y_meas_array, x_meas_array), full_output=1)
+    most_frequent_MS_df['a'][0] = p[0]
+    # RMSE_gl
+    chisq = (infodict['fvec']**2).sum()
+    dof = len(x_meas_array) - 1 # dof is degrees of freedom
+    rmse = np.sqrt(chisq / dof)
+    most_frequent_MS_df['RMSE_gl'][0] = rmse
+    return most_frequent_MS_df
 
 
-def _fit_TT_col_nff_series(copy_dataframe):
-    if copy_dataframe['TT_col_nff'].count() != copy_dataframe['TT_col_nff'].size:
-        tmp_series = pandas.Series(copy_dataframe.index)
-        # Fit copy_dataframe['TT_col_nff'].
-        def fit_TT_col_nff(i):
-            if i == group.index[0] and not np.isnan(group['TT_col_nff'][group.index[0]]):
-                result = copy_dataframe['TT_col_nff'][group.index[0]]
-            else:
-                result = copy_dataframe['dTT_MS_cohort'][i] + copy_dataframe['TT_col_nff'][0]
-            return result
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            copy_dataframe['TT_col_nff'][group.index] = tmp_series[group.index].map(fit_TT_col_nff)
-
-
-def _fit_a_cohort_series(copy_dataframe):
-    if copy_dataframe['a_cohort'].count() != copy_dataframe['a_cohort'].size:
-        tmp_series = pandas.Series(copy_dataframe.index)
-        # Fit copy_dataframe['a_cohort'].
-        if copy_dataframe['TT_col_break'][0] == 0.0: # linear mode
-            def fit_a_cohort(i):
-                if i == group.index[0] and not np.isnan(group['a_cohort'][group.index[0]]):
-                    result = group['a_cohort'][group.index[0]]
-                else:
-                    result = group['Nff'][i] / (group['TT_col_nff'][i] - group['TT_col_0'][i])
-                return result
-            for name, group in copy_dataframe.groupby('N_cohort'):
-                copy_dataframe['a_cohort'][group.index] = tmp_series[group.index].map(fit_a_cohort)
+def _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df):
+    '''return fitted version of other_MS_df.'''
+    other_MS_df = other_MS_df.copy()  
+    if other_MS_df['TT_col_0'].count() != other_MS_df['TT_col_0'].size:
+        # TT_col_0
+        other_MS_df['TT_col_0'] = most_frequent_MS_df['TT_col_0'][0]
+        # TT_col_break
+        other_MS_df['TT_col_break'] = most_frequent_MS_df['TT_col_break'][0]
+        # dTT_MS_cohort
+        other_MS_df['dTT_MS_cohort'] = most_frequent_MS_df['dTT_MS_cohort'][0] + (other_MS_df['id_axis'] - most_frequent_MS_df['id_axis'][0]) / (4 * most_frequent_MS_df['a_cohort'][0])
+        # TT_col_nff
+        other_MS_df['TT_col_nff'] = other_MS_df['dTT_MS_cohort'] + most_frequent_MS_df['TT_col_nff'][0]
+        # a_cohort
+        if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+            other_MS_df['a_cohort'] = other_MS_df['Nff'] / (other_MS_df['TT_col_nff'] - other_MS_df['TT_col_0'])
         else: # bilinear mode
-            copy_dataframe['a_cohort'] = copy_dataframe['a_cohort'].fillna()
+            other_MS_df['a_cohort'] = most_frequent_MS_df['a_cohort'][0] 
+    return other_MS_df
 
 
-def _fit_n1_series(copy_dataframe):
-    if copy_dataframe['n1'].count() != copy_dataframe['n1'].size:
-        # Fit copy_dataframe['n1'].
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            if name == 1.0: # main stem
-                copy_dataframe['n1'][group.index[1:]] = copy_dataframe['n1'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
-            else: # tillers
-                #TODO: check this with Bruno
-                if np.isnan(group['n1'][group.index[0]]):
-                    copy_dataframe['n1'][group.index] = copy_dataframe['n1'][0]
-                else:
-                    copy_dataframe['n1'][group.index[1:]] = group['n1'][group.index[0]]
+def _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df):
+    '''return fitted version of other_MS_df.'''
+    other_MS_df = other_MS_df.copy()
+    # n1
+    if other_MS_df['n1'].count() != other_MS_df['n1'].size:
+        other_MS_df['n1'] = most_frequent_MS_df['n1'][0] * other_MS_df['Nff'] / most_frequent_MS_df['Nff'][0]
+    # t1
+    other_MS_df['t1'] = most_frequent_MS_df['t1'][0] + other_MS_df['dTT_MS_cohort']
+    # hs_t1
+    other_MS_df['hs_t1'] = other_MS_df['a_cohort'] * (other_MS_df['t1'] - other_MS_df['TT_col_0'])
+    # n0 
+    if other_MS_df['n0'].count() != other_MS_df['n0'].size:
+        other_MS_df['n0'] = most_frequent_MS_df['n0'][0] * other_MS_df['Nff'] / most_frequent_MS_df['Nff'][0]
+    # n2
+    if other_MS_df['n2'].count() != other_MS_df['n2'].size:
+        other_MS_df['n2'] = most_frequent_MS_df['n2'][0] * other_MS_df['Nff'] / most_frequent_MS_df['Nff'][0]
+    # t0
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        other_MS_df['t0'] = other_MS_df['TT_col_0'] + other_MS_df['n0'] / other_MS_df['a_cohort']
+    else: # bilinear mode
+        HS_break = other_MS_df['a_cohort'] * (other_MS_df['TT_col_break'] - other_MS_df['TT_col_0'])
+        a2 = (other_MS_df['Nff'] - other_MS_df['HS_break']) / (other_MS_df['TT_col_nff'] - other_MS_df['TT_col_break'])
+        n0_smaller_than_HS_break_indexes = other_MS_df[other_MS_df['n0'] < HS_break].index
+        n0_greater_than_HS_break_indexes = other_MS_df[other_MS_df['n0'] >= HS_break].index
+        other_MS_df['t0'][n0_smaller_than_HS_break_indexes] = other_MS_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_MS_df['n0'][n0_smaller_than_HS_break_indexes] / other_MS_df['a_cohort'][n0_smaller_than_HS_break_indexes]
+        other_MS_df['t0'][n0_greater_than_HS_break_indexes] = (other_MS_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + other_MS_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
+    # t2  
+    other_MS_df['t2'] = other_MS_df['TT_col_nff']
+    # d
+    other_MS_df['d'] = other_MS_df['n2']
+    # c
+    other_MS_df['c'] = most_frequent_MS_df['c'][0] * other_MS_df['d'] / most_frequent_MS_df['d'][0]
+    # a
+    other_MS_df['a'] = most_frequent_MS_df['a'][0] * other_MS_df['d'] / most_frequent_MS_df['d'][0]
+    # RMSE_gl
+    other_MS_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]
+    return other_MS_df
+
+
+def _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
+    '''return fitted version of most_frequent_tiller_axes_df.'''
+    most_frequent_tiller_axes_df = most_frequent_tiller_axes_df.copy()
+    # TT_col_break
+    most_frequent_tiller_axes_df['TT_col_break'] = most_frequent_MS_df['TT_col_break'][0]
+    without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.dropna(subset=['TT_col_0']).index
+    nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.index - without_nan_most_frequent_tiller_axis_indexes
+    # TT_col_0
+    cohorts = most_frequent_tiller_axes_df['N_cohort'].ix[nan_most_frequent_tiller_axis_indexes].astype(int).values
+    leaf_number_delay_MS_cohorts = np.array([fit_config.leaf_number_delay_MS_cohort_dict[cohort] for cohort in cohorts])
+    most_frequent_tiller_axes_df['TT_col_0'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS_df['a_cohort'][0])
+    # dTT_MS_cohort: nothing to do.
+    # TT_col_nff
+    most_frequent_tiller_axes_df['TT_col_nff'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes_df['dTT_MS_cohort'].ix[nan_most_frequent_tiller_axis_indexes] + most_frequent_MS_df['TT_col_nff'][0]
+    # a_cohort
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        most_frequent_tiller_axes_df['a_cohort'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes_df['Nff'].ix[nan_most_frequent_tiller_axis_indexes] / (most_frequent_tiller_axes_df['TT_col_nff'].ix[nan_most_frequent_tiller_axis_indexes] - most_frequent_tiller_axes_df['TT_col_0'].ix[nan_most_frequent_tiller_axis_indexes])
+    else: # bilinear mode
+        most_frequent_tiller_axes_df['a_cohort'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['a_cohort'][0]
+    return most_frequent_tiller_axes_df
+
+
+def _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
+    '''return fitted version of most_frequent_tiller_axes_df.'''
+    most_frequent_tiller_axes_df = most_frequent_tiller_axes_df.copy()
+    without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.dropna(subset=['n1']).index
+    nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.index - without_nan_most_frequent_tiller_axis_indexes
+    # n1
+    most_frequent_tiller_axes_df['n1'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['n1'][0]
+    # t1
+    most_frequent_tiller_axes_df['t1'] = most_frequent_MS_df['t1'][0] + most_frequent_tiller_axes_df['dTT_MS_cohort']
+    # hs_t1
+    most_frequent_tiller_axes_df['hs_t1'] = most_frequent_tiller_axes_df['a_cohort'] * (most_frequent_tiller_axes_df['t1'] - most_frequent_tiller_axes_df['TT_col_0'])
+    # n0
+    n1_hs_t1_df = most_frequent_tiller_axes_df[['n1', 'hs_t1']].ix[nan_most_frequent_tiller_axis_indexes]
+    if n1_hs_t1_df.index.size != 0:
+        most_frequent_tiller_axes_df['n0'].ix[nan_most_frequent_tiller_axis_indexes] = n1_hs_t1_df.apply(np.min, 1)                      
+    # n2
+    most_frequent_tiller_axes_df['n2'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['n2'][0] * (1.0 - fit_config.n2_MS_div_n2_cohort)
+    # t0
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        most_frequent_tiller_axes_df['t0'] = most_frequent_tiller_axes_df['TT_col_0'] + most_frequent_tiller_axes_df['n0'] / most_frequent_tiller_axes_df['a_cohort']
+    else: # bilinear mode
+        HS_break = most_frequent_tiller_axes_df['a_cohort'] * (most_frequent_tiller_axes_df['TT_col_break'] - most_frequent_tiller_axes_df['TT_col_0'])
+        a2 = (most_frequent_tiller_axes_df['Nff'] - most_frequent_tiller_axes_df['HS_break']) / (most_frequent_tiller_axes_df['TT_col_nff'] - most_frequent_tiller_axes_df['TT_col_break'])
+        n0_smaller_than_HS_break_indexes = most_frequent_tiller_axes_df[most_frequent_tiller_axes_df['n0'] < HS_break].index
+        n0_greater_than_HS_break_indexes = most_frequent_tiller_axes_df[most_frequent_tiller_axes_df['n0'] >= HS_break].index
+        most_frequent_tiller_axes_df['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_tiller_axes_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_tiller_axes_df['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_tiller_axes_df['a_cohort'][n0_smaller_than_HS_break_indexes]
+        most_frequent_tiller_axes_df['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_tiller_axes_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_tiller_axes_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
+    # t2
+    most_frequent_tiller_axes_df['t2'] = most_frequent_tiller_axes_df['TT_col_nff']  
+    # d
+    most_frequent_tiller_axes_df['d'] = most_frequent_tiller_axes_df['n2']
+    # c
+    most_frequent_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * most_frequent_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    # a
+    most_frequent_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * most_frequent_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    # RMSE_gl
+    most_frequent_tiller_axes_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]
+    return most_frequent_tiller_axes_df
+    
+
+def _fit_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
+    '''return fitted version of other_tiller_axes_df.'''
+    other_tiller_axes_df = other_tiller_axes_df.copy()
+    # TT_col_break
+    other_tiller_axes_df['TT_col_break'] = most_frequent_MS_df['TT_col_break'][0]    
+    without_nan_other_tiller_axis_indexes = other_tiller_axes_df.dropna(subset=['TT_col_0']).index
+    nan_other_tiller_axis_indexes = other_tiller_axes_df.index - without_nan_other_tiller_axis_indexes
+    for name, group in other_tiller_axes_df.ix[nan_other_tiller_axis_indexes].groupby('N_cohort'):
+        most_frequent_tiller_axis_idx = most_frequent_tiller_axes_df.ix[most_frequent_tiller_axes_df['N_cohort'] == name].first_valid_index()
+        # TT_col_0
+        other_tiller_axes_df['TT_col_0'].ix[group.index] = most_frequent_tiller_axes_df['TT_col_0'][most_frequent_tiller_axis_idx]
+        # dTT_MS_cohort
+        other_tiller_axes_df['dTT_MS_cohort'].ix[group.index] = \
+            most_frequent_tiller_axes_df['dTT_MS_cohort'][most_frequent_tiller_axis_idx] \
+            + (group['id_axis'] - most_frequent_tiller_axes_df['id_axis'][most_frequent_tiller_axis_idx]) \
+            / (4 * most_frequent_MS_df['a_cohort'][0])
+        if most_frequent_MS_df['TT_col_break'][0] != 0.0:
+            # a_cohort, bilinear mode
+            other_tiller_axes_df['a_cohort'].ix[group.index] = most_frequent_tiller_axes_df['a_cohort'][most_frequent_tiller_axis_idx]
+    # TT_col_nff
+    other_tiller_axes_df['TT_col_nff'].ix[nan_other_tiller_axis_indexes] = other_tiller_axes_df['dTT_MS_cohort'].ix[nan_other_tiller_axis_indexes] + most_frequent_MS_df['TT_col_nff'][0]
+    # a_cohort, linear mode
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        other_tiller_axes_df['a_cohort'].ix[nan_other_tiller_axis_indexes] = other_tiller_axes_df['Nff'].ix[nan_other_tiller_axis_indexes] / (other_tiller_axes_df['TT_col_nff'].ix[nan_other_tiller_axis_indexes] - other_tiller_axes_df['TT_col_0'])
+    return other_tiller_axes_df
+    
+
+def _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
+    '''return fitted version of other_tiller_axes_df.'''
+    other_tiller_axes_df = other_tiller_axes_df.copy()
+    without_nan_other_tiller_axis_indexes = other_tiller_axes_df.dropna(subset=['n1']).index
+    nan_other_tiller_axis_indexes = other_tiller_axes_df.index - without_nan_other_tiller_axis_indexes
+    for name, group in other_tiller_axes_df.ix[nan_other_tiller_axis_indexes].groupby('N_cohort'):
+        most_frequent_tiller_axis_idx = most_frequent_tiller_axes_df.ix[most_frequent_tiller_axes_df['N_cohort'] == name].first_valid_index()
+        # n1
+        other_tiller_axes_df['n1'].ix[group.index] = most_frequent_tiller_axes_df['n1'][most_frequent_tiller_axis_idx]
+        # n2
+        other_tiller_axes_df['n2'].ix[group.index] = most_frequent_tiller_axes_df['n2'][most_frequent_tiller_axis_idx]
+    # t1
+    other_tiller_axes_df['t1'] = most_frequent_MS_df['t1'][0] + other_tiller_axes_df['dTT_MS_cohort']
+    # hs_t1
+    other_tiller_axes_df['hs_t1'] = other_tiller_axes_df['a_cohort'] * (other_tiller_axes_df['t1'] - other_tiller_axes_df['TT_col_0'])
+    # n0
+    n1_hs_t1_df = other_tiller_axes_df[['n1', 'hs_t1']].ix[nan_other_tiller_axis_indexes]
+    if n1_hs_t1_df.index.size != 0:
+        other_tiller_axes_df['n0'].ix[nan_other_tiller_axis_indexes] = n1_hs_t1_df.apply(np.min, 1)                      
+    # t0
+    if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
+        other_tiller_axes_df['t0'] = other_tiller_axes_df['TT_col_0'] + other_tiller_axes_df['n0'] / other_tiller_axes_df['a_cohort']
+    else: # bilinear mode
+        HS_break = other_tiller_axes_df['a_cohort'] * (other_tiller_axes_df['TT_col_break'] - other_tiller_axes_df['TT_col_0'])
+        a2 = (other_tiller_axes_df['Nff'] - other_tiller_axes_df['HS_break']) / (other_tiller_axes_df['TT_col_nff'] - other_tiller_axes_df['TT_col_break'])
+        n0_smaller_than_HS_break_indexes = other_tiller_axes_df[other_tiller_axes_df['n0'] < HS_break].index
+        n0_greater_than_HS_break_indexes = other_tiller_axes_df[other_tiller_axes_df['n0'] >= HS_break].index
+        other_tiller_axes_df['t0'][n0_smaller_than_HS_break_indexes] = other_tiller_axes_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_tiller_axes_df['n0'][n0_smaller_than_HS_break_indexes] / other_tiller_axes_df['a_cohort'][n0_smaller_than_HS_break_indexes]
+        other_tiller_axes_df['t0'][n0_greater_than_HS_break_indexes] = (other_tiller_axes_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + other_tiller_axes_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
+    # t2
+    other_tiller_axes_df['t2'] = other_tiller_axes_df['TT_col_nff']
+    # d
+    other_tiller_axes_df['d'] = other_tiller_axes_df['n2']    
+    # c
+    other_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * other_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    # a
+    other_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * other_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    # RMSE_gl
+    other_tiller_axes_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]  
+    return other_tiller_axes_df
+    
 
 def _calculate_decimal_elongated_internode_number(user_dim_table_dataframe):
     # Calculate decimal_elongated_internode_number.
@@ -310,122 +482,5 @@ def _calculate_decimal_elongated_internode_number(user_dim_table_dataframe):
     first_axis_L_internode_series = first_axis_L_internode_series[first_axis_L_internode_series != 0.0]
     first_axis_index_phytomer_series = user_dim_table_dataframe['index_phytomer'][first_axis_L_internode_series.index]
     return np.polyfit(first_axis_L_internode_series, first_axis_index_phytomer_series, 2)[2]
-
-
-def _fit_t1_series(copy_dataframe, decimal_elongated_internode_number):
-    # Fit copy_dataframe['t1'].
-    # For the most frequent axis of this main stem
-    if copy_dataframe['TT_col_break'][0] == 0.0: # linear mode
-        copy_dataframe['t1'][0] = copy_dataframe['TT_col_0'][0] + decimal_elongated_internode_number / copy_dataframe['a_cohort'][0]
-    else: # bilinear mode
-        HS_break_0 = copy_dataframe['a_cohort'][0] * (copy_dataframe['TT_col_break'][0] - copy_dataframe['TT_col_0'][0])
-        a2_0 = (copy_dataframe['Nff'][0] - HS_break_0) / (copy_dataframe['TT_col_nff'][0] - copy_dataframe['TT_col_break'][0])
-        if decimal_elongated_internode_number < HS_break_0:
-            copy_dataframe['t1'][0] = copy_dataframe['TT_col_0'][0] + decimal_elongated_internode_number / copy_dataframe['a_cohort'][0]
-        else:
-            copy_dataframe['t1'][0] = (decimal_elongated_internode_number - HS_break_0) / a2_0 + copy_dataframe['TT_col_break'][0]
-    # for the other axes
-    copy_dataframe['t1'][1:] = copy_dataframe['t1'][0] + copy_dataframe['dTT_MS_cohort'][1:]
-
-
-def _fit_hs_t1_series(copy_dataframe):
-    # Fit copy_dataframe['hs_t1'].
-    copy_dataframe['hs_t1'] = copy_dataframe['a_cohort'] * (copy_dataframe['t1'] - copy_dataframe['TT_col_0'])
-
-
-def _fit_n0_series(copy_dataframe):
-    if copy_dataframe['n0'].count() != copy_dataframe['n0'].size:
-        # Fit copy_dataframe['n0'].
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            if name == 1.0: # main stem
-                copy_dataframe['n0'][group.index[1:]] = copy_dataframe['n0'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
-            else: # tillers
-                #TODO: check this with Bruno
-                n1_hs_t1_dataframe = group[['n1', 'hs_t1']]
-                copy_dataframe['n0'][group.index] = n1_hs_t1_dataframe.apply(np.min, 1)
-
-
-def _fit_n2_series(copy_dataframe):
-    if copy_dataframe['n2'].count() != copy_dataframe['n2'].size:
-        # Fit copy_dataframe['n2'].
-        for name, group in copy_dataframe.groupby('N_cohort'):
-            if name == 1.0: # main stem
-                copy_dataframe['n2'][group.index[1:]] = copy_dataframe['n2'][0] * copy_dataframe['Nff'][group.index[1:]] / copy_dataframe['Nff'][0]
-            else: # tillers
-                #TODO: check this with Bruno
-                if np.isnan(group['n2'][group.index[0]]):
-                    copy_dataframe['n2'][group.index] = copy_dataframe['n2'][0] * (1.0 - fit_config.n2_MS_div_n2_cohort)
-                else:
-                    copy_dataframe['n2'][group.index[1:]] = group['n2'][group.index[0]] * (1.0 - fit_config.n2_MS_div_n2_cohort)
-                    
-
-def _fit_t0_series(copy_dataframe):
-    '''
-    Fits t0 according to the rate of HS progress: linear or bilinear.
-    - in linear mode: t0[i] = TT_col_phytomer[n0[i]] = TT_col_0[i] + n0[i] / a_cohort[i]
-    - in bilinear mode: 
-        HS_break[i] = a_cohort[i] * (TT_col_break[i] - TT_col_0[i])
-        a2[i] = (Nff[i] - HS_break[i]) / (TT_col_nff[i] - TT_col_break[i])
-        if n0[i] < HS_break[i]:
-            t0[i] = TT_col_phytomer[n0[i]] = TT_col_0[i] + n0[i] / a_cohort[i]
-        else:
-            t0[i] = TT_col_phytomer[n0[i]] = (n0[i] - HS_break[i]) / a2[i] + TT_col_break[i]
-        with i the row number. 
-    '''
-    # Fit copy_dataframe['t0'].
-    if copy_dataframe['TT_col_break'][0] == 0.0: # linear mode
-        copy_dataframe['t0'] = copy_dataframe['TT_col_0'] + copy_dataframe['n0'] / copy_dataframe['a_cohort']
-    else: # bilinear mode
-        HS_break = copy_dataframe['a_cohort'] * (copy_dataframe['TT_col_break'] - copy_dataframe['TT_col_0'])
-        a2 = (copy_dataframe['Nff'] - copy_dataframe['HS_break']) / (copy_dataframe['TT_col_nff'] - copy_dataframe['TT_col_break'])
-        n0_smaller_than_HS_break_indexes = copy_dataframe[copy_dataframe['n0'] < HS_break].index
-        n0_greater_than_HS_break_indexes = copy_dataframe[copy_dataframe['n0'] >= HS_break].index
-        copy_dataframe['t0'][n0_smaller_than_HS_break_indexes] = copy_dataframe['TT_col_0'][n0_smaller_than_HS_break_indexes] + copy_dataframe['n0'][n0_smaller_than_HS_break_indexes] / copy_dataframe['a_cohort'][n0_smaller_than_HS_break_indexes]
-        copy_dataframe['t0'][n0_greater_than_HS_break_indexes] = (copy_dataframe['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + copy_dataframe['TT_col_break'][n0_greater_than_HS_break_indexes]    
-
-
-def _fit_t2_series(copy_dataframe):
-    # Fit copy_dataframe['t2'].
-    copy_dataframe['t2'] = copy_dataframe['TT_col_nff']
-
-
-def _fit_d_series(copy_dataframe):
-    copy_dataframe['d'] = copy_dataframe['n2']
-
-
-def _fit_c_series(copy_dataframe, decimal_elongated_internode_number):
-    copy_dataframe['c'][0] = -((copy_dataframe['Nff'][0] - decimal_elongated_internode_number) - (copy_dataframe['n2'][0] - copy_dataframe['n1'][0])) / (copy_dataframe['t2'][0] - copy_dataframe['t1'][0])
-    copy_dataframe['c'][1:] = copy_dataframe['c'][0] * copy_dataframe['d'][1:] / copy_dataframe['d'][0]
-    
-
-def _fit_a_series(copy_dataframe, GL_number):
-    t2_0 = copy_dataframe['t2'][0]
-    n2_0 = copy_dataframe['n2'][0]
-    x_meas_array = np.array([t2_0] + GL_number.keys()) - t2_0
-    y_meas_array = np.array([n2_0] + GL_number.values())
-
-    b, c, d =  0.0, -0.00458844157413, 5.8
-    
-    def residuals(p, y, x):
-        a, = p
-        err = y - peval(x, a)
-        return err
-    
-    def peval(x, a):
-        return np.poly1d([a, b, c, d])(x)
-    
-    p0 = [-4.0e-9]
-    
-    p, cov, infodict, mesg, ier = leastsq(residuals, p0, args=(y_meas_array, x_meas_array), full_output=1)
-    chisq = (infodict['fvec']**2).sum()
-    # dof is degrees of freedom
-    dof = len(x_meas_array) - 1
-    rmse = np.sqrt(chisq / dof)
-
-    copy_dataframe['a'][0] = p[0]
-
-    # for the other axes
-    copy_dataframe['a'][1:] = copy_dataframe['a'][0] * copy_dataframe['d'][1:] / copy_dataframe['d'][0]
-    copy_dataframe['RMSE_gl'] = rmse
     
     

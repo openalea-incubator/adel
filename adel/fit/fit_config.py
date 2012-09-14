@@ -21,7 +21,7 @@ secondary_stem_leaves_number_coefficients = {'a_1': 0.9423, 'a_2': 0.555}
 emf_1_main_stem_standard_deviation = 30.0
 
 '''the Leaf number delay between Main Stem and the cohort.'''
-leaf_number_delay_MS_cohort_dict = {'3': 1.6173, '4': 2.5181, '5': 3.4189, '6': 4.5576, '7': 5.8097}
+leaf_number_delay_MS_cohort_dict = {3: 1.6173, 4: 2.5181, 5: 3.4189, 6: 4.5576, 7: 5.8097}
 
 n2_MS_div_n2_cohort = 0.15
 

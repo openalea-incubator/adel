@@ -154,8 +154,8 @@ def fit_adel_input_data(user_parameters,
                                                              final_axes_number) 
     
     # 3. complete the user_parameters table
-    leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break   
     if user_parameters_completeness == DataCompleteness.MIN:
+        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break
         leaf_dynamic_parameters_table_dataframe.ix[0]['a_cohort'] = user_parameters['a_cohort']
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_0'] = user_parameters['TT_col_0']
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_nff'] = user_parameters['TT_col_nff']
@@ -178,7 +178,8 @@ def fit_adel_input_data(user_parameters,
             index_to_get = user_grouped.get_group(N_cohort).index[0]
             index_to_set = generated_group.index[0]
             columns_to_set = user_parameters.columns
-            leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]        
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set]['TT_col_break'] = TT_col_break
     elif user_parameters_completeness == DataCompleteness.FULL:
         user_grouped = user_parameters.groupby(['N_cohort', 'Nff'])
         for (N_cohort, Nff), generated_group in leaf_dynamic_parameters_table_dataframe.groupby(['N_cohort', 'Nff']):
@@ -188,6 +189,7 @@ def fit_adel_input_data(user_parameters,
             index_to_set = generated_group.index[0]
             columns_to_set = user_parameters.columns
             leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set]['TT_col_break'] = TT_col_break
     else:
         raise Exception('''%s is an unknown user data completeness value. \
 The values can be one of %s''', (str(user_parameters_completeness), 

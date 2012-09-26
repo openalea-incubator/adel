@@ -36,9 +36,9 @@ up <- function(ang) paste("^(",round(ang,2),")",sep="")
 #
 Internode <- function(lgreen,lsen,diam,po,pos,epsillon) {
   chn <- ""
-  if (lgreen > epsillon)
+#  if (lgreen > epsillon) # no condition, as internode should always be there to allow bearing tillers
     chn <- paste(chn,StemElement(ttype$green_internode,lgreen,diam,diam),sep="")
-  if (lsen > epsillon)
+  #if (lsen > epsillon)
     chn <- paste(chn,StemElement(ttype$sen_internode,lsen,diam,diam))
   chn
 }
@@ -110,7 +110,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
     chn <- paste(chn,
                  up(dat$Einc))
 
-  if (dat$Ev > epsillon)
+  #if (dat$Ev > epsillon) #not tested to ensure persistence of stems even with 0 length( for tiller attachment)
   chn <- paste(chn,
                  Internode(dat$Ev-dat$Esen,dat$Esen,dat$Ed,dat$Epo,dat$Epos,epsillon))
 

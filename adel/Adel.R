@@ -120,9 +120,9 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     #senescence of stem + ear + awn + peduncle
     for (i in 1:(nfa+3))
       kin[,i,"Elsen"] <- ifelse(xa < ped$senPed,0,dim$El[i])
-    ##disparition axe = longueurs nulles
+    ##disparition axe = longueurs nulles sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
-      kin[x > plant$axeT$disp[a],,] <- 0
+      kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
     #rang depuis flag leaf
     for (d in seq(along=x))
     kin[d,,"ntop"] <- -(seq(nrow(kin[d,,])) - nfa)
@@ -198,7 +198,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
       #print(paste("axe",a))
       axename <- names(kin)[a]
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llsen","Glsen","Elsen")])
-      if (sum(dat) > epsillon) {#do not represent empty axes
+      if (sum(dat) > epsillon | a == 1) {#do not represent empty tillers (BUT main stems are needed even if empty! )
         colnames(dat) <- c("Lv","Gv","Ev","Lsen","Gsen","Esen")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,a])

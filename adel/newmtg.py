@@ -40,12 +40,12 @@ def internode_elements(l,lvis, lsen):
     """
     lhide = None
     lgreen = None
-    if l and lvis:
+    try:
         lhide = max(l - lvis, 0.)
-    if lvis and lsen:
-        lgreen = max(lvis - lsen, 0.)
+        lgreen = lvis - min(lsen,lvis)
         lsen = lvis - lgreen
-    
+    except TypeError:
+        pass
     green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True}
     sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False}
     return [green_elt, sen_elt]
@@ -75,24 +75,22 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
     s_limvis = 1.
     #relative s (on mature shape) at which leaf becomes senescent
     s_limsen = 1.
-    if l and lvis:
+    try:
         lhide = max(l - lvis, 0.)
-
-    if lvis and lsen:
-        lgreen = max(lvis - lsen, 0.)
-        lsen = lvis - lgreen
-        
-    if lvis and lsen and Lshape:
-        if Lshape > 0:
-            s_limvis = 1. - lvis / Lshape
-            s_limsen = 1. - lsen / Lshape
+        lgreen = lvis - min(lsen,lvis)
+        lsen = lvis - lgreen        
+        s_limvis = Lshape - lvis
+        s_limsen = Lshape - lsen
+        print(lgreen,lsen,s_limvis,s_limsen)
+    except TypeError:
+        pass
 
     # hidden part
     hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': 0, 'is_green': True}
     elements=[hidden_elt]
     ds = 0
     if Lshape:
-        ds = Lshape / sectors
+        ds = float(Lshape) / sectors
     st = ds    
     for isect in range(sectors):
         ls_vis= 0
@@ -102,7 +100,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
         srt_green = None
         srb_sen = None
         srt_sen = None
-        if Lshape and lvis and lsen:
+        try:
             ls_vis = max(0., st - s_limvis)
             if ls_vis > 0:
                 sb_green = st - min(ds, ls_vis)
@@ -111,11 +109,14 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
                 st_sen= st
                 ls_green = st_green - sb_green
                 ls_sen = st_sen - sb_sen
+                print(sb_green,st_green,st_sen)
                 if lvis > 0:
-                    srb_green = (sb_green - s_limvis) * Lshape  / lvis
-                    srt_green = (st_green - s_limvis) * Lshape  / lvis
-                    srb_sen = (sb_sen - s_limvis) * Lshape  / lvis
-                    srt_sen = (st_sen - s_limvis) * Lshape  / lvis
+                    srb_green = (sb_green - s_limvis) / lvis
+                    srt_green = (st_green - s_limvis) / lvis
+                    srb_sen = (sb_sen - s_limvis) / lvis
+                    srt_sen = (st_sen - s_limvis) / lvis
+        except TypeError:
+            pass
         green_elt = {'label': 'LeafElement', 'length': ls_green, 'is_green': True,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'is_green': False, 
@@ -256,6 +257,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         if metamer_factory:
             if leaf_db:
                 xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
+            else:
+                xysr = {'LcType':args.get('LcType'), 'LcIndex': args.get('LcIndex')}
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, **args)
             args={}
         #

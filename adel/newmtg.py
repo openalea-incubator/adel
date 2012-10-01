@@ -142,7 +142,13 @@ def wheat_metamer(Lv=None, Lsen=None, Ll=None, Lw=None, LcType=None, LcIndex=Non
     
     return modules
     
-    
+def get_component(components, index):
+    component = components[index]
+    elements = component['elements']
+    properties = dict(component)
+    del properties['elements']
+    return properties, elements
+
     
 def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['plant','axe','numphy']):
     """ Construct a MTG from a dictionary of parameters.
@@ -220,30 +226,22 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['p
             args={}
         #
         label = 'metamer'+str(num_metamer)
+        new_metamer = g.add_component(vid_axe, edge_type='/', label = label, **args)
         if axe==0 and num_metamer==1:
-            vid_metamer = g.add_component(vid_axe, edge_type='/', label = label, **args)
+            vid_metamer = new_metamer
         elif num_metamer == 1:
-            # create as the first component of the axilary axis
-            new_metamer = g.add_component(vid_axe, label=label, edge_type='/', **args)
             # add the edge with the bearing metamer on main stem
             vid_metamer = metamers[axe-1]
             vid_metamer =  g.add_child(vid_metamer, child=new_metamer, edge_type='+')
-            #vid_node = nodes[axe-1]
         else:
-            vid_metamer = g.add_child(vid_metamer, label=label, edge_type='<', **args)
+            vid_metamer = g.add_child(vid_metamer, child=new_metamer, edge_type='<')
 
         # add metamer components, if any           
         if len(components) > 0:
-            def get_component(components, index):
-                component = components[index]
-                elements = component['elements']
-                properties = dict(component)
-                del properties['elements']
-                return elements, properties
-            # deals with first component and first element
-            elements, properties = get_component(components,0)
+            # deals with first component (internode) and first element 
+            node, elements = get_component(components,0)
             element = elements[0]
-            new_node = g.add_component(vid_metamer, edge_type='/', **properties)
+            new_node = g.add_component(vid_metamer, edge_type='/', **node)
             new_elt = g.add_component(new_node, edge_type='/', **element)
             if axe==0 and num_metamer==1: #root of main stem
                 vid_node = new_node
@@ -261,14 +259,16 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['p
                 element = elements[i]
                 vid_elt = g.add_child(vid_elt, edge_type='<',**element)
             vid_topstem_node = vid_node
-            vid_topstem_element = vid_elt #last element of internode       
+            vid_topstem_element = vid_elt #last element of internode  
+            
             # add other components   
             for i in range(1,len(components)):
-                elements, properties = get_component(components,i)
-                edge_type = '<'
-                if properties['label'] == 'sheath':
+                node, elements = get_component(components,i)
+                if node['label'] == 'sheath':
                     edge_type = '+'
-                vid_node = g.add_child(vid_node, edge_type=edge_type, **properties)      
+                else:
+                    edge_type = '<'
+                vid_node = g.add_child(vid_node, edge_type=edge_type, **node)      
                 element = elements[0]
                 new_elt = g.add_component(vid_node, edge_type='/', **element)
                 vid_elt = g.add_child(vid_elt, child=new_elt, edge_type=edge_type)

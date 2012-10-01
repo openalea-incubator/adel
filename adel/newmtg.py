@@ -30,114 +30,150 @@ from openalea.mtg import MTG, fat_mtg
 # import random
 # from math import pi
 
-def internode_elements(Egreen, Esen, diam):
-    """ returns parameters of internode elements.
-    Fisrt elements is for green visible part of the internode
-    Second elements is for senesced visible part of the internode
+def internode_elements(l,lvis, lsen):
+    """ returns parameters of internode elements (visible parts of the internode).
+    l is the length of the internode
+    lv is the visible length (senesced + green)
+    lsen is the senescent apical length
+    Fisrt element is for the green visible part of the internode
+    Second element is for senesced visible part of the internode
     """
-    green = {'label': 'StemElement', 'length': Egreen, 'tissue_type': 'green', 'diameter' :diam}
-    sen = {'label': 'StemElement', 'length': Esen, 'tissue_type': 'senescent', 'diameter' :diam}
-    return [green,sen]
+    lhide = None
+    lgreen = None
+    if l and lvis:
+        lhide = max(l - lvis, 0.)
+    if lvis and lsen:
+        lgreen = max(lvis - lsen, 0.)
+        lsen = lvis - lgreen
     
-def sheath_elements(Ggreen, Gsen, diam):
-    """ returns parameters of sheath elements.
+    green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True}
+    sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False}
+    return [green_elt, sen_elt]
+    
+def sheath_elements(l, lvis, lsen):
+    """ returns parameters of sheath elements (visible parts of the sheath).
+    l is the length of the sheath
+    lv is the visible length (senesced + green)
+    lsen is the senescent apical length
     Fisrt elements is for green visible part of the sheath
     Second elements is for senesced visible part of the sheath
     """
-    green = {'label': 'StemElement', 'length': Ggreen, 'tissue_type': 'green', 'diameter' :diam}
-    sen = {'label': 'StemElement', 'length': Gsen, 'tissue_type': 'senescent', 'diameter' :diam}
-    return [green,sen]
+    # same logic as internodes
+    return internode_elements(l,lvis,lsen)
     
-def blade_elements(sectors, Lgreen, Lsen, Laz, Ll, Lw, LcType, LcIndex):
-    """ return parameters of blade elements """
-    #rolled = {'label': 'StemElement', 'length': Ggreen, 'tissue_type': 'green', 'diameter' :diam}
-    ds = 1. / sectors
-    Lv = None
-    srlim = 1
-    if Lv and Lgreen and Lsen:
-        Lv = Lgreen + Lsen
-        srlim = 1.- Lsen / Lv
-    st = ds
-    Laz = Laz
-    elements=[]
+def blade_elements(sectors, l, lvis, lsen, Lshape):
+    """ return parameters of blade elements (visible parts of the blade).
+    sectors is the number of sectors dividing pattern blade shape
+    l is the length of the blade
+    lvis is the visible length (senesced + green)
+    lsen is the senescent apical length
+    Lshape is length of the blade used as pattern shape
+"""
+    lhide = None
+    lgreen = None
+    #relative s (on mature shape) at which leaf becomes visible
+    s_limvis = 1.
+    #relative s (on mature shape) at which leaf becomes senescent
+    s_limsen = 1.
+    if l and lvis:
+        lhide = max(l - lvis, 0.)
+
+    if lvis and lsen:
+        lgreen = max(lvis - lsen, 0.)
+        lsen = lvis - lgreen
+        
+    if lvis and lsen and Lshape:
+        if Lshape > 0:
+            s_limvis = 1. - lvis / Lshape
+            s_limsen = 1. - lsen / Lshape
+
+    # hidden part
+    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': 0, 'is_green': True}
+    elements=[hidden_elt]
+    ds = 0
+    if Lshape:
+        ds = Lshape / sectors
+    st = ds    
     for isect in range(sectors):
-        # create one green and/or one senescent sector
-        srb_green = st - ds
-        srt_green = min(st, max(srb_green,srlim))
-        srb_sen = srt_green
-        srt_sen= st
-        green = {'label': 'LeafElement', 'length': Lv, 
-                'Ll': Ll, 'Lw': Lw, 'LcType': LcType, 'LcIndex': LcIndex,
-                'srb': srb_green, 'srt': srt_green, 'green': True}
-        sen = {'label': 'LeafElement', 'length': Lv, 
-                'Ll': Ll, 'Lw': Lw, 'LcType': LcType, 'LcIndex': LcIndex,
-                'srb': srb_sen, 'srt': srt_sen, 'green': False} 
-        elements.extend([green,sen])
+        ls_vis= 0
+        ls_green = 0
+        ls_sen = 0
+        srb_green = None
+        srt_green = None
+        srb_sen = None
+        srt_sen = None
+        if Lshape and lvis and lsen:
+            ls_vis = max(0., st - s_limvis)
+            if ls_vis > 0:
+                sb_green = st - min(ds, ls_vis)
+                st_green = min(st, max(sb_green,s_limsen))
+                sb_sen = st_green
+                st_sen= st
+                ls_green = st_green - sb_green
+                ls_sen = st_sen - sb_sen
+                if lvis > 0:
+                    srb_green = (sb_green - s_limvis) * Lshape  / lvis
+                    srt_green = (st_green - s_limvis) * Lshape  / lvis
+                    srb_sen = (sb_sen - s_limvis) * Lshape  / lvis
+                    srt_sen = (st_sen - s_limvis) * Lshape  / lvis
+        green_elt = {'label': 'LeafElement', 'length': ls_green, 'is_green': True,
+                'srb': srb_green, 'srt': srt_green}
+        sen_elt = {'label': 'LeafElement', 'length': ls_sen,'is_green': False, 
+                'srb': srb_sen, 'srt': srt_sen} 
+        elements.extend([green_elt,sen_elt])
         st += ds
     return elements
     
-def wheat_metamer(Lv=None, Lsen=None, Ll=None, Lw=None, LcType=None, LcIndex=None, Linc=None, Laz=None, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, *args):
-    """ Contructs metamer elements (nodes ?) for adel wheat from parameters returned by setAdel/RunAdel.
+def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, *args):
+    """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
-      - Lv : visible (emerged) length of blades (green + senesced)
-       - Lsen : length of the (emerged) senescent part of the blade
-       - Ll : Mature Length of the blade used to compute blade shape (of which the lv first part is exposed)
-       - Lw : Maximal width of the mature blade used to compute blade shape
-       - LcType : index of a blade shape class
-       - LcIndex : index of a blade shape within the class 
-       - Linc : relative? inclination of the leaf blade at the top of leaf sheath (deg ?)  
+       - Ll : length of the blade
+       - Lv : visible (emerged) length of blade (green + senesced)
+       - Lsen : length of the senescent part of the blade (hidden + visible)       
+       - L_shape : Mature length of the blade used to compute blade shape
+       - Lw_shape : Maximal width of the blade used to compute blade shape
+       - xysr_shape : a (x,y,s,r) tuple describing blade geometry
+       - Linc : relative inclination of the base of leaf blade at the top of leaf sheath (deg) 
        - Laz : relative ? azimuth of the leaf
-        - Gl : Mature length of the sheath
-        - Gv : emerged length of the sheath
-        - Gsen : emerged senescent length of the sheath
-        - Gd : apparent diameter of the sheath
-        - Ginc : relative inclination of the sheath
-        - El : Mature length of the internode
-        - Ev : emerged lenbgthof the internode
-        - Esen : emerge senescent length of the internode
-        - Ed: diameter of the internode
-        - Einc : relative inclination of the internode
-
+       - Lsect : the number of sectors per leaf blade
+       - Gl : length of the sheath (hidden + visible)
+       - Gv : emerged length of the sheath
+       - Gsen : senescent length of the sheath (hidden + visible)
+       - Gd : apparent diameter of the sheath
+       - Ginc : relative inclination of the sheath
+       - El: length of the internode (hidden + visible)
+       - Ev: emerged length of the internode 
+       - Esen: senescent length of the internode (hidden + visible)
+       - Ed: diameter of the internode
+       - Einc : relative inclination of the internode
     """
-    
-    Egreen, Ggreen, Lgreen = None, None, None
-    
-    if Ev and Esen:
-        Egreen = Ev - Esen if Ev - Esen > 0. else 0.
-        Esen = Ev - Egreen
-    if Gv and Gsen:
-        Ggreen = Gv - Gsen if Gv - Gsen > 0. else 0.
-        Gsen = Gv - Ggreen
-    if Lv and Lsen:
-        Lgreen = Lv - Lsen if Lv - Lsen > 0. else 0.
-        Lsen = Lv - Lgreen
-    
-   
+       
     modules = [
         {'label': 'internode',
-        'green_visible_length': Egreen,
-        'senesced_visible_length': Esen,
-        'mature_length': El,
+        'length': El,
+        'visible_length': Ev,
+        'senesced_length': Esen,
         'diameter' : Ed, 
-        'inclination' : Einc,
-        'elements' : internode_elements(Egreen, Esen, Ed)}, 
+        'relative_inclination' : Einc,
+        'elements' : internode_elements(El, Ev, Esen)}, 
         {'label': 'sheath',
-        'green_visible_length': Ggreen,
-        'senesced_visible_length': Gsen,
-        'mature_length': Gl,
+        'length': Gl,
+        'visible_length': Gv,
+        'senesced_length': Gsen,
         'diameter' : Gd,
-        'inclination' : Ginc,
+        'relative_inclination' : Ginc,
         'azimuth' : Laz,
-        'elements': sheath_elements(Ggreen,Gsen,Gd)}, 
-        {'label': 'blade', 
-        'green_visible_length': Lgreen,
-        'senesced_visible_length': Lsen,
-        'mature_length': Ll,
-        'max_width' : Lw,
+        'elements': sheath_elements(Gl, Gv, Gsen)}, 
+        {'label': 'blade',
+        'length': Ll,
+        'visible_length': Lv,
+        'senesced_length': Lsen,
+        'n_sect': Lsect,
+        'shape_mature_length': L_shape,
+        'shape_max_width' : Lw_shape,
+        'shape_xysr': xysr_shape,
         'inclination' : Linc,
-        'LcType': LcType,
-        'LcIndex' : LcIndex,
-        'elements': blade_elements(1,Lgreen, Lsen, Laz, Ll, Lw, LcType, LcIndex)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lsen, L_shape)} 
     ]
     
     return modules
@@ -150,17 +186,13 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['plant','axe','numphy']):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, topology = ['plant','axe','numphy']):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
-    metamer_factory is a function that build metamer properties and metamer elements from parameters. It is called with all metamer properties, 
-    and should return a dict of elements. An element is a dict of properties to be attached to that element.
-    Valid elements name  are : 'metamer', 'internode_xxx', 'sheath_xxx', and 'blade_xxx', with xxx being the external appearance ('hidden', 'green' or 'senescent')
-    Elements missing in metamer_factory output (or if metammer factory is none), are created without properties
+    metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
     Sector is an integer giving the number of LeafElements per Leaf blade
-    add_hidden adds hidden parts of elements
-    topology is the list of key names used in parameters for plant number, axe numer and metamer number
+    topology is the list of key names used in parameters dictfor plant number, axe numer and metamer number
 
     Axe number 0 is compulsory
   
@@ -222,7 +254,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['p
         args = properties_from_dict(dp,i,exclude=topology)
         components = []
         if metamer_factory:
-            components = metamer_factory(**args)
+            if leaf_db:
+                xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
+            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, **args)
             args={}
         #
         label = 'metamer'+str(num_metamer)
@@ -284,7 +318,6 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, topology = ['p
                 elts.append(vid_topstem_element)
         prev_plant = plant
         prev_axe = axe
-
     
     return fat_mtg(g)
 

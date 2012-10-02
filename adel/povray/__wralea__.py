@@ -1,103 +1,96 @@
 
-# This file has been generated at Tue Feb 12 14:41:01 2008
+# This file has been generated at Tue Oct  2 12:10:06 2012
 
 from openalea.core import *
 
 
 __name__ = 'alinea.adel.povray'
-__alias__ = []
 
 __editable__ = True
-__version__ = '0.9.1'
 __description__ = 'Use of povray to compute coverage rate'
 __license__ = 'CECILL'
-__authors__ = 'C. Pradal'
 __url__ = ''
+__alias__ = []
+__version__ = '0.9.1'
+__authors__ = 'C. Pradal'
 __institutes__ = 'CIRAD, INRIA'
- 
-
-__all__ = []
-
-color_list=[(0,0,0),
-            (255,0,0),
-            (0,255,0),
-            (0,0,255),
-            (255,255,0),
-            (0,255,255),
-            (255,0,255),
-            (128,255,0),
-            (0,128,255),
-            (255,0,128),
-            (0,255,128),
-            (128,0,255),
-            (255,128,0),
-            (128,128,255),
-            (255,128,128),
-            (128,255,128),
-            (255,255,255)
-            ]
+__icon__ = ''
 
 
-povray = Factory(name='povray', 
-                category='image', 
+__all__ = ['povray_povray', 'povray_domain3D', 'povray_col_item', 'count_pixels_count_pixels', 'povray_stand_box']
+
+
+
+povray_povray = Factory(name='povray',
+                authors='C. Pradal (wralea authors)',
+                description='',
+                category='image',
                 nodemodule='povray',
                 nodeclass='povray',
-                inputs=[dict(name='scene', desc='PlantGL 3D scene'),
-                dict(name='pov_file', interface=IStr, value='./scene.pov'),
-                dict(name='camera_distance', interface=IFloat(step=1), value=200),
-                dict(name='fov', interface=IInt, value=45),
-                dict(name='width', interface=IInt, value=320),
-                dict(name='height', interface=IInt, value=280),
-                dict(name='domain', interface=ITuple, value=((0,0),(1,1))),
-                dict(name='azimuth', interface=IInt, value=0),
-                dict(name='zenith', interface=IInt, value=0),
-                dict(name='camera_type', 
-                     interface=IEnumStr(enum=['perspective', 'orthographic', 'fisheye']), 
-                     value='perspective'),
-                dict(name='soil', interface=IBool, value=False),
-                dict(name='command', interface=IStr, value='povray'),
-
-                ],
-                outputs=[{'interface': IFileStr, 'name': 'povray image'},
-                {'interface': IFileStr, 'name': 'stand box image'}],
-                )
-
-__all__.append('povray')
-
-color_item = Factory(name='col_item', 
-                category='color', 
-                nodemodule='povray',
-                nodeclass='col_item',
-                inputs=[dict(interface='IInt', name='color index', value=None, desc='color index. If None, return a function'),
-                        dict(interface='ISequence', name='color list', value=color_list),
-                        ],
-                outputs=[{'interface': IRGBColor, 'name': 'color list'}],
-                )
-
-__all__.append('color_item')
+                inputs=[{'name': 'scene', 'desc': 'PlantGL 3D scene'}, {'interface': IStr, 'name': 'pov_file', 'value': './scene.pov'}, {'interface': IFloat, 'name': 'camera_distance', 'value': 200}, {'interface': IInt, 'name': 'fov', 'value': 45}, {'interface': IInt, 'name': 'width', 'value': 320}, {'interface': IInt, 'name': 'height', 'value': 280}, {'interface': ITuple, 'name': 'domain', 'value': ((0, 0), (1, 1))}, {'interface': IInt, 'name': 'azimuth', 'value': 0}, {'interface': IInt, 'name': 'zenith', 'value': 0}, {'interface': IEnumStr(enum=['perspective', 'orthographic', 'fisheye']), 'name': 'camera_type', 'value': 'perspective'}, {'interface': IBool, 'name': 'soil', 'value': False}, {'interface': IStr, 'name': 'command', 'value': 'povray'}],
+                outputs=[{'interface': IFileStr, 'name': 'povray image'}, {'interface': IFileStr, 'name': 'stand box image'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
 
-domain3D = Factory(name='domain3D', 
-                category='image', 
+
+
+povray_domain3D = Factory(name='domain3D',
+                authors='C. Pradal (wralea authors)',
+                description='',
+                category='image',
                 nodemodule='povray',
                 nodeclass='domain3D',
-                inputs=[dict(interface='ITuple', name='domain2D', value=()),
-                        dict(interface=None, name='scene', value=None),
-                        ],
+                inputs=[{'interface': 'ITuple', 'name': 'domain2D', 'value': ()}, {'interface': None, 'name': 'scene', 'value': None}],
                 outputs=[{'interface': ITuple, 'name': 'domain3D'}],
-                )
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
-__all__.append('domain3D')
 
 
-stand_box = Factory(name='stand_box', 
-                category='image', 
+
+povray_col_item = Factory(name='col_item',
+                authors='C. Pradal (wralea authors)',
+                description='',
+                category='color',
+                nodemodule='povray',
+                nodeclass='col_item',
+                inputs=[{'interface': 'IInt', 'name': 'color index', 'value': None, 'desc': 'color index. If None, return a function'}, {'interface': 'ISequence', 'name': 'color list', 'value': [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255), (128, 255, 0), (0, 128, 255), (255, 0, 128), (0, 255, 128), (128, 0, 255), (255, 128, 0), (128, 128, 255), (255, 128, 128), (128, 255, 128), (255, 255, 255)]}],
+                outputs=[{'interface': IRGBColor, 'name': 'color list'}],
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+count_pixels_count_pixels = Factory(name='count_pixels',
+                authors='C. Pradal (wralea authors)',
+                description='',
+                category='image processing',
+                nodemodule='post_processing',
+                nodeclass='count_pixels',
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+povray_stand_box = Factory(name='stand_box',
+                authors='C. Pradal (wralea authors)',
+                description='',
+                category='image',
                 nodemodule='povray',
                 nodeclass='stand_box',
-                inputs=[dict(interface='ITuple', name='domain', value=((0, 0, 0), (1, 1, 1)))],
+                inputs=[{'interface': 'ITuple', 'name': 'domain', 'value': ((0, 0, 0), (1, 1, 1))}],
                 outputs=[{'interface': None, 'name': 'stand_box'}],
-                )
+                widgetmodule=None,
+                widgetclass=None,
+               )
 
-__all__.append('stand_box')
+
 
 

@@ -9,8 +9,8 @@ def test_adelR(nplants,dd):
     geoLeaf = genGeoLeaf()
     geoAxe = genGeoAxe()
     pars = setAdel(devT,geoLeaf,geoAxe,nplants)
-    string = RunAdel(dd,pars)
-    return pars,string
+    cantable = RunAdel(dd,pars)
+    return pars,cantable
 
 def test2():
     pars, d = test_adelR(1,500)

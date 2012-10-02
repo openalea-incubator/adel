@@ -1,5 +1,5 @@
 """
-A place to develop candidates methods for mtg.py
+A place to develop candidates methods for mtg.py / topological builder
 
 """
 
@@ -81,7 +81,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
         lsen = lvis - lgreen        
         s_limvis = Lshape - lvis
         s_limsen = Lshape - lsen
-        print(lgreen,lsen,s_limvis,s_limsen)
+        #print(lgreen,lsen,s_limvis,s_limsen)
     except TypeError:
         pass
 
@@ -109,7 +109,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
                 st_sen= st
                 ls_green = st_green - sb_green
                 ls_sen = st_sen - sb_sen
-                print(sb_green,st_green,st_sen)
+                #print(sb_green,st_green,st_sen)
                 if lvis > 0:
                     srb_green = (sb_green - s_limvis) / lvis
                     srt_green = (st_green - s_limvis) / lvis
@@ -125,7 +125,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
         st += ds
     return elements
     
-def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, *args):
+def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Eaz=None, Einc=None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
        - Ll : length of the blade
@@ -135,7 +135,7 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
        - Lw_shape : Maximal width of the blade used to compute blade shape
        - xysr_shape : a (x,y,s,r) tuple describing blade geometry
        - Linc : relative inclination of the base of leaf blade at the top of leaf sheath (deg) 
-       - Laz : relative ? azimuth of the leaf
+       - Laz : relative azimuth of the leaf
        - Lsect : the number of sectors per leaf blade
        - Gl : length of the sheath (hidden + visible)
        - Gv : emerged length of the sheath
@@ -146,24 +146,26 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
        - Ev: emerged length of the internode 
        - Esen: senescent length of the internode (hidden + visible)
        - Ed: diameter of the internode
+       - Eaz: azimuth of the internode (control axis azimuths)
        - Einc : relative inclination of the internode
     """
-       
+       #to do add diameter and Lrolled to blade
     modules = [
         {'label': 'internode',
         'length': El,
         'visible_length': Ev,
         'senesced_length': Esen,
-        'diameter' : Ed, 
-        'relative_inclination' : Einc,
+        'diameter' : Ed,
+        'azimuth': Eaz,
+        'inclination' : Einc,
         'elements' : internode_elements(El, Ev, Esen)}, 
         {'label': 'sheath',
         'length': Gl,
         'visible_length': Gv,
         'senesced_length': Gsen,
         'diameter' : Gd,
-        'relative_inclination' : Ginc,
-        'azimuth' : Laz,
+        'azimuth' : Laz,   
+        'inclination' : Ginc,
         'elements': sheath_elements(Gl, Gv, Gsen)}, 
         {'label': 'blade',
         'length': Ll,
@@ -214,6 +216,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
     # vid of top of stem nodes and elements
     vid_topstem_node = -1
     vid_topstem_element = -1
+    #vid of plant main stem (axe0)
+    vid_main_stem = -1
     # buffer for the vid of main stem anchor points for the first metamer, node and element of tillers
     metamers = []
     nodes = []
@@ -237,6 +241,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             vid_elt = -1
             vid_topstem_node = -1
             vid_topstem_element = -1
+            vid_main_stem = -1
             metamers = []
             nodes = []
             elts = []
@@ -246,8 +251,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             label = 'axe' + str(axe)           
             if axe == 0:
                 vid_axe = g.add_component(vid_plant,edge_type='/',label=label)
+                vid_main_stem = vid_axe
             else:
-                vid_axe = g.add_child(vid_axe,edge_type='+',label=label)
+                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label)
 
         # Add metamer
         assert num_metamer > 0
@@ -258,8 +264,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             if leaf_db:
                 xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
             else:
-                xysr = {'LcType':args.get('LcType'), 'LcIndex': args.get('LcIndex')}
-            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, **args)
+                xysr = None
+            # TO DO : compute Eaz
+            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, Eaz =0, **args)
             args={}
         #
         label = 'metamer'+str(num_metamer)

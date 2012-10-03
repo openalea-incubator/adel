@@ -174,7 +174,7 @@ def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_da
                   t2[i] = TT_col_nff[i], with i the row number.
             * hs_t1: Haun Stage at t1. The routine estimates hs_t1 for each axis from main stem value given by the user.
                   hs_t1[i] = a_cohort[i] * (t1[i] - TT_col_0[i]), with i the row number.
-            * a: Coefficient of the 
+            * a: Coefficient of the 3rd order term of the polynomial describing the dynamics of Green Leaf number after flowering. 
                  - For the main stem most frequent axis:
                    Given x[i] = GL_number.keys(), y[i] = GL_number.values(), b[0] = 0, 
                    c[0] = -((Nff[0] - decimal_elongated_internode_number) - (n2[0] - n1[0])) / (t2[0] - t1[0])
@@ -233,7 +233,7 @@ def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_da
 
 def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number):
     '''return fitted version of most_frequent_MS_df.'''
-    # t1
+    # fit of t1
     most_frequent_MS_df = most_frequent_MS_df.copy()
     if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
         most_frequent_MS_df['t1'] = most_frequent_MS_df['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS_df['a_cohort']
@@ -244,9 +244,9 @@ def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
             most_frequent_MS_df['t1'] = most_frequent_MS_df['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS_df['a_cohort']
         else:
             most_frequent_MS_df['t1'] = (decimal_elongated_internode_number - HS_break_0) / a2_0 + most_frequent_MS_df['TT_col_break']
-    # hs_t1
+    # calculation of hs_t1
     most_frequent_MS_df['hs_t1'] = most_frequent_MS_df['a_cohort'] * (most_frequent_MS_df['t1'] - most_frequent_MS_df['TT_col_0'])
-    # t0
+    # fit of t0
     if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
         most_frequent_MS_df['t0'] = most_frequent_MS_df['TT_col_0'] + most_frequent_MS_df['n0'] / most_frequent_MS_df['a_cohort']
     else: # bilinear mode
@@ -256,11 +256,12 @@ def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
         n0_greater_than_HS_break_indexes = most_frequent_MS_df[most_frequent_MS_df['n0'] >= HS_break].index
         most_frequent_MS_df['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_MS_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_MS_df['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_MS_df['a_cohort'][n0_smaller_than_HS_break_indexes]
         most_frequent_MS_df['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_MS_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_MS_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
-    # t2
+    # fit of t2
     most_frequent_MS_df['t2'] = most_frequent_MS_df['TT_col_nff']
     # d
     most_frequent_MS_df['d'] = most_frequent_MS_df['n2']
-    # c
+    # Fit of the polynomial function describing post flowering dynamics of GL
+    # c 
     most_frequent_MS_df['c'] = -((most_frequent_MS_df['Nff'] - decimal_elongated_internode_number) - (most_frequent_MS_df['n2'] - most_frequent_MS_df['n1'])) / (most_frequent_MS_df['t2'] - most_frequent_MS_df['t1'])
     # a
     t2_0 = most_frequent_MS_df['t2'][0]

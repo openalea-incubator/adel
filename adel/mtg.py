@@ -805,9 +805,9 @@ def mtg_factory(params, sectors = 1):
         - axe: 
         - numphy
         - Lv
-        - Ll
+        - L_shape
         - Lsen
-        - Lw
+        - Lw_shape
         - LcType
         - LcIndex
         - Linc
@@ -992,14 +992,14 @@ def mtg_factory(params, sectors = 1):
             srt_sen= st
 
             l_node = g.add_child(l_node, label='LeafElement', edge_type=edge_type,
-                                 length=args['Lv'],final_length=args['Ll'],po=args['Lpo'],
-                                 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                                 length=args['Lv'],final_length=args['L_shape'],po=args['Lpo'],
+                                 Ll=args['Ll'], Lw= args['Lw_shape'], LcType=args['LcType'], 
                                  LcIndex=args['LcIndex'], Laz=Laz,Linc=args['Linc'], 
                                  srb=srb_green, srt=srt_green, tissue=tissue)
 
             l_node = g.add_child(l_node, label='LeafElement', edge_type='<',
-                                 length=args['Lv'],final_length=args['Ll'],po=args['Lpos'],
-                                 Ll=args['Ll'], Lw= args['Lw'], LcType=args['LcType'], 
+                                 length=args['Lv'],final_length=args['L_shape'],po=args['Lpos'],
+                                 Ll=args['Ll'], Lw= args['Lw_shape'], LcType=args['LcType'], 
                                  LcIndex=args['LcIndex'], Laz=Laz,Linc=args['Linc'], 
                                  srb=srb_sen, srt=srt_sen, sen=True, tissue=tissue)
             st += ds
@@ -1066,8 +1066,6 @@ def transform(turtle, mesh):
         #print 'Position ', turtle.getPosition()
         mesh = mesh.transform(matrix)
         return mesh
-
-
 
 
 

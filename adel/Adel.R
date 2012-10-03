@@ -91,7 +91,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,7),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Llsen","Glsen","Elsen","ntop")))
+    kin <- array(NA,c(nx,nf[a]+3,10),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen","ntop")))
     for (i in seq(nf[a])) {
       rph <- ph - i
       rssi <- ssi - i
@@ -168,12 +168,12 @@ kinLvis <- function(kinlist,pars=NULL) {
         ht <- htube(kin,htbm[axes[a]])
       }
                                         #calcul Lvis
-      res[[a]][d,,"Ll"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - ht),kin$Ll)
-      res[[a]][d,,"Gl"] <- pmin(pmax(0,kin$Gl + kin$El - ht),kin$Gl)
-      res[[a]][d,,"El"] <- pmin(pmax(0,kin$El - ht),kin$El)
-      res[[a]][d,,"Llsen"] <- pmin(res[[a]][d,,"Ll"],kin$Llsen)
-      res[[a]][d,,"Glsen"] <- pmin(res[[a]][d,,"Gl"],kin$Glsen)
-      res[[a]][d,,"Elsen"] <- pmin(res[[a]][d,,"El"],kin$Elsen)
+      res[[a]][d,,"Llvis"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - ht),kin$Ll)
+      res[[a]][d,,"Glvis"] <- pmin(pmax(0,kin$Gl + kin$El - ht),kin$Gl)
+      res[[a]][d,,"Elvis"] <- pmin(pmax(0,kin$El - ht),kin$El)
+#      res[[a]][d,,"Llsen"] <- pmin(res[[a]][d,,"Ll"],kin$Llsen)
+#      res[[a]][d,,"Glsen"] <- pmin(res[[a]][d,,"Gl"],kin$Glsen)
+#      res[[a]][d,,"Elsen"] <- pmin(res[[a]][d,,"El"],kin$Elsen)
     }
   }
        res
@@ -197,9 +197,9 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     for (a in seq(kin)) {
       #print(paste("axe",a))
       axename <- names(kin)[a]
-      dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llsen","Glsen","Elsen")])
+      dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen")])
       if (sum(dat) > epsillon | a == 1) {#do not represent empty tillers (BUT main stems are needed even if empty! )
-        colnames(dat) <- c("Lv","Gv","Ev","Lsen","Gsen","Esen")
+        colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,a])
         dataxe <- plant$axeT[a,]
@@ -256,8 +256,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                         cbind(data.frame(axe_id = rep(a,nbphy),
                                          axe=rep(as.numeric(axename),nbphy),
                                          numphy=1:nbphy,
-                                         Ll=datp$Ll,
-                                         Lw=datp$Lw,
+                                         L_shape=datp$Ll,
+                                         Lw_shape=datp$Lw,
                                          LsenShrink = fshrink,
                                          LcType=datp$Lindex,
                                          LcIndex=datp$Lseed,
@@ -265,12 +265,10 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Laz=Laz,
                                          Lpo=pogreen,
                                          Lpos=posen,
-                                         Gl=datp$Gl,
                                          Gd=datp$Gd,
                                          Ginc=Ginc,
                                          Gpo=pogreen,
                                          Gpos=posen,
-                                         El=datp$El,
                                          Ed=datp$Ed,
                                          Einc=Einc,
                                          Epo=Epo,

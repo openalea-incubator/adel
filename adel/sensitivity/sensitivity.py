@@ -8,7 +8,7 @@ r = robj.r
 
 r.require('sensitivity')
 
-def Morris(repet,factors,binf,bsup):
+def Morris(repeat,factors,binf,bsup):
     """ Simplified import of R'Morris function"""
 
     factors=robj.StrVector(factors)
@@ -16,7 +16,7 @@ def Morris(repet,factors,binf,bsup):
     bsup=numpy.array(bsup)
     d=r.list('oat', 5, 3)
     d= r['names<-'](d,['type','levels','grid.jump'])
-    m = r.morris(factors=factors,r=repet,design=d,binf=binf,bsup=bsup)
+    m = r.morris(factors=factors,r=repeat,design=d,binf=binf,bsup=bsup)
     #param=r['data.frame'](m.rx["X"])
     param=r['data.frame'](r['$'](m,'X'))
     pdict = dict((k,numpy.array((r['$'](param,k))).tolist()) for k in param.names)

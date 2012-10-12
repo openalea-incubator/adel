@@ -8,7 +8,7 @@ def lpy2mtg(axialtree, lsystem):
     geometry = g.property('geometry')
     geometry.clear()
     geoms = dict((s.id, s) for s in scene)
-    vids = list(g.vertices(scale=g.max_scale()))
+    vids = g.vertices(scale=g.max_scale())
     vids.sort()
     vids.reverse()
 

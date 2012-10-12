@@ -339,9 +339,9 @@ def to_aggregation_table(g):
     # 2. iterate on the geometry at the last scale
     assert g.max_scale() == 4
 
-    root_axe = list(g.roots(scale=2))[0]
-    root_metamer = list(g.roots(scale=3))[0]
-    root_elt = list(g.roots(scale=4))[0]
+    root_axe = g.roots_iter(scale=2).next()
+    root_metamer = g.roots_iter(scale=3).next()
+    root_elt = g.roots_iter(scale=4).next()
 
     # compute the number of triangles
 
@@ -352,16 +352,16 @@ def to_aggregation_table(g):
     local_index = {}
     #determine the number of element
     nb_stem_elements = {}
-    for root_axe in g.roots(scale=2):
+    for root_axe in g.roots_iter(scale=2):
         for axe_id in pre_order(g,root_axe):
-            for i, mid in enumerate(g.components(axe_id)):
+            for i, mid in enumerate(g.components_iter(axe_id)):
                 local_index[mid] = i+1
 
-    for root_metamer in g.roots(scale=3):
+    for root_metamer in g.roots_iter(scale=3):
         for mid in pre_order(g,root_metamer):
             stem_index = 0
             leaf_index = 0
-            for eid in g.components(mid):
+            for eid in g.components_iter(mid):
                 if 'stem' in label[eid].lower():
                     stem_index += 1
                     local_index[eid] = stem_index
@@ -372,7 +372,7 @@ def to_aggregation_table(g):
             nb_stem_elements[mid] = stem_index
 
     i = 0
-    for root_elt in g.roots(scale=4):
+    for root_elt in g.roots_iter(scale=4):
         for vid in pre_order(g, root_elt):
             metamer_id = g.complex(vid)
             axe_id = g.complex(metamer_id)
@@ -502,7 +502,7 @@ def to_canestra(g):
     lines = [begin]
     max_scale = g.max_scale()
 
-    for root_elt in g.roots(scale=max_scale):
+    for root_elt in g.roots_iter(scale=max_scale):
         for vid in pre_order(g, root_elt):
             mesh = geometry.get(vid)
             if not mesh:
@@ -555,7 +555,7 @@ def planter(g, distribution, random_seed=0, azimuths = None):
         return geom
 
     plants = g.vertices(scale=1)
-    plants = list(plants)[:len(distribution)]
+    plants = plants[:len(distribution)]
 
     max_scale = g.max_scale()
 
@@ -571,7 +571,7 @@ def planter(g, distribution, random_seed=0, azimuths = None):
             rotation = random.random()*pi
         
         transfo, translation = pt2transfo(Vector3(distribution[i]), -Vector3(previous_translation), rotation)
-        l = (vid for vid in g.vertices(scale=max_scale) if g.complex_at_scale(vid, scale=1) == root_elt) 
+        l = (vid for vid in g.vertices_iter(scale=max_scale) if g.complex_at_scale(vid, scale=1) == root_elt) 
         #for vid in g.components_at_scale(root_elt, 4):
         for vid in l:
             geom = geometry.get(vid)
@@ -1074,7 +1074,7 @@ def mtg_turtle(g, symbols):
 
     from openalea.mtg import turtle
 
-    plants = g.component_roots_at_scale(g.root, scale=1)
+    plants = g.component_roots_at_scale_iter(g.root, scale=1)
     nplants = g.nb_vertices(scale=1)
 
     gt = MTG()
@@ -1203,15 +1203,23 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
                     angle = float(metamer.Laz) if metamer.Laz else 0.
                     turtle.rollL(angle)
         else:
-            angle = float(n.Laz) if n.Laz else 0.
-            turtle.rollL(angle)
+            if 'Leaf' in n.label:
+                if n.edge_type()=='+':
+                    angle = float(n.Laz) if n.Laz else 0.
+                    turtle.rollL(angle)
+                    print 'Leaf angle ',angle
+            else:
+                angle = float(n.Laz) if n.Laz else 0.
+                turtle.rollL(angle)
         
         if g.edge_type(v) == '+':
             angle = n.Ginc or n.Einc
             angle = float(angle) if angle is not None else 0.
             #angle = n.inclination
-            angle = float(angle) if angle is not None else 0.
+            #angle = float(angle) if angle is not None else 0.
             turtle.up(angle)
+            if 'Leaf' not in n.label:
+                print 'Ramif ', angle
 
         # 2. Compute the geometric symbol
         mesh, can_label = compute_element(n, symbols, time)
@@ -1279,7 +1287,7 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
         scene = turtle.getScene()
         return g
 
-    for plant_id in g.component_roots_at_scale(g.root, scale=max_scale):
+    for plant_id in g.component_roots_at_scale_iter(g.root, scale=max_scale):
         g = traverse_with_turtle_time(g, plant_id, time)
     return g
 
@@ -1296,7 +1304,7 @@ def thermal_time(g, phyllochron=110., leaf_duration=1.6, stem_duration=1.6, leaf
 
     for plant in plants:
         tt = 0
-        v = g.component_roots_at_scale(plant, scale=metamer_scale).next()
+        v = g.component_roots_at_scale_iter(plant, scale=metamer_scale).next()
         for metamer in pre_order2(g, v):
             end_leaf = tt + phyllochron*leaf_duration
             nm = g.node(metamer)

@@ -15,7 +15,8 @@ def count_pixels(scene_path='', scene_box_path='', colors=[], result_path=''):
         - `colors` : the colors to consider when counting the pixels. Each 
         color is described by a 3-tuple: (R, G, B). 
         - `result_path` : the path of csv file where the result is added. 
-        The first column contains the base name of the result. Other 
+        The first column contains the base name of the bmp file which 
+        represents the scene image (i.e. scene_path). Other 
         columns are the list of colors to consider.  
     :Types:
         - `scene_path` : str     
@@ -39,7 +40,7 @@ def count_pixels(scene_path='', scene_box_path='', colors=[], result_path=''):
     scene_box_array = scene_box_image.load()
     width, height = scene_image.size
     
-    colors_tuple = [tuple(color) for color in colors]
+    colors_tuple = set([tuple(color) for color in colors])
     pixels_init_number = np.zeros_like(range(len(colors_tuple)))
     pixels_numbers = dict(zip(colors_tuple, pixels_init_number))
     
@@ -54,10 +55,9 @@ def count_pixels(scene_path='', scene_box_path='', colors=[], result_path=''):
         result_df = pandas.read_csv(result_path)
     else:
         columns = ['Filename'] + [str(color) for color in colors_tuple]
-        print 'columns', columns
         result_df = pandas.DataFrame(columns=columns)
     
-    data = [[result_path.basename()] + [pixels_numbers[color] for color in colors_tuple]]
+    data = [[scene_path.basename()] + [pixels_numbers[color] for color in colors_tuple]]
     new_index = [result_df.index.size]
     new_df = pandas.DataFrame(data, index=new_index, columns=result_df.columns)
     

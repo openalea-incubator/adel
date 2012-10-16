@@ -90,11 +90,10 @@ def fit_adel_input_data(user_parameters,
         # check user_parameters validity
         expected_user_parameters_keys_value_types = {'a_cohort': float, 
                                                      'TT_col_0': float, 
-                                                     'TT_col_nff': float, 
+                                                     'TT_col_nff': dict, 
                                                      'n0': float,
                                                      'n1': float,
-                                                     'n2': float,
-                                                     'dTT_MS_cohort': dict}
+                                                     'n2': float}
         user_parameters_keys_value_types = dict(zip(user_parameters.keys(), 
                                                     [type(value) for value in user_parameters.values()]))
         assert expected_user_parameters_keys_value_types == user_parameters_keys_value_types
@@ -107,7 +106,7 @@ def fit_adel_input_data(user_parameters,
     elif user_parameters_completeness == DataCompleteness.SHORT:
         # check user_parameters validity
         assert isinstance(user_parameters, pandas.DataFrame)
-        expected_user_parameters_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2']
+        expected_user_parameters_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
         assert (user_parameters.columns == expected_user_parameters_columns).all()
         assert user_parameters.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
         assert user_parameters['N_cohort'].unique().size == user_parameters['N_cohort'].size
@@ -121,7 +120,7 @@ def fit_adel_input_data(user_parameters,
     elif user_parameters_completeness == DataCompleteness.FULL:
         # check user_parameters validity
         assert isinstance(user_parameters, pandas.DataFrame)
-        expected_user_parameters_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2']
+        expected_user_parameters_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
         assert (user_parameters.columns == expected_user_parameters_columns).all()
         assert user_parameters.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
         grouped = user_parameters.groupby(['N_cohort', 'Nff'])
@@ -158,15 +157,17 @@ def fit_adel_input_data(user_parameters,
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break
         leaf_dynamic_parameters_table_dataframe.ix[0]['a_cohort'] = user_parameters['a_cohort']
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_0'] = user_parameters['TT_col_0']
-        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_nff'] = user_parameters['TT_col_nff']
+#        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_nff'] = user_parameters['TT_col_nff']
+        TT_col_nff_keys = user_parameters['TT_col_nff'].keys()
+        TT_col_nff_keys.sort()
+        first_TT_col_nff = user_parameters['TT_col_nff'][TT_col_nff_keys[0]]
         for N_cohort, leaf_dynamic_parameters_table_dataframe_grouped_by_N_cohort in leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
             N_cohort_int = int(N_cohort)
-            if N_cohort_int == 1:
-                current_dTT_MS_cohort = 0.0
-            else:
-                current_dTT_MS_cohort = user_parameters['dTT_MS_cohort'][str(N_cohort_int)]
+            current_TT_col_nff = user_parameters['TT_col_nff'][str(N_cohort_int)]
+            current_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
             index_to_set = leaf_dynamic_parameters_table_dataframe_grouped_by_N_cohort.index[0]
-            leaf_dynamic_parameters_table_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort        
+            leaf_dynamic_parameters_table_dataframe['TT_col_nff'][index_to_set] = current_TT_col_nff
+            leaf_dynamic_parameters_table_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort
         leaf_dynamic_parameters_table_dataframe.ix[0]['n0'] = user_parameters['n0']
         leaf_dynamic_parameters_table_dataframe.ix[0]['n1'] = user_parameters['n1']
         leaf_dynamic_parameters_table_dataframe.ix[0]['n2'] = user_parameters['n2']
@@ -175,21 +176,43 @@ def fit_adel_input_data(user_parameters,
         for N_cohort, generated_group in leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
             if N_cohort not in user_grouped.groups:
                 continue
-            index_to_get = user_grouped.get_group(N_cohort).index[0]
+            user_group = user_grouped.get_group(N_cohort)
+            index_to_get = user_group.index[0]
             index_to_set = generated_group.index[0]
+            if N_cohort == 1.0:
+                first_TT_col_nff = user_group['TT_col_nff'][index_to_get]
             columns_to_set = user_parameters.columns
             leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
             leaf_dynamic_parameters_table_dataframe.ix[index_to_set]['TT_col_break'] = TT_col_break
+            current_TT_col_nff = user_group['TT_col_nff'][index_to_get]
+            current_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
+            leaf_dynamic_parameters_table_dataframe.ix[index_to_set]['dTT_MS_cohort'] = current_dTT_MS_cohort
     elif user_parameters_completeness == DataCompleteness.FULL:
-        user_grouped = user_parameters.groupby(['N_cohort', 'Nff'])
-        for (N_cohort, Nff), generated_group in leaf_dynamic_parameters_table_dataframe.groupby(['N_cohort', 'Nff']):
-            if (N_cohort, Nff) not in user_grouped.groups:
+        user_grouped_N_cohort = user_parameters.groupby('N_cohort')
+        for N_cohort, N_cohort_generated_group in leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
+            if N_cohort not in user_grouped_N_cohort.groups:
                 continue
-            index_to_get = user_grouped.get_group((N_cohort, Nff)).index[0]
-            index_to_set = generated_group.index[0]
-            columns_to_set = user_parameters.columns
-            leaf_dynamic_parameters_table_dataframe.ix[index_to_set][columns_to_set] = user_parameters.ix[index_to_get]
-            leaf_dynamic_parameters_table_dataframe.ix[index_to_set]['TT_col_break'] = TT_col_break
+            user_N_cohort_group = user_grouped_N_cohort.get_group(N_cohort)
+            N_cohort_index_to_get = user_N_cohort_group.index[0]
+            N_cohort_index_to_set = N_cohort_generated_group.index[0]
+            if N_cohort == 1.0:
+                first_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
+            current_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
+            most_frequent_axis_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
+            leaf_dynamic_parameters_table_dataframe.ix[N_cohort_index_to_set]['dTT_MS_cohort'] = most_frequent_axis_dTT_MS_cohort
+            highest_frequency = N_cohort_generated_group['frequency'][N_cohort_index_to_set]
+            user_grouped_Nff = user_N_cohort_group.groupby('Nff')
+            for Nff, Nff_generated_group in N_cohort_generated_group.groupby('Nff'):
+                if Nff not in user_grouped_Nff.groups:
+                    continue
+                Nff_index_to_get = user_grouped_Nff.get_group(Nff).index[0]
+                Nff_index_to_set = Nff_generated_group.index[0]
+                if Nff_generated_group['frequency'][Nff_index_to_set] != highest_frequency:
+                    current_dTT_MS_cohort = most_frequent_axis_dTT_MS_cohort + (Nff_generated_group['id_axis'][Nff_index_to_set] - N_cohort_generated_group['id_axis'][N_cohort_index_to_set]) / (4 * user_parameters['a_cohort'][0]) 
+                    leaf_dynamic_parameters_table_dataframe.ix[Nff_index_to_set]['dTT_MS_cohort'] = current_dTT_MS_cohort                   
+                columns_to_set = user_parameters.columns
+                leaf_dynamic_parameters_table_dataframe.ix[Nff_index_to_set][columns_to_set] = user_parameters.ix[Nff_index_to_get]
+                leaf_dynamic_parameters_table_dataframe.ix[Nff_index_to_set]['TT_col_break'] = TT_col_break
     else:
         raise Exception('''%s is an unknown user data completeness value. \
 The values can be one of %s''', (str(user_parameters_completeness), 
@@ -231,6 +254,10 @@ The values can be one of %s''', (str(user_dims_completeness),
                                  str([DataCompleteness.MIN, 
                                       DataCompleteness.SHORT, 
                                       DataCompleteness.FULL])))
+    
+    from openalea.core.path import path
+    leaf_dynamic_parameters_table_dataframe.to_csv('results/leaf_dynamic_parameters_table.csv', na_rep='NA', index=False)
+    dim_table_dataframe.to_csv('results/dim_table.csv', na_rep='NA', index=False)  
     
     # 5. second step of the fit process    
     (second_axis_table_dataframe, 

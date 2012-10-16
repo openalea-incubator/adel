@@ -20,7 +20,7 @@ flowering_date = 1440
 final_axes_number = 250
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
-dTT_MS_cohort = {'4': 70, '5': 80, '6': 90, '7': 100}
+TT_col_nff = {'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178}
 
 expected_results_dir = path('data/test_fitting2')
 default_expected_results_dir = expected_results_dir.joinpath('default')
@@ -183,11 +183,10 @@ def test_fit_adel_input_data_min_min():
     TT_col_break = 0.0
     user_parameters = {'a_cohort': 0.0102, 
                        'TT_col_0': -0.771289027, 
-                       'TT_col_nff': 1078.0, 
+                       'TT_col_nff': TT_col_nff, 
                        'n0': 4.871559739,
                        'n1': 3.24283148,
-                       'n2': 5.8,
-                       'dTT_MS_cohort': dTT_MS_cohort}
+                       'n2': 5.8}
     user_dims = pandas.read_csv(min_min_expected_results_dir/'user_dim_table.csv')
     results = fit_adel_input_data.fit_adel_input_data(user_parameters,
                                                       user_dims, 

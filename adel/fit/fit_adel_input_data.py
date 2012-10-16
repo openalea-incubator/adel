@@ -143,7 +143,7 @@ def fit_adel_input_data(user_leaf_dynamic_parameters,
     
     # 2. first step of the fit process
     (first_axis_table_dataframe, 
-    dim_table_dataframe, 
+    organ_dimensions_table_dataframe, 
     leaf_dynamic_parameters_table_dataframe, 
     tillering_dynamic_dataframe) = fit_adel_input_data_first(plant_number, 
                                                              cohort_probabilities, 
@@ -223,12 +223,12 @@ The values can be one of %s''', (str(user_leaf_dynamic_parameters_completeness),
     # 4. complete the user_dims table
     organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
     if user_dims_completeness == DataCompleteness.MIN:
-        index_to_set = dim_table_dataframe[dim_table_dataframe['id_dim']==dim_table_dataframe['id_dim'][0]].index
+        index_to_set = organ_dimensions_table_dataframe[organ_dimensions_table_dataframe['id_dim']==organ_dimensions_table_dataframe['id_dim'][0]].index
         for organ_dim in organ_dim_list:
-            dim_table_dataframe[organ_dim][index_to_set] = user_dims[organ_dim][index_to_set]
+            organ_dimensions_table_dataframe[organ_dim][index_to_set] = user_dims[organ_dim][index_to_set]
     elif user_dims_completeness == DataCompleteness.SHORT:
         user_grouped = user_dims.groupby('id_axis')
-        for generated_id_dim, generated_group in dim_table_dataframe.groupby('id_dim'):
+        for generated_id_dim, generated_group in organ_dimensions_table_dataframe.groupby('id_dim'):
             generated_id_axis = float(str(int(generated_id_dim))[:-2])
             if generated_id_axis not in user_grouped.groups:
                 continue
@@ -240,14 +240,14 @@ The values can be one of %s''', (str(user_leaf_dynamic_parameters_completeness),
             index_to_get = user_group.index
             index_to_set = generated_group.index
             for organ_dim in organ_dim_list:
-                dim_table_dataframe[organ_dim][index_to_set] = user_dims[organ_dim][index_to_get]     
+                organ_dimensions_table_dataframe[organ_dim][index_to_set] = user_dims[organ_dim][index_to_get]     
     elif user_dims_completeness == DataCompleteness.FULL:
         user_grouped = user_dims.groupby('id_dim')
-        for generated_id_dim, generated_group in dim_table_dataframe.groupby('id_dim'):
+        for generated_id_dim, generated_group in organ_dimensions_table_dataframe.groupby('id_dim'):
             if generated_id_dim not in user_grouped.groups:
                 continue
             user_group = user_grouped.get_group(generated_id_dim)
-            dim_table_dataframe.ix[generated_group.index] = user_dims.ix[user_group.index]
+            organ_dimensions_table_dataframe.ix[generated_group.index] = user_dims.ix[user_group.index]
     else:
         raise Exception('''%s is an unknown user data completeness value. \
 The values can be one of %s''', (str(user_dims_completeness), 
@@ -257,18 +257,18 @@ The values can be one of %s''', (str(user_dims_completeness),
     
     from openalea.core.path import path
     leaf_dynamic_parameters_table_dataframe.to_csv('results/leaf_dynamic_parameters_table.csv', na_rep='NA', index=False)
-    dim_table_dataframe.to_csv('results/dim_table.csv', na_rep='NA', index=False)  
+    organ_dimensions_table_dataframe.to_csv('results/organ_dimensions_table.csv', na_rep='NA', index=False)  
     
     # 5. second step of the fit process    
     (second_axis_table_dataframe, 
      absolute_second_phen_table_dataframe, 
      relative_second_phen_table_dataframe,
-     absolute_dim_table_dataframe, 
+     absolute_organ_dimensions_table_dataframe, 
      second_leaf_dynamic_parameters_table_dataframe, 
      first_leaf_phen_table_dataframe,
      HS_GL_SSI_dynamic_dataframe, 
-     relative_dim_table_dataframe) = fit_adel_input_data_second(first_axis_table_dataframe, 
-                                                                dim_table_dataframe, 
+     relative_organ_dimensions_table_dataframe) = fit_adel_input_data_second(first_axis_table_dataframe, 
+                                                                organ_dimensions_table_dataframe, 
                                                                 leaf_dynamic_parameters_table_dataframe, 
                                                                 GL_number, 
                                                                 bolting_date, 
@@ -277,8 +277,8 @@ The values can be one of %s''', (str(user_dims_completeness),
                                                                 final_axes_number)
     
     return second_axis_table_dataframe, absolute_second_phen_table_dataframe, relative_second_phen_table_dataframe, \
-           absolute_dim_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
-           HS_GL_SSI_dynamic_dataframe, relative_dim_table_dataframe, tillering_dynamic_dataframe
+           absolute_organ_dimensions_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
+           HS_GL_SSI_dynamic_dataframe, relative_organ_dimensions_table_dataframe, tillering_dynamic_dataframe
     
     
 

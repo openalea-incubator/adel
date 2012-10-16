@@ -82,7 +82,7 @@ def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_t
     return axis_frequency_list
 
 
-def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
+def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
     '''
     Fit user observations. A minimal set of observations must be provided. 
     If the user does not provide complete observations, the missing observations are fitted, using the minimal set of 
@@ -193,12 +193,12 @@ def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user
                 d = n2
             * RMSE_gl: the RMSE for the dynamic of green leaf number after estimation of parameter 'a'.
           The table is ordered by frequency.   
-        - `user_dim_table_dataframe` : the user dim table.
+        - `user_organ_dimensions_table_dataframe` : the user dim table.
         - `GL_number` : the GL decimal number measured at several thermal time (including the senescence end).
         - `leaf_number_delay_MS_cohort_dict` : the Leaf number delay between Main Stem and the cohort.
     :Types:
         - `user_parameter_table_dataframe` : pandas.DataFrame
-        - `user_dim_table_dataframe` : pandas.DataFrame
+        - `user_organ_dimensions_table_dataframe` : pandas.DataFrame
         - `GL_number` : a dict of 2-tuples
         - `leaf_number_delay_MS_cohort_dict` : dict.
         
@@ -211,7 +211,7 @@ def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user
     assert user_parameter_table_dataframe['Nff'].count() == user_parameter_table_dataframe['Nff'].size
     MS_df = user_parameter_table_dataframe[user_parameter_table_dataframe['N_cohort'] == 1.0]
     most_frequent_MS_df = MS_df.ix[0:0]
-    decimal_elongated_internode_number = _calculate_decimal_elongated_internode_number(user_dim_table_dataframe)
+    decimal_elongated_internode_number = _calculate_decimal_elongated_internode_number(user_organ_dimensions_table_dataframe)
     most_frequent_MS_df = _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number)
     other_MS_df = MS_df.ix[1:]
     other_MS_df = _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df)
@@ -476,12 +476,12 @@ def _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_
     return other_tiller_axes_df
     
 
-def _calculate_decimal_elongated_internode_number(user_dim_table_dataframe):
+def _calculate_decimal_elongated_internode_number(user_organ_dimensions_table_dataframe):
     # Calculate decimal_elongated_internode_number.
-    first_axis_rows_number = int(str(int(user_dim_table_dataframe['id_dim'][0]))[-2:])
-    first_axis_L_internode_series = user_dim_table_dataframe['L_internode'][:first_axis_rows_number]
+    first_axis_rows_number = int(str(int(user_organ_dimensions_table_dataframe['id_dim'][0]))[-2:])
+    first_axis_L_internode_series = user_organ_dimensions_table_dataframe['L_internode'][:first_axis_rows_number]
     first_axis_L_internode_series = first_axis_L_internode_series[first_axis_L_internode_series != 0.0]
-    first_axis_index_phytomer_series = user_dim_table_dataframe['index_phytomer'][first_axis_L_internode_series.index]
+    first_axis_index_phytomer_series = user_organ_dimensions_table_dataframe['index_phytomer'][first_axis_L_internode_series.index]
     return np.polyfit(first_axis_L_internode_series, first_axis_index_phytomer_series, 2)[2]
     
     

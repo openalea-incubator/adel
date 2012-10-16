@@ -15,9 +15,9 @@
 ###############################################################################
 '''This module is a facade for the second step of Adel input data fitting .
 '''  
-from adel.fit import axis_table_fitting, phen_table_fitting, dim_table_fitting, leaf_dynamic_parameters_table_fitting
+from adel.fit import axis_table_fitting, phen_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
 
-def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_dataframe, user_parameter_table_dataframe, 
+def fit_adel_input_data_second(first_axis_table_dataframe, user_organ_dimensions_table_dataframe, user_parameter_table_dataframe, 
                                GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                bolting_date=500, flowering_date=1440, 
                                delais_TT_stop_del_axis=600,
@@ -27,13 +27,13 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     Construct:
         - the parameter table which contains the information about tillers behaviour. The leaf_dynamic_parameters table is not an input of ADEL.
           It is used only to build the other tables: ParametersTable
-        - ADEL input data tables: second_axis_table_dataframe, relative_second_phen_table_dataframe, relative_dim_table_dataframe
+        - ADEL input data tables: second_axis_table_dataframe, relative_second_phen_table_dataframe, relative_organ_dimensions_table_dataframe
         - tables in order the user could check the fitting results: first_leaf_phen_table_dataframe, 
           HS_GL_SSI_dynamic_dataframe
     
     :Parameters:
         - `first_axis_table_dataframe` : the first axis table.
-        - `user_dim_table_dataframe` : the user dim table.
+        - `user_organ_dimensions_table_dataframe` : the user dim table.
         - `user_parameter_table_dataframe` : the user leaf_dynamic_parameters table.
         - `GL_number` : the GL decimal number measured at several thermal time (including the senescence end).
         - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
@@ -43,7 +43,7 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
         - `final_axes_number` : the final number of axes per square meter.
     :Types:
         - `first_axis_table_dataframe` : pandas.DataFrame
-        - `user_dim_table_dataframe` : pandas.DataFrame
+        - `user_organ_dimensions_table_dataframe` : pandas.DataFrame
         - `user_parameter_table_dataframe` : pandas.DataFrame
         - `GL_number` : a dict of 2-tuples
         - `bolting_date` : int
@@ -56,7 +56,7 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     :rtype: a tuple of pandas.DataFrame
     '''
     # Fit the leaf_dynamic_parameters provided by the user
-    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
+    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number)
     # Fit absolute PhenTable
     absolute_second_phen_table_dataframe = phen_table_fitting.fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe)
     # Extract the first leaves data from absolute_second_phen_table_dataframe
@@ -66,15 +66,15 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     # Fit AxisTable
     second_axis_table_dataframe = axis_table_fitting.fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number)
     # Fit DimTable
-    absolute_dim_table_dataframe = dim_table_fitting.fit_dim_table_second(user_dim_table_dataframe, absolute_second_phen_table_dataframe)
+    absolute_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_second_phen_table_dataframe)
     # Fit relative dimTable
-    relative_dim_table_dataframe = dim_table_fitting.create_dim_table_relative_dataframe(absolute_dim_table_dataframe)
+    relative_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.create_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe)
     # Create a table with the following columns: id_axis,TT,HS,GL,SSI
     HS_GL_SSI_dynamic_dataframe = phen_table_fitting.create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe)
     
     return second_axis_table_dataframe, absolute_second_phen_table_dataframe, relative_second_phen_table_dataframe, \
-           absolute_dim_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
-           HS_GL_SSI_dynamic_dataframe, relative_dim_table_dataframe
+           absolute_organ_dimensions_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
+           HS_GL_SSI_dynamic_dataframe, relative_organ_dimensions_table_dataframe
     
     
     

@@ -1,6 +1,6 @@
 import random
 
-from adel.fit import axis_table_fitting, dim_table_fitting, phen_table_fitting, \
+from adel.fit import axis_table_fitting, organ_dimensions_table_fitting, phen_table_fitting, \
     fit_adel_input_data, leaf_dynamic_parameters_table_fitting
 import numpy as np
 import pandas
@@ -63,22 +63,22 @@ def test_fit_user_leaf_dynamic_parameters_first():
 
 
 @with_setup(reinit_random_state)
-def test_fit_dim_table_first():
+def test_fit_organ_dimensions_table_first():
     leaf_dynamic_parameters_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_dynamic_parameters_table.csv')
-    expected_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_dim_table.csv')
-    dim_table_dataframe = dim_table_fitting.fit_dim_table_first(leaf_dynamic_parameters_table_dataframe)
-    test_table_filepath = default_results.joinpath('linear_first_dim_table.csv')
-    dim_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    expected_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_organ_dimensions_table.csv')
+    organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_first(leaf_dynamic_parameters_table_dataframe)
+    test_table_filepath = default_results.joinpath('linear_first_organ_dimensions_table.csv')
+    organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(dim_table_dataframe.values, expected_dim_table_dataframe.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(organ_dimensions_table_dataframe.values, expected_organ_dimensions_table_dataframe.values, relative_tolerance, absolute_tolerance)
 
         
 @with_setup(reinit_random_state)
 def test_fit_user_leaf_dynamic_parameters_second_linear():
     user_parameter_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_leaf_dynamic_parameters_table.csv')
-    user_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_dim_table.csv')
+    user_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_organ_dimensions_table.csv')
     expected_fitted_parameter_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
-    second_leaf_dynamic_parameters_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
+    second_leaf_dynamic_parameters_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number)
     test_table_filepath = default_results.joinpath('linear_second_leaf_dynamic_parameters_table.csv')
     second_leaf_dynamic_parameters_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -143,15 +143,15 @@ def test_fit_axis_table_second_linear():
  
 
 @with_setup(reinit_random_state)
-def test_fit_dim_table_second_linear():
-    user_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_dim_table.csv')
+def test_fit_organ_dimensions_table_second_linear():
+    user_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_organ_dimensions_table.csv')
     absolute_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_absolute_phen_table.csv')
-    expected_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_dim_table.csv')
-    dim_table_dataframe = dim_table_fitting.fit_dim_table_second(user_dim_table_dataframe, absolute_phen_table_dataframe)
-    test_table_filepath = default_results.joinpath('linear_second_dim_table.csv')
-    dim_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    expected_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_organ_dimensions_table.csv')
+    organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_phen_table_dataframe)
+    test_table_filepath = default_results.joinpath('linear_second_organ_dimensions_table.csv')
+    organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(dim_table_dataframe.values, expected_dim_table_dataframe.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(organ_dimensions_table_dataframe.values, expected_organ_dimensions_table_dataframe.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
@@ -166,14 +166,14 @@ def test_create_tillering_dynamic_dataframe():
 
 
 @with_setup(reinit_random_state)
-def test_create_dim_table_relative_dataframe_linear():
-    absolute_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_dim_table.csv')
-    expected_relative_dim_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_relative_dim_table.csv')
-    relative_dim_table_dataframe = dim_table_fitting.create_dim_table_relative_dataframe(absolute_dim_table_dataframe)
-    test_table_filepath = default_results.joinpath('linear_relative_dim_table.csv')
-    relative_dim_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
+def test_create_organ_dimensions_table_relative_dataframe_linear():
+    absolute_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_organ_dimensions_table.csv')
+    expected_relative_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_relative_organ_dimensions_table.csv')
+    relative_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.create_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe)
+    test_table_filepath = default_results.joinpath('linear_relative_organ_dimensions_table.csv')
+    relative_organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(relative_dim_table_dataframe.values, expected_relative_dim_table_dataframe.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(relative_organ_dimensions_table_dataframe.values, expected_relative_organ_dimensions_table_dataframe.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
@@ -187,7 +187,7 @@ def test_fit_adel_input_data_min_min():
                        'n0': 4.871559739,
                        'n1': 3.24283148,
                        'n2': 5.8}
-    user_dims = pandas.read_csv(min_min_expected_results_dir/'user_dim_table.csv')
+    user_dims = pandas.read_csv(min_min_expected_results_dir/'user_organ_dimensions_table.csv')
     results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
@@ -205,21 +205,21 @@ def test_fit_adel_input_data_min_min():
     expected_axis_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_axis_table.csv')
     expected_absolute_phen_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_relative_phen_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_relative_phen_table.csv')
-    expected_absolute_dim_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_dim_table.csv')
+    expected_absolute_organ_dimensions_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_organ_dimensions_table.csv')
     expected_leaf_dynamic_parameters_table = pandas.read_csv(min_min_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
     expected_first_leaf_phen_table = pandas.read_csv(min_min_expected_results_dir/'linear_first_leaf_phen_table.csv')
     expected_HS_GL_SSI_dynamic_table = pandas.read_csv(min_min_expected_results_dir/'linear_HS_GL_SSI_dynamic_table.csv')
-    expected_relative_dim_table = pandas.read_csv(min_min_expected_results_dir/'linear_relative_dim_table.csv')
+    expected_relative_organ_dimensions_table = pandas.read_csv(min_min_expected_results_dir/'linear_relative_organ_dimensions_table.csv')
     expected_tillering_dynamic_table = pandas.read_csv(min_min_expected_results_dir/'tillering_dynamic_table.csv')
 
     to_compare = {'linear_second_axis_table': (expected_axis_table, results[0]),
                  'linear_second_absolute_phen_table': (expected_absolute_phen_table, results[1]),
                  'linear_second_relative_phen_table': (expected_relative_phen_table, results[2]),
-                 'linear_second_dim_table': (expected_absolute_dim_table, results[3]),
+                 'linear_second_organ_dimensions_table': (expected_absolute_organ_dimensions_table, results[3]),
                  'linear_second_leaf_dynamic_parameters_table': (expected_leaf_dynamic_parameters_table, results[4]),
                  'linear_first_leaf_phen_table': (expected_first_leaf_phen_table, results[5]),
                  'linear_HS_GL_SSI_dynamic_table': (expected_HS_GL_SSI_dynamic_table, results[6]),
-                 'linear_relative_dim_table': (expected_relative_dim_table, results[7]),
+                 'linear_relative_organ_dimensions_table': (expected_relative_organ_dimensions_table, results[7]),
                  'tillering_dynamic_table': (expected_tillering_dynamic_table, results[8])}
     
     _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_dims_completeness)
@@ -231,7 +231,7 @@ def test_fit_adel_input_data_short_short():
     user_dims_completeness = fit_adel_input_data.DataCompleteness.SHORT
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(short_short_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
-    user_dims = pandas.read_csv(short_short_expected_results_dir/'user_dim_table.csv')
+    user_dims = pandas.read_csv(short_short_expected_results_dir/'user_organ_dimensions_table.csv')
     results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
@@ -249,21 +249,21 @@ def test_fit_adel_input_data_short_short():
     expected_axis_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_axis_table.csv')
     expected_absolute_phen_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_relative_phen_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_relative_phen_table.csv')
-    expected_absolute_dim_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_dim_table.csv')
+    expected_absolute_organ_dimensions_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_organ_dimensions_table.csv')
     expected_leaf_dynamic_parameters_table = pandas.read_csv(short_short_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
     expected_first_leaf_phen_table = pandas.read_csv(short_short_expected_results_dir/'linear_first_leaf_phen_table.csv')
     expected_HS_GL_SSI_dynamic_table = pandas.read_csv(short_short_expected_results_dir/'linear_HS_GL_SSI_dynamic_table.csv')
-    expected_relative_dim_table = pandas.read_csv(short_short_expected_results_dir/'linear_relative_dim_table.csv')
+    expected_relative_organ_dimensions_table = pandas.read_csv(short_short_expected_results_dir/'linear_relative_organ_dimensions_table.csv')
     expected_tillering_dynamic_table = pandas.read_csv(short_short_expected_results_dir/'tillering_dynamic_table.csv')
 
     to_compare = {'linear_second_axis_table': (expected_axis_table, results[0]),
                  'linear_second_absolute_phen_table': (expected_absolute_phen_table, results[1]),
                  'linear_second_relative_phen_table': (expected_relative_phen_table, results[2]),
-                 'linear_second_dim_table': (expected_absolute_dim_table, results[3]),
+                 'linear_second_organ_dimensions_table': (expected_absolute_organ_dimensions_table, results[3]),
                  'linear_second_leaf_dynamic_parameters_table': (expected_leaf_dynamic_parameters_table, results[4]),
                  'linear_first_leaf_phen_table': (expected_first_leaf_phen_table, results[5]),
                  'linear_HS_GL_SSI_dynamic_table': (expected_HS_GL_SSI_dynamic_table, results[6]),
-                 'linear_relative_dim_table': (expected_relative_dim_table, results[7]),
+                 'linear_relative_organ_dimensions_table': (expected_relative_organ_dimensions_table, results[7]),
                  'tillering_dynamic_table': (expected_tillering_dynamic_table, results[8])}
     
     _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_dims_completeness)
@@ -275,7 +275,7 @@ def test_fit_adel_input_data_full_full():
     user_dims_completeness = fit_adel_input_data.DataCompleteness.FULL
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(full_full_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
-    user_dims = pandas.read_csv(full_full_expected_results_dir/'user_dim_table.csv')
+    user_dims = pandas.read_csv(full_full_expected_results_dir/'user_organ_dimensions_table.csv')
     results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims,
                                                       plant_number, 
@@ -293,21 +293,21 @@ def test_fit_adel_input_data_full_full():
     expected_axis_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_axis_table.csv')
     expected_absolute_phen_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_relative_phen_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_relative_phen_table.csv')
-    expected_absolute_dim_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_dim_table.csv')
+    expected_absolute_organ_dimensions_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_organ_dimensions_table.csv')
     expected_leaf_dynamic_parameters_table = pandas.read_csv(full_full_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
     expected_first_leaf_phen_table = pandas.read_csv(full_full_expected_results_dir/'linear_first_leaf_phen_table.csv')
     expected_HS_GL_SSI_dynamic_table = pandas.read_csv(full_full_expected_results_dir/'linear_HS_GL_SSI_dynamic_table.csv')
-    expected_relative_dim_table = pandas.read_csv(full_full_expected_results_dir/'linear_relative_dim_table.csv')
+    expected_relative_organ_dimensions_table = pandas.read_csv(full_full_expected_results_dir/'linear_relative_organ_dimensions_table.csv')
     expected_tillering_dynamic_table = pandas.read_csv(full_full_expected_results_dir/'tillering_dynamic_table.csv')
 
     to_compare = {'linear_second_axis_table': (expected_axis_table, results[0]),
                  'linear_second_absolute_phen_table': (expected_absolute_phen_table, results[1]),
                  'linear_second_relative_phen_table': (expected_relative_phen_table, results[2]),
-                 'linear_second_dim_table': (expected_absolute_dim_table, results[3]),
+                 'linear_second_organ_dimensions_table': (expected_absolute_organ_dimensions_table, results[3]),
                  'linear_second_leaf_dynamic_parameters_table': (expected_leaf_dynamic_parameters_table, results[4]),
                  'linear_first_leaf_phen_table': (expected_first_leaf_phen_table, results[5]),
                  'linear_HS_GL_SSI_dynamic_table': (expected_HS_GL_SSI_dynamic_table, results[6]),
-                 'linear_relative_dim_table': (expected_relative_dim_table, results[7]),
+                 'linear_relative_organ_dimensions_table': (expected_relative_organ_dimensions_table, results[7]),
                  'tillering_dynamic_table': (expected_tillering_dynamic_table, results[8])}
     
     _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_dims_completeness)
@@ -326,28 +326,11 @@ def _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_d
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
 
 
-## test the visualea node
-#pm = PackageManager()
-#pm.init(verbose=False)
-#
-#def test_fit_adel_input_data():
-#    res = run(('alinea.adel.Tutorials','fit_adel_input_data'), {}, pm=pm)
-#    assert res == []
-    
-if __name__ == '__main__':
-#    test_generate_axes()
-#    test_fit_user_leaf_dynamic_parameters_first()
-#    test_fit_dim_table_first()
-#    test_fit_user_leaf_dynamic_parameters_second_linear()
-#    test_fit_phen_table_second_linear()
-#    test_create_first_leaf_phen_table_dataframe_linear()
-#    test_create_phen_table_relative_dataframe_linear()
-#    test_create_HS_GL_SSI_dynamic_dataframe_linear()
-#    test_fit_axis_table_second_linear()
-#    test_fit_dim_table_second_linear()
-#    test_create_tillering_dynamic_dataframe()
-#    test_create_dim_table_relative_dataframe_linear()
-    test_fit_adel_input_data_min_min()
-#    test_fit_adel_input_data_short_short()
-#    test_fit_adel_input_data_full_full()
+# test the visualea node
+pm = PackageManager()
+pm.init(verbose=False)
+
+def test_fit_adel_input_data():
+    res = run(('alinea.adel.Tutorials','fit_adel_input_data'), {}, pm=pm)
+    assert res == []
 

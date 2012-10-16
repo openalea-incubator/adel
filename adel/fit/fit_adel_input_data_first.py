@@ -16,7 +16,7 @@
 '''This module is a facade for the first step of Adel input data fitting .
 '''  
 
-from adel.fit import axis_table_fitting, dim_table_fitting, leaf_dynamic_parameters_table_fitting
+from adel.fit import axis_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 
@@ -49,11 +49,11 @@ def fit_adel_input_data_first(plant_number=100,
     # Initialize the leaf_dynamic_parameters table
     first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable
-    first_dim_table_dataframe = dim_table_fitting.fit_dim_table_first(first_leaf_dynamic_parameters_table_dataframe)
+    first_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe)
     # Create a table with tillering dynamic: TT,NbrAxes
     tillering_dynamic_dataframe =  axis_table_fitting.create_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
 
-    return axis_table_dataframe, first_dim_table_dataframe, first_leaf_dynamic_parameters_table_dataframe, tillering_dynamic_dataframe
+    return axis_table_dataframe, first_organ_dimensions_table_dataframe, first_leaf_dynamic_parameters_table_dataframe, tillering_dynamic_dataframe
 
 
 

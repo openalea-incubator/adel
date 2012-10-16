@@ -24,7 +24,7 @@ def fit_adel_input_data_first(plant_number=100,
                               bolting_date=500, flowering_date=1440,
                               final_axes_number=250):
     '''
-    Fit the axis table partially, initialize the parameters table and initialize the dim table.
+    Fit the axis table partially, initialize the leaf_dynamic_parameters table and initialize the dim table.
     :Parameters:
         - `plant_number` : the number of plants.
         - `cohort_probabilities` : probability of emergence of a child axis when the parent axis is present. This probability is 
@@ -41,13 +41,13 @@ def fit_adel_input_data_first(plant_number=100,
         - `flowering_date` : int
         - `final_axes_number` : int
 
-    :return: The partially fitted axis table, the initialized dim table and the initialized parameters table.
+    :return: The partially fitted axis table, the initialized dim table and the initialized leaf_dynamic_parameters table.
     :rtype: a tuple of pandas.DataFrame
     '''    
     # Create and fit AxisTable
     axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
-    # Initialize the parameters table
-    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    # Initialize the leaf_dynamic_parameters table
+    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable
     first_dim_table_dataframe = dim_table_fitting.fit_dim_table_first(first_leaf_dynamic_parameters_table_dataframe)
     # Create a table with tillering dynamic: TT,NbrAxes

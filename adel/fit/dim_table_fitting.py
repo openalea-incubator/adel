@@ -24,7 +24,7 @@ def fit_dim_table_first(first_leaf_dynamic_parameters_table_dataframe):
     '''
     Fit the dim table: first step.
     :Parameters:
-        - `first_leaf_dynamic_parameters_table_dataframe` : the first parameters table.
+        - `first_leaf_dynamic_parameters_table_dataframe` : the first leaf_dynamic_parameters table.
           
     :Types:
         - `first_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
@@ -85,11 +85,11 @@ def fit_dim_table_second(user_dim_table_dataframe, absolute_second_phen_table_da
     return dim_table_copy_dataframe.drop(['TT_em_phytomer'], axis=1)
 
 
-def _create_id_dim_list(first_parameters_dataframe):
+def _create_id_dim_list(first_leaf_dynamic_parameters_dataframe):
     '''
     Create id_dim list.
     :Parameters:
-        - `first_parameters_dataframe` : the first observations table, with the following headers: 
+        - `first_leaf_dynamic_parameters_dataframe` : the first observations table, with the following headers: 
             
     :Types:
         - `first_parameter_dataframe` : pandas.DataFrame
@@ -97,7 +97,7 @@ def _create_id_dim_list(first_parameters_dataframe):
     :return: The new completed id_dim list.
     :rtype: list
     '''
-    sorted_id_axis = first_parameters_dataframe['id_axis']
+    sorted_id_axis = first_leaf_dynamic_parameters_dataframe['id_axis']
     id_dim_list = []
     for id_dim in sorted_id_axis:
         N_phyt = int(str(int(id_dim))[-2:])

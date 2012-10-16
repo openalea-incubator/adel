@@ -20,16 +20,16 @@ from scipy.optimize import leastsq
 from adel.fit import fit_config
 
 
-def fit_user_parameters_first(first_axis_table_id_phen_list):
+def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
     '''
-    Initialize the parameters table.
+    Initialize the leaf_dynamic_parameters table.
     :Parameters:
         - `first_axis_table_id_phen_list` : the number of plants.
 
     :Types:
         - `first_axis_table_id_phen_list` : int.
 
-    :return: The initialized parameters table.
+    :return: The initialized leaf_dynamic_parameters table.
     :rtype: pandas.DataFrame
     ''' 
     id_phen_without_duplicate_list = list(set(first_axis_table_id_phen_list))
@@ -53,7 +53,7 @@ def fit_user_parameters_first(first_axis_table_id_phen_list):
     d_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     RMSE_gl_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     leaf_dynamic_parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, t2_list, hs_t1_list, a_list, c_list, d_list, RMSE_gl_list]).transpose()
-    # sort parameters table according N_cohort (ascending order) then frequency (descending order).
+    # sort leaf_dynamic_parameters table according N_cohort (ascending order) then frequency (descending order).
     unsorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(leaf_dynamic_parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 't2', 'hs_t1', 'a', 'c', 'd', 'RMSE_gl'], dtype=float)
     sorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(columns=unsorted_leaf_dynamic_parameters_table_dataframe.columns, dtype=float)
     for name, group in unsorted_leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
@@ -82,7 +82,7 @@ def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_t
     return axis_frequency_list
 
 
-def fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
+def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
     '''
     Fit user observations. A minimal set of observations must be provided. 
     If the user does not provide complete observations, the missing observations are fitted, using the minimal set of 

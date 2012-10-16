@@ -23,9 +23,9 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
                                delais_TT_stop_del_axis=600,
                                final_axes_number=250):
     '''
-    Complete the axis table, the dim table and the parameters table, and create the absolute/relative phen tables.
+    Complete the axis table, the dim table and the leaf_dynamic_parameters table, and create the absolute/relative phen tables.
     Construct:
-        - the parameter table which contains the information about tillers behaviour. The parameters table is not an input of ADEL.
+        - the parameter table which contains the information about tillers behaviour. The leaf_dynamic_parameters table is not an input of ADEL.
           It is used only to build the other tables: ParametersTable
         - ADEL input data tables: second_axis_table_dataframe, relative_second_phen_table_dataframe, relative_dim_table_dataframe
         - tables in order the user could check the fitting results: first_leaf_phen_table_dataframe, 
@@ -34,7 +34,7 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
     :Parameters:
         - `first_axis_table_dataframe` : the first axis table.
         - `user_dim_table_dataframe` : the user dim table.
-        - `user_parameter_table_dataframe` : the user parameters table.
+        - `user_parameter_table_dataframe` : the user leaf_dynamic_parameters table.
         - `GL_number` : the GL decimal number measured at several thermal time (including the senescence end).
         - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
         - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
@@ -52,11 +52,11 @@ def fit_adel_input_data_second(first_axis_table_dataframe, user_dim_table_datafr
         - `final_axes_number` : int
 
     :return: The fitted axis table, the fitted absolute phen table, the fitted relative phen table,
-    the fitted dim table and the fitted parameters table.
+    the fitted dim table and the fitted leaf_dynamic_parameters table.
     :rtype: a tuple of pandas.DataFrame
     '''
-    # Fit the parameters provided by the user
-    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
+    # Fit the leaf_dynamic_parameters provided by the user
+    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_dim_table_dataframe, GL_number)
     # Fit absolute PhenTable
     absolute_second_phen_table_dataframe = phen_table_fitting.fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe)
     # Extract the first leaves data from absolute_second_phen_table_dataframe

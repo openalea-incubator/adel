@@ -18,7 +18,7 @@ import math
 
 import numpy as np
 
-def find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1, first_child_delay=2):
+def find_child_cohort_indices(cohort_probabilities, parent_cohort_number=-1, first_child_delay=2):
     '''
     Find (recursively) the child cohort numbers of a parent cohort, according to the cohort probabilities and 
     the parent cohort number. The main stem always exists.
@@ -37,7 +37,7 @@ def find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1, fir
     if first_possible_cohort_number == 1:
         # The main stem always exists, then add it.
         child_cohort_numbers.append(first_possible_cohort_number)
-        child_cohort_numbers.extend(find_child_cohort_numbers(cohort_probabilities, 
+        child_cohort_numbers.extend(find_child_cohort_indices(cohort_probabilities, 
                                                                first_possible_cohort_number))
     else:
         # Find the secondary stem children.
@@ -46,7 +46,7 @@ def find_child_cohort_numbers(cohort_probabilities, parent_cohort_number=-1, fir
             if cohort_number >= first_possible_cohort_number:
                 if cohort_probability >= random.random():
                     child_cohort_numbers.append(cohort_number)
-                    child_cohort_numbers.extend(find_child_cohort_numbers(cohort_probabilities, 
+                    child_cohort_numbers.extend(find_child_cohort_indices(cohort_probabilities, 
                                                                            cohort_number))
     return child_cohort_numbers
 

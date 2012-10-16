@@ -139,7 +139,7 @@ def _create_index_axis_list(first_axis_table_plant_ids, cohort_probabilities):
     '''
     index_axis_list = []
     for plant_id in first_axis_table_plant_ids:
-        cohort_numbers = fitting_tools.find_child_cohort_numbers(cohort_probabilities)
+        cohort_numbers = fitting_tools.find_child_cohort_indices(cohort_probabilities)
         cohort_numbers.sort()
         index_axis_list.extend(cohort_numbers)
     return index_axis_list

@@ -40,7 +40,6 @@ def fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe):
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -81,7 +80,6 @@ def _create_id_phen_list(second_leaf_dynamic_parameters_table_dataframe):
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -141,7 +139,6 @@ def _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_d
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -155,7 +152,7 @@ def _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_d
     '''
     TT_col_phytomer_list = []
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = range(int(Nff_i + 1))
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
@@ -189,7 +186,6 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -205,7 +201,7 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
     TT_em_phytomer_list = []
     current_TT_em_phytomer_row_index = 0
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = np.arange(int(Nff_i) + 1) + current_TT_em_phytomer_row_index
         j = 0
         for j in phytomer_indexes: 
@@ -242,14 +238,14 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
             - for the main stem:
               if TT<t0[i] then GL(TT) = HS(TT)
               else if TT<t1[i] then GL(TT) = n0[i]+(n1[i]-n0[i])*(TT-t0[i])/(t1[i]-t0[i])
-                   else if TT<t2[i] then GL(TT) = n1[i]+(n2[i]-n1[i])*(TT-t1[i])/(t2[i]-t1[i])
-                        else if a[i]*(TT-t2[i])^3+c[i]*(TT-t2[i])+d[i]>0 then GL(TT) = a[i]*(TT-t2[i])^3+c[i]*(TT-t2[i])+d[i]
+                   else if TT<TT_col_nff[i] then GL(TT) = n1[i]+(n2[i]-n1[i])*(TT-t1[i])/(TT_col_nff[i]-t1[i])
+                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]
                              else GL(TT) = 0
             - for the tillers:
               if TT<t0[i] then GL(TT) = HS(TT)
               else if TT<t1[i] then GL(TT) = n0[i]
-                   else if TT<=t2[i] then GL(TT) = n0[i]+(n2[i]-n0[i])*(TT-t1[i])/(t2[i]-t1[i])
-                        else if a[i]*(TT-t2[i])^3+c[i]*(TT-t2[i])+d[i]>0 then GL(TT) = a[i]*(TT-t2[i])^3+c[i]*(TT-t2[i])+d[i]
+                   else if TT<=TT_col_nff[i] then GL(TT) = n0[i]+(n2[i]-n0[i])*(TT-t1[i])/(TT_col_nff[i]-t1[i])
+                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]
                              else GL(TT) = 0
         - calculate SSI(TT):
             SSI(TT) = HS(TT) - GL(TT)
@@ -271,7 +267,6 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -293,9 +288,9 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
         
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
         TT_sen_phytomer_i_list = []        
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i)
         phytomer_indexes_i = np.arange(int(Nff_i) + 1)
 
         for j in phytomer_indexes_i:
@@ -320,18 +315,18 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
                     # Find (SSI - j) real root.
                     SSI_root_array = get_real_roots(SSI - j)
                     if SSI_root_array.size == 0 or SSI_root_array[0] <= t0_i or SSI_root_array[0] > t1_i:
-                        # Suppose we are in the ]t1_i,t2_i] phase.
+                        # Suppose we are in the ]t1_i,TT_col_nff_i] phase.
                         GL = GL_3
                         SSI = HS - GL
                         # Find (SSI - j) real root.
                         SSI_root_array = get_real_roots(SSI - j)
-                        if SSI_root_array.size == 0 or SSI_root_array[0] <= t1_i or SSI_root_array[0] > t2_i:
-                            # We must be in the ]t2_i,infinity[ phase.
+                        if SSI_root_array.size == 0 or SSI_root_array[0] <= t1_i or SSI_root_array[0] > TT_col_nff_i:
+                            # We must be in the ]TT_col_nff_i,infinity[ phase.
                             GL = GL_4
                             SSI = HS - GL
                             # Find (SSI - j) real root.
                             SSI_root_array = get_real_roots(SSI - j)
-                            if SSI_root_array.size == 0 or SSI_root_array[0] <= t2_i:
+                            if SSI_root_array.size == 0 or SSI_root_array[0] <= TT_col_nff_i:
                                 raise Exception('ERROR !!!!! This shouldn\'t occurred')
                             if HS(SSI_root_array[0]) > Nff_i:
                                 HS = np.poly1d([Nff_i])
@@ -340,7 +335,7 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
                             SSI = HS - GL
                             # Find (SSI - j) real root again.
                             SSI_root_array = get_real_roots(SSI - j)
-                            if SSI_root_array.size == 0 or SSI_root_array[0] <= t2_i:
+                            if SSI_root_array.size == 0 or SSI_root_array[0] <= TT_col_nff_i:
                                 raise Exception('ERROR !!!!! This shouldn\'t occurred')   
                 TT_sen_phytomer_i_list.append(SSI_root_array[0])
         
@@ -370,7 +365,6 @@ def _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer
             * n2: ???
             * t0: ???
             * t1: ???
-            * t2: ???
             * hs_t1: ???
             * a: ???
             * c: ???
@@ -454,7 +448,7 @@ def create_phen_table_relative_dataframe(absolute_phen_table_dataframe, first_le
     return relative_phen_table_dataframe
 
 
-def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i):
+def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i):
     main_stem = N_cohort_i == 1.0
     a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
     # define HS(TT)
@@ -463,11 +457,11 @@ def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_
     # define GL(TT) for all phases except TT < t0_i (because it depends on j)
     if main_stem:
         GL_2 = np.poly1d([(n1_i - n0_i) / (t1_i - t0_i), n0_i - t0_i * (n1_i - n0_i) / (t1_i - t0_i)])
-        GL_3 = np.poly1d([(n2_i - n1_i) / (t2_i - t1_i), n1_i - t1_i * (n2_i - n1_i) / (t2_i - t1_i)])
+        GL_3 = np.poly1d([(n2_i - n1_i) / (TT_col_nff_i - t1_i), n1_i - t1_i * (n2_i - n1_i) / (TT_col_nff_i - t1_i)])
     else: # tillers
         GL_2 = np.poly1d([n0_i])
-        GL_3 = np.poly1d([(n2_i - n0_i) / (t2_i - t1_i), n0_i - t1_i * (n2_i - n0_i) / (t2_i - t1_i)])
-    GL_4 = np.poly1d([a_i, - 3 * a_i * t2_i, 3 * a_i * t2_i**2 + c_i, - a_i * t2_i**3 - c_i * t2_i + d_i])
+        GL_3 = np.poly1d([(n2_i - n0_i) / (TT_col_nff_i - t1_i), n0_i - t1_i * (n2_i - n0_i) / (TT_col_nff_i - t1_i)])
+    GL_4 = np.poly1d([a_i, - 3 * a_i * TT_col_nff_i, 3 * a_i * TT_col_nff_i**2 + c_i, - a_i * TT_col_nff_i**3 - c_i * TT_col_nff_i + d_i])
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
 
@@ -475,19 +469,19 @@ def create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_data
     
     HS_GL_SSI_dynamic_dataframe = pandas.DataFrame(columns=['id_axis', 'TT', 'HS', 'GL', 'SSI'])
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, t2_i, a_i, c_i, d_i)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i)
         
-        t0_i, t1_i, t2_i, TT_col_break_i = np.round([t0_i, t1_i, t2_i, TT_col_break_i]).astype(int)
+        t0_i, t1_i, TT_col_nff_i, TT_col_break_i = np.round([t0_i, t1_i, TT_col_nff_i, TT_col_break_i]).astype(int)
         
         TT_1_1 = np.arange(0, t0_i)
         TT_1_2 = np.arange(t0_i, t0_i)
         TT_2_1 = np.arange(t0_i, t1_i)
         TT_2_2 = np.arange(t1_i, t1_i)
-        TT_3_1 = np.arange(t1_i, t2_i)
-        TT_3_2 = np.arange(t2_i, t2_i)
-        TT_4_1 = np.arange(t2_i, fit_config.TT_del_Fhaut)
+        TT_3_1 = np.arange(t1_i, TT_col_nff_i)
+        TT_3_2 = np.arange(TT_col_nff_i, TT_col_nff_i)
+        TT_4_1 = np.arange(TT_col_nff_i, fit_config.TT_del_Fhaut)
         TT_4_2 = np.arange(fit_config.TT_del_Fhaut, fit_config.TT_del_Fhaut)
         
         if TT_col_break_i != 0.0: # bilinear mode
@@ -497,11 +491,11 @@ def create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_data
             elif TT_col_break_i <= t1_i:
                 TT_2_1 = np.arange(t0_i, TT_col_break_i)
                 TT_2_2 = np.arange(TT_col_break_i, t1_i)
-            elif TT_col_break_i <= t2_i:
+            elif TT_col_break_i <= TT_col_nff_i:
                 TT_3_1 = np.arange(t1_i, TT_col_break_i)
-                TT_3_2 = np.arange(TT_col_break_i, t2_i)
+                TT_3_2 = np.arange(TT_col_break_i, TT_col_nff_i)
             else:
-                TT_4_1 = np.arange(t2_i, TT_col_break_i)
+                TT_4_1 = np.arange(TT_col_nff_i, TT_col_break_i)
                 TT_4_2 = np.arange(TT_col_break_i, fit_config.TT_del_Fhaut)
             
         HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, Nff_i)

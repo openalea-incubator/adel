@@ -107,7 +107,7 @@ def compute_element(element_node, classic=False):
                 shape = incline_leaf(blade.shape_xysr, blade.inclination)
             else: 
                 shape = blade.shape_xysr
-            
+            #TODO : a verifier mais la shape est dans x+,y+, alors que la tortue l'attend dans x-,z, ie a 180 degrees
             geom = LeafElement_mesh(shape, blade.shape_mature_length, blade.shape_max_width, 
                                 n.length, n.srb, n.srt)   
     elif n.label.startswith('Stem'): #stem element
@@ -134,42 +134,76 @@ def _transform(turtle, mesh):
 def adel_visitor(g, v, turtle):
     """ Performs geometric interpretation of mtg nodes
     """
-    # 1. retrieve the node, its complex and its complex
+    # 1. retrieve the node
     n = g.node(v)
-    c = n.complex()
-    
+
+    # Go to plant position if first plant element
+    if n.parent() is None:#this is a new plant base
+        p = n.complex_at_scale(scale=1)
+        if 'position' in p.properties():
+            #print 'moving to ', p.position
+            turtle.move(p.position)
+        else:
+            turtle.move(0,0,0)
+        turtle.setHead(0,0,1,1,0,0)
+        if 'azimuth' in p.properties():
+            turtle.rollL(p.azimuth)
+    #incline turtle at the base of stems,
     if n.label.startswith('Stem'):
-        angle = float(c.azimuth) if c.azimuth else 0.
-        turtle.rollL(angle)
-        angle = float(c.inclination) if c.inclination else 0.
-        turtle.up(angle)
-        if n.offset:
+        inclin = float(n.inclination) if n.inclination else 0.
+        azim = float(n.azimuth) if n.azimuth else 0.
+        if inclin:
+            # incline along curent azimuth for ramification (tiller bases)
+            if n.edge_type() == '+':
+                #print ' + node ', n._vid, 'up before inclin ', turtle.getUp()
+                turtle.down(inclin)
+            # if not incline towardss vertical
+            else:
+                up = turtle.getUp()
+                turtle.rollToVert()
+                angle = degrees(pgl.angle(up,turtle.getUp()))
+                turtle.down(inclin)
+                #replace turtle in original azimuth plane
+                #print 'angle ', angle
+                turtle.rollL(-angle)
+        if azim:
+            #print 'node', n._vid, 'azim ', azim
+            turtle.rollL(azim)
+        if n.offset > 0:
             turtle.f(n.offset)
-    # update geometry
+       
+    #if n.label.startswith('Leaf'):    
+    
+    # update geometry of elements
     if n.length > 0:
         mesh = compute_element(n)
-        if mesh:#TOo DO : reset to None if calculated so ?
+        if mesh:#To DO : reset to None if calculated so ?
             n.geometry = _transform(turtle, mesh)
     # 3. Update the turtle
     turtle.setId(v)
-    if n.label.startswith('Stem') and n.length > 0:
-        turtle.f(n.length)
+    if n.label.startswith('Stem'):
+        if n.length > 0:
+            turtle.f(n.length)
+   
+
+
+
 
     
         
 def mtg_interpreter(g, visitor = adel_visitor):
     ''' Compute/update the geometry on each node of the MTG using Turtle geometry. '''
-
-    plants = g.component_roots_at_scale(g.root, scale=1)
-    nplants = g.nb_vertices(scale=1)
-    gt = MTG()
+#BUG : sub_mtg mange le vertex plant => on perd la plante !
+    #plants = g.component_roots_at_scale(g.root, scale=1)
+    #nplants = g.nb_vertices(scale=1)
+    #gt = MTG()
     
-    for plant in plants:
-       gplant = g.sub_mtg(plant)
-       scene = turtle.TurtleFrame(gplant,visitor=visitor)
-       gt = union(gplant,gt)
+    #for plant in plants:
+    #   gplant = g.sub_mtg(plant)
+    scene = turtle.TurtleFrame(g,visitor=visitor, gc=False)
+    #   gt = union(gplant,gt)
        
-    return gt
+    return g
        
 def plot3d(g, 
                leaf_material = None,

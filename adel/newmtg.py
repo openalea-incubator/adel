@@ -10,6 +10,8 @@ from alinea.adel.mtg import convert,properties_from_dict
 
 from openalea.mtg import MTG, fat_mtg
 
+import numpy as np
+
 # try:
     # from openalea.mtg.traversal import *
 # except:
@@ -30,11 +32,13 @@ from openalea.mtg import MTG, fat_mtg
 # import random
 # from math import pi
 
-def internode_elements(l,lvis, lsen):
+def internode_elements(l,lvis, lsen, az, inc):
     """ returns parameters of internode elements (visible parts of the internode).
     l is the length of the internode
     lv is the visible length (senesced + green)
     lsen is the senescent apical length
+    az is the azimuth angle
+    inc is the inclination angle
     Fisrt element is for the green visible part of the internode
     Second element is for senesced visible part of the internode
     """
@@ -46,11 +50,11 @@ def internode_elements(l,lvis, lsen):
         lsen = lvis - lgreen
     except TypeError:
         pass
-    green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True}
-    sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False}
+    green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
+    sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
     return [green_elt, sen_elt]
     
-def sheath_elements(l, lvis, lsen):
+def sheath_elements(l, lvis, lsen, az, inc):
     """ returns parameters of sheath elements (visible parts of the sheath).
     l is the length of the sheath
     lv is the visible length (senesced + green)
@@ -59,7 +63,7 @@ def sheath_elements(l, lvis, lsen):
     Second elements is for senesced visible part of the sheath
     """
     # same logic as internodes
-    return internode_elements(l,lvis,lsen)
+    return internode_elements(l,lvis,lsen, az, inc)
     
 def blade_elements(sectors, l, lvis, lsen, Lshape):
     """ return parameters of blade elements (visible parts of the blade).
@@ -125,7 +129,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
         st += ds
     return elements
     
-def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Eaz=None, Einc=None, **kwargs):
+def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
        - Ll : length of the blade
@@ -146,10 +150,12 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
        - Ev: emerged length of the internode 
        - Esen: senescent length of the internode (hidden + visible)
        - Ed: diameter of the internode
-       - Eaz: azimuth of the internode (control axis azimuths)
        - Einc : relative inclination of the internode
+ 
     """
        #to do add diameter and Lrolled to blade
+    Eaz = Laz
+    Gaz = 0
     modules = [
         {'label': 'internode',
         'length': El,
@@ -158,15 +164,15 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
         'diameter' : Ed,
         'azimuth': Eaz,
         'inclination' : Einc,
-        'elements' : internode_elements(El, Ev, Esen)}, 
+        'elements' : internode_elements(El, Ev, Esen, Eaz, Einc)}, 
         {'label': 'sheath',
         'length': Gl,
         'visible_length': Gv,
         'senesced_length': Gsen,
         'diameter' : Gd,
-        'azimuth' : Laz,   
+        'azimuth' : Gaz,   
         'inclination' : Ginc,
-        'elements': sheath_elements(Gl, Gv, Gsen)}, 
+        'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc)}, 
         {'label': 'blade',
         'length': Ll,
         'visible_length': Lv,
@@ -179,6 +185,12 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
         'elements': blade_elements(Lsect, Ll, Lv, Lsen, L_shape)} 
     ]
     
+    if elongation:
+        
+        modules[0]['elongation_curve'] = {'x': [elongation['endleaf'], elongation['endE']], 'y' : [0,El]}
+        modules[1]['elongation_curve'] = {'x': [elongation['endBlade'], elongation['endleaf']], 'y' : [0,Gl]}
+        modules[2]['elongation_curve'] = {'x': [elongation['startleaf'], elongation['endBlade']], 'y' : [0,Ll]}
+    
     return modules
     
 def get_component(components, index):
@@ -189,13 +201,16 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, topology = ['plant','axe','numphy']):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe','numphy']):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
     metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
-    Sector is an integer giving the number of LeafElements per Leaf blade
-    topology is the list of key names used in parameters dictfor plant number, axe numer and metamer number
+    leaf_sectors is an integer giving the number of LeafElements per Leaf blade
+    leaf_db is xysr leaf shape database
+    stand is a list of tuple (xy_position_tuple, azimuth) of plant positions
+    axis_dynamics is a 3 levels dict describing axis dynamic. 1st key level is plant number, 2nd key level is axis number, and third ky level are labels of values (n, tip, ssi, disp)
+    topology is the list of key names used in parameters dict for plant number, axe number and metamer number
 
     Axe number 0 is compulsory
   
@@ -232,7 +247,11 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         # Add plant if new
         if plant != prev_plant:
             label = 'plant' + str(plant)
-            vid_plant = g.add_component(g.root, label=label, edge_type='/')
+            position = (0,0,0)
+            azimuth = 0
+            if stand and len(stand) >= plant:
+                position,azimuth = stand[plant-1]                
+            vid_plant = g.add_component(g.root, label=label, edge_type='/', position = position, azimuth = azimuth)
             #reset buffers
             prev_axe = -1            
             vid_axe = -1
@@ -248,12 +267,15 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             
         # Add axis
         if axe != prev_axe:
-            label = 'axe' + str(axe)           
+            label = 'axe' + str(axe)
+            timetable = None
+            if axis_dynamics:
+                timetable = axis_dynamics[str(plant)][str(axe)]
             if axe == 0:
-                vid_axe = g.add_component(vid_plant,edge_type='/',label=label)
+                vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable)
                 vid_main_stem = vid_axe
             else:
-                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label)
+                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label, timetable=timetable)
 
         # Add metamer
         assert num_metamer > 0
@@ -262,11 +284,25 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         components = []
         if metamer_factory:
             if leaf_db:
-                xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
+                try:
+                    xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
+                except KeyError:
+                    xysr=leaf_db[leaf_db.keys()[0]][0]
             else:
                 xysr = None
-            # TO DO : compute Eaz
-            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, Eaz =0, **args)
+            
+            elongation = None
+            if add_elongation:
+                startleaf = -.4
+                endleaf = 1.6
+                stemleaf = 1.2
+                startE = endleaf
+                endE = startE + (endLeaf - startLeaf) / stemleaf
+                endBlade = endleaf
+                if args['Gl'] > 0:
+                    endBlade = args['Ll'] / args['Gl'] * (endleaf - startleaf)
+                elongation = {'startleaf' : startleaf , 'endBlade':endBlade, 'endleaf': endleaf, 'endE': endE}
+            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
             args={}
         #
         label = 'metamer'+str(num_metamer)
@@ -330,4 +366,60 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         prev_axe = axe
     
     return fat_mtg(g)
+
+
+def update_elements(organ):
+    if organ.label.startswith('blade'):
+        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, organ.senesced_length, organ.shape_mature_length)
+        for i,e in enumerate(organ.components()):
+            for k in elements[i]:
+                exec "e.%s = elements[i]['%s']"%(k,k)
+
+def update_plant(plant, time):
+    """ update phenology of plant axes """
+    plant.time = time
+    
+def update_axe(axe):
+    """ update phenology on axes """
+    if 'timetable' in axe.properties():
+        axe.phyllochronic_time = np.interp(axe.complex().time, axe.timetable['n'], axe.timetable['tip'])
+        
+def update_organ(organ,h_whorl=0):
+    rank = int(organ.complex().index())
+    axe = organ.complex_at_scale(2)
+    rph = axe.phyllochronic_time - rank
+    length = organ.length
+    vlength = organ.visible_length
+    if 'elongation_curve' in organ.properties():
+        organ.length = np.interp(rph, organ.elongation_curve['x'], organ.elongation_curve['y'])
+    organ.visible_length = organ.length - h_whorl
+    update_elements(organ)
+    organ.dl = organ.length - length
+    organ.dl_visible = organ.visible_length - visible_length
+
+    
+def mtg_update_at_time(g, time): 
+    """ Compute plant state at a given time according to dynamical parameters found in mtg
+    """    
+    for pid in g.component_roots_at_scale(g.root, scale=1):
+        p = g.node(pid)
+        update_plant(p, time)
+        hw = {'0': 0}
+        for a in p.components_at_scale(2):
+            update_axe(a)
+            numaxe = int(a.index())
+            hwhorl = hw[str(numaxe)]
+            for o in a.components_at_scale(4):
+                update_organ(o,hwhorl)
+                #update whorl
+                if o.label.startswith('internode'):
+                    if o.inclination < 0:
+                        hwhorl = 0 #redressement
+                    else:
+                        hwhorl = max(0,hwhorl - o.length)
+                elif o.label.statswith('sheath'):
+                    hwhorl += o.visible_length
+                    # memorise main stem values
+                    if numaxe == 0:
+                        hw[o.complex().index()] = o.length
 

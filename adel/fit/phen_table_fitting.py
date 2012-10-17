@@ -43,7 +43,6 @@ def fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe):
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ??
     :Types:
         - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
@@ -83,7 +82,6 @@ def _create_id_phen_list(second_leaf_dynamic_parameters_table_dataframe):
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ??
     :Types:
         - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
         
@@ -142,7 +140,6 @@ def _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_d
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ??
           The table is completely filled and ordered by frequency. 
     :Types:
         - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
@@ -152,7 +149,7 @@ def _create_absolute_TT_col_phytomer_list(second_leaf_dynamic_parameters_table_d
     '''
     TT_col_phytomer_list = []
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = range(int(Nff_i + 1))
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
         a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
@@ -189,7 +186,6 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ??
           The table is completely filled and ordered by frequency. 
     :Types:
         - `phen_table_TT_col_phytomer_list` : list
@@ -201,7 +197,7 @@ def _create_absolute_TT_em_phytomer_list(phen_table_TT_col_phytomer_list, second
     TT_em_phytomer_list = []
     current_TT_em_phytomer_row_index = 0
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         phytomer_indexes = np.arange(int(Nff_i) + 1) + current_TT_em_phytomer_row_index
         j = 0
         for j in phytomer_indexes: 
@@ -239,13 +235,13 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
               if TT<t0[i] then GL(TT) = HS(TT)
               else if TT<t1[i] then GL(TT) = n0[i]+(n1[i]-n0[i])*(TT-t0[i])/(t1[i]-t0[i])
                    else if TT<TT_col_nff[i] then GL(TT) = n1[i]+(n2[i]-n1[i])*(TT-t1[i])/(TT_col_nff[i]-t1[i])
-                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]
+                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+n2[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+n2[i]
                              else GL(TT) = 0
             - for the tillers:
               if TT<t0[i] then GL(TT) = HS(TT)
               else if TT<t1[i] then GL(TT) = n0[i]
                    else if TT<=TT_col_nff[i] then GL(TT) = n0[i]+(n2[i]-n0[i])*(TT-t1[i])/(TT_col_nff[i]-t1[i])
-                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+d[i]
+                        else if a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+n2[i]>0 then GL(TT) = a[i]*(TT-TT_col_nff[i])^3+c[i]*(TT-TT_col_nff[i])+n2[i]
                              else GL(TT) = 0
         - calculate SSI(TT):
             SSI(TT) = HS(TT) - GL(TT)
@@ -270,7 +266,6 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ???
           The table is completely filled and ordered by frequency. 
     :Types:
         - `second_leaf_dynamic_parameters_table_dataframe` : pandas.DataFrame
@@ -288,9 +283,9 @@ def _create_absolute_TT_sen_phytomer_list(second_leaf_dynamic_parameters_table_d
         
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
         TT_sen_phytomer_i_list = []        
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i)
         phytomer_indexes_i = np.arange(int(Nff_i) + 1)
 
         for j in phytomer_indexes_i:
@@ -368,7 +363,6 @@ def _create_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer
             * hs_t1: ???
             * a: ???
             * c: ???
-            * d: ???
           The table is completely filled and ordered by frequency. 
     :Types:
         - `id_phen_list` : list.
@@ -448,7 +442,7 @@ def create_phen_table_relative_dataframe(absolute_phen_table_dataframe, first_le
     return relative_phen_table_dataframe
 
 
-def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i):
+def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i):
     main_stem = N_cohort_i == 1.0
     a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
     # define HS(TT)
@@ -461,7 +455,7 @@ def _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_
     else: # tillers
         GL_2 = np.poly1d([n0_i])
         GL_3 = np.poly1d([(n2_i - n0_i) / (TT_col_nff_i - t1_i), n0_i - t1_i * (n2_i - n0_i) / (TT_col_nff_i - t1_i)])
-    GL_4 = np.poly1d([a_i, - 3 * a_i * TT_col_nff_i, 3 * a_i * TT_col_nff_i**2 + c_i, - a_i * TT_col_nff_i**3 - c_i * TT_col_nff_i + d_i])
+    GL_4 = np.poly1d([a_i, - 3 * a_i * TT_col_nff_i, 3 * a_i * TT_col_nff_i**2 + c_i, - a_i * TT_col_nff_i**3 - c_i * TT_col_nff_i + n2_i])
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
 
@@ -469,9 +463,9 @@ def create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_data
     
     HS_GL_SSI_dynamic_dataframe = pandas.DataFrame(columns=['id_axis', 'TT', 'HS', 'GL', 'SSI'])
     for i in second_leaf_dynamic_parameters_table_dataframe.index:
-        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, d_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
+        N_cohort_i, id_axis_i, frequency_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, RMSE_gl = second_leaf_dynamic_parameters_table_dataframe.ix[i].tolist()
         HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i, d_i)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _create_HS_GL_polynomial(HS_break_i, N_cohort_i, id_axis_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, n0_i, n1_i, n2_i, t0_i, t1_i, a_i, c_i)
         
         t0_i, t1_i, TT_col_nff_i, TT_col_break_i = np.round([t0_i, t1_i, TT_col_nff_i, TT_col_break_i]).astype(int)
         

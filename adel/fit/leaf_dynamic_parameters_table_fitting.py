@@ -49,11 +49,10 @@ def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
     hs_t1_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     a_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     c_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    d_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     RMSE_gl_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
-    leaf_dynamic_parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, hs_t1_list, a_list, c_list, d_list, RMSE_gl_list]).transpose()
+    leaf_dynamic_parameters_table_array = np.array([N_cohort, id_phen_without_duplicate_list, axis_frequency_list, Nff, a_cohort_list, TT_col_0_list, TT_HS_break_list, TT_HS_NFF_list, dTT_MS_cohort_list, n0_list, n1_list, n2_list, t0_list, t1_list, hs_t1_list, a_list, c_list, RMSE_gl_list]).transpose()
     # sort leaf_dynamic_parameters table according N_cohort (ascending order) then frequency (descending order).
-    unsorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(leaf_dynamic_parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 'hs_t1', 'a', 'c', 'd', 'RMSE_gl'], dtype=float)
+    unsorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(leaf_dynamic_parameters_table_array, columns=['N_cohort', 'id_axis', 'frequency', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_nff', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 'hs_t1', 'a', 'c', 'RMSE_gl'], dtype=float)
     sorted_leaf_dynamic_parameters_table_dataframe = pandas.DataFrame(columns=unsorted_leaf_dynamic_parameters_table_dataframe.columns, dtype=float)
     for name, group in unsorted_leaf_dynamic_parameters_table_dataframe.groupby('N_cohort'):
         sorted_group = group.sort_index(by='frequency', ascending=False)
@@ -175,19 +174,15 @@ def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user
                  - For the main stem most frequent axis:
                    Given x[i] = GL_number.keys(), y[i] = GL_number.values(), b[0] = 0, 
                    c[0] = -((Nff[0] - decimal_elongated_internode_number) - (n2[0] - n1[0])) / (TT_col_nff[0] - t1[0])
-                   and d[0] = n2[0], a[0] is such as y[i] = a[0] * x[i]**3 + b[0] * x[i]**2 + c[0] * x[i] + d[0], 
+                   and n2[0], a[0] is such as y[i] = a[0] * x[i]**3 + b[0] * x[i]**2 + c[0] * x[i] + n2[0], 
                    with i the row number, and with decimal_elongated_internode_number defined by y = -0.0089 * x**2 + 0.4365 * x + decimal_elongated_internode_number, 
                    where x and y are respectively the internode lengths and the phytomer numbers of the most frequent axis from dimTable.
                  - for the other axes: 
-                   c[i] = c[0] * d[i] / d[0]
-                   d[i] = n2[i]
-                   a[i] = a[0] * d[i] / d[0]
+                   c[i] = c[0] * n2[i] / n2[0]
+                   a[i] = a[0] * n2[i] / n2[0]
             * c: ??? 
                  - for the most frequent axis of the main stem: c[0] = -((Nff[0] - decimal_elongated_internode_number) - (n2[0] - n1[0])) / (TT_col_nff[0] - t1[0])
-                 - for the other axes: c[i] = c[0] * d[i] / d[0]
-            * d: ??? 
-                This parameter don't have to be specified.
-                d = n2
+                 - for the other axes: c[i] = c[0] * n2[i] / n2[0]
             * RMSE_gl: the RMSE for the dynamic of green leaf number after estimation of parameter 'a'.
           The table is ordered by frequency.   
         - `user_organ_dimensions_table_dataframe` : the user dim table.
@@ -253,8 +248,6 @@ def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
         n0_greater_than_HS_break_indexes = most_frequent_MS_df[most_frequent_MS_df['n0'] >= HS_break].index
         most_frequent_MS_df['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_MS_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_MS_df['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_MS_df['a_cohort'][n0_smaller_than_HS_break_indexes]
         most_frequent_MS_df['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_MS_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_MS_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
-    # d
-    most_frequent_MS_df['d'] = most_frequent_MS_df['n2']
     # Fit of the polynomial function describing post flowering dynamics of GL
     # c 
     most_frequent_MS_df['c'] = -((most_frequent_MS_df['Nff'] - decimal_elongated_internode_number) - (most_frequent_MS_df['n2'] - most_frequent_MS_df['n1'])) / (most_frequent_MS_df['TT_col_nff'] - most_frequent_MS_df['t1'])
@@ -263,13 +256,13 @@ def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
     n2_0 = most_frequent_MS_df['n2'][0]
     x_meas_array = np.array([TT_col_nff_0] + GL_number.keys()) - TT_col_nff_0
     y_meas_array = np.array([n2_0] + GL_number.values())
-    b, c, d =  0.0, most_frequent_MS_df['c'][0], most_frequent_MS_df['d'][0]
+    b, c =  0.0, most_frequent_MS_df['c'][0]
     def residuals(p, y, x):
         a, = p
         err = y - peval(x, a)
         return err
     def peval(x, a):
-        return np.poly1d([a, b, c, d])(x)
+        return np.poly1d([a, b, c, n2_0])(x)
     p0 = [-4.0e-9]
     p, cov, infodict, mesg, ier = leastsq(residuals, p0, args=(y_meas_array, x_meas_array), full_output=1)
     most_frequent_MS_df['a'][0] = p[0]
@@ -327,12 +320,10 @@ def _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df):
         n0_greater_than_HS_break_indexes = other_MS_df[other_MS_df['n0'] >= HS_break].index
         other_MS_df['t0'][n0_smaller_than_HS_break_indexes] = other_MS_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_MS_df['n0'][n0_smaller_than_HS_break_indexes] / other_MS_df['a_cohort'][n0_smaller_than_HS_break_indexes]
         other_MS_df['t0'][n0_greater_than_HS_break_indexes] = (other_MS_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + other_MS_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
-    # d
-    other_MS_df['d'] = other_MS_df['n2']
     # c
-    other_MS_df['c'] = most_frequent_MS_df['c'][0] * other_MS_df['d'] / most_frequent_MS_df['d'][0]
+    other_MS_df['c'] = most_frequent_MS_df['c'][0] * other_MS_df['n2'] / most_frequent_MS_df['n2'][0]
     # a
-    other_MS_df['a'] = most_frequent_MS_df['a'][0] * other_MS_df['d'] / most_frequent_MS_df['d'][0]
+    other_MS_df['a'] = most_frequent_MS_df['a'][0] * other_MS_df['n2'] / most_frequent_MS_df['n2'][0]
     # RMSE_gl
     other_MS_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]
     return other_MS_df
@@ -387,12 +378,10 @@ def _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent
         n0_greater_than_HS_break_indexes = most_frequent_tiller_axes_df[most_frequent_tiller_axes_df['n0'] >= HS_break].index
         most_frequent_tiller_axes_df['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_tiller_axes_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_tiller_axes_df['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_tiller_axes_df['a_cohort'][n0_smaller_than_HS_break_indexes]
         most_frequent_tiller_axes_df['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_tiller_axes_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_tiller_axes_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
-    # d
-    most_frequent_tiller_axes_df['d'] = most_frequent_tiller_axes_df['n2']
     # c
-    most_frequent_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * most_frequent_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    most_frequent_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * most_frequent_tiller_axes_df['n2'] / most_frequent_MS_df['n2'][0]
     # a
-    most_frequent_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * most_frequent_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    most_frequent_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * most_frequent_tiller_axes_df['n2'] / most_frequent_MS_df['n2'][0]
     # RMSE_gl
     most_frequent_tiller_axes_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]
     return most_frequent_tiller_axes_df
@@ -454,12 +443,10 @@ def _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_
         n0_greater_than_HS_break_indexes = other_tiller_axes_df[other_tiller_axes_df['n0'] >= HS_break].index
         other_tiller_axes_df['t0'][n0_smaller_than_HS_break_indexes] = other_tiller_axes_df['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_tiller_axes_df['n0'][n0_smaller_than_HS_break_indexes] / other_tiller_axes_df['a_cohort'][n0_smaller_than_HS_break_indexes]
         other_tiller_axes_df['t0'][n0_greater_than_HS_break_indexes] = (other_tiller_axes_df['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + other_tiller_axes_df['TT_col_break'][n0_greater_than_HS_break_indexes]    
-    # d
-    other_tiller_axes_df['d'] = other_tiller_axes_df['n2']    
     # c
-    other_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * other_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    other_tiller_axes_df['c'] = most_frequent_MS_df['c'][0] * other_tiller_axes_df['n2'] / most_frequent_MS_df['n2'][0]
     # a
-    other_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * other_tiller_axes_df['d'] / most_frequent_MS_df['d'][0]
+    other_tiller_axes_df['a'] = most_frequent_MS_df['a'][0] * other_tiller_axes_df['n2'] / most_frequent_MS_df['n2'][0]
     # RMSE_gl
     other_tiller_axes_df['RMSE_gl'] = most_frequent_MS_df['RMSE_gl'][0]  
     return other_tiller_axes_df

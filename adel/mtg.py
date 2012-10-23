@@ -434,7 +434,8 @@ def to_plantgl(g,
                leaf_material = None,
                stem_material = None,
                soil_material = None,
-               colors = None):
+               colors = None,
+               ambient_only = False):
     """
     Returns a plantgl scene from an mtg.
     """
@@ -464,7 +465,10 @@ def to_plantgl(g,
             mesh = mesh.geometry
         label = labels.get(vid)
         if colors:
-            shape = Shape(mesh, Material(Color3(* colors.get(vid, [0,0,0]) )))
+            if ambient_only:
+                shape = Shape(mesh, Material(ambient=Color3(* colors.get(vid, [0,0,0])), diffuse=0.0, specular=Color3(0,0,0)))
+            else:
+                shape = Shape(mesh, Material(Color3(* colors.get(vid, [0,0,0]) )))
         elif not label:
             if not shape:
                 shape = Shape(mesh)

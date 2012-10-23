@@ -47,7 +47,9 @@ def count_pixels(scene_path='',
         labels must be given in the same order as rgb_colors, and contains either 
         the same number of elements or no element.   
         - `normalize` : if True, normalize to 255 the scene and the colors 
-        before counting the pixels. Default is False.
+        before counting the pixels. The colors of the normalized scene which don't 
+        correspond to the normalized colors given in input are then set to 
+        (255, 255, 255). Default is False.
         - `absolute_tolerance` : the absolute tolerance used when counting the 
         number of pixels of each color. Default is 1. 
         - `normalized_scene_path` : the path of the bmp file which represents 
@@ -115,13 +117,17 @@ def count_pixels(scene_path='',
                     normalized_scene_color = normalized_scene_color.astype(int)
                     normalized_scene_color = tuple(normalized_scene_color)
                     normalized_scene_image_array[x, y] = normalized_scene_color
+                    found = False
                     for normalized_color in normalized_colors:
                         if np.allclose(np.array(normalized_color), 
                                        np.array(normalized_scene_color), 
                                        0, 
                                        absolute_tolerance):
                             pixels_numbers[colors_mapping[normalized_color]] += 1
+                            found = True
                             break
+                    if not found:
+                        normalized_scene_image_array[x, y] = (255, 255, 255)
                 else:
                     if scene_color in rgb_colors:
                         pixels_numbers[scene_color] += 1

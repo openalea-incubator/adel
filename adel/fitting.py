@@ -224,8 +224,8 @@ def mesh(leaf, nb_polygones, length_max, length, radius_max):
     return leaf_to_mesh(xf, yf, rf)
 
 
-def mesh3(leaf, length_max, length, radius_max):
-    return _mesh(leaf, length_max, length, radius_max)
+def mesh3(leaf, length_max, length, radius_max, antisens = True):
+    return _mesh(leaf, length_max, length, radius_max, antisens = antisens)
     
 def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
     #twist = True
@@ -300,7 +300,7 @@ def leaf_to_mesh(x, y, r, **kwds):
 
     return points, indices
 
-def _mesh(leaf, length_max, length, radius_max, functor=leaf_to_mesh, **kwds):
+def _mesh(leaf, length_max, length, radius_max, antisens = True, functor=leaf_to_mesh, **kwds):
     if length <= 0.: return
     if length > length_max:
         length = length_max
@@ -310,10 +310,15 @@ def _mesh(leaf, length_max, length, radius_max, functor=leaf_to_mesh, **kwds):
 
     n = len(x)
 
-    sample = linspace(0, param, num=n)
-    xn = interp(sample, s, x) * length_max
-    yn = interp(sample, s, y) * length_max
-    rn = interp(linspace(1.-param, 1., num=n), s, r) * radius_max
+    sample_sr = linspace(1.-param, 1., num=n)
+    if antisens:
+        sample_xy = linspace(0, param, num=n)
+    else:
+        sample_xy = sample_sr
+
+    xn = interp(sample_xy, s, x) * length_max
+    yn = interp(sample_xy, s, y) * length_max
+    rn = interp(sample_sr, s, r) * radius_max
 
     return functor(xn, yn, rn, **kwds)
 

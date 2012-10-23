@@ -2,8 +2,8 @@ from alinea.adel import fitting, symbol
 from alinea.adel.mtg import mtg_turtle, mtg_turtle_time
 import openalea.plantgl.all as pgl
 
-def leaf_to_mesh(leaf, lmax, l, rmax):
-    pts, ind = fitting.mesh3(leaf, lmax, l, rmax)
+def leaf_to_mesh(leaf, lmax, l, rmax, antisens):
+    pts, ind = fitting.mesh3(leaf, lmax, l, rmax, antisens)
     mesh = fitting.plantgl_shape(pts, ind)
     return mesh
 

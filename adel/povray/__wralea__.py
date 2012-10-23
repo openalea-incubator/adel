@@ -67,7 +67,7 @@ povray_col_item = Factory(name='col_item',
 
 
 count_pixels_count_pixels = Factory(name='count_pixels',
-                authors='C. Pradal (wralea authors)',
+                authors='C. Chambon and B. Andrieu',
                 description='',
                 category='image processing',
                 nodemodule='post_processing',

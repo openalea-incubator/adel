@@ -318,6 +318,22 @@ io_to_plantgl = Factory(name='to_plantgl',
                 widgetclass=None,
                )
 
+io_save_image = Factory(name='save_image',
+                authors='C. Pradal, J. Coste ',
+                description='Save a PlantGL scene in an image',
+                category='io',
+                nodemodule='image',
+                nodeclass='save_image',
+                inputs=[{'name': 'scene', 'desc': 'PlantGL Scene'}, 
+                        {'interface': 'IStr', 'name': 'image_name', 'value': '%s/img%d.%s'}, 
+                        {'interface': 'IDirStr', 'name': 'directory', 'value': '.'}, 
+                        {'interface': 'IInt', 'name': 'index', 'value': 0}, 
+                        {'interface': IEnumStr(enum=["png","jpg","tif"]), 'name': 'ext', 'value':'png'}],
+                outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
+               )
+__all__.append('io_save_image')
+
+
 
 
 

@@ -1,5 +1,5 @@
 
-# This file has been generated at Tue Sep  4 14:23:02 2012
+# This file has been generated at Fri Oct 26 16:39:35 2012
 
 from openalea.core import *
 
@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_adel_input_data_fit_adel_input_data', 'fit_fit_leaf', 'dimension_fitting_dimension_fitting', 'fit_fit']
+__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_fit_leaf', 'fit_adel_input_data_fit_adel_input_data', 'dimension_fitting_dimension_fitting', 'fit_fit']
 
 
 
@@ -66,7 +66,6 @@ fit_simplify = Factory(name='simplification',
 
 
 
-
 fit_fit_leaf = Factory(name='fit midrib',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Fit a midrib with a spline curve of degree 5.',
@@ -80,7 +79,7 @@ fit_fit_leaf = Factory(name='fit midrib',
                )
 
 
-        
+
 
 fit_adel_input_data_fit_adel_input_data = Factory(name='fit_adel_input_data',
                 authors='C. Pradal, C. Fournier (wralea authors)',
@@ -88,15 +87,8 @@ fit_adel_input_data_fit_adel_input_data = Factory(name='fit_adel_input_data',
                 category='data processing',
                 nodemodule='fit_adel_input_data',
                 nodeclass='fit_adel_input_data',
-                outputs=({'interface': IInt, 'name': 'axis_table', 'desc': 'the axis table'},
-                         {'interface': IInt, 'name': 'absolute_phen_table', 'desc': 'the absolute phen table'},
-                         {'interface': IInt, 'name': 'relative_phen_table', 'desc': 'the relative phen table'},
-                         {'interface': IInt, 'name': 'absolute_organ_dimensions_table', 'desc': 'the absolute dim table'},
-                         {'interface': IInt, 'name': 'leaf_dynamic_parameters_table', 'desc': 'the leaf_dynamic_parameters table'},
-                         {'interface': IInt, 'name': 'first_leaf_phen_table', 'desc': 'the first leaf phen table'},
-                         {'interface': IInt, 'name': 'HS_GL_SSI_dynamic_table', 'desc': 'the HS_GL_SSI dynamic table'},
-                         {'interface': IInt, 'name': 'relative_organ_dimensions_table', 'desc': 'the relative dim table'},
-                         {'interface': IInt, 'name': 'tillering_dynamic_table', 'desc': 'the tillering dynamic table'}),
+                inputs=None,
+                outputs=({'interface': IInt, 'name': 'axis_table', 'desc': 'the axis table'}, {'interface': IInt, 'name': 'absolute_phen_table', 'desc': 'the absolute phen table'}, {'interface': IInt, 'name': 'relative_phen_table', 'desc': 'the relative phen table'}, {'interface': IInt, 'name': 'absolute_organ_dimensions_table', 'desc': 'the absolute dim table'}, {'interface': IInt, 'name': 'leaf_dynamic_parameters_table', 'desc': 'the leaf_dynamic_parameters table'}, {'interface': IInt, 'name': 'first_leaf_phen_table', 'desc': 'the first leaf phen table'}, {'interface': IInt, 'name': 'HS_GL_SSI_dynamic_table', 'desc': 'the HS_GL_SSI dynamic table'}, {'interface': IInt, 'name': 'relative_organ_dimensions_table', 'desc': 'the relative dim table'}, {'interface': IInt, 'name': 'tillering_dynamic_table', 'desc': 'the tillering dynamic table'}),
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -130,6 +122,7 @@ fit_fit = Factory(name='fit',
                 widgetmodule=None,
                 widgetclass=None,
                )
+
 
 
 

@@ -157,7 +157,6 @@ def fit_adel_input_data(user_leaf_dynamic_parameters,
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_break'] = TT_col_break
         leaf_dynamic_parameters_table_dataframe.ix[0]['a_cohort'] = user_leaf_dynamic_parameters['a_cohort']
         leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_0'] = user_leaf_dynamic_parameters['TT_col_0']
-#        leaf_dynamic_parameters_table_dataframe.ix[0]['TT_col_nff'] = user_leaf_dynamic_parameters['TT_col_nff']
         TT_col_nff_keys = user_leaf_dynamic_parameters['TT_col_nff'].keys()
         TT_col_nff_keys.sort()
         first_TT_col_nff = user_leaf_dynamic_parameters['TT_col_nff'][TT_col_nff_keys[0]]
@@ -253,11 +252,7 @@ The values can be one of %s''', (str(user_leaf_dynamic_parameters_completeness),
 The values can be one of %s''', (str(user_dims_completeness), 
                                  str([DataCompleteness.MIN, 
                                       DataCompleteness.SHORT, 
-                                      DataCompleteness.FULL])))
-    
-    from openalea.core.path import path
-    leaf_dynamic_parameters_table_dataframe.to_csv('results/leaf_dynamic_parameters_table.csv', na_rep='NA', index=False)
-    organ_dimensions_table_dataframe.to_csv('results/organ_dimensions_table.csv', na_rep='NA', index=False)  
+                                      DataCompleteness.FULL]))) 
     
     # 5. second step of the fit process    
     (second_axis_table_dataframe, 

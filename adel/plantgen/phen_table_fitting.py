@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -18,7 +18,7 @@
 import numpy as np
 import pandas
 
-from adel.fit import fit_config
+from adel.plantgen import fit_config
 
 
 def fit_phen_table_second(second_leaf_dynamic_parameters_table_dataframe):

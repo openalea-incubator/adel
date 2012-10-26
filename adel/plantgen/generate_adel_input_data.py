@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -16,8 +16,8 @@
 import numpy as np
 import pandas
 
-from adel.fit.fit_adel_input_data_first import fit_adel_input_data_first
-from adel.fit.fit_adel_input_data_second import fit_adel_input_data_second
+from adel.plantgen.fit_adel_input_data_first import fit_adel_input_data_first
+from adel.plantgen.fit_adel_input_data_second import fit_adel_input_data_second
 
 class DataCompleteness:
     MIN=1
@@ -25,7 +25,7 @@ class DataCompleteness:
     FULL=3
 
 
-def fit_adel_input_data(user_leaf_dynamic_parameters,
+def generate_adel_input_data(user_leaf_dynamic_parameters,
                         user_dims,
                         plant_number=100, 
                         cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
@@ -40,7 +40,7 @@ def fit_adel_input_data(user_leaf_dynamic_parameters,
                         user_dims_completeness=DataCompleteness.MIN,
                         ):
     '''
-    Fit ADEL input data.
+    Generate ADEL input data.
     
     :Parameters:
         - `user_leaf_dynamic_parameters` : the leaf_dynamic_parameters set by the user. Can be either a dict or a table.  
@@ -56,8 +56,8 @@ def fit_adel_input_data(user_leaf_dynamic_parameters,
         - `delais_TT_stop_del_axis` : Thermal time during which a tiller remains present on the plant after the tiller has stopped growing.
         - `dTT_MS_cohort` : ???
         - `TT_col_break` : ???
-        - `user_leaf_dynamic_parameters_completeness` : the level of completeness of the leaf_dynamic_parameters set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.
-        - `user_dims_completeness` : the level of completeness of the organ dimensions set by the user. See adel.fit.fit_adel_input_data.DataCompleteness.
+        - `user_leaf_dynamic_parameters_completeness` : the level of completeness of the leaf_dynamic_parameters set by the user. See adel.plantgen.fit_adel_input_data.DataCompleteness.
+        - `user_dims_completeness` : the level of completeness of the organ dimensions set by the user. See adel.plantgen.fit_adel_input_data.DataCompleteness.
         
     :Types:
         - `user_leaf_dynamic_parameters` : dict | pandas.DataFrame      

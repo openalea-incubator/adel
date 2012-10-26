@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #

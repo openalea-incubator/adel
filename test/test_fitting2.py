@@ -1,7 +1,7 @@
 import random
 
-from adel.fit import axis_table_fitting, organ_dimensions_table_fitting, phen_table_fitting, \
-    fit_adel_input_data, leaf_dynamic_parameters_table_fitting
+from adel.plantgen import axis_table_fitting, organ_dimensions_table_fitting, phen_table_fitting, \
+    generate_adel_input_data, leaf_dynamic_parameters_table_fitting
 import numpy as np
 import pandas
 from openalea.core.path import path
@@ -177,9 +177,9 @@ def test_create_organ_dimensions_table_relative_dataframe_linear():
 
 
 @with_setup(reinit_random_state)
-def test_fit_adel_input_data_min_min():
-    user_leaf_dynamic_parameters_completeness = fit_adel_input_data.DataCompleteness.MIN
-    user_dims_completeness = fit_adel_input_data.DataCompleteness.MIN
+def test_generate_adel_input_data_min_min():
+    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.MIN
+    user_dims_completeness = generate_adel_input_data.DataCompleteness.MIN
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = {'a_cohort': 0.0102, 
                        'TT_col_0': -0.771289027, 
@@ -188,7 +188,7 @@ def test_fit_adel_input_data_min_min():
                        'n1': 3.24283148,
                        'n2': 5.8}
     user_dims = pandas.read_csv(min_min_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
+    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -226,13 +226,13 @@ def test_fit_adel_input_data_min_min():
 
          
 @with_setup(reinit_random_state)
-def test_fit_adel_input_data_short_short():
-    user_leaf_dynamic_parameters_completeness = fit_adel_input_data.DataCompleteness.SHORT
-    user_dims_completeness = fit_adel_input_data.DataCompleteness.SHORT
+def test_generate_adel_input_data_short_short():
+    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.SHORT
+    user_dims_completeness = generate_adel_input_data.DataCompleteness.SHORT
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(short_short_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
     user_dims = pandas.read_csv(short_short_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
+    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -270,13 +270,13 @@ def test_fit_adel_input_data_short_short():
 
 
 @with_setup(reinit_random_state)
-def test_fit_adel_input_data_full_full():
-    user_leaf_dynamic_parameters_completeness = fit_adel_input_data.DataCompleteness.FULL
-    user_dims_completeness = fit_adel_input_data.DataCompleteness.FULL
+def test_generate_adel_input_data_full_full():
+    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.FULL
+    user_dims_completeness = generate_adel_input_data.DataCompleteness.FULL
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(full_full_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
     user_dims = pandas.read_csv(full_full_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = fit_adel_input_data.fit_adel_input_data(user_leaf_dynamic_parameters,
+    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims,
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -330,7 +330,7 @@ def _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_d
 pm = PackageManager()
 pm.init(verbose=False)
 
-def test_fit_adel_input_data():
-    res = run(('alinea.adel.Tutorials','fit_adel_input_data'), {}, pm=pm)
+def test_generate_adel_input_data():
+    res = run(('alinea.adel.Tutorials','generate_adel_input_data'), {}, pm=pm)
     assert res == []
 

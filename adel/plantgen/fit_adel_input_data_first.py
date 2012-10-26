@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -16,7 +16,7 @@
 '''This module is a facade for the first step of Adel input data fitting .
 '''  
 
-from adel.fit import axis_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
+from adel.plantgen import axis_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -20,7 +20,7 @@ import random
 import numpy as np
 import pandas
 
-from adel.fit import fitting_tools, fit_config
+from adel.plantgen import fitting_tools, fit_config
 
 
 def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):

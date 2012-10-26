@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -15,7 +15,7 @@
 ###############################################################################
 '''This module is a facade for the second step of Adel input data fitting .
 '''  
-from adel.fit import axis_table_fitting, phen_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
+from adel.plantgen import axis_table_fitting, phen_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
 
 def fit_adel_input_data_second(first_axis_table_dataframe, user_organ_dimensions_table_dataframe, user_parameter_table_dataframe, 
                                GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 

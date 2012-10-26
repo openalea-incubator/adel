@@ -79,23 +79,6 @@ fit_fit_leaf = Factory(name='fit midrib',
                )
 
 
-
-
-fit_adel_input_data_fit_adel_input_data = Factory(name='fit_adel_input_data',
-                authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Fit ADEL input data.',
-                category='data processing',
-                nodemodule='fit_adel_input_data',
-                nodeclass='fit_adel_input_data',
-                inputs=None,
-                outputs=({'interface': IInt, 'name': 'axis_table', 'desc': 'the axis table'}, {'interface': IInt, 'name': 'absolute_phen_table', 'desc': 'the absolute phen table'}, {'interface': IInt, 'name': 'relative_phen_table', 'desc': 'the relative phen table'}, {'interface': IInt, 'name': 'absolute_organ_dimensions_table', 'desc': 'the absolute dim table'}, {'interface': IInt, 'name': 'leaf_dynamic_parameters_table', 'desc': 'the leaf_dynamic_parameters table'}, {'interface': IInt, 'name': 'first_leaf_phen_table', 'desc': 'the first leaf phen table'}, {'interface': IInt, 'name': 'HS_GL_SSI_dynamic_table', 'desc': 'the HS_GL_SSI dynamic table'}, {'interface': IInt, 'name': 'relative_organ_dimensions_table', 'desc': 'the relative dim table'}, {'interface': IInt, 'name': 'tillering_dynamic_table', 'desc': 'the tillering dynamic table'}),
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
 dimension_fitting_dimension_fitting = Factory(name='dimension_fitting',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='',

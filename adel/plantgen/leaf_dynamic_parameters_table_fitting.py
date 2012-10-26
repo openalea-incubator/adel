@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Adel.Fit
+#       Adel.PlantGen
 #
 #       Copyright 2006-2012 INRIA - CIRAD - INRA
 #
@@ -17,7 +17,7 @@ import numpy as np
 import pandas
 from scipy.optimize import leastsq
 
-from adel.fit import fit_config
+from adel.plantgen import fit_config
 
 
 def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):

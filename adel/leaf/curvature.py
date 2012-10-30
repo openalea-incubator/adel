@@ -7,6 +7,17 @@ from openalea.plantgl.all import *
 from curve_discretizer import curve_discretizer
 from alinea.adel.fitting import curvilinear_abscisse
 
+def curvature_xys(x,y,s):
+    ds = np.diff(s)
+    dx, dy = np.diff(x), np.diff(y)
+    #dx /= ds
+    #dy /= ds
+    theta = np.arctan2(dy,dx)
+    
+    dtheta = np.diff(theta) / ds[1:]
+    return (x[0], y[0]), theta[0], s, dtheta
+
+
 def curvature(crv, n=100):
     """ Compute the curvature of a 2D curve.
 

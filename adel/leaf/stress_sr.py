@@ -82,6 +82,8 @@ def stress_sr(s, r, d):
 
     return new_s, r,
 
+    
+# a changer avec passage par curvature ?    
 def stress_xy(s, x, y, d):
     '''    
     '''

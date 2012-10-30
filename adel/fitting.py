@@ -301,6 +301,7 @@ def leaf_to_mesh(x, y, r, **kwds):
     return points, indices
 
 def _mesh(leaf, length_max, length, radius_max, antisens = True, functor=leaf_to_mesh, **kwds):
+    from alinea.adel.leaf.curvature import curvature_xys, curvature2xy
     if length <= 0.: return
     if length > length_max:
         length = length_max
@@ -310,7 +311,7 @@ def _mesh(leaf, length_max, length, radius_max, antisens = True, functor=leaf_to
 
     n = len(x)
 
-    sample_sr = linspace(1.-param, 1., num=n)
+    sample_sr = linspace(1. - param, 1., num=n)
     if antisens:
         sample_xy = linspace(0, param, num=n)
     else:
@@ -318,6 +319,10 @@ def _mesh(leaf, length_max, length, radius_max, antisens = True, functor=leaf_to
 
     xn = interp(sample_xy, s, x) * length_max
     yn = interp(sample_xy, s, y) * length_max
+    if not antisens:
+        p, theta, _s, dtheta = curvature_xys(x,y,s)
+        pn, thetan, sn, dthetan = curvature_xys(xn,yn,sample_xy * length_max)
+        xn, yn = curvature2xy((0,0), theta, sn, dthetan)
     rn = interp(sample_sr, s, r) * radius_max
 
     return functor(xn, yn, rn, **kwds)

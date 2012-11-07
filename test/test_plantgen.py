@@ -1,7 +1,7 @@
 import random
 
-from adel.plantgen import axis_table_fitting, organ_dimensions_table_fitting, phen_table_fitting, \
-    generate_adel_input_data, leaf_dynamic_parameters_table_fitting
+from adel.plantgen import axis_table, organ_dimensions_table, phen_table, \
+    gen_adel_input_data, leaf_dynamic_parameters_table
 import numpy as np
 import pandas
 from openalea.core.path import path
@@ -22,7 +22,7 @@ GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_nff = {'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178}
 
-expected_results_dir = path('data/test_fitting2')
+expected_results_dir = path('data/test_plantgen')
 default_expected_results_dir = expected_results_dir.joinpath('default')
 min_min_expected_results_dir = expected_results_dir.joinpath('min_min')
 short_short_expected_results_dir = expected_results_dir.joinpath('short_short')
@@ -44,7 +44,7 @@ def reinit_random_state():
 @with_setup(reinit_random_state)
 def test_generate_axes():
     expected_axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
-    axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
+    axis_table_dataframe = axis_table.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     test_table_filepath = default_results.joinpath('linear_first_axis_table.csv')
     axis_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -52,10 +52,10 @@ def test_generate_axes():
 
 
 @with_setup(reinit_random_state)
-def test_fit_user_leaf_dynamic_parameters_first():
+def test_gen_user_leaf_dynamic_parameters_first():
     axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
     expected_leaf_dynamic_parameters_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_dynamic_parameters_table.csv')
-    leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table.gen_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
     test_table_filepath = default_results.joinpath('linear_first_leaf_dynamic_parameters_table.csv')
     leaf_dynamic_parameters_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -63,10 +63,10 @@ def test_fit_user_leaf_dynamic_parameters_first():
 
 
 @with_setup(reinit_random_state)
-def test_fit_organ_dimensions_table_first():
+def test_gen_organ_dimensions_table_first():
     leaf_dynamic_parameters_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_dynamic_parameters_table.csv')
     expected_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_organ_dimensions_table.csv')
-    organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_first(leaf_dynamic_parameters_table_dataframe)
+    organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_first(leaf_dynamic_parameters_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_first_organ_dimensions_table.csv')
     organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -74,11 +74,11 @@ def test_fit_organ_dimensions_table_first():
 
         
 @with_setup(reinit_random_state)
-def test_fit_user_leaf_dynamic_parameters_second_linear():
+def test_gen_user_leaf_dynamic_parameters_second_linear():
     user_parameter_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_leaf_dynamic_parameters_table.csv')
     user_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_organ_dimensions_table.csv')
     expected_fitted_parameter_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
-    second_leaf_dynamic_parameters_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number)
+    second_leaf_dynamic_parameters_dataframe = leaf_dynamic_parameters_table.gen_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number)
     test_table_filepath = default_results.joinpath('linear_second_leaf_dynamic_parameters_table.csv')
     second_leaf_dynamic_parameters_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -86,10 +86,10 @@ def test_fit_user_leaf_dynamic_parameters_second_linear():
     
 
 @with_setup(reinit_random_state)
-def test_fit_phen_table_second_linear():
+def test_gen_phen_table_second_linear():
     second_leaf_dynamic_parameters_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
     expected_absolute_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_absolute_phen_table.csv')
-    absolute_phen_table_dataframe = phen_table_fitting.fit_phen_table_second(second_leaf_dynamic_parameters_dataframe)
+    absolute_phen_table_dataframe = phen_table.gen_phen_table_second(second_leaf_dynamic_parameters_dataframe)
     test_table_filepath = default_results.joinpath('linear_second_absolute_phen_table.csv')
     absolute_phen_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -97,10 +97,10 @@ def test_fit_phen_table_second_linear():
 
 
 @with_setup(reinit_random_state)
-def test_create_first_leaf_phen_table_dataframe_linear():
+def test_gen_first_leaf_phen_table_dataframe_linear():
     absolute_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_first_leaf_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_phen_table.csv')
-    first_leaf_phen_table_dataframe = phen_table_fitting.create_first_leaf_phen_table_dataframe(absolute_phen_table_dataframe)
+    first_leaf_phen_table_dataframe = phen_table.gen_first_leaf_phen_table_dataframe(absolute_phen_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_first_leaf_phen_table.csv')
     first_leaf_phen_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -108,11 +108,11 @@ def test_create_first_leaf_phen_table_dataframe_linear():
 
 
 @with_setup(reinit_random_state)
-def test_create_phen_table_relative_dataframe_linear():
+def test_gen_phen_table_relative_dataframe_linear():
     absolute_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_relative_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_relative_phen_table.csv')
     first_leaf_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_phen_table.csv')
-    relative_phen_table_dataframe = phen_table_fitting.create_phen_table_relative_dataframe(absolute_phen_table_dataframe, first_leaf_phen_table_dataframe)
+    relative_phen_table_dataframe = phen_table.gen_phen_table_relative_dataframe(absolute_phen_table_dataframe, first_leaf_phen_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_second_relative_phen_table.csv')
     relative_phen_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -120,10 +120,10 @@ def test_create_phen_table_relative_dataframe_linear():
 
 
 @with_setup(reinit_random_state)
-def test_create_HS_GL_SSI_dynamic_dataframe_linear():
+def test_gen_HS_GL_SSI_dynamic_dataframe_linear():
     second_leaf_dynamic_parameters_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_leaf_dynamic_parameters_table.csv')
     expected_HS_GL_SSI_dynamic_dataframe = pandas.read_csv(default_expected_results_dir/'linear_HS_GL_SSI_dynamic_table.csv')
-    HS_GL_SSI_dynamic_dataframe = phen_table_fitting.create_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe)
+    HS_GL_SSI_dynamic_dataframe = phen_table.gen_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_HS_GL_SSI_dynamic_table.csv')
     HS_GL_SSI_dynamic_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -131,11 +131,11 @@ def test_create_HS_GL_SSI_dynamic_dataframe_linear():
 
 
 @with_setup(reinit_random_state)
-def test_fit_axis_table_second_linear():
+def test_gen_axis_table_second_linear():
     first_axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
     expected_second_axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_axis_table.csv')
     first_leaf_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_leaf_phen_table.csv')
-    second_axis_table_dataframe = axis_table_fitting.fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number)
+    second_axis_table_dataframe = axis_table.gen_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number)
     test_table_filepath = default_results.joinpath('linear_second_axis_table.csv')
     second_axis_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -143,11 +143,11 @@ def test_fit_axis_table_second_linear():
  
 
 @with_setup(reinit_random_state)
-def test_fit_organ_dimensions_table_second_linear():
+def test_gen_organ_dimensions_table_second_linear():
     user_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_user_organ_dimensions_table.csv')
     absolute_phen_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_absolute_phen_table.csv')
     expected_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_organ_dimensions_table.csv')
-    organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_phen_table_dataframe)
+    organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_phen_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_second_organ_dimensions_table.csv')
     organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -155,10 +155,10 @@ def test_fit_organ_dimensions_table_second_linear():
 
 
 @with_setup(reinit_random_state)
-def test_create_tillering_dynamic_dataframe():
+def test_gen_tillering_dynamic_dataframe():
     axis_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_first_axis_table.csv')
     expected_tillering_dynamic_dataframe = pandas.read_csv(default_expected_results_dir/'tillering_dynamic_table.csv')
-    tillering_dynamic_dataframe = axis_table_fitting.create_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
+    tillering_dynamic_dataframe = axis_table.gen_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
     test_table_filepath = default_results.joinpath('tillering_dynamic_table.csv')
     tillering_dynamic_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -166,10 +166,10 @@ def test_create_tillering_dynamic_dataframe():
 
 
 @with_setup(reinit_random_state)
-def test_create_organ_dimensions_table_relative_dataframe_linear():
+def test_gen_organ_dimensions_table_relative_dataframe_linear():
     absolute_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_second_organ_dimensions_table.csv')
     expected_relative_organ_dimensions_table_dataframe = pandas.read_csv(default_expected_results_dir/'linear_relative_organ_dimensions_table.csv')
-    relative_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.create_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe)
+    relative_organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe)
     test_table_filepath = default_results.joinpath('linear_relative_organ_dimensions_table.csv')
     relative_organ_dimensions_table_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -177,9 +177,9 @@ def test_create_organ_dimensions_table_relative_dataframe_linear():
 
 
 @with_setup(reinit_random_state)
-def test_generate_adel_input_data_min_min():
-    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.MIN
-    user_dims_completeness = generate_adel_input_data.DataCompleteness.MIN
+def test_gen_adel_input_data_min_min():
+    user_leaf_dynamic_parameters_completeness = gen_adel_input_data.DataCompleteness.MIN
+    user_dims_completeness = gen_adel_input_data.DataCompleteness.MIN
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = {'a_cohort': 0.0102, 
                        'TT_col_0': -0.771289027, 
@@ -188,7 +188,7 @@ def test_generate_adel_input_data_min_min():
                        'n1': 3.24283148,
                        'n2': 5.8}
     user_dims = pandas.read_csv(min_min_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
+    results = gen_adel_input_data.gen_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -226,13 +226,13 @@ def test_generate_adel_input_data_min_min():
 
          
 @with_setup(reinit_random_state)
-def test_generate_adel_input_data_short_short():
-    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.SHORT
-    user_dims_completeness = generate_adel_input_data.DataCompleteness.SHORT
+def test_gen_adel_input_data_short_short():
+    user_leaf_dynamic_parameters_completeness = gen_adel_input_data.DataCompleteness.SHORT
+    user_dims_completeness = gen_adel_input_data.DataCompleteness.SHORT
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(short_short_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
     user_dims = pandas.read_csv(short_short_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
+    results = gen_adel_input_data.gen_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims, 
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -270,13 +270,13 @@ def test_generate_adel_input_data_short_short():
 
 
 @with_setup(reinit_random_state)
-def test_generate_adel_input_data_full_full():
-    user_leaf_dynamic_parameters_completeness = generate_adel_input_data.DataCompleteness.FULL
-    user_dims_completeness = generate_adel_input_data.DataCompleteness.FULL
+def test_gen_adel_input_data_full_full():
+    user_leaf_dynamic_parameters_completeness = gen_adel_input_data.DataCompleteness.FULL
+    user_dims_completeness = gen_adel_input_data.DataCompleteness.FULL
     TT_col_break = 0.0
     user_leaf_dynamic_parameters = pandas.read_csv(full_full_expected_results_dir/'user_leaf_dynamic_parameters_table.csv')
     user_dims = pandas.read_csv(full_full_expected_results_dir/'user_organ_dimensions_table.csv')
-    results = generate_adel_input_data.generate_adel_input_data(user_leaf_dynamic_parameters,
+    results = gen_adel_input_data.gen_adel_input_data(user_leaf_dynamic_parameters,
                                                       user_dims,
                                                       plant_number, 
                                                       cohort_probabilities, 
@@ -330,7 +330,7 @@ def _check_results(to_compare, user_leaf_dynamic_parameters_completeness, user_d
 pm = PackageManager()
 pm.init(verbose=False)
 
-def test_generate_adel_input_data():
-    res = run(('alinea.adel.Tutorials','generate_adel_input_data'), {}, pm=pm)
+def test_gen_adel_input_data():
+    res = run(('alinea.adel.Tutorials','gen_adel_input_data'), {}, pm=pm)
     assert res == []
 

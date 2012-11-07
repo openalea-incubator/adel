@@ -17,10 +17,10 @@ import numpy as np
 import pandas
 from scipy.optimize import leastsq
 
-from adel.plantgen import fit_config
+from adel.plantgen import gen_config
 
 
-def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
+def gen_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
     '''
     Initialize the leaf_dynamic_parameters table.
     :Parameters:
@@ -34,7 +34,7 @@ def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
     ''' 
     id_phen_without_duplicate_list = list(set(first_axis_table_id_phen_list))
     N_cohort = [float(str(int(id_phen))[:-2]) for id_phen in id_phen_without_duplicate_list]
-    axis_frequency_list = _create_axis_frequency_list(first_axis_table_id_phen_list, id_phen_without_duplicate_list)
+    axis_frequency_list = _gen_axis_frequency_list(first_axis_table_id_phen_list, id_phen_without_duplicate_list)
     Nff = [float(str(int(id_phen))[-2:]) for id_phen in id_phen_without_duplicate_list]
     a_cohort_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
     TT_col_0_list = [np.nan for i in range(len(id_phen_without_duplicate_list))]
@@ -61,7 +61,7 @@ def fit_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
     return sorted_leaf_dynamic_parameters_table_dataframe
 
 
-def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_table_id_phen_without_duplicate_list):
+def _gen_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_table_id_phen_without_duplicate_list):
     '''
     Create a list of axis frequency.
     :Parameters:
@@ -80,7 +80,7 @@ def _create_axis_frequency_list(first_axis_table_id_phen_from_list, first_axis_t
     return axis_frequency_list
 
 
-def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=fit_config.leaf_number_delay_MS_cohort_dict):
+def gen_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number, leaf_number_delay_MS_cohort_dict=gen_config.leaf_number_delay_MS_cohort_dict):
     '''
     Fit user observations. A minimal set of observations must be provided. 
     If the user does not provide complete observations, the missing observations are fitted, using the minimal set of 
@@ -204,26 +204,26 @@ def fit_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user
     MS_df = user_parameter_table_dataframe[user_parameter_table_dataframe['N_cohort'] == 1.0]
     most_frequent_MS_df = MS_df.ix[0:0]
     decimal_elongated_internode_number = _calculate_decimal_elongated_internode_number(user_organ_dimensions_table_dataframe)
-    most_frequent_MS_df = _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number)
+    most_frequent_MS_df = _gen_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number)
     other_MS_df = MS_df.ix[1:]
-    other_MS_df = _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df)
-    other_MS_df = _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df)
+    other_MS_df = _gen_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df)
+    other_MS_df = _gen_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df)
     tiller_axes_df = user_parameter_table_dataframe[user_parameter_table_dataframe['N_cohort'] != 1.0]
     grouped = tiller_axes_df.groupby('N_cohort')
     most_frequent_tiller_axes = []
     for N_cohort, group_indexes in grouped.groups.iteritems():
         most_frequent_tiller_axes.append(tiller_axes_df.ix[group_indexes[0:1]])
     most_frequent_tiller_axes_df = pandas.concat(most_frequent_tiller_axes)
-    most_frequent_tiller_axes_df = _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
-    most_frequent_tiller_axes_df = _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
+    most_frequent_tiller_axes_df = _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
+    most_frequent_tiller_axes_df = _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df)
     other_tiller_axes_df = tiller_axes_df.drop(most_frequent_tiller_axes_df.index)
-    other_tiller_axes_df = _fit_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
-    other_tiller_axes_df = _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
+    other_tiller_axes_df = _gen_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
+    other_tiller_axes_df = _gen_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df)
     
     return pandas.concat([most_frequent_MS_df, other_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df]).sort()
     
 
-def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number):
+def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_internode_number, GL_number):
     '''return fitted version of most_frequent_MS_df.'''
     # fit of t1
     most_frequent_MS_df = most_frequent_MS_df.copy()
@@ -274,7 +274,7 @@ def _fit_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
     return most_frequent_MS_df
 
 
-def _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df):
+def _gen_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df):
     '''return fitted version of other_MS_df.'''
     other_MS_df = other_MS_df.copy()  
     if other_MS_df['TT_col_0'].count() != other_MS_df['TT_col_0'].size:
@@ -294,7 +294,7 @@ def _fit_other_MS_HS_dynamic(most_frequent_MS_df, other_MS_df):
     return other_MS_df
 
 
-def _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df):
+def _gen_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df):
     '''return fitted version of other_MS_df.'''
     other_MS_df = other_MS_df.copy()
     # n1
@@ -329,7 +329,7 @@ def _fit_other_MS_GL_dynamic(most_frequent_MS_df, other_MS_df):
     return other_MS_df
 
 
-def _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
+def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
     '''return fitted version of most_frequent_tiller_axes_df.'''
     most_frequent_tiller_axes_df = most_frequent_tiller_axes_df.copy()
     # TT_col_break
@@ -338,7 +338,7 @@ def _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent
     nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.index - without_nan_most_frequent_tiller_axis_indexes
     # TT_col_0
     cohorts = most_frequent_tiller_axes_df['N_cohort'].ix[nan_most_frequent_tiller_axis_indexes].astype(int).values
-    leaf_number_delay_MS_cohorts = np.array([fit_config.leaf_number_delay_MS_cohort_dict[cohort] for cohort in cohorts])
+    leaf_number_delay_MS_cohorts = np.array([gen_config.leaf_number_delay_MS_cohort_dict[cohort] for cohort in cohorts])
     most_frequent_tiller_axes_df['TT_col_0'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS_df['a_cohort'][0])
     # dTT_MS_cohort: nothing to do.
     # TT_col_nff
@@ -351,7 +351,7 @@ def _fit_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent
     return most_frequent_tiller_axes_df
 
 
-def _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
+def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df):
     '''return fitted version of most_frequent_tiller_axes_df.'''
     most_frequent_tiller_axes_df = most_frequent_tiller_axes_df.copy()
     without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes_df.dropna(subset=['n1']).index
@@ -367,7 +367,7 @@ def _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent
     if n1_hs_t1_df.index.size != 0:
         most_frequent_tiller_axes_df['n0'].ix[nan_most_frequent_tiller_axis_indexes] = n1_hs_t1_df.apply(np.min, 1)                      
     # n2
-    most_frequent_tiller_axes_df['n2'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['n2'][0] * (1.0 - fit_config.n2_MS_div_n2_cohort)
+    most_frequent_tiller_axes_df['n2'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS_df['n2'][0] * (1.0 - gen_config.n2_MS_div_n2_cohort)
     # t0
     if most_frequent_MS_df['TT_col_break'][0] == 0.0: # linear mode
         most_frequent_tiller_axes_df['t0'] = most_frequent_tiller_axes_df['TT_col_0'] + most_frequent_tiller_axes_df['n0'] / most_frequent_tiller_axes_df['a_cohort']
@@ -387,7 +387,7 @@ def _fit_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent
     return most_frequent_tiller_axes_df
     
 
-def _fit_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
+def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
     '''return fitted version of other_tiller_axes_df.'''
     other_tiller_axes_df = other_tiller_axes_df.copy()
     # TT_col_break
@@ -414,7 +414,7 @@ def _fit_other_tiller_axes_HS_dynamic(most_frequent_MS_df, most_frequent_tiller_
     return other_tiller_axes_df
     
 
-def _fit_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
+def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS_df, most_frequent_tiller_axes_df, other_tiller_axes_df):
     '''return fitted version of other_tiller_axes_df.'''
     other_tiller_axes_df = other_tiller_axes_df.copy()
     without_nan_other_tiller_axis_indexes = other_tiller_axes_df.dropna(subset=['n1']).index

@@ -16,9 +16,9 @@
 '''This module is a facade for the first step of Adel input data fitting .
 '''  
 
-from adel.plantgen import axis_table_fitting, organ_dimensions_table_fitting, leaf_dynamic_parameters_table_fitting
+from adel.plantgen import axis_table, organ_dimensions_table, leaf_dynamic_parameters_table
 
-def fit_adel_input_data_first(plant_number=100, 
+def gen_adel_input_data_first(plant_number=100, 
                               cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 
                               main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0},
                               bolting_date=500, flowering_date=1440,
@@ -45,13 +45,13 @@ def fit_adel_input_data_first(plant_number=100,
     :rtype: a tuple of pandas.DataFrame
     '''    
     # Create and fit AxisTable
-    axis_table_dataframe = axis_table_fitting.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
+    axis_table_dataframe = axis_table.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
     # Initialize the leaf_dynamic_parameters table
-    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table_fitting.fit_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table.gen_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
     # Initialize DimTable
-    first_organ_dimensions_table_dataframe = organ_dimensions_table_fitting.fit_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe)
+    first_organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe)
     # Create a table with tillering dynamic: TT,NbrAxes
-    tillering_dynamic_dataframe =  axis_table_fitting.create_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
+    tillering_dynamic_dataframe =  axis_table.gen_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
 
     return axis_table_dataframe, first_organ_dimensions_table_dataframe, first_leaf_dynamic_parameters_table_dataframe, tillering_dynamic_dataframe
 

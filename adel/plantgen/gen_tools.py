@@ -51,7 +51,7 @@ def find_child_cohort_indices(cohort_probabilities, parent_cohort_number=-1, fir
     return child_cohort_numbers
 
 
-def create_N_phyt_list(first_axis_table_index_axis_list, 
+def gen_N_phyt_list(first_axis_table_index_axis_list, 
                        main_stem_leaves_number_probability_distribution,
                        secondary_stem_leaves_number_coefficients):
     '''
@@ -78,11 +78,11 @@ def create_N_phyt_list(first_axis_table_index_axis_list,
         if cohort_number == 1:
             # It is the main stem, then the leaves number has to satisfy the probability distribution defined  
             # in main_stem_leaves_number_probability_distribution
-            MS_final_leaves_number = _fit_MS_final_leaves_number(main_stem_leaves_number_probability_distribution)
+            MS_final_leaves_number = _gen_MS_final_leaves_number(main_stem_leaves_number_probability_distribution)
             leaves_number_float = MS_final_leaves_number
         else:
             # it is a secondary stem (i.e. a tiller)
-            leaves_number_float = _fit_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients)
+            leaves_number_float = _gen_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients)
         fractional_part, integer_part = math.modf(leaves_number_float)
         if random.random() <= fractional_part:
             leaves_number_int = int(math.ceil(leaves_number_float))
@@ -93,7 +93,7 @@ def create_N_phyt_list(first_axis_table_index_axis_list,
     return N_phyt_list
 
 
-def _fit_MS_final_leaves_number(main_stem_leaves_number_probability_distribution):
+def _gen_MS_final_leaves_number(main_stem_leaves_number_probability_distribution):
     random_value = random.random()
     probabilities_sum = 0.0
     for leaves_number_str, leaves_probability in main_stem_leaves_number_probability_distribution.iteritems():
@@ -104,7 +104,7 @@ def _fit_MS_final_leaves_number(main_stem_leaves_number_probability_distribution
     return MS_final_leaves_number
 
 
-def _fit_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients):
+def _gen_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, secondary_stem_leaves_number_coefficients):
     a_1 = secondary_stem_leaves_number_coefficients['a_1']
     a_2 = secondary_stem_leaves_number_coefficients['a_2']
     return a_1* MS_final_leaves_number - a_2 * cohort_number

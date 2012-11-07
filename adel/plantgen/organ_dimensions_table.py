@@ -20,7 +20,7 @@ import pandas
 import numpy as np
 
 
-def fit_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe):
+def gen_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe):
     '''
     Fit the dim table: first step.
     :Parameters:
@@ -32,8 +32,8 @@ def fit_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_datafra
     :return: The first dim table.
     :rtype: pandas.DataFrame
     '''
-    id_dim_list = _create_id_dim_list(first_leaf_dynamic_parameters_table_dataframe)
-    absolute_index_phytomer_list = _create_absolute_index_phytomer_list(id_dim_list)
+    id_dim_list = _gen_id_dim_list(first_leaf_dynamic_parameters_table_dataframe)
+    absolute_index_phytomer_list = _gen_absolute_index_phytomer_list(id_dim_list)
     L_blade_list = [np.nan for i in range(len(id_dim_list))]
     W_blade_list = [np.nan for i in range(len(id_dim_list))]
     L_sheath_list = [np.nan for i in range(len(id_dim_list))]
@@ -44,7 +44,7 @@ def fit_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_datafra
     return pandas.DataFrame(dim_array, columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'], dtype=float)
     
 
-def fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_second_phen_table_dataframe):
+def gen_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_second_phen_table_dataframe):
     '''
     Fit the dim table: second step.
     :Parameters:
@@ -66,9 +66,9 @@ def fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, abs
     first_row_number_to_fit = user_organ_dimensions_table_dataframe['L_blade'].last_valid_index() + 1
     organ_dimensions_table_copy_dataframe = user_organ_dimensions_table_dataframe.copy()
     organ_dimensions_table_copy_dataframe['TT_em_phytomer'] = pandas.Series(absolute_second_phen_table_dataframe.drop(absolute_second_phen_table_dataframe.groupby('index_phytomer').groups[0.0])['TT_em_phytomer'].values)
-    organ_dimensions_table_copy_dataframe['L_blade'] = _fit_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_blade'], first_axis_rows_number, first_row_number_to_fit)
-    organ_dimensions_table_copy_dataframe['L_sheath'] = _fit_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_sheath'], first_axis_rows_number, first_row_number_to_fit)
-    organ_dimensions_table_copy_dataframe['L_internode'] = _fit_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_internode'], first_axis_rows_number, first_row_number_to_fit, True)
+    organ_dimensions_table_copy_dataframe['L_blade'] = _gen_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_blade'], first_axis_rows_number, first_row_number_to_fit)
+    organ_dimensions_table_copy_dataframe['L_sheath'] = _gen_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_sheath'], first_axis_rows_number, first_row_number_to_fit)
+    organ_dimensions_table_copy_dataframe['L_internode'] = _gen_length(organ_dimensions_table_copy_dataframe['TT_em_phytomer'], organ_dimensions_table_copy_dataframe['L_internode'], first_axis_rows_number, first_row_number_to_fit, True)
     
     W_internode_first_axis_rows_series = organ_dimensions_table_copy_dataframe['W_internode'][:first_axis_rows_number]
     first_null_axis_rows_series = W_internode_first_axis_rows_series[W_internode_first_axis_rows_series == 0.0]
@@ -78,14 +78,14 @@ def fit_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, abs
     first_axis_W_internode_tuple = (organ_dimensions_table_copy_dataframe['W_internode'][position_of_first_non_null_data], organ_dimensions_table_copy_dataframe['W_internode'][first_axis_rows_number - 1])
     first_axis_TT_em_phytomer_tuple = (organ_dimensions_table_copy_dataframe['TT_em_phytomer'][position_of_first_non_null_data], organ_dimensions_table_copy_dataframe['TT_em_phytomer'][first_axis_rows_number - 1])
     for name, group in organ_dimensions_table_copy_dataframe[first_row_number_to_fit:].groupby(by='id_dim'):
-        organ_dimensions_table_copy_dataframe['W_blade'][group.index] = _fit_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_blade_tuple)
-        organ_dimensions_table_copy_dataframe['W_sheath'][group.index] = _fit_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_sheath_tuple)
-        organ_dimensions_table_copy_dataframe['W_internode'][group.index] = _fit_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_internode_tuple, True)
+        organ_dimensions_table_copy_dataframe['W_blade'][group.index] = _gen_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_blade_tuple)
+        organ_dimensions_table_copy_dataframe['W_sheath'][group.index] = _gen_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_sheath_tuple)
+        organ_dimensions_table_copy_dataframe['W_internode'][group.index] = _gen_width(group['TT_em_phytomer'], first_axis_TT_em_phytomer_tuple, first_axis_W_internode_tuple, True)
     
     return organ_dimensions_table_copy_dataframe.drop(['TT_em_phytomer'], axis=1)
 
 
-def _create_id_dim_list(first_leaf_dynamic_parameters_dataframe):
+def _gen_id_dim_list(first_leaf_dynamic_parameters_dataframe):
     '''
     Create id_dim list.
     :Parameters:
@@ -106,7 +106,7 @@ def _create_id_dim_list(first_leaf_dynamic_parameters_dataframe):
     return id_dim_list
 
 
-def _create_absolute_index_phytomer_list(first_leaf_dynamic_parameters_table_id_dim_list):
+def _gen_absolute_index_phytomer_list(first_leaf_dynamic_parameters_table_id_dim_list):
     '''
     Create list of absolute phytomer index.
     :Parameters:
@@ -127,7 +127,7 @@ def _create_absolute_index_phytomer_list(first_leaf_dynamic_parameters_table_id_
     return absolute_index_phytomer_list
 
 
-def _fit_length(user_organ_dimensions_table_TT_em_phytomer_series, user_organ_dimensions_table_L_series, first_axis_rows_number, first_row_number_to_fit, is_internode=False):
+def _gen_length(user_organ_dimensions_table_TT_em_phytomer_series, user_organ_dimensions_table_L_series, first_axis_rows_number, first_row_number_to_fit, is_internode=False):
     '''
     Fit L_series.
     :Parameters:
@@ -165,7 +165,7 @@ def _fit_length(user_organ_dimensions_table_TT_em_phytomer_series, user_organ_di
     return fitted_length_series
 
 
-def _fit_width(user_organ_dimensions_table_TT_em_phytomer_sub_series, first_axis_TT_em_phytomer_tuple, first_axis_W_tuple, is_internode=False):
+def _gen_width(user_organ_dimensions_table_TT_em_phytomer_sub_series, first_axis_TT_em_phytomer_tuple, first_axis_W_tuple, is_internode=False):
     '''
     Fit width.
     :Parameters:
@@ -204,7 +204,7 @@ def _fit_width(user_organ_dimensions_table_TT_em_phytomer_sub_series, first_axis
     return fitted_width_series.clip_lower(0.0)
 
 
-def create_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe):
+def gen_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe):
     '''
     Create the relative dim table table dataframe from the absolute one. 
     :Parameters:

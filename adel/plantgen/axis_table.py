@@ -20,7 +20,7 @@ import random
 import numpy as np
 import pandas
 
-from adel.plantgen import fitting_tools, fit_config
+from adel.plantgen import gen_tools, gen_config
 
 
 def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution):
@@ -49,14 +49,14 @@ def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_pr
     :rtype: pandas.DataFrame
     '''
     plant_ids = range(1,plant_number + 1)
-    index_axis_list = _create_index_axis_list(plant_ids, cohort_probabilities)
-    index_plt_list = _create_index_plt_list(plant_ids, index_axis_list)
-    N_phyt_list = fitting_tools.create_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, fit_config.secondary_stem_leaves_number_coefficients)
+    index_axis_list = _gen_index_axis_list(plant_ids, cohort_probabilities)
+    index_plt_list = _gen_index_plt_list(plant_ids, index_axis_list)
+    N_phyt_list = gen_tools.gen_N_phyt_list(index_axis_list, main_stem_leaves_number_probability_distribution, gen_config.secondary_stem_leaves_number_coefficients)
     TT_stop_axis_list = [np.nan for i in range(len(index_axis_list))]
     TT_del_axis_list = [np.nan for i in range(len(index_axis_list))]
-    id_dim_list = _create_id_dim_list(index_axis_list, N_phyt_list)
-    id_phen_list = _create_id_phen_list(index_axis_list, N_phyt_list)
-    id_ear_list = _create_id_ear_list(index_plt_list)
+    id_dim_list = _gen_id_dim_list(index_axis_list, N_phyt_list)
+    id_phen_list = _gen_id_phen_list(index_axis_list, N_phyt_list)
+    id_ear_list = _gen_id_ear_list(index_plt_list)
     TT_em_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
     TT_col_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
     TT_sen_phytomer1_list = [np.nan for i in range(len(index_axis_list))]
@@ -65,7 +65,7 @@ def generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_pr
     return pandas.DataFrame(axis_table_array, columns=['id_plt', 'id_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'], dtype=float)
 
 
-def fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number):
+def gen_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number):
     '''
     Fit the axis table: second step.
     :Parameters:
@@ -90,14 +90,14 @@ def fit_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_data
     (second_axis_table_dataframe['TT_em_phytomer1'], 
      second_axis_table_dataframe['TT_col_phytomer1'], 
      second_axis_table_dataframe['TT_sen_phytomer1'],
-     second_axis_table_dataframe['TT_del_phytomer1']) = _create_all_TT_phytomer1_list(first_axis_table_dataframe, fit_config.emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe)
-    second_axis_table_dataframe['TT_stop_axis'] = fitting_tools.dead_or_alive_decision(first_axis_table_dataframe.index.size, final_axes_number, second_axis_table_dataframe['TT_em_phytomer1'].tolist(), bolting_date, flowering_date)
-    second_axis_table_dataframe['TT_del_axis'] = _create_TT_del_axis_list(second_axis_table_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
+     second_axis_table_dataframe['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(first_axis_table_dataframe, gen_config.emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe)
+    second_axis_table_dataframe['TT_stop_axis'] = gen_tools.dead_or_alive_decision(first_axis_table_dataframe.index.size, final_axes_number, second_axis_table_dataframe['TT_em_phytomer1'].tolist(), bolting_date, flowering_date)
+    second_axis_table_dataframe['TT_del_axis'] = _gen_TT_del_axis_list(second_axis_table_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
     
     return second_axis_table_dataframe
     
 
-def _create_index_plt_list(plant_ids, first_axis_table_index_axis_list):
+def _gen_index_plt_list(plant_ids, first_axis_table_index_axis_list):
     '''
     Create plant indexes column.
     :Parameters:
@@ -124,7 +124,7 @@ def _create_index_plt_list(plant_ids, first_axis_table_index_axis_list):
     return index_plt_list
 
 
-def _create_index_axis_list(first_axis_table_plant_ids, cohort_probabilities):
+def _gen_index_axis_list(first_axis_table_plant_ids, cohort_probabilities):
     '''
     Create index_axis column.
     :Parameters:
@@ -139,13 +139,13 @@ def _create_index_axis_list(first_axis_table_plant_ids, cohort_probabilities):
     '''
     index_axis_list = []
     for plant_id in first_axis_table_plant_ids:
-        cohort_numbers = fitting_tools.find_child_cohort_indices(cohort_probabilities)
+        cohort_numbers = gen_tools.find_child_cohort_indices(cohort_probabilities)
         cohort_numbers.sort()
         index_axis_list.extend(cohort_numbers)
     return index_axis_list
 
 
-def _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe):
+def _gen_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_standard_deviation, first_leaf_phen_table_dataframe):
     '''
     Create TT_em_phytomer1, TT_col_phytomer1, TT_sen_phytomer1 and TT_del_phytomer1.
     For each plant, define a delay of emergence, and for each axis add this delay to the first leaf development schedule.
@@ -183,7 +183,7 @@ def _create_all_TT_phytomer1_list(first_axis_table_dataframe, emf_1_main_stem_st
     return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 
-def _create_id_dim_list(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
+def _gen_id_dim_list(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
     '''
     Create id_dim column.
     :Parameters:
@@ -196,10 +196,10 @@ def _create_id_dim_list(first_axis_table_index_axis_list, first_axis_table_N_phy
     :return: The id_dim column.
     :rtype: list
     '''
-    return _create_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list)
+    return _gen_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list)
 
 
-def _create_id_phen_list(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
+def _gen_id_phen_list(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
     '''
     Create id_phen column.
     :Parameters:
@@ -212,10 +212,10 @@ def _create_id_phen_list(first_axis_table_index_axis_list, first_axis_table_N_ph
     :return: The id_phen column.
     :rtype: list
     '''
-    return _create_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list)
+    return _gen_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list)
 
 
-def _create_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
+def _gen_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
     '''
     Create id column.
     :Parameters:
@@ -234,7 +234,7 @@ def _create_ids(first_axis_table_index_axis_list, first_axis_table_N_phyt_list):
     return id_list
 
 
-def _create_id_ear_list(first_axis_table_index_plt_list):
+def _gen_id_ear_list(first_axis_table_index_plt_list):
     '''
     Create id_ear column.
     :Parameters:
@@ -248,7 +248,7 @@ def _create_id_ear_list(first_axis_table_index_plt_list):
     return ['1' for plant_id in first_axis_table_index_plt_list]
     
     
-def _create_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
+def _gen_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
     '''
     Create TT_del_axis column.
     :Parameters:
@@ -265,7 +265,7 @@ def _create_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
     return TT_stop_axis_series + delais_TT_stop_del_axis
 
 
-def create_tillering_dynamic_dataframe(initial_date, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number):
+def gen_tillering_dynamic_dataframe(initial_date, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number):
     '''
     Create the tillering dynamic dataframe. 
     :Parameters:

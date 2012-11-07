@@ -16,8 +16,8 @@
 import numpy as np
 import pandas
 
-from adel.plantgen.fit_adel_input_data_first import fit_adel_input_data_first
-from adel.plantgen.fit_adel_input_data_second import fit_adel_input_data_second
+from adel.plantgen.gen_adel_input_data_first import gen_adel_input_data_first
+from adel.plantgen.gen_adel_input_data_second import gen_adel_input_data_second
 
 class DataCompleteness:
     MIN=1
@@ -25,7 +25,7 @@ class DataCompleteness:
     FULL=3
 
 
-def generate_adel_input_data(user_leaf_dynamic_parameters,
+def gen_adel_input_data(user_leaf_dynamic_parameters,
                         user_dims,
                         plant_number=100, 
                         cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
@@ -56,8 +56,8 @@ def generate_adel_input_data(user_leaf_dynamic_parameters,
         - `delais_TT_stop_del_axis` : Thermal time during which a tiller remains present on the plant after the tiller has stopped growing.
         - `dTT_MS_cohort` : ???
         - `TT_col_break` : ???
-        - `user_leaf_dynamic_parameters_completeness` : the level of completeness of the leaf_dynamic_parameters set by the user. See adel.plantgen.fit_adel_input_data.DataCompleteness.
-        - `user_dims_completeness` : the level of completeness of the organ dimensions set by the user. See adel.plantgen.fit_adel_input_data.DataCompleteness.
+        - `user_leaf_dynamic_parameters_completeness` : the level of completeness of the leaf_dynamic_parameters set by the user. See adel.plantgen.gen_adel_input_data.DataCompleteness.
+        - `user_dims_completeness` : the level of completeness of the organ dimensions set by the user. See adel.plantgen.gen_adel_input_data.DataCompleteness.
         
     :Types:
         - `user_leaf_dynamic_parameters` : dict | pandas.DataFrame      
@@ -145,7 +145,7 @@ def generate_adel_input_data(user_leaf_dynamic_parameters,
     (first_axis_table_dataframe, 
     organ_dimensions_table_dataframe, 
     leaf_dynamic_parameters_table_dataframe, 
-    tillering_dynamic_dataframe) = fit_adel_input_data_first(plant_number, 
+    tillering_dynamic_dataframe) = gen_adel_input_data_first(plant_number, 
                                                              cohort_probabilities, 
                                                              main_stem_leaves_number_probability_distribution, 
                                                              bolting_date, 
@@ -262,7 +262,7 @@ The values can be one of %s''', (str(user_dims_completeness),
      second_leaf_dynamic_parameters_table_dataframe, 
      first_leaf_phen_table_dataframe,
      HS_GL_SSI_dynamic_dataframe, 
-     relative_organ_dimensions_table_dataframe) = fit_adel_input_data_second(first_axis_table_dataframe, 
+     relative_organ_dimensions_table_dataframe) = gen_adel_input_data_second(first_axis_table_dataframe, 
                                                                 organ_dimensions_table_dataframe, 
                                                                 leaf_dynamic_parameters_table_dataframe, 
                                                                 GL_number, 

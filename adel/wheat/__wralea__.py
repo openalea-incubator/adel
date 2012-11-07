@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed Aug 25 20:11:15 2010
+# This file has been generated at Wed Nov 07 14:27:04 2012
 
 from openalea.core import *
 
@@ -22,13 +22,12 @@ __all__ = ['Write_Table_Write_Table', 'extract_wheat_extract_leaf_info', 'select
 
 
 Write_Table_Write_Table = Factory(name='Write_Table',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Write a table (dict) in a file',
-                category='io',
+                category='Unclassified',
                 nodemodule='Write_Table',
                 nodeclass='Write_Table',
-                inputs=[{'interface': IData, 'name': 'Table', 'value': None, 'desc': ''},
-                        {'interface': IFileStr, 'name': 'File name', 'value': None, 'desc': ''},
-                        {'interface': IBool, 'name': 'first time called ?', 'value': True, 'desc': 'determine header writing and mode for opening file (w,a)'}],
+                inputs=[{'interface': IData, 'name': 'Table', 'value': None, 'desc': ''}, {'interface': IFileStr, 'name': 'File name', 'value': None, 'desc': ''}, {'interface': IBool, 'name': 'first time called ?', 'value': True, 'desc': 'determine header writing and mode for opening file (w,a)'}, {'interface': IStr, 'name': 'sep', 'value': ' ', 'desc': ''}],
                 outputs=[{'interface': IFileStr, 'name': 'txtFile', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
@@ -38,6 +37,7 @@ Write_Table_Write_Table = Factory(name='Write_Table',
 
 
 extract_wheat_extract_leaf_info = Factory(name='extract_leaves',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Build a dict of leaves (x, y, s, r)  from R data files',
                 category='Unclassified',
                 nodemodule='extract_wheat',
@@ -52,6 +52,7 @@ extract_wheat_extract_leaf_info = Factory(name='extract_leaves',
 
 
 selectOutput_Aggregate_selectOutput_Aggregate = Factory(name='selectOutput_Aggregate',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Selection of one output of the aggregate dictionnary according to the keys and conversion into a sequence',
                 category='io',
                 nodemodule='selectOutput_Aggregate',
@@ -66,6 +67,7 @@ selectOutput_Aggregate_selectOutput_Aggregate = Factory(name='selectOutput_Aggre
 
 
 CanMTGInterpreter_CanMTGInterpreter = Factory(name='CanMTGInterpreter',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Generates a CanMTG from unctions and Lsystem string',
                 category='scene.PGL Object Generator',
                 nodemodule='CanMTGInterpreter',
@@ -80,6 +82,7 @@ CanMTGInterpreter_CanMTGInterpreter = Factory(name='CanMTGInterpreter',
 
 
 Sum_EnergyDensities_Sum_EnergyDensities = Factory(name='Sum_EnergyDensities',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Return the mean energy density for two types of elements',
                 category='data processing',
                 nodemodule='Sum_EnergyDensities',
@@ -94,6 +97,7 @@ Sum_EnergyDensities_Sum_EnergyDensities = Factory(name='Sum_EnergyDensities',
 
 
 Group_and_Apply_Group_and_Apply = Factory(name='Group and Apply',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='',
                 category='Unclassified',
                 nodemodule='Group_and_Apply',
@@ -108,6 +112,7 @@ Group_and_Apply_Group_and_Apply = Factory(name='Group and Apply',
 
 
 To_Aggregation_Table_To_Aggregation_Table = Factory(name='To_Aggregation_Table',
+                authors='Jessica Bertheloot (wralea authors)',
                 description='Return a dictionnary from the canMTG',
                 category='io',
                 nodemodule='To_Aggregation_Table',

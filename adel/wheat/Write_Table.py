@@ -1,11 +1,11 @@
-def Write_Table(Table,filename,first=True):
+def Write_Table(Table,filename,first=True,sep=' '):
     '''
     returns a string representation of the content of the table
     '''
     
-    header = [' '.join(Table.keys())]
+    header = [sep.join(Table.keys())]
     rows = zip(*[Table[k] for k in Table.keys()])
-    lines = [' '.join(map(str,r)) for r in rows]
+    lines = [sep.join(map(str,r)) for r in rows]
     mode = "a"
     if first:
         mode = "w"

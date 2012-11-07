@@ -17,6 +17,7 @@ import random
 import math
 
 import numpy as np
+from scipy.optimize import leastsq
 
 def find_child_cohort_indices(cohort_probabilities, parent_cohort_number=-1, first_child_delay=2):
     '''
@@ -159,4 +160,19 @@ def dead_or_alive_decision(max_axes_number, min_axes_number, first_axis_table_TT
         if i not in T_stop_axis_row_number_list:
             TT_stop_axis_list.insert(i, np.nan)
     return TT_stop_axis_list 
+
+
+def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
+    def residuals(p, y, x):
+        a, = p
+        err = y - peval(x, a)
+        return err
+    def peval(x, a):
+        return np.poly1d([a] + fixed_coefs)(x)
+    p, cov, infodict, mesg, ier = leastsq(residuals, a_starting_estimate, args=(y_meas_array, x_meas_array), full_output=1)
+    # RMSE_gl
+    chisq = (infodict['fvec']**2).sum()
+    dof = len(x_meas_array) - 1 # dof is degrees of freedom
+    rmse = np.sqrt(chisq / dof)
+    return p[0], rmse
 

@@ -15,9 +15,8 @@
 ###############################################################################
 import numpy as np
 import pandas
-from scipy.optimize import leastsq
 
-from adel.plantgen import gen_config
+from adel.plantgen import gen_config, gen_tools
 
 
 def gen_user_leaf_dynamic_parameters_first(first_axis_table_id_phen_list):
@@ -256,21 +255,10 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS_df, decimal_elongated_inte
     n2_0 = most_frequent_MS_df['n2'][0]
     x_meas_array = np.array([TT_col_nff_0] + GL_number.keys()) - TT_col_nff_0
     y_meas_array = np.array([n2_0] + GL_number.values())
-    b, c =  0.0, most_frequent_MS_df['c'][0]
-    def residuals(p, y, x):
-        a, = p
-        err = y - peval(x, a)
-        return err
-    def peval(x, a):
-        return np.poly1d([a, b, c, n2_0])(x)
-    p0 = [-4.0e-9]
-    p, cov, infodict, mesg, ier = leastsq(residuals, p0, args=(y_meas_array, x_meas_array), full_output=1)
-    most_frequent_MS_df['a'][0] = p[0]
-    # RMSE_gl
-    chisq = (infodict['fvec']**2).sum()
-    dof = len(x_meas_array) - 1 # dof is degrees of freedom
-    rmse = np.sqrt(chisq / dof)
-    most_frequent_MS_df['RMSE_gl'][0] = rmse
+    fixed_coefs = [0.0, most_frequent_MS_df['c'][0], n2_0]
+    a_starting_estimate = [-4.0e-9]
+    most_frequent_MS_df['a'][0], most_frequent_MS_df['RMSE_gl'][0] = \
+    gen_tools.fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate)
     return most_frequent_MS_df
 
 

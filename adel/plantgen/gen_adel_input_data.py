@@ -16,8 +16,9 @@
 import numpy as np
 import pandas
 
-from adel.plantgen.gen_adel_input_data_first import gen_adel_input_data_first
-from adel.plantgen.gen_adel_input_data_second import gen_adel_input_data_second
+from adel.plantgen import axis_table, organ_dimensions_table, \
+leaf_dynamic_parameters_table, phen_table
+
 
 class DataCompleteness:
     MIN=1
@@ -145,7 +146,7 @@ def gen_adel_input_data(user_leaf_dynamic_parameters,
     (first_axis_table_dataframe, 
     organ_dimensions_table_dataframe, 
     leaf_dynamic_parameters_table_dataframe, 
-    tillering_dynamic_dataframe) = gen_adel_input_data_first(plant_number, 
+    tillering_dynamic_dataframe) = _gen_adel_input_data_first(plant_number, 
                                                              cohort_probabilities, 
                                                              main_stem_leaves_number_probability_distribution, 
                                                              bolting_date, 
@@ -262,7 +263,7 @@ The values can be one of %s''', (str(user_dims_completeness),
      second_leaf_dynamic_parameters_table_dataframe, 
      first_leaf_phen_table_dataframe,
      HS_GL_SSI_dynamic_dataframe, 
-     relative_organ_dimensions_table_dataframe) = gen_adel_input_data_second(first_axis_table_dataframe, 
+     relative_organ_dimensions_table_dataframe) = _gen_adel_input_data_second(first_axis_table_dataframe, 
                                                                 organ_dimensions_table_dataframe, 
                                                                 leaf_dynamic_parameters_table_dataframe, 
                                                                 GL_number, 
@@ -276,4 +277,99 @@ The values can be one of %s''', (str(user_dims_completeness),
            HS_GL_SSI_dynamic_dataframe, relative_organ_dimensions_table_dataframe, tillering_dynamic_dataframe
     
     
+def _gen_adel_input_data_first(plant_number=100, 
+                              cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}, 
+                              main_stem_leaves_number_probability_distribution={'10': 0.145, '11': 0.818, '12': 0.036, '13': 0.0, '14': 0.0},
+                              bolting_date=500, flowering_date=1440,
+                              final_axes_number=250):
+    '''
+    Fit the axis table partially, initialize the leaf_dynamic_parameters table and initialize the dim table.
+    :Parameters:
+        - `plant_number` : the number of plants.
+        - `cohort_probabilities` : probability of emergence of a child axis when the parent axis is present. This probability is 
+           related to the cohort of the child axis.  
+        - `main_stem_leaves_number_probability_distribution` : the probability distribution of the main stem leaves number.
+        - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
+        - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
+        - `final_axes_number` : the final number of axes
+    :Types:
+        - `plant_number` : int.
+        - `cohort_probabilities` : dict.
+        - `main_stem_leaves_number_probability_distribution` : dict
+        - `bolting_date` : int
+        - `flowering_date` : int
+        - `final_axes_number` : int
 
+    :return: The partially fitted axis table, the initialized dim table and the initialized leaf_dynamic_parameters table.
+    :rtype: a tuple of pandas.DataFrame
+    '''    
+    # Create and fit AxisTable
+    axis_table_dataframe = axis_table.generate_axes(plant_number, cohort_probabilities, main_stem_leaves_number_probability_distribution)
+    # Initialize the leaf_dynamic_parameters table
+    first_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table.gen_user_leaf_dynamic_parameters_first(axis_table_dataframe['id_phen'].tolist())
+    # Initialize DimTable
+    first_organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_first(first_leaf_dynamic_parameters_table_dataframe)
+    # Create a table with tillering dynamic: TT,NbrAxes
+    tillering_dynamic_dataframe =  axis_table.gen_tillering_dynamic_dataframe(0, bolting_date, flowering_date, plant_number, axis_table_dataframe, final_axes_number)
+
+    return axis_table_dataframe, first_organ_dimensions_table_dataframe, first_leaf_dynamic_parameters_table_dataframe, tillering_dynamic_dataframe
+
+
+def _gen_adel_input_data_second(first_axis_table_dataframe, user_organ_dimensions_table_dataframe, user_parameter_table_dataframe, 
+                               GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
+                               bolting_date=500, flowering_date=1440, 
+                               delais_TT_stop_del_axis=600,
+                               final_axes_number=250):
+    '''
+    Complete the axis table, the dim table and the leaf_dynamic_parameters table, and create the absolute/relative phen tables.
+    Construct:
+        - the parameter table which contains the information about tillers behaviour. The leaf_dynamic_parameters table is not an input of ADEL.
+          It is used only to build the other tables: ParametersTable
+        - ADEL input data tables: second_axis_table_dataframe, relative_second_phen_table_dataframe, relative_organ_dimensions_table_dataframe
+        - tables in order the user could check the fitting results: first_leaf_phen_table_dataframe, 
+          HS_GL_SSI_dynamic_dataframe
+    
+    :Parameters:
+        - `first_axis_table_dataframe` : the first axis table.
+        - `user_organ_dimensions_table_dataframe` : the user dim table.
+        - `user_parameter_table_dataframe` : the user leaf_dynamic_parameters table.
+        - `GL_number` : the GL decimal number measured at several thermal time (including the senescence end).
+        - `bolting_date` : The bolting date. Must be positive or null, and lesser than flowering_date.
+        - `flowering_date` : The flowering date. Must be positive or null, and greater than bolting_date.
+        - `delais_TT_stop_del_axis` : Thermal time during which a tiller remains present on the plant after the tiller has stopped 
+                                      growing (for tillers that senesce).
+        - `final_axes_number` : the final number of axes per square meter.
+    :Types:
+        - `first_axis_table_dataframe` : pandas.DataFrame
+        - `user_organ_dimensions_table_dataframe` : pandas.DataFrame
+        - `user_parameter_table_dataframe` : pandas.DataFrame
+        - `GL_number` : a dict of 2-tuples
+        - `bolting_date` : int
+        - `flowering_date` : int
+        - `delais_TT_stop_del_axis` : int
+        - `final_axes_number` : int
+
+    :return: The fitted axis table, the fitted absolute phen table, the fitted relative phen table,
+    the fitted dim table and the fitted leaf_dynamic_parameters table.
+    :rtype: a tuple of pandas.DataFrame
+    '''
+    # Fit the leaf_dynamic_parameters provided by the user
+    second_leaf_dynamic_parameters_table_dataframe = leaf_dynamic_parameters_table.gen_user_leaf_dynamic_parameters_second(user_parameter_table_dataframe, user_organ_dimensions_table_dataframe, GL_number)
+    # Fit absolute PhenTable
+    absolute_second_phen_table_dataframe = phen_table.gen_phen_table_second(second_leaf_dynamic_parameters_table_dataframe)
+    # Extract the first leaves data from absolute_second_phen_table_dataframe
+    first_leaf_phen_table_dataframe = phen_table.gen_first_leaf_phen_table_dataframe(absolute_second_phen_table_dataframe)
+    # Fit relative PhenTable
+    relative_second_phen_table_dataframe = phen_table.gen_phen_table_relative_dataframe(absolute_second_phen_table_dataframe, first_leaf_phen_table_dataframe)
+    # Fit AxisTable
+    second_axis_table_dataframe = axis_table.gen_axis_table_second(first_axis_table_dataframe, first_leaf_phen_table_dataframe, bolting_date, flowering_date, delais_TT_stop_del_axis, final_axes_number)
+    # Fit DimTable
+    absolute_organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_second(user_organ_dimensions_table_dataframe, absolute_second_phen_table_dataframe)
+    # Fit relative dimTable
+    relative_organ_dimensions_table_dataframe = organ_dimensions_table.gen_organ_dimensions_table_relative_dataframe(absolute_organ_dimensions_table_dataframe)
+    # Create a table with the following columns: id_axis,TT,HS,GL,SSI
+    HS_GL_SSI_dynamic_dataframe = phen_table.gen_HS_GL_SSI_dynamic_dataframe(second_leaf_dynamic_parameters_table_dataframe)
+    
+    return second_axis_table_dataframe, absolute_second_phen_table_dataframe, relative_second_phen_table_dataframe, \
+           absolute_organ_dimensions_table_dataframe, second_leaf_dynamic_parameters_table_dataframe, first_leaf_phen_table_dataframe, \
+           HS_GL_SSI_dynamic_dataframe, relative_organ_dimensions_table_dataframe

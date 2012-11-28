@@ -163,9 +163,9 @@ def sample_regular_gaps(points, pattern = [0,1]):
     return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
 
 
-def post_processing(adel_ouput_path='', plant_number=0, length=0.0, width=0.0, result_path=''):
-    assert adel_ouput_path != '' and plant_number != 0 and length != 0.0 and \
-    width != 0.0 and result_path != ''
+def post_processing(adel_ouput_path='', plant_number=0, domain_area=0.0, result_path=''):
+    assert adel_ouput_path != '' and plant_number != 0 and domain_area != 0.0 \
+    and result_path != ''
     
     adel_ouput_path = path(adel_ouput_path)
     adel_ouput_df = pandas.read_csv(adel_ouput_path)
@@ -186,17 +186,17 @@ def post_processing(adel_ouput_path='', plant_number=0, length=0.0, width=0.0, r
         result_df = pandas.DataFrame(columns=columns)
     
     filename = adel_ouput_path.basename()
-    plot_area = length * width    
     thermal_time = adel_ouput_df['date'][0]
-    intermediate_result_1 = plot_area * 10000
+    intermediate_result_1 = domain_area * 10000
     tot_LAI = adel_ouput_df['Slv'].sum() / intermediate_result_1
     green_LAI = (adel_ouput_df['Slv'].sum() - adel_ouput_df['SLsen'].sum()) / intermediate_result_1
-    intermediate_result_2 = adel_ouput_df[['Slv', 'SGv', 'SEv']].sum().sum()
+    intermediate_result_2 = adel_ouput_df['Slv'].sum() + adel_ouput_df[['SGv', 'SEv']].sum().sum() / 2.0
     tot_PAI = intermediate_result_2 / intermediate_result_1
-    green_PAI = (intermediate_result_2 - adel_ouput_df[['SLsen', 'SGsen', 'SEsen']].sum().sum()) / intermediate_result_1
+    intermediate_result_3 = adel_ouput_df['SLsen'].sum() + adel_ouput_df[['SGsen', 'SEsen']].sum().sum() / 2.0
+    green_PAI = (intermediate_result_2 - intermediate_result_3) / intermediate_result_1
     axes_density = adel_ouput_df[adel_ouput_df['numphy'] == 1].index.size / 1.2
     
-    data = [[filename, plot_area, plant_number, thermal_time, tot_LAI, green_LAI, tot_PAI, green_PAI, axes_density]]
+    data = [[filename, domain_area, plant_number, thermal_time, tot_LAI, green_LAI, tot_PAI, green_PAI, axes_density]]
     new_index = [result_df.index.size]
     new_df = pandas.DataFrame(data, index=new_index, columns=result_df.columns)
     

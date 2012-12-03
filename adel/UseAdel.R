@@ -161,9 +161,9 @@ canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
   #names(res)[match(c("Ll","Lsen","Lv"),names(res))] <- c("SLl","SLsen","SLv")
   #
   for (w in c("Gl","Gv","Gsen"))
-    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Gd^2
+    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Gd
   for (w in c("El","Ev","Esen"))
-    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Ed^2
+    canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Ed
   canS
 }
              

@@ -20,6 +20,8 @@ from itertools import chain
 from math import degrees, radians, pi, cos, sin
 import numpy
 
+from alinea.adel.exception import *
+
 classic = False
 
 def optical(tissue_type):
@@ -76,7 +78,8 @@ class LeafElement(Symbol):
         leaves = db.get(str(rank), db.get(str(rank+1), db.get(str(rank-1), [])))
         n = len(leaves)
         if n == 0:
-            raise "Not enough leaves data at rank %d"%rank
+            dbk = ' '.join(db.keys())
+            raise AdelParameterisationError("Leaf curvature index %d not found in database, available indices are:\n%s"%(rank,dbk))
 
         if self.seed is None:
             random.seed(seed)

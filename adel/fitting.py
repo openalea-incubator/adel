@@ -131,7 +131,10 @@ def fit2(x , y, s, r):
     try:
         tckp,u = splprep([x,y],s=smooth,k=k,nest=nest)
     except:
-        tckp,u = splprep([x,y])
+        try:
+            tckp,u = splprep([x,y])
+        except:
+            tckp,u = splprep([x,y],k=1)
     
 
     xnew, ynew = splev(linspace(0,1,100),tckp)
@@ -547,6 +550,7 @@ def fit_leaves( leaves, nb_points):
                 leaf = fit3(x, y, s, r, nb_points)
                 new_db.setdefault(key,[]).append(leaf)
             except:
+                print("fit_leaves: can't fit leaf shape at index %s"%(key))
                 pass
     return new_db
 

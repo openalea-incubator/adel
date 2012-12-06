@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed Apr 25 08:10:00 2012
+# This file has been generated at Mon Dec  3 15:59:00 2012
 
 from openalea.core import *
 
@@ -12,12 +12,12 @@ __license__ = 'CECILL'
 __url__ = ''
 __alias__ = ['adel.io']
 __version__ = '0.0.1'
-__authors__ = 'C. Pradal, C. Fournier'
+__authors__ = 'C. Pradal, C. Fournier, C. Chambon'
 __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_duplicate', 'io_csv2pandasDataframe', 'io_canL2canS', 'io_mtg_factory', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'io_pandasDataframe2csv', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_lpy2mtg', 'PairAsDict_PairAsDict', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_load_leaf_data', 'io_mtg2lpy', 'io_to_plantgl']
+__all__ = ['io_duplicate', 'io_csv2pandasDataframe', 'io_canL2canS', 'io_mtg_factory', 'io_pandasDataframe2csv', 'io_csvAsDict', 'io_RlistAsDict', 'io_dataframeAsdict', 'io_dataframe', 'io_thermal_time', 'io_to_canestra', 'io_saveRData', 'io_to_plantgl', 'PairAsDict_PairAsDict', 'io_readRData', 'io_apply_property', 'GetAdelString_GetAdelString', 'io_select_adel_botanic_data', 'io_load_leaf_data', 'io_mtg2lpy', 'io_lpy2mtg', 'io_select_adel_geometric_data']
 
 
 
@@ -37,7 +37,7 @@ io_duplicate = Factory(name='duplicate mtg',
 
 
 io_csv2pandasDataframe = Factory(name='csv2pandasDataframe',
-                authors='C. Pradal, C. Fournier (wralea authors)',
+                authors='C. Chambon',
                 description='Read CSV (comma-separated) file into DataFrame.',
                 category='data i/o',
                 nodemodule='io',
@@ -74,6 +74,21 @@ io_mtg_factory = Factory(name='mtg (params)',
                 nodeclass='mtg_factory',
                 inputs=[{'interface': IDict, 'name': 'Canopy table'}, {'interface': IInt, 'name': 'number of sectors', 'value': 1}],
                 outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+io_pandasDataframe2csv = Factory(name='pandasDataframe2csv',
+                authors='C. Chambon',
+                description='Write a DataFrame to a comma-separated values (csv) file.',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='pandasDataframe2csv',
+                inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The DataFrame to write.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The file path where the Dataframe is written.'}, {'interface': IStr, 'name': 'na_rep', 'value': None, 'desc': 'Missing data replacement.'}, {'interface': IBool, 'name': 'index', 'value': True, 'desc': 'Write row names (index)'}, {'interface': ISequence, 'name': 'index_label', 'value': None, 'desc': 'Column label for index column(s) if desired. If None is given, and header and index are True, then the index names are used. A sequence should be given if the DataFrame uses MultiIndex.'}],
+                outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The file path where the Dataframe is written.'}],
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -141,21 +156,6 @@ io_dataframe = Factory(name='Rdataframe',
 
 
 
-io_pandasDataframe2csv = Factory(name='pandasDataframe2csv',
-                authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Write a DataFrame to a comma-separated values (csv) file.',
-                category='data i/o',
-                nodemodule='io',
-                nodeclass='pandasDataframe2csv',
-                inputs=[{'interface': None, 'name': 'dataframe', 'value': None, 'desc': 'The DataFrame to write.'}, {'interface': IFileStr, 'name': 'csv_filepath', 'value': None, 'desc': 'The file path where the Dataframe is written.'}, {'interface': IStr, 'name': 'na_rep', 'value': None, 'desc': 'Missing data replacement.'}, {'interface': IBool, 'name': 'index', 'value': True, 'desc': 'Write row names (index)'}, {'interface': ISequence, 'name': 'index_label', 'value': None, 'desc': 'Column label for index column(s) if desired. If None is given, and header and index are True, then the index names are used. A sequence should be given if the DataFrame uses MultiIndex.'}],
-                outputs=[{'interface': IFileStr, 'name': 'csv_filepath', 'desc': 'The file path where the Dataframe is written.'}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
 io_thermal_time = Factory(name='update thermal time',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='',
@@ -201,14 +201,14 @@ io_saveRData = Factory(name='saveRData',
 
 
 
-io_lpy2mtg = Factory(name='lpy2mtg',
+io_to_plantgl = Factory(name='to_plantgl',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='aggregate lpy outputs into an mtg',
-                category='data i/o',
+                description='Adapt a Canestra scene to a PlantGL scene',
+                category='io',
                 nodemodule='io',
-                nodeclass='lpy2mtg',
-                inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
+                nodeclass='to_plantgl',
+                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)}, {'interface': 'IDict', 'name': 'colors', 'desc': 'dict (vid, rgb color) '}, {'interface': 'IBool', 'name': 'ambient_only', 'value': False, 'desc': 'If True, set to 0 all optical properties except the ambient one'}],
+                outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -276,6 +276,30 @@ GetAdelString_GetAdelString = Factory(name='GetAdelString',
 
 
 
+io_select_adel_botanic_data = Factory(name='select_adel_botanic_data',
+                authors='C.Chambon',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='select_data_file',
+                inputs=[{'interface': IDirStr, 'name': 'directory_path', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'axe_pattern', 'value': 'axeT*.csv', 'desc': ''}, {'interface': IStr, 'name': 'dim_pattern', 'value': 'dimT*.csv', 'desc': ''}, {'interface': IStr, 'name': 'phen_pattern', 'value': 'phenT*.csv', 'desc': ''}, {'interface': IStr, 'name': 'ear_pattern', 'value': 'earT*.csv', 'desc': ''}, {'interface': IStr, 'name': 'ssi2sen_pattern', 'value': 'ssi2senT*.csv', 'desc': ''}, {'interface': IStr, 'name': 'axe_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'dim_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'phen_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'ear_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'ssi2sen_filename', 'value': None, 'desc': ''}],
+                outputs=[{'interface': IStr, 'name': 'axe_filepath'}, {'interface': IStr, 'name': 'dim_filepath'}, {'interface': IStr, 'name': 'phen_filepath'}, {'interface': IStr, 'name': 'ear_filepath'}, {'interface': IStr, 'name': 'ssi2sen_filepath'}],
+                widgetmodule='io',
+                widgetclass='SelectDataFile',
+               )
+
+
+io_select_adel_geometric_data = Factory(name='select_adel_geometric_data',
+                authors='C.Chambon',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='select_data_file',
+                inputs=[{'interface': IDirStr, 'name': 'directory_path', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'laminaCur_pattern', 'value': 'laminaCur*.RData', 'desc': ''}, {'interface': IStr, 'name': 'lamina2D_pattern', 'value': 'lamina2D*.RData', 'desc': ''}, {'interface': IStr, 'name': 'laminaCur_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'lamina2D_filename', 'value': None, 'desc': ''}],
+                outputs=[{'interface': IStr, 'name': 'laminaCur_filepath'}, {'interface': IStr, 'name': 'lamina2D_filepath'}],
+                widgetmodule='io',
+                widgetclass='SelectDataFile',
+               )
+
+
 io_load_leaf_data = Factory(name='load leaf data',
                 authors='C. Pradal, C. Fournier (wralea authors)',
                 description='Load leaf data obtained by measurement',
@@ -306,14 +330,14 @@ io_mtg2lpy = Factory(name='mtg2axial',
 
 
 
-io_to_plantgl = Factory(name='to_plantgl',
+io_lpy2mtg = Factory(name='lpy2mtg',
                 authors='C. Pradal, C. Fournier (wralea authors)',
-                description='Adapt a Canestra scene to a PlantGL scene',
-                category='io',
+                description='aggregate lpy outputs into an mtg',
+                category='data i/o',
                 nodemodule='io',
-                nodeclass='to_plantgl',
-                inputs=[{'name': 'scene', 'desc': 'Canestra Scene'}, {'interface': IRGBColor, 'name': 'leaf_color', 'value': (0, 180, 0)}, {'interface': IRGBColor, 'name': 'stem_color', 'value': (0, 130, 0)}, {'interface': IRGBColor, 'name': 'soil_color', 'value': (170, 85, 0)}, {'interface': 'IDict', 'name': 'colors', 'desc': 'dict (vid, rgb color) '}, {'interface': 'IBool', 'name': 'ambient_only', 'desc': 'If True, set to 0 all optical properties except the ambient one', 'value': False}],
-                outputs=[{'interface': IInterface, 'name': 'scene', 'desc': 'PlantGL scene'}],
+                nodeclass='lpy2mtg',
+                inputs=[{'interface': None, 'name': 'axial tree', 'value': None, 'desc': ''}, {'interface': None, 'name': 'lsystem', 'value': None, 'desc': ''}, {'interface': None, 'name': 'scene', 'value': None, 'desc': ''}],
+                outputs=[{'interface': None, 'name': 'mtg', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )

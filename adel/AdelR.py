@@ -59,6 +59,7 @@ RreadCsv = robj.globalEnv['readCsv']
 RsetAdelArv = robj.globalEnv['setAdelArv']
 RgenString = robj.globalEnv['genString']
 RcanL2canS = robj.globalEnv['canL2canS']
+RcheckAxeDyn = robj.globalEnv['checkAxeDyn']
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
 
 
@@ -136,7 +137,7 @@ def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     p = RsetAdelArv(Rcalage,np,sdlev,RFun)
     return p
 
-def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, srdb = None):
+def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, srdb = None,sample = 'random'):
     """Creates a set of parameter for simulating np plants with adel from R inputs (see adeldoc.R)"""
     if seed is None:
         rseed = r('as.null()')
@@ -160,9 +161,23 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     geoAxe = robj.globalEnv['geoAxe']
     r(RcodegeoLeaf)
     geoLeaf = robj.globalEnv['geoLeaf']
-    p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,rseed,rxydb,rsrdb)
+    p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,sample,rseed,rxydb,rsrdb)
     return p
 
+def plantSample(setAdelPars):
+    """return id of plants used by setAdel to setup the canopy """
+    p = r.names(setAdelPars)
+    p = r['as.numeric'](p)
+    return _rvect_asarray(p)
+    
+def checkAxeDyn(setAdelPars, dates, plotArea = 1):
+    """ Compute the number of axes present in the canopy at given dates"""
+    if (type(dates) is not list):
+        dates = [datesTT]
+    d = robj.FloatVector(dates)
+    naxes = RcheckAxeDyn(d, setAdelPars)
+    return _rvect_asarray(naxes) * plotArea
+    
 def canL2canS(RcanT,srdb,shrink):
     sr = r.load(srdb)[0]
     sr=r(sr)

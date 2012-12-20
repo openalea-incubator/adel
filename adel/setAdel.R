@@ -78,7 +78,7 @@ predictPed <- function(pheno,phyto,index,nf,earT) {
   
 #setAdel performs the dressing (geometry, tiller number ...) of plants from parameters and duplicate them for a given number of outputed plants
 #
-setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=NULL,xy_db=NULL,sr_db=NULL) {
+setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample='random',seed=NULL,xy_db=NULL,sr_db=NULL) {
 
   #prise en chage nouveaux noms
   conv <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
@@ -125,7 +125,10 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,seed=N
       stop(paste("No main stem found for plant",x$plant[1],", Check axeT table"))
     x})
   #sampling nplants in the database
-  plnb <- ceiling(runif(nplants) * length(unique(axeT$plant)))
+  if (sample == 'random')
+    plnb <- ceiling(runif(nplants) * length(unique(axeT$plant)))
+  else
+    plnb <- rep(seq(plantdb),lenght.out=nplants)[1:nplants]
   #
   out <- vector("list",nplants)
   names(out) <- names(plantdb)[plnb]

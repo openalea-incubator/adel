@@ -282,6 +282,16 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
   
   res
 }
-  
+#
+# Checker for axe dynamics of the plants sampled at dates
+#
+checkAxeDyn <- function(dates,plants) {
+  em <- unlist(sapply(plants,function(p) p$axeT$emf1))
+  disp <- unlist(sapply(plants,function(p) p$axeT$disp))
+  disp[is.na(disp)] <- max(dates) + 1
+  nbaxes <- sapply(dates,function(d) length(em[em <=d]) - length(disp[disp <= d]))
+  nbaxes
+}
+    
     
 

@@ -138,11 +138,40 @@ parameterisation_setAdel = Factory(name='setAdel',
                 category='simulation',
                 nodemodule='parameterisation',
                 nodeclass='setAdel',
-                inputs=[{'interface': None, 'name': 'devT', 'value': None, 'desc': 'R list of tables for dvpt'}, {'interface': None, 'name': 'geomLeaf', 'value': None, 'desc': 'Rfunc list for leaf geometry'}, {'interface': None, 'name': 'geomAxe', 'value': None, 'desc': 'R func list for axe geometry'}, {'interface': IInt, 'name': 'nplants', 'value': 1, 'desc': 'Number of plants to simulate'}, {'interface': IInt, 'name': 'randoom seed', 'value': None, 'desc': 'Seed for R random number generator'},{'interface': None, 'name': 'xydb', 'value': None, 'desc': 'R database for leaf curvature'},{'interface': None, 'name': 'srdb', 'value': None, 'desc': 'R database for leaf shapes'}],
+                inputs=[{'interface': None, 'name': 'devT', 'value': None, 'desc': 'R list of tables for dvpt'}, 
+                        {'interface': None, 'name': 'geomLeaf', 'value': None, 'desc': 'Rfunc list for leaf geometry'}, 
+                        {'interface': None, 'name': 'geomAxe', 'value': None, 'desc': 'R func list for axe geometry'}, 
+                        {'interface': IInt, 'name': 'nplants', 'value': 1, 'desc': 'Number of plants to simulate'}, 
+                        {'interface': IInt, 'name': 'randoom seed', 'value': None, 'desc': 'Seed for R random number generator'},
+                        {'interface': None, 'name': 'xydb', 'value': None, 'desc': 'R database for leaf curvature'},
+                        {'interface': None, 'name': 'srdb', 'value': None, 'desc': 'R database for leaf shapes'},
+                        {'interface': IEnumStr(['random','sequence']), 'name': 'Sampling strategy', 'value': 'random', 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'Parameter Robj', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,
                )
+               
+parameterisation_plantSample = Factory(name='plantSample',
+                description='',
+                category='simulation',
+                nodemodule='parameterisation',
+                nodeclass='plantSample',
+                inputs=[{'interface': None, 'name': 'Parameter Robj', 'desc': ''}],
+                outputs=[{'interface': None, 'name':'plants'}],
+                )
+__all__.append('parameterisation_plantSample')
+
+parameterisation_checkAxeDyn = Factory(name='checkAxeDyn',
+                description='',
+                category='simulation',
+                nodemodule='parameterisation',
+                nodeclass='checkAxeDyn',
+                inputs=[{'interface': None, 'name': 'Parameter Robj', 'desc': ''},
+                {'interface': None, 'name': 'dates'},
+                {'interface': IFloat, 'name': 'plotArea', 'value': 1.0}],
+                outputs=[{'interface': None, 'name':'Nbaxes'}],
+                )
+__all__.append('parameterisation_checkAxeDyn')
 
 p_setCanopy = Factory(name='setCanopy',
                 description='',

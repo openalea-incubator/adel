@@ -19,8 +19,8 @@ runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'sta
 #
 #set Adel from parameters 
 #
-setAdeluser <- function(devT,geoLeaf,geoAxe,nplants,seed=NULL,xy_db=NULL,sr_db=NULL) {
-  setAdel(devT$axeT,devT$dimT,devT$phenT,devT$earT,devT$ssisenT,geoLeaf,geoAxe,nplants,seed,xy_db,sr_db)
+setAdeluser <- function(devT,geoLeaf,geoAxe,nplants,sample='random',seed=NULL,xy_db=NULL,sr_db=NULL) {
+  setAdel(devT$axeT,devT$dimT,devT$phenT,devT$earT,devT$ssisenT,geoLeaf,geoAxe,nplants,sample,seed,xy_db,sr_db)
 }
 #
                                         #build devT from csv parameter files

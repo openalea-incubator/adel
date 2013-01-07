@@ -288,6 +288,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
   res <- NULL
   for (p in seq(kinlist)) {
     #print(p)
+    refp <- as.numeric(names(kinlist)[p])
     kin <- kinlist[[p]]
     plant <- plantlist[[p]]
     pldesc <- NULL
@@ -374,7 +375,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         posen <- rep(2,nbphy)
       #
         pldesc <- rbind(pldesc,
-                        cbind(data.frame(axe_id = rep(a,nbphy),
+                        cbind(data.frame(refplant_id = rep(refp,nbphy),
+                                         axe_id = rep(a,nbphy),
                                          axe=rep(as.numeric(axename),nbphy),
                                          numphy=1:nbphy,
                                          L_shape=datp$Ll,

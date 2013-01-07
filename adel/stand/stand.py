@@ -4,7 +4,6 @@ from math import pi, sqrt
 from random import random,sample
 from numpy.random import vonmises
 from openalea.core.path import path
-import pandas
 
 
 def regular(nb_plants, nb_rank, dx, dy):
@@ -164,6 +163,7 @@ def sample_regular_gaps(points, pattern = [0,1]):
 
 
 def post_processing(adel_ouput_path='', plant_number=0, domain_area=0.0, result_path=''):
+    import pandas
     assert adel_ouput_path != '' and plant_number != 0 and domain_area != 0.0 \
     and result_path != ''
     

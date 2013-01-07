@@ -90,9 +90,9 @@ def incline_leaf(shape, inclin, relative_angle = True):
 
     x1 = x[0] + cos_a*x - sin_a*y
     y1 = y[0] + sin_a*x + cos_a*y
-
-    leaf = (x1, y1) + shape[2:]
-    return shape
+    leaf= x1, y1, shape[2], shape[3]
+    
+    return leaf
     
 def compute_element(element_node, classic=False): 
     """ compute geometry of Adel base elements (LeafElement and StemElement) 
@@ -107,8 +107,9 @@ def compute_element(element_node, classic=False):
                 shape = incline_leaf(blade.shape_xysr, blade.inclination)
             else: 
                 shape = blade.shape_xysr
-            #TODO : a verifier mais la shape est dans x+,y+, alors que la tortue l'attend dans x-,z, ie a 180 degrees
-            geom = LeafElement_mesh(shape, blade.shape_mature_length, blade.shape_max_width, 
+            # x-> -x as turtlle expect x-y+
+            leaf = (-shape[0],)+shape[1:]
+            geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
                                 n.length, n.srb, n.srt)   
     elif n.label.startswith('Stem'): #stem element
         stem = n.complex()
@@ -148,6 +149,9 @@ def adel_visitor(g, v, turtle):
         turtle.setHead(0,0,1,1,0,0)
         if 'azimuth' in p.properties():
             turtle.rollL(p.azimuth)
+    #hypothesis that inclin is to be applied at the base of the visible elements
+    if n.offset > 0:
+        turtle.f(n.offset)
     #incline turtle at the base of stems,
     if n.label.startswith('Stem'):
         inclin = float(n.inclination) if n.inclination else 0.
@@ -169,8 +173,7 @@ def adel_visitor(g, v, turtle):
         if azim:
             #print 'node', n._vid, 'azim ', azim
             turtle.rollL(azim)
-        if n.offset > 0:
-            turtle.f(n.offset)
+
        
     #if n.label.startswith('Leaf'):    
     
@@ -200,7 +203,7 @@ def mtg_interpreter(g, visitor = adel_visitor):
     
     #for plant in plants:
     #   gplant = g.sub_mtg(plant)
-    scene = turtle.TurtleFrame(g,visitor=visitor, gc=False)
+    scene = turtle.TurtleFrame(g,visitor=visitor, gc=False, all_roots=True)
     #   gt = union(gplant,gt)
        
     return g

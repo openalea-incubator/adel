@@ -71,7 +71,7 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
     l is the length of the blade
     lvis is the visible length (senesced + green)
     lsen is the senescent apical length
-    Lshape is length of the blade used as pattern shape
+    Lshape is length of the blade used as a pattern shape
 """
     lhide = None
     lgreen = None
@@ -401,7 +401,7 @@ def update_organ(organ,h_whorl=0):
 def mtg_update_at_time(g, time): 
     """ Compute plant state at a given time according to dynamical parameters found in mtg
     """    
-    for pid in g.component_roots_at_scale(g.root, scale=1):
+    for pid in g.component_roots_at_scale_iter(g.root, scale=1):
         p = g.node(pid)
         update_plant(p, time)
         hw = {'0': 0}

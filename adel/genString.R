@@ -110,7 +110,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
     chn <- paste(chn,
                  up(dat$Einc))
 
-  #if (dat$Ev > epsillon) #not tested to ensure persistence of stems even with 0 length( for tiller attachment)
+  #if (dat$Ev > epsillon) #not tested to ensure persistence of stems even with 0 length (for tiller attachment)
   chn <- paste(chn,
                  Internode(dat$Ev-dat$Esen,dat$Esen,dat$Ed,dat$Epo,dat$Epos,epsillon))
 

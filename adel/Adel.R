@@ -91,15 +91,28 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,10),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen","ntop")))
+    kin <- array(NA,c(nx,nf[a]+3,17),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop")))
     for (i in seq(nf[a])) {
       rph <- ph - i
       rssi <- ssi - i
-#longueur blade+sheath
+     #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       kin[,i,"Ll"] <- sapply(LGl,function(x) min(x,dim$Ll[i]))
       kin[,i,"Gl"] <- LGl - kin[,i,"Ll"]
       kin[,i,"El"] <- approx(c(startE,endE),c(0,dim$El[i]),xout=rph,rule=2)$y
+      # hidden length of metamer at leaf emergence
+      Lhem <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=0,rule=2)$y + approx(c(startE,endE),c(0,dim$El[i]),xout=0,rule=2)$y
+      # hidden length of metamer at collar appearance
+      xcol <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$col,i)
+      rphcol <- openapprox(plant$pheno[[a]]$tip,plant$pheno[[a]]$n,xcol) - i
+      LGcol <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rphcol,rule=2)$y
+      Lhcol <- LGcol - min(LGcol,dim$Ll[i]) + approx(c(startE,endE),c(0,dim$El[i]),xout=rphcol,rule=2)$y
+      # relative progress in emergence
+      xh <- max(0, min(1, rph / rphcol))
+      kin[,i,"Lhem"] <- Lhem
+      kin[,i,"Lhcol"] <-  Lhcol
+      kin[,i,"xh"] <- xh
+      kin[,i,"Lh"] <- ifelse(xh <= 0, sum(kin[,i,c("Ll","Gl","El")]),Lhem + (Lhcol - Lhem) * xh)
       #sene
       kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT) * kin[,i,"Ll"]
       kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT) * kin[,i,"Gl"]
@@ -138,11 +151,63 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
 #hauteur du tube = depuis la base de l'entreneoud, pour chaque phyto
 #
 htube <- function(kin,ht0) {
-  stem <- cumsum(kin$El)
-  hcol <- stem + kin$Gl
+  # hauteur base phyto
+  stem <- cumsum(kin$El) - kin$El
+  hcol <- stem + kin$Gl + kin$El + kin$Llrolled - kin$Glopen
   #ajout ht0,=>parcours hcol de 1 a n-1
-  htube <- sapply(seq(along=hcol),function(i) max(c(ht0,hcol)[1:i]))
-  pmax(0,htube - stem + kin$El)
+  ht <- sapply(seq(along=hcol),function(i) max(c(ht0,hcol)[1:i]))
+  pmax(0,ht - stem)
+}
+#
+checktube <- function(kin,ht0=0) {
+  #try to accomodate tube length to emergence constrainst using rolling/opening
+  n <- max(seq(nrow(kin))[kin$ntop >=0])
+  # for first phytomer, try to accomodate for ht0 if first sheath is too short
+  if (ht0 > kin$Gl[1] & kin$xh[1] > 0) {
+    delta = ht0 - kin$Gl[1]
+    kin$Llrolled[1] = min(delta,kin$Ll[1])
+  }
+  # makes first phyto replace enclosing sheath
+  kin$ht[1] <- 0
+  kin$ht <- htube(kin,0)
+  if (n >=2)
+    for (i in 2:n) {
+                                        # for emerged collar, ht must be less than Lh
+      if (kin$xh[i] >= 1)
+        if (kin$ht[i] > kin$Lh[i]) {
+          delta <- kin$ht[i] - kin$Lh[i]
+          if (kin$Llrolled[i-1] > 0) {
+            dl = min(kin$Llrolled[i-1], delta)
+            kin$Llrolled[i-1] = kin$Llrolled[i-1] - dl
+            delta = delta - dl
+          }
+          if (delta > 0) {
+            dl = min(delta,kin$Gl[i-1])
+            kin$Glopen[i-1] <- dl
+          }
+                                        #update tube
+          kin$ht <- htube(kin,0)
+        }
+    #for emegrning leaves ht must be as close to Lh as possible
+      if (kin$xh[i] > 0 & kin$xh[i] < 1) 
+        if (abs(kin$ht[i] - kin$Lh[i]) > 0) {
+          delta <- kin$Lh[i] - kin$ht[i]
+          if (delta > 0) #tube is too short
+            kin$Llrolled[i-1] = min(delta,kin$Ll[i-1])
+          else
+            kin$Glopen[i-1] = min(delta,kin$Gl[i-1])
+                                        #update tube
+          kin$ht <- htube(kin,0)
+        }
+    #for non-emerged leaves, Lh must be less than ht
+      if (kin$xh[i] <=0)
+        if (kin$Lh[i] > kin$ht[i]) {
+          delta <- kin$Lh[i] - kin$ht[i]
+          kin$Llrolled[i-1] = min(delta,kin$Ll[i-1])
+          kin$ht <- htube(kin,0)
+        }
+    }
+  kin
 }
 #
 #Hmax : hauteur max axe si feuille verticale (pour calcul visibilite talles)
@@ -151,7 +216,7 @@ Hmax <- function(kin) {
   kin <- data.frame(kin)
   max(cumsum(kin$El)+kin$Gl+kin$Ll)
 }
-#model: kinlist is the output of kinL
+#model: kinlist is the output of kinL : all axes computed as ramification emerging from stem (no enclosing sheath). Length of the enclosing sheath is accomodated by rolling first blade if needed.
 #
 kinLvis <- function(kinlist,pars=NULL) {
   res <- kinlist
@@ -160,17 +225,25 @@ kinLvis <- function(kinlist,pars=NULL) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
       kin <- data.frame(kinlist[[a]][d,,])
+      #initialisation of rolling/opening
+      kin[,c("Llrolled","Glopen")] <- 0
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == 0) {
-        ht <- htube(kin,0)
-        htbm <- ht
+        kin$ht <- htube(kin,0)
+        kin <- checktube(kin,0)
+        htbm <- kin$ht
       } else {
-        ht <- htube(kin,htbm[axes[a]])
+        axil <- htbm[axes[a] + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe
+        kin$ht <- htube(kin,axil)
+        kin <- checktube(kin,axil)
       }
                                         #calcul Lvis
-      res[[a]][d,,"Llvis"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - ht),kin$Ll)
-      res[[a]][d,,"Glvis"] <- pmin(pmax(0,kin$Gl + kin$El - ht),kin$Gl)
-      res[[a]][d,,"Elvis"] <- pmin(pmax(0,kin$El - ht),kin$El)
+      res[[a]][d,,"ht"] <- kin$ht
+      res[[a]][d,,"Llrolled"] <- kin$Llrolled
+      res[[a]][d,,"Glopen"] <- kin$Glopen      
+      res[[a]][d,,"Llvis"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
+      res[[a]][d,,"Glvis"] <- pmin(pmax(0,kin$Gl + kin$El - kin$ht),kin$Gl)
+      res[[a]][d,,"Elvis"] <- pmin(pmax(0,kin$El - kin$ht),kin$El)
 #      res[[a]][d,,"Llsen"] <- pmin(res[[a]][d,,"Ll"],kin$Llsen)
 #      res[[a]][d,,"Glsen"] <- pmin(res[[a]][d,,"Gl"],kin$Glsen)
 #      res[[a]][d,,"Elsen"] <- pmin(res[[a]][d,,"El"],kin$Elsen)
@@ -181,10 +254,35 @@ kinLvis <- function(kinlist,pars=NULL) {
 #
 # Converting kinetics -> Canopy desc table
 #
-#
+#TO DO : include rolled blade as stem elements
+#take into account Llrolled and Glopen
 #
 #generate desc table(s) for one plant at time t
-getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6),t=1) {
+# stem inclination is beared by visible sheaths (option 0) or by nodes (option 1)
+# leaf inclination indicates whether leaf base angle is dynamic or not
+#
+#
+#returns stack of visible elements of the stem of an axe
+stemElements <- function(desc) {
+  metamer <- NULL
+  elt <- NULL
+  dl <- NULL
+  for (i in seq(nrow(desc))) {
+    if (desc$Ev[i] > 0) {
+      metamer <- c(metamer,i)
+      elt <- c(elt,"en")
+      dl <- c(dl,desc$Ev[i])
+    }
+    if (desc$Gv[i] > 0) {
+      metamer <- c(metamer,i)
+      elt <- c(elt,"ga")
+      dl <- c(dl,desc$Gv[i])
+    }
+  }
+  data.frame(metamer=metamer,elt=elt,dl=dl)
+}
+#
+getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE),t=1) {
   epsillon = pars$epsillon
   fshrink = pars$senescence_leaf_shrink
   res <- NULL
@@ -197,6 +295,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     for (a in seq(kin)) {
       #print(paste("axe",a))
       axename <- names(kin)[a]
+      numaxe <- as.numeric(axename)
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen")])
       if (sum(dat) > epsillon | a == 1) {#do not represent empty tillers (BUT main stems are needed even if empty! )
         colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen")
@@ -207,35 +306,57 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         nbphy <- nrow(dat)#inclus ear,ped et awn
         datp <- datp[1:nbphy,]
       # Calcul des inclinaisons de tiges
-                                        # 1er phyto = entrenoeud a incT
+      # 1er phyto = entrenoeud a incT
         Einc <- rep(0,nbphy)
         Ginc <- rep(0,nbphy)
-        incT <- dataxe$incT
-        Einc[1] <- incT 
+        if (numaxe == 0) {
+          incT <- dataxe$incT
+        } else {
+          firstEn <- min(which(datp$El > epsillon))
+          incT <- max(3,dataxe$incT * dat$El[firstEn] / datp$El[firstEn])
+        }
+        Einc[1] <- incT
       # redressement (if any)
-        if (dataxe$dredT > 0) {
-          #distance inserton talle -> extremite gaine du phyto
+        if (dataxe$dredT > 0 & sum(dat$Ev+dat$Gv) > epsillon) {
+          #distance inserton talle -> extremite stemElements
+          stem <- stemElements(dat)
           alpha <- (90 - incT) * pi / 180
-          hc <- cumsum(dat$Ev + dat$Gv)
+          hc <- cumsum(stem$dl)
           dc <- hc * cos(alpha)
           #phytomer a redresser
           if (any(dc >= dataxe$dredT)) {
             nd <- min(which(dc >= dataxe$dredT))
-            #beta : angle entre l'horizontale et le phyto nd pour que son extremite tombe a  dredT
+            #beta : angle entre l'horizontale et l'element nd pour que son extremite tombe a  dredT
             if (nd > 1) {
               beta <- acos( (dataxe$dredT - dc[nd - 1]) / (hc[nd] - hc[nd - 1]) )
-              Einc[nd] <- -(beta - alpha) / pi * 180
-              if (nd < length(Einc))
-                Einc[nd + 1] <- - (pi / 2 - beta) / pi * 180
+              inc <- -(beta - alpha) / pi * 180
+              if (stem$elt[nd] == "en") {
+                Einc[stem$metamer[nd]] <- inc
+              } else {
+                Ginc[stem$metamer[nd]] <- inc
+              }
+              if (nd < nrow(stem)) {
+                inc <- - (pi / 2 - beta) / pi * 180
+                if (stem$elt[nd] == "en") {
+                  Einc[stem$metamer[nd+1]] <- inc
+                } else {
+                  Ginc[stem$metamer[nd+1]] <- inc
+                } 
+              }
             } else {#incT too large
               beta <- acos(dataxe$dredT / hc[1])
-              Einc[1] <- (90 - beta) / pi * 180
-              if (length(Einc) > 1)
-                Einc[2] <- -Einc[1]
+              Einc[1] <- (pi / 2 - beta) / pi * 180
+              if (nrow(stem) > 1) {
+                inc <- -Einc[1]
+                if (stem$elt[2] == "en") {
+                  Einc[stem$metamer[2]] <- inc
+                } else {
+                  Ginc[stem$metamer[2]] <- inc
+                }
+              }
             }
           }
         }           
-         
 
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim

@@ -194,7 +194,7 @@ def post_processing(adel_ouput_path='', plant_number=0, domain_area=0.0, result_
     tot_PAI = intermediate_result_2 / intermediate_result_1
     intermediate_result_3 = adel_ouput_df['SLsen'].sum() + adel_ouput_df[['SGsen', 'SEsen']].sum().sum() / 2.0
     green_PAI = (intermediate_result_2 - intermediate_result_3) / intermediate_result_1
-    axes_density = adel_ouput_df[adel_ouput_df['numphy'] == 1].index.size / 1.2
+    axes_density = adel_ouput_df[adel_ouput_df['numphy'] == 1].index.size / domain_area
     
     data = [[filename, domain_area, plant_number, thermal_time, tot_LAI, green_LAI, tot_PAI, green_PAI, axes_density]]
     new_index = [result_df.index.size]

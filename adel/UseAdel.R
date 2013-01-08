@@ -7,6 +7,11 @@
 #
 runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'startLeaf' = -0.4, 'endLeaf' =1.6, 'stemLeaf' = 1.2,'epsillon' = 1e-6)) {
   out <- vector("list",length(dates))
+  #deals with python-flatten lists
+  if ("axeT" %in% names(plants)) {
+    plants <- list(plants)
+    names(plants) <- plants[[1]]$refp
+  }
   for (i in seq(out)) {
     kinlist <- lapply(plants,function(plant) kinLvis(kinL(dates[i],plant,pars),pars))
     desc <- getdesc(kinlist,plants,pars)

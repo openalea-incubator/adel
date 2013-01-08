@@ -313,8 +313,13 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         if (numaxe == 0) {
           incT <- dataxe$incT
         } else {
-          firstEn <- min(which(datp$El > epsillon))
-          incT <- max(3,dataxe$incT * dat$El[firstEn] / datp$El[firstEn])
+          en <- which(datp$El > epsillon)
+          if (length(en) > 0) {
+            firstEn <- min(en)
+            incT <- max(3,dataxe$incT * dat$El[firstEn] / datp$El[firstEn])
+          } else {
+            incT <- 3
+          }
         }
         Einc[1] <- incT
       # redressement (if any)

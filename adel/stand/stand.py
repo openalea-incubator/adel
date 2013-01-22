@@ -162,47 +162,147 @@ def sample_regular_gaps(points, pattern = [0,1]):
     return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
 
 
-def post_processing(adel_ouput_path='', plant_number=0, domain_area=0.0, result_path=''):
+def post_processing(adel_output_path='', plant_number=0, domain_area=0.0, 
+                    postprocessing_results_path=''):
+    '''
+    Apply post processing on the ADEL output.
+    
+    For one date, the variables calculated are : TODO: list and explain the 
+    variables.
+    The results of the post processing are added at the end of a csv file, 
+    creating it if necessary.
+    Furthermore, for each call to the current function, intermediate post 
+    processing results are saved in a new temporary file.
+        
+    :Parameters:
+    
+        - `adel_output_path` (str) -  
+          path to the csv file describing ADEL output. This file contains data 
+          for one date. 
+          
+        - `plant_number` (int) -  
+          the number of plants simulated by ADEL
+          
+        - `plant_number` (int) -  
+          the area of the domain on which ADEL simulation has been done.
+          
+        - `postprocessing_results_path` (str) -  
+          path to the csv file describing the results of the post processing 
+          for each date. 
+    
+    :Returns:
+        Two paths: one for the post processing results and another one for the
+        intermediate results.
+    
+    :Returns Type:
+        tuple of 2 str
+
+    .. warning:: adel_output_path and postprocessing_results_path must be 
+                 non-empty, plant_number and domain_area must be non-null.
+    
+    '''
     import pandas
-    assert adel_ouput_path != '' and plant_number != 0 and domain_area != 0.0 \
-    and result_path != ''
+    assert adel_output_path != '' and plant_number != 0 and domain_area != 0.0 \
+    and postprocessing_results_path != ''
     
-    adel_ouput_path = path(adel_ouput_path)
-    adel_ouput_df = pandas.read_csv(adel_ouput_path)
-    result_path = path(result_path)
+    adel_output_path = path(adel_output_path)
+    adel_output_df = pandas.read_csv(adel_output_path)
+    # Construct the intermediate table
+    grouped = adel_output_df.groupby(['plant', 'axe'], as_index=False)
+    intermediate_df = pandas.DataFrame(columns=['date', 'refplant_id', 'plant', 
+                                              'axe_id', 'axe', 'Slv', 'SLsen', 
+                                              'SGv', 'SGsen', 'SEv', 'SEsen', 
+                                              'SLgreen', 'SGgreen', 'SEgreen', 
+                                              'NFF', 'HS', 'SSI', 'GreenLeaf'])
     
-    if result_path.exists():
-        result_df = pandas.read_csv(result_path)
+    date = adel_output_df['date'][0]
+    for name, group in grouped:
+        refplant_id = group['refplant_id'][group.index[0]]
+        plant = name[0]
+        axe_id = group['axe_id'][group.index[0]]
+        axe = name[1]
+        Slv = group['Slv'].sum()
+        SLsen = group['SLsen'].sum()
+        SGv = group['SGv'].sum()
+        SGsen = group['SGsen'].sum()
+        SEv = group['SEv'].sum()
+        SEsen = group['SEsen'].sum()
+        SLgreen = Slv - SLsen
+        SGgreen = SGv - SGsen
+        SEgreen = SEv - SEsen
+        NFF = group['Ll'][group['Ll'] != 0.0].count()
+        index_of_last_non_null_Ll = group.index[NFF - 1]
+        HS = group['numphy'][index_of_last_non_null_Ll] - 1 + \
+             group['Lv'][index_of_last_non_null_Ll] / \
+             float(group['Ll'][index_of_last_non_null_Ll])
+        indexes_of_all_non_null_Ll = group.index[:index_of_last_non_null_Ll+1]
+        SSI = (group['Lsen'][indexes_of_all_non_null_Ll] / \
+               group['Ll'][indexes_of_all_non_null_Ll].astype(float)) \
+              .sum()
+        GreenLeaf = HS - SSI
+        new_intermediate_data = [[date, refplant_id, plant, axe_id, axe, Slv,
+                                  SLsen, SGv, SGsen, SEv, SEsen, SLgreen, 
+                                  SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf]]
+        new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
+                                               columns=intermediate_df.columns)
+        intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], 
+                                        ignore_index=True)
+    
+    import tempfile
+    intermediate_file_suffix = '-%d.csv' % int(date)
+    intermediate_results_path = path(tempfile.mktemp(intermediate_file_suffix))
+    intermediate_df.to_csv(intermediate_results_path, na_rep='NA', index=False)
+    
+    # Construct the post processing results
+    postprocessing_results_path_ = path(postprocessing_results_path)
+    
+    if postprocessing_results_path_.exists():
+        postprocessing_results_df = pandas.read_csv(postprocessing_results_path_)
     else:
-        columns = ['Filename', 
-                   'aire du plot', 
-                   'nombre de plantes', 
-                   'temps thermique', 
-                   'LAI totale', 
-                   'LAI vert', 
-                   'PAI total', 
-                   'PAI vert', 
-                   'nombre axes par m2']
-        result_df = pandas.DataFrame(columns=columns)
+        columns = ['Filename', 'aire du plot', 'Nbr.plant/plot', 'ThermalTime', 
+                   'LAI totale', 'LAI vert', 'PAI total', 'PAI vert', 
+                   'Nbr.axe.tot/m2', 'Nbr.axe.actif/m2', 'HS.axe0', 'HS.axe1', 
+                   'HS.axe2', 'HS.axe3', 'HS.axe4', 'HS.axe5', 'SSI.axe0',    
+                   'SSI.axe1', 'SSI.axe2', 'SSI.axe3', 'SSI.axe4', 'SSI.axe5']
+        postprocessing_results_df = pandas.DataFrame(columns=columns)
     
-    filename = adel_ouput_path.basename()
-    thermal_time = adel_ouput_df['date'][0]
-    intermediate_result_1 = domain_area * 10000
-    tot_LAI = adel_ouput_df['Slv'].sum() / intermediate_result_1
-    green_LAI = (adel_ouput_df['Slv'].sum() - adel_ouput_df['SLsen'].sum()) / intermediate_result_1
-    intermediate_result_2 = adel_ouput_df['Slv'].sum() + adel_ouput_df[['SGv', 'SEv']].sum().sum() / 2.0
-    tot_PAI = intermediate_result_2 / intermediate_result_1
-    intermediate_result_3 = adel_ouput_df['SLsen'].sum() + adel_ouput_df[['SGsen', 'SEsen']].sum().sum() / 2.0
-    green_PAI = (intermediate_result_2 - intermediate_result_3) / intermediate_result_1
-    axes_density = adel_ouput_df[adel_ouput_df['numphy'] == 1].index.size / domain_area
+    Filename = intermediate_results_path.basename()
+    area_in_cm = domain_area * 10000.0
+    tot_LAI = intermediate_df['Slv'].sum() / area_in_cm 
+    green_LAI = intermediate_df['SLgreen'].sum() / area_in_cm 
+    tot_PAI = (intermediate_df['Slv'].sum() \
+               + intermediate_df[['SGv', 'SEv']].sum().sum() / 2.0) \
+               / area_in_cm
+    green_PAI = (intermediate_df['SLgreen'].sum() \
+                 + intermediate_df[['SGgreen', 'SEgreen']].sum().sum() / 2.0) \
+                 / area_in_cm
+    axes_density = intermediate_df.index.size / float(domain_area)                
+    active_axes_density_df = intermediate_df[intermediate_df['HS'] > 0.5]
+    active_axes_density_df = \
+        active_axes_density_df[active_axes_density_df['HS'] < active_axes_density_df['NFF']]
+    active_axes_density_df = active_axes_density_df[active_axes_density_df['SLgreen'] > 0.0]
+    active_axes_density = active_axes_density_df.index.size / float(domain_area)
     
-    data = [[filename, domain_area, plant_number, thermal_time, tot_LAI, green_LAI, tot_PAI, green_PAI, axes_density]]
-    new_index = [result_df.index.size]
-    new_df = pandas.DataFrame(data, index=new_index, columns=result_df.columns)
+    new_postprocessing_results_data = [[Filename, domain_area, plant_number, date, 
+                                        tot_LAI, green_LAI, tot_PAI, green_PAI, 
+                                        axes_density, active_axes_density]]
     
-    result_df = pandas.concat([result_df, new_df])
-    result_df.to_csv(result_path, na_rep='NA', index=False)
+    for column_name in ['HS', 'SSI']: 
+        for axe_idx in range(6):
+            current_mean = \
+                intermediate_df[intermediate_df['axe'] == axe_idx][column_name].mean()
+            new_postprocessing_results_data[0].append(current_mean)    
+        
+    new_postprocessing_results_df = \
+        pandas.DataFrame(new_postprocessing_results_data, 
+                         columns=postprocessing_results_df.columns)
+    postprocessing_results_df = \
+        pandas.concat([postprocessing_results_df, new_postprocessing_results_df], 
+                      ignore_index=True)
+    postprocessing_results_df.to_csv(postprocessing_results_path_, 
+                                     na_rep='NA', 
+                                     index=False)
     
-    return str(result_path) 
+    return (postprocessing_results_path, str(intermediate_results_path))
 
     

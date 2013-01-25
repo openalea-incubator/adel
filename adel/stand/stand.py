@@ -69,6 +69,8 @@ def agronomicplotwithdistributions(length, width, sowing_density, plant_density,
         - noise (%), indicates the precision of the sowing for the inter plant spacing
         - unit (m or cm) is for the unit of the position and domain
     """
+
+    print "mariem"
     inter_plant = 1. / inter_row / sowing_density
     nrow = max(1, int(float(width) / inter_row))
     plant_per_row = max(1,int(float(length) / inter_plant))
@@ -162,8 +164,7 @@ def sample_regular_gaps(points, pattern = [0,1]):
     return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
 
 
-def post_processing(adel_output_path='', plant_number=0, domain_area=0.0, 
-                    postprocessing_results_path=''):
+def post_processing(adel_output_path='', plant_number=0, domain_area=0.0, postprocessing_results_path=''):
     '''
     Apply post processing on the ADEL output.
     
@@ -209,11 +210,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     adel_output_df = pandas.read_csv(adel_output_path)
     # Construct the intermediate table
     grouped = adel_output_df.groupby(['plant', 'axe'], as_index=False)
-    intermediate_df = pandas.DataFrame(columns=['date', 'refplant_id', 'plant', 
-                                              'axe_id', 'axe', 'Slv', 'SLsen', 
-                                              'SGv', 'SGsen', 'SEv', 'SEsen', 
-                                              'SLgreen', 'SGgreen', 'SEgreen', 
-                                              'NFF', 'HS', 'SSI', 'GreenLeaf'])
+    intermediate_df = pandas.DataFrame(columns=['date', 'refplant_id', 'plant','axe_id', 'axe', 'Slv', 'SLsen', 'SGv', 'SGsen', 'SEv', 'SEsen','SLgreen', 'SGgreen', 'SEgreen', 'NFF', 'HS', 'SSI', 'GreenLeaf'])
     
     date = adel_output_df['date'][0]
     for name, group in grouped:
@@ -230,23 +227,20 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         SLgreen = Slv - SLsen
         SGgreen = SGv - SGsen
         SEgreen = SEv - SEsen
-        NFF = group['Ll'][group['Ll'] != 0.0].count()
-        index_of_last_non_null_Ll = group.index[NFF - 1]
-        HS = group['numphy'][index_of_last_non_null_Ll] - 1 + \
-             group['Lv'][index_of_last_non_null_Ll] / \
-             float(group['Ll'][index_of_last_non_null_Ll])
+        NFF = group['L_shape'][group['L_shape'] != 0.0].count()
+
+	index_of_last_non_null_Ll = group.index[NFF - 1]
         indexes_of_all_non_null_Ll = group.index[:index_of_last_non_null_Ll+1]
+        HS = (group['Lv'][indexes_of_all_non_null_Ll] / \
+             (group['L_shape'][indexes_of_all_non_null_Ll]).astype(float)) \
+	     .sum()
         SSI = (group['Lsen'][indexes_of_all_non_null_Ll] / \
-               group['Ll'][indexes_of_all_non_null_Ll].astype(float)) \
+               (group['L_shape'][indexes_of_all_non_null_Ll]).astype(float)) \
               .sum()
         GreenLeaf = HS - SSI
-        new_intermediate_data = [[date, refplant_id, plant, axe_id, axe, Slv,
-                                  SLsen, SGv, SGsen, SEv, SEsen, SLgreen, 
-                                  SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf]]
-        new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
-                                               columns=intermediate_df.columns)
-        intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], 
-                                        ignore_index=True)
+        new_intermediate_data = [[date, refplant_id, plant, axe_id, axe, Slv,SLsen, SGv, SGsen, SEv, SEsen, SLgreen, SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf]]
+        new_intermediate_df = pandas.DataFrame(new_intermediate_data, columns=intermediate_df.columns)
+        intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], ignore_index=True)
     
     import tempfile
     intermediate_file_suffix = '-%d.csv' % int(date)
@@ -278,30 +272,20 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                  / area_in_cm
     axes_density = intermediate_df.index.size / float(domain_area)                
     active_axes_density_df = intermediate_df[intermediate_df['HS'] > 0.5]
-    active_axes_density_df = \
-        active_axes_density_df[active_axes_density_df['HS'] < active_axes_density_df['NFF']]
+    active_axes_density_df = active_axes_density_df[active_axes_density_df['HS'] < active_axes_density_df['NFF']]
     active_axes_density_df = active_axes_density_df[active_axes_density_df['SLgreen'] > 0.0]
     active_axes_density = active_axes_density_df.index.size / float(domain_area)
     
-    new_postprocessing_results_data = [[Filename, domain_area, plant_number, date, 
-                                        tot_LAI, green_LAI, tot_PAI, green_PAI, 
-                                        axes_density, active_axes_density]]
+    new_postprocessing_results_data = [[Filename, domain_area, plant_number, date, tot_LAI, green_LAI, tot_PAI, green_PAI, axes_density, active_axes_density]]
     
     for column_name in ['HS', 'SSI']: 
         for axe_idx in range(6):
-            current_mean = \
-                intermediate_df[intermediate_df['axe'] == axe_idx][column_name].mean()
+            current_mean = intermediate_df[intermediate_df['axe'] == axe_idx][column_name].mean()
             new_postprocessing_results_data[0].append(current_mean)    
         
-    new_postprocessing_results_df = \
-        pandas.DataFrame(new_postprocessing_results_data, 
-                         columns=postprocessing_results_df.columns)
-    postprocessing_results_df = \
-        pandas.concat([postprocessing_results_df, new_postprocessing_results_df], 
-                      ignore_index=True)
-    postprocessing_results_df.to_csv(postprocessing_results_path_, 
-                                     na_rep='NA', 
-                                     index=False)
+    new_postprocessing_results_df = pandas.DataFrame(new_postprocessing_results_data,columns=postprocessing_results_df.columns)
+    postprocessing_results_df = pandas.concat([postprocessing_results_df, new_postprocessing_results_df], ignore_index=True)
+    postprocessing_results_df.to_csv(postprocessing_results_path_,na_rep='NA', index=False)
     
     return (postprocessing_results_path, str(intermediate_results_path))
 

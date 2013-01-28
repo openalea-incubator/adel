@@ -45,7 +45,7 @@ psen <- function(rssi,nt,ssisenT) {
   t1delsen <- ssisenT$dssit1 - ssisenT$ndel
   t2delsen <- ssisenT$dssit2 - ssisenT$ndel
   senrate <- ssisenT$rate
-  psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 1,1,rssi + 1))
+  psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 0,1,rssi + 1))
   if (nt < ndelsen) {
     t0 <- (nt-ndelsen)
     t1 <- t1delsen[ndelsen-nt]
@@ -167,9 +167,11 @@ checktube <- function(kin,ht0=0) {
     delta = ht0 - kin$Gl[1]
     kin$Llrolled[1] = min(delta,kin$Ll[1])
   }
-  # makes first phyto replace enclosing sheath
-  kin$ht[1] <- 0
-  kin$ht <- htube(kin,0)
+  # makes first phyto replace enclosing sheath after emergence
+  if (kin$xh[1] > 0) {
+    kin$ht[1] <- 0
+    kin$ht <- htube(kin,0)
+  }
   if (n >=2)
     for (i in 2:n) {
                                         # for emerged collar, ht must be less than Lh
@@ -229,8 +231,9 @@ kinLvis <- function(kinlist,pars=NULL) {
       kin[,c("Llrolled","Glopen")] <- 0
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == 0) {
-        kin$ht <- htube(kin,0)
-        kin <- checktube(kin,0)
+        ht0 = max(kin$Lhem[1],kin$Gl[1])
+        kin$ht <- htube(kin,ht0)
+        kin <- checktube(kin,ht0)
         htbm <- kin$ht
       } else {
         axil <- htbm[axes[a] + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe

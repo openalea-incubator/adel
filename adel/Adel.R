@@ -197,7 +197,7 @@ checktube <- function(kin,ht0=0) {
           if (delta > 0) #tube is too short
             kin$Llrolled[i-1] = min(delta,kin$Ll[i-1])
           else
-            kin$Glopen[i-1] = min(delta,kin$Gl[i-1])
+            kin$Glopen[i-1] = min(abs(delta),kin$Gl[i-1]+kin$Llrolled[i-1])
                                         #update tube
           kin$ht <- htube(kin,0)
         }

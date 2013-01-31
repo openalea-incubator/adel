@@ -4,6 +4,26 @@
 #
 #Utilities foor reconstructing a plant from parameters
 #
+openapprox <- function(x,y,xout,extrapolate=TRUE) {
+  xy <- cbind(x,y)
+  xy <- xy[order(xy[,1]),]
+  res <- approx(xy[,1],xy[,2],xout = xout,rule=2)$y
+  last <- nrow(xy)
+  twolast <- c(last - 1,last)
+  if (extrapolate) {
+    lastrate <- diff(xy[twolast,2]) / diff(xy[twolast,1])
+    firstrate <- diff(xy[1:2,2]) / diff(xy[1:2,1])
+  } else {
+    lastrate <- 0
+    firstrate <- 0
+  }
+  extrax <- xout > xy[last,1]
+  res[extrax] <- xy[last,2] + lastrate * (xout[extrax] - xy[last,1])
+  extrax <- xout < xy[1,1]
+  res[extrax] <- xy[1,2] +  firstrate * (xout[extrax] - xy[1,1])
+  res
+}
+#
 #extract or replicate a desired number of plant from a canopy table
 #
 setCanopy <- function(canT, nplants=1, randomize = TRUE, seed = NULL) {
@@ -56,7 +76,7 @@ predictPhen <- function(phenT,index,nf,datesf1) {
     names(datesf1) <- c("tip","col","ssi","disp")
     for (i in 1:4) {
       w <- names(out)[i]
-      out[[w]] <- approx(phen$nrel,phen[,w],nout,rule=2)$y + datesf1[[w]] 
+      out[[w]] <- openapprox(phen$nrel,phen[,w],nout)$y + datesf1[[w]] 
     }
     res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
   }

@@ -76,7 +76,7 @@ predictPhen <- function(phenT,index,nf,datesf1) {
     names(datesf1) <- c("tip","col","ssi","disp")
     for (i in 1:4) {
       w <- names(out)[i]
-      out[[w]] <- openapprox(phen$nrel,phen[,w],nout)$y + datesf1[[w]] 
+      out[[w]] <- openapprox(phen$nrel,phen[,w],nout) + datesf1[[w]] 
     }
     res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
   }

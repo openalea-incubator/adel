@@ -38,15 +38,15 @@ openapprox <- function(x,y,xout,extrapolate=TRUE) {
 }
 #
 #proportion Senesced as a function of Relative ssi and number from top
-#
-psen <- function(rssi,nt,ssisenT) {
+#TO DO add nf pour gerer pattern special si nf <4 & hasEar
+psen <- function(rssi,nt,ssisenT, hasEar=TRUE) {
   ndelsen <- max(ssisenT$ndel)
   ssisenT <- ssisenT[order(ssisenT$ndel),]
   t1delsen <- ssisenT$dssit1 - ssisenT$ndel
   t2delsen <- ssisenT$dssit2 - ssisenT$ndel
   senrate <- ssisenT$rate
   psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 0,1,rssi + 1))
-  if (nt < ndelsen) {
+  if (hasEar & nt < ndelsen) {
     t0 <- (nt-ndelsen)
     t1 <- t1delsen[ndelsen-nt]
     t2 <- t2delsen[ndelsen-nt]
@@ -113,26 +113,29 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       kin[,i,"Lhcol"] <-  Lhcol
       kin[,i,"xh"] <- xh
       kin[,i,"Lh"] <- ifelse(xh <= 0, sum(kin[,i,c("Ll","Gl","El")]),Lhem + (Lhcol - Lhem) * xh)
-      #sene
-      kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT) * kin[,i,"Ll"]
-      kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT) * kin[,i,"Gl"]
+      #senescence
+      kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, plant$axeT$hasEar[a]) * kin[,i,"Ll"]
+      kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, plant$axeT$hasEar[a]) * kin[,i,"Gl"]
+
       ## disparition feuille
       kin[i <= disp,i,c("Ll","Llsen")] <- 0
       kin[i <= (disp-1),i,c("Gl","Glsen")] <- 0
     }
     #ear + peduncle elongation
     nfa <- nf[a]
-    for (i in (nfa+1):(nfa+3))
-      kin[,i,c("Ll","Gl","Llsen","Glsen")] <- 0
-    for (i in (nfa+2):(nfa+3))
-      kin[,i,"El"] <- ifelse(ph < (nfa + 1.6),0,dim$El[i])
-    if (dim$El[nfa+1] > 0)
-      kin[,nfa+1,"El"] <- approx(c(ped$startPed,ped$endPed),c(0,dim$El[nfa+1]),xout=xa,rule=2)$y
-    else
-      kin[,nfa+1,"El"] = 0
-    #senescence of stem + ear + awn + peduncle
+    for (i in 1:(nfa+3))
+      kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
+    if (plant$axeT$hasEar[a]) {
+      for (i in (nfa+2):(nfa+3))
+        kin[,i,"El"] <- ifelse(ph < (nfa + 1.6),0,dim$El[i])
+      if (dim$El[nfa+1] > 0)
+        kin[,nfa+1,"El"] <- approx(c(ped$startPed,ped$endPed),c(0,dim$El[nfa+1]),xout=xa,rule=2)$y
+      else
+        kin[,nfa+1,"El"] = 0
+   #senescence of stem + ear + awn + peduncle
     for (i in 1:(nfa+3))
       kin[,i,"Elsen"] <- ifelse(xa < ped$senPed,0,dim$El[i])
+    }
     ##disparition axe = longueurs nulles sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
       kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0

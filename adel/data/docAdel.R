@@ -33,7 +33,7 @@
 # "disp" : NA or date of disparition the axe
 # "dimIndex" : reference (int) to a parameter set in dimT 
 # "phenIndex" : reference to a parameter set in phenT
-# "earIndex" : reference to a parameter set in earT
+# "earIndex" : reference to a parameter set in earT, or NA if the axe does not bear an ear
 # "emf1","ligf1","senf1","dispf1" : date of tip emergence, collar emergence, end of senescence and disparition of the first leaf of the axe. This allows for parameterising heterogeneous emergence date
 #
 #A.2 dimT : description of dimensions of axes (or a subset of axes)

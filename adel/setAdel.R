@@ -123,9 +123,13 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
   
   if (is.null(earT)) {
     iear <- grep("earIndex",colnames(axeT),fixed=TRUE)
-    if (length(iear) > 0)
+    if (length(iear) > 0) {
+      earindex <- axeT[,iear]
       axeT <- axeT[,-iear]
+    }
     axeT <- cbind(axeT,earIndex = 1)
+    #protect no-ear axes from default ear restoration
+    axeT$earIndex <- ifelse(is.na(earindex),NA,axeT$earIndex)
     earT <- data.frame(index = 1,em_ear = 100, em_ped = 200, end_gf = 1000, l_ped = 0, d_ped = 0, l_ear = 0, Sp_ear = 0, l_ear_awn = 0)
   }
   
@@ -162,7 +166,8 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
                            disp = pT$disp,
                            azT = sapply(pT$axe,geoAxe$azT),
                            incT = sapply(pT$axe,geoAxe$incT),
-                           dredT = sapply(pT$axe,geoAxe$dredT)
+                           dredT = sapply(pT$axe,geoAxe$dredT),
+                           hasEar = !is.na(pT$earIndex)
                            )
     #phytoT from dimT and geoleaf
     nomsdim <- c("Ll","Lw","Gl","Gd","El","Ed","pAngle","dpAngle","incB","dincB")
@@ -194,11 +199,13 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
       }
       #
       phytoT[(nf+1):(nf+3),,a] <- 0
-      phytoT[(nf+1):(nf+2),"El",a] <- unlist(earT[pT$earIndex[a],c("l_ped","l_ear")])
-      phytoT[nf+3,"El",a] <- unlist(earT[pT$earIndex[a],"l_ear_awn"] - earT[pT$earIndex[a],"l_ear"])
-      phytoT[nf+1,"Ed",a] <- unlist(earT[pT$earIndex[a],"d_ped"])
-      if (earT[pT$earIndex[a],"l_ear"] > 0)
-        phytoT[(nf+2):(nf+3),"Ed",a] <- unlist(earT[pT$earIndex[a],"Sp_ear"]/earT[pT$earIndex[a],"l_ear"])
+      if (!is.na(pT$earIndex[a])) {
+        phytoT[(nf+1):(nf+2),"El",a] <- unlist(earT[pT$earIndex[a],c("l_ped","l_ear")])
+        phytoT[nf+3,"El",a] <- unlist(earT[pT$earIndex[a],"l_ear_awn"] - earT[pT$earIndex[a],"l_ear"])
+        phytoT[nf+1,"Ed",a] <- unlist(earT[pT$earIndex[a],"d_ped"])
+        if (earT[pT$earIndex[a],"l_ear"] > 0)
+          phytoT[(nf+2):(nf+3),"Ed",a] <- unlist(earT[pT$earIndex[a],"Sp_ear"]/earT[pT$earIndex[a],"l_ear"])
+      }
     }
     #tip, collar and ssi : table input for oppenapprox
     phenoT <- vector("list",nrow(pT))
@@ -210,8 +217,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     # date of start and end of peduncle elongation
     pedT <- vector("list",nrow(pT))
     names(pedT) <- pT$axe
-    for (a in seq(nrow(pT)))
-      pedT[[a]] <- predictPed(phenoT[[a]],phytoT[,,a],pT$earIndex[a],pT$nf[a],earT)
+    for (a in seq(nrow(pT))) 
+      if (!is.na(pT$earIndex[a]))
+        pedT[[a]] <- predictPed(phenoT[[a]],phytoT[,,a],pT$earIndex[a],pT$nf[a],earT)
     
     out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT)
   }

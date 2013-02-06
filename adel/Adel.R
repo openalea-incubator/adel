@@ -39,7 +39,7 @@ openapprox <- function(x,y,xout,extrapolate=TRUE) {
 #
 #proportion Senesced as a function of Relative ssi and number from top
 #TO DO add nf pour gerer pattern special si nf <4 & hasEar
-psen <- function(rssi,nt,ssisenT, hasEar=TRUE) {
+psen <- function(rssi, nt, ssisenT, nf, hasEar=TRUE) {
   ndelsen <- max(ssisenT$ndel)
   ssisenT <- ssisenT[order(ssisenT$ndel),]
   t1delsen <- ssisenT$dssit1 - ssisenT$ndel
@@ -47,9 +47,9 @@ psen <- function(rssi,nt,ssisenT, hasEar=TRUE) {
   senrate <- ssisenT$rate
   psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 0,1,rssi + 1))
   if (hasEar & nt < ndelsen) {
-    t0 <- (nt-ndelsen)
-    t1 <- t1delsen[ndelsen-nt]
-    t2 <- t2delsen[ndelsen-nt]
+    t0 <- max(nt-ndelsen, nt-nf)
+    t1 <- max(t1delsen[ndelsen-nt], t0)
+    t2 <- max(t2delsen[ndelsen-nt], t1)
     psen <- openapprox(c(t0,t1,t2),c(0,senrate[ndelsen-nt]*(t1-t0),1),rssi,extrapolate=FALSE)
   }
   psen
@@ -92,7 +92,11 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
     kin <- array(NA,c(nx,nf[a]+3,17),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop")))
+    nfa <- nf[a]
+    for (i in 1:(nfa+3))
+      kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
     for (i in seq(nf[a])) {
+      #print(i)
       rph <- ph - i
       rssi <- ssi - i
      #longueur blade+sheath
@@ -114,17 +118,15 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       kin[,i,"xh"] <- xh
       kin[,i,"Lh"] <- ifelse(xh <= 0, sum(kin[,i,c("Ll","Gl","El")]),Lhem + (Lhcol - Lhem) * xh)
       #senescence
-      kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, plant$axeT$hasEar[a]) * kin[,i,"Ll"]
-      kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, plant$axeT$hasEar[a]) * kin[,i,"Gl"]
+      kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Ll"]
+      kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Gl"]
 
       ## disparition feuille
       kin[i <= disp,i,c("Ll","Llsen")] <- 0
       kin[i <= (disp-1),i,c("Gl","Glsen")] <- 0
     }
     #ear + peduncle elongation
-    nfa <- nf[a]
-    for (i in 1:(nfa+3))
-      kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
+    
     if (plant$axeT$hasEar[a]) {
       for (i in (nfa+2):(nfa+3))
         kin[,i,"El"] <- ifelse(ph < (nfa + 1.6),0,dim$El[i])
@@ -250,9 +252,6 @@ kinLvis <- function(kinlist,pars=NULL) {
       res[[a]][d,,"Llvis"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
       res[[a]][d,,"Glvis"] <- pmin(pmax(0,kin$Gl + kin$El - kin$ht),kin$Gl)
       res[[a]][d,,"Elvis"] <- pmin(pmax(0,kin$El - kin$ht),kin$El)
-#      res[[a]][d,,"Llsen"] <- pmin(res[[a]][d,,"Ll"],kin$Llsen)
-#      res[[a]][d,,"Glsen"] <- pmin(res[[a]][d,,"Gl"],kin$Glsen)
-#      res[[a]][d,,"Elsen"] <- pmin(res[[a]][d,,"El"],kin$Elsen)
     }
   }
        res

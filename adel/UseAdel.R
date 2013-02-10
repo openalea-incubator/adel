@@ -60,6 +60,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
     colnames(phenT)[colnames(phenT) %in% conv] <- names(conv)[na.omit(match(colnames(phenT),conv))]
   else if (!all(names(conv) %in% colnames(phenT)))
     stop(paste("phenT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(phenT)],collapse=" ")))
+  phenT <- phenT[!is.na(phenT$id_phen),]
   # earT
   if (!is.null(earTfile)) {
     earT <- reader(earTfile)

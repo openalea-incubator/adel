@@ -107,7 +107,7 @@ def compute_element(element_node, classic=False):
                 shape = incline_leaf(blade.shape_xysr, blade.inclination)
             else: 
                 shape = blade.shape_xysr
-            # x-> -x as turtlle expect x-y+
+            # x-> -x to place the shape along with the tiller positioned with turtle.down()
             leaf = (-shape[0],)+shape[1:]
             geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
                                 n.length, n.srb, n.srt)   
@@ -146,9 +146,10 @@ def adel_visitor(g, v, turtle):
             turtle.move(p.position)
         else:
             turtle.move(0,0,0)
-        turtle.setHead(0,0,1,1,0,0)
+        #initial position to be compatible with canMTG positioning
+        turtle.setHead(0,0,1,-1,0,0)
         if 'azimuth' in p.properties():
-            turtle.rollL(p.azimuth)
+            turtle.rollR(p.azimuth)
     #hypothesis that inclin is to be applied at the base of the visible elements
     if n.offset > 0:
         turtle.f(n.offset)
@@ -169,10 +170,10 @@ def adel_visitor(g, v, turtle):
                 turtle.down(inclin)
                 #replace turtle in original azimuth plane
                 #print 'angle ', angle
-                turtle.rollL(-angle)
+                turtle.rollR(-angle)
         if azim:
             #print 'node', n._vid, 'azim ', azim
-            turtle.rollL(azim)
+            turtle.rollR(azim)
 
        
     #if n.label.startswith('Leaf'):    

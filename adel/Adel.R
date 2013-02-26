@@ -179,7 +179,7 @@ checktube <- function(kin,ht0=0) {
   }
   if (n >=2)
     for (i in 2:n) {
-                                        # for emerged collar, ht must be less than Lh
+      # for emerged collar, ht must be less than Lh
       if (kin$xh[i] >= 1)
         if (kin$ht[i] > kin$Lh[i]) {
           delta <- kin$ht[i] - kin$Lh[i]
@@ -192,7 +192,7 @@ checktube <- function(kin,ht0=0) {
             dl = min(delta,kin$Gl[i-1])
             kin$Glopen[i-1] <- dl
           }
-                                        #update tube
+          #update tube
           kin$ht <- htube(kin,0)
         }
     #for emegrning leaves ht must be as close to Lh as possible
@@ -203,7 +203,7 @@ checktube <- function(kin,ht0=0) {
             kin$Llrolled[i-1] = min(delta,kin$Ll[i-1])
           else
             kin$Glopen[i-1] = min(abs(delta),kin$Gl[i-1]+kin$Llrolled[i-1])
-                                        #update tube
+          #update tube
           kin$ht <- htube(kin,0)
         }
     #for non-emerged leaves, Lh must be less than ht

@@ -139,11 +139,12 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  "[",
                  roll(azm),
                  "newAxe")
-      nf <- nrow(ax) - 3
+      nf <- max(1,nrow(ax) - 3)
       for (n in ax$numphy[1:nf]) {
         chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
         azaxil = azaxil + ax$Laz[ax$numphy == n]
       }
+	  if (nf > 3) {
                                         #add Peduncle
       if (ax$Ev[nf + 1] > epsillon)
         chn <- paste(chn,
@@ -156,7 +157,8 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
       if (ax$Ev[nf + 3] > epsillon)
         chn <- paste(chn,
                  Awn(ax$Ev[nf + 3]-ax$Esen[nf + 3],ax$Esen[nf + 3],ax$Ed[nf + 3],ax$Epo[nf + 3],ax$Epos[nf + 3],epsillon))
-      chn <- paste(chn,
+      }
+	  chn <- paste(chn,
                  "]")
     } 
   chn
@@ -175,7 +177,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
         chn <- paste(chn,
                  "[ newPlant newAxe")
                                         # stringify main stem and delegates to Metamer axilary branches, if any
-        nf <- nrow(axe) - 3
+        nf <- max(nrow(axe) - 3,1)
         for (m in axe$numphy[1:nf]) {
           if (m %in% axes)
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
@@ -183,6 +185,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))
           azcum <- azcum + axe$Laz[axe$numphy == m]
         }
+		if (nf > 3) {
                                         #add Peduncle
         if (axe$Ev[nf + 1] > epsillon)
           chn <- paste(chn,
@@ -195,7 +198,8 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
         if (axe$Ev[nf + 3] > epsillon)
           chn <- paste(chn,
                  Awn(axe$Ev[nf + 3]-axe$Esen[nf + 3],axe$Esen[nf + 3],axe$Ed[nf + 3],axe$Epo[nf + 3],axe$Epos[nf + 3],epsillon))
-        chn <- paste(chn,"]")
+        }
+		chn <- paste(chn,"]")
       }
     }
   }

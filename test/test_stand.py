@@ -39,3 +39,6 @@ def test_post_processing():
     expected_postprocessing_results_array = expected_postprocessing_results_df.values
     np.testing.assert_allclose(postprocessing_results_array, expected_postprocessing_results_array)
 
+if __name__ == '__main__':
+    test_post_processing()
+    

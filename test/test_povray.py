@@ -28,3 +28,6 @@ def test_count_pixels():
     expected_result_array = np.array([['scene.bmp', 0.0, 28526.0, 375.0, 2253.0, 25.0, 83.0, 2959.0]], dtype=object)    
     result_array = pandas.read_csv(result_path).values
     np.testing.assert_equal(result_array, expected_result_array)
+
+if __name__ == '__main__':
+    test_count_pixels()

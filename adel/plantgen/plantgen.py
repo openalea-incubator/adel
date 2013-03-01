@@ -1,0 +1,863 @@
+# -*- python -*-
+#
+#       Adel.PlantGen
+#
+#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#
+#       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
+'''
+Front end for the generation of the input data expected by ADEL. User should 
+look at this module first. One can then look at the other modules of :mod:`alinea.adel.plantgen` 
+for additional information. 
+
+Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu 
+'''
+
+import numpy as np
+import pandas
+
+from adel.plantgen import axeT, dimT, dynT, phenT
+
+class DataCompleteness:
+    '''
+    This enumerate defines the different degrees of completeness that the data 
+    documented by the user can have.
+    
+    .. seealso:: :func:`gen_adel_input_data`  
+    '''
+    MIN=1
+    SHORT=2
+    FULL=3
+
+
+def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8},
+                                 TT_col_nff={'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178},
+                                 dimT_user=None,
+                                 plant_number=100, 
+                                 cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                 MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
+                                 TT_bolting=500.0,
+                                 TT_flowering=1440.0,
+                                 final_axes_number=250,
+                                 GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
+                                 delais_TT_stop_del_axis=600,
+                                 TT_col_break=0.0):
+    '''
+    Generate ADEL input data from a *MIN* set of data. This a convenience 
+    function to be used from VisuAlea. 
+    
+    The *MIN* set of data is represented by *dynT_user*, *TT_col_nff* and *dimT_user*. 
+    See :ref:`plantgen` for an example of how to set these parameters properly.
+    
+    :Parameters:
+    
+        - `dynT_user` (:class:`dict`) - the leaf dynamic parameters set by the user. See 
+          :ref:`dynT_user_MIN <dynT_user_MIN>`
+                      
+          *dynT_user* must be a dict with the following shape:: 
+        
+              {'a_cohort': a_cohort, 'TT_col_0': TT_col_0, 
+               'n0': n0, 'n1': n1, 'n2': n2}
+        
+          where ``a_cohort``, ``TT_col_0``, ``n0``, ``n1`` and ``n2`` are floats.
+                
+        - `TT_col_nff` (:class:`dict`) - the thermal time when Haun Stage is equal to 
+          *Nff*, for the main stem.
+          
+          *TT_col_nff* must be a dict with the following shape:: 
+        
+              {'1': value_1, '4': value_4, '5': value_5, 
+               '6': value_6, '7': value_7}
+        
+          where ``value_\*`` are integers. 
+        
+        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
+          the user. See :ref:`dimT_user_MIN <dimT_user_MIN>`.
+          
+          *dimT_user* must be a pandas.Dataframe with the 
+          following columns: *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, 
+          *W_sheath*, *L_internode*, *W_internode*.
+          The values can be either integers or floats.
+              
+        - `plant_number` (:class:`int`) - the number of plants to be generated.
+        
+        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
+          of emergence of an axis when the parent axis is present. The keys are 
+          the cohort numbers and the values are the probabilities.
+        
+        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          the probability distribution of the final number of main stem leaves. 
+          The keys are the final numbers of main stem leaves, and the values are 
+          the probability distribution.
+          
+        - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
+        
+        - `TT_flowering` (:class:`int`) - The flowering date. 
+        
+        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+          ear, per square meter.
+        
+        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
+          several thermal times (including the senescence end). The keys are the 
+          thermal times, and the values are the GL decimal numbers.
+        
+        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
+          thermal time between an axis stop growing and its disappearance (it 
+          concerns only the axes that do not regress and which do not produce any 
+          cob).
+        
+        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
+          is changing.
+        
+    :Returns:
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
+        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+    
+    :Returns Type:
+        tuple of :class:`pandas.DataFrame`
+        
+    .. seealso:: :ref:`plantgen`
+                 :func:`gen_adel_input_data`
+                 :mod:`alinea.adel.plantgen.axeT`
+                 :mod:`alinea.adel.plantgen.dimT`
+                 :mod:`alinea.adel.plantgen.dynT`
+                 :mod:`alinea.adel.plantgen.params`
+                 :mod:`alinea.adel.plantgen.phenT`
+                 :mod:`alinea.adel.plantgen.tools`
+                 
+    .. warning:: the type of the arguments is checked as follows:
+
+             .. list-table::
+                 :widths: 10 50
+                 :header-rows: 1
+            
+                 * - Argument
+                   - Type
+                 * - *dynT_user* 
+                   - :class:`dict`
+                 * - *TT_col_nff* 
+                   - :class:`dict`  
+                 * - *dimT_user* 
+                   - :class:`pandas.DataFrame`
+                 * - *plant_number* 
+                   - :class:`int`
+                 * - *cohort_probabilities* 
+                   - :class:`dict`
+                 * - *MS_leaves_number_probabilities* 
+                   - :class:`dict`
+                 * - *TT_bolting* 
+                   - :class:`float`
+                 * - *TT_flowering* 
+                   - :class:`float`
+                 * - *final_axes_number* 
+                   - :class:`int`
+                 * - *GL_number* 
+                   - :class:`dict`
+                 * - *delais_TT_stop_del_axis* 
+                   - :class:`int`
+                 * - *TT_col_break* 
+                   - :class:`float`
+
+    '''    
+    assert isinstance(dynT_user, dict) and \
+            isinstance(TT_col_nff, dict) and \
+            isinstance(dimT_user, pandas.DataFrame) and \
+            isinstance(plant_number, int) and \
+            isinstance(cohort_probabilities, dict) and \
+            isinstance(MS_leaves_number_probabilities, dict) and \
+            isinstance(TT_bolting, float) and \
+            isinstance(TT_flowering, float) and \
+            isinstance(final_axes_number, int) and \
+            isinstance(GL_number, dict) and \
+            isinstance(delais_TT_stop_del_axis, int) and \
+            isinstance(TT_col_break, float)
+            
+    # check dynT_user validity
+    expected_dynT_user_keys_value_types = {'a_cohort': float, 
+                                             'TT_col_0': float, 
+                                             'n0': float,
+                                             'n1': float,
+                                             'n2': float}
+    dynT_user_keys_value_types = dict(zip(dynT_user.keys(), 
+                                          [type(value) for value in dynT_user.values()]))
+    assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
+    # check TT_col_nff validity
+    expected_TT_col_nff_keys_value_types = {'1': int, '4': int, '5': int, '6': int, '7': int}
+    TT_col_nff_keys_value_types = dict(zip(TT_col_nff.keys(), 
+                                          [type(value) for value in TT_col_nff.values()]))
+    assert expected_TT_col_nff_keys_value_types == TT_col_nff_keys_value_types
+    # check dimT_user validity
+    assert isinstance(dimT_user, pandas.DataFrame)
+    expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+    assert (dimT_user.columns == expected_dimT_user_columns).all()
+    assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+    assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
+    dynT_user = dynT_user.copy()
+    dynT_user['TT_col_nff'] = TT_col_nff
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
+
+
+def gen_adel_input_data_from_short(dynT_user,
+                                    dimT_user,
+                                    plant_number=100, 
+                                    cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                    MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
+                                    TT_bolting=500.0,
+                                    TT_flowering=1440.0,
+                                    final_axes_number=250,
+                                    GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
+                                    delais_TT_stop_del_axis=600,
+                                    TT_col_break=0.0):
+    '''
+    Generate ADEL input data from a *SHORT* set of data. This a convenience 
+    function to be used from VisuAlea. 
+    
+    The *SHORT* set of data is represented by *dynT_user* and *dimT_user*.
+    See :ref:`plantgen` for an example of how to set these parameters properly.
+    
+    :Parameters:
+    
+        - `dynT_user` (:class:`pandas.DataFrame`) - the leaf dynamic parameters 
+          set by the user. See :ref:`dynT_user_SHORT <dynT_user_SHORT>`.
+               
+          *dynT_user* must be a pandas.Dataframe with the 
+          following columns: *N_cohort*, *a_cohort*, *TT_col_0*, *TT_col_nff*, *n0*, *n1*, *n2*.
+          The values can be either integers or floats.
+        
+        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
+          the user. See :ref:`dimT_user_SHORT <dimT_user_SHORT>`
+          
+          *dimT_user* must be a pandas.Dataframe with the 
+          following columns: *id_axis*, *index_phytomer*, *L_blade*, *W_blade*, 
+          *L_sheath*, *W_sheath*, *L_internode*, *W_internode*.
+          The values can be either integers or floats.
+              
+        - `plant_number` (:class:`int`) - the number of plants to be generated.
+        
+        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
+          of emergence of an axis when the parent axis is present. The keys are 
+          the cohort numbers and the values are the probabilities.
+        
+        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          the probability distribution of the final number of main stem leaves. 
+          The keys are the final numbers of main stem leaves, and the values are 
+          the probability distribution.
+          
+        - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
+        
+        - `TT_flowering` (:class:`int`) - The flowering date. 
+        
+        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+          ear, per square meter.
+        
+        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
+          several thermal times (including the senescence end). The keys are the 
+          thermal times, and the values are the GL decimal numbers.
+        
+        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
+          thermal time between an axis stop growing and its disappearance (it 
+          concerns only the axes that do not regress and which do not produce any 
+          cob).
+        
+        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
+          is changing.
+        
+    :Returns:
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
+        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+    
+    :Returns Type:
+        tuple of :class:`pandas.DataFrame`
+        
+    .. seealso:: :ref:`plantgen`
+                 :func:`gen_adel_input_data`
+                 :mod:`alinea.adel.plantgen.axeT`
+                 :mod:`alinea.adel.plantgen.dimT`
+                 :mod:`alinea.adel.plantgen.dynT`
+                 :mod:`alinea.adel.plantgen.params`
+                 :mod:`alinea.adel.plantgen.phenT`
+                 :mod:`alinea.adel.plantgen.tools`
+                 
+    .. warning:: the type of the arguments is checked as follows:
+
+         .. list-table::
+             :widths: 10 50
+             :header-rows: 1
+        
+             * - Argument
+               - Type
+             * - *dynT_user* 
+               - :class:`pandas.DataFrame`
+             * - *dimT_user* 
+               - :class:`pandas.DataFrame`
+             * - *plant_number* 
+               - :class:`int`
+             * - *cohort_probabilities* 
+               - :class:`dict`
+             * - *MS_leaves_number_probabilities* 
+               - :class:`dict`
+             * - *TT_bolting* 
+               - :class:`float`
+             * - *TT_flowering* 
+               - :class:`float`
+             * - *final_axes_number* 
+               - :class:`int`
+             * - *GL_number* 
+               - :class:`dict`
+             * - *delais_TT_stop_del_axis* 
+               - :class:`int`
+             * - *TT_col_break* 
+               - :class:`float`
+                      
+    '''    
+    assert isinstance(dynT_user, pandas.DataFrame) and \
+            isinstance(dimT_user, pandas.DataFrame) and \
+            isinstance(plant_number, int) and \
+            isinstance(cohort_probabilities, dict) and \
+            isinstance(MS_leaves_number_probabilities, dict) and \
+            isinstance(TT_bolting, float) and \
+            isinstance(TT_flowering, float) and \
+            isinstance(final_axes_number, int) and \
+            isinstance(GL_number, dict) and \
+            isinstance(delais_TT_stop_del_axis, int) and \
+            isinstance(TT_col_break, float)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
+    
+
+def gen_adel_input_data_from_full(dynT_user,
+                                    dimT_user,
+                                    plant_number=100, 
+                                    cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                    MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
+                                    TT_bolting=500.0,
+                                    TT_flowering=1440.0,
+                                    final_axes_number=250,
+                                    GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
+                                    delais_TT_stop_del_axis=600,
+                                    TT_col_break=0.0):
+    '''
+    Generate ADEL input data from a *FULL* set of data. This a convenience 
+    function to be used from VisuAlea. 
+    
+    *FULL* set of data is represented by *dynT_user* and *dimT_user*.
+    See :ref:`plantgen` for an example of how to set these parameters properly.
+    
+    :Parameters:
+    
+        - `dynT_user` (:class:`pandas.DataFrame`) - the leaf dynamic parameters 
+          set by the user. See :ref:`dynT_user_FULL <dynT_user_FULL>`.
+               
+          *dynT_user* must be a pandas.Dataframe with the 
+          following columns: *N_cohort*, *Nff*, *a_cohort*, *TT_col_0*, *TT_col_nff*, *n0*, *n1*, *n2*.
+          The values can be either integers or floats.
+        
+        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
+          the user. See :ref:`dimT_user_FULL <dimT_user_FULL>`.
+          
+          *dimT_user* must be a pandas.Dataframe with the 
+          following columns: *id_dim*, *index_phytomer*, *L_blade*, *W_blade*, 
+          *L_sheath*, *W_sheath*, *L_internode*, *W_internode*.
+          The values can be either integers or floats.
+              
+        - `plant_number` (:class:`int`) - the number of plants to be generated.
+        
+        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
+          of emergence of an axis when the parent axis is present. The keys are 
+          the cohort numbers and the values are the probabilities.
+        
+        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          the probability distribution of the final number of main stem leaves. 
+          The keys are the final numbers of main stem leaves, and the values are 
+          the probability distribution.
+          
+        - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
+        
+        - `TT_flowering` (:class:`int`) - The flowering date. 
+        
+        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+          ear, per square meter.
+        
+        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
+          several thermal times (including the senescence end). The keys are the 
+          thermal times, and the values are the GL decimal numbers.
+        
+        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
+          thermal time between an axis stop growing and its disappearance (it 
+          concerns only the axes that do not regress and which do not produce any 
+          cob).
+        
+        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
+          is changing.
+        
+    :Returns:
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
+        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+    
+    :Returns Type:
+        tuple of :class:`pandas.DataFrame`
+        
+    .. seealso:: :ref:`plantgen`
+                 :func:`gen_adel_input_data`
+                 :mod:`alinea.adel.plantgen.axeT`
+                 :mod:`alinea.adel.plantgen.dimT`
+                 :mod:`alinea.adel.plantgen.dynT`
+                 :mod:`alinea.adel.plantgen.params`
+                 :mod:`alinea.adel.plantgen.phenT`
+                 :mod:`alinea.adel.plantgen.tools`
+                 
+    .. warning:: the type of the arguments is checked as follows:
+
+         .. list-table::
+             :widths: 10 50
+             :header-rows: 1
+        
+             * - Argument
+               - Type
+             * - *dynT_user* 
+               - :class:`pandas.DataFrame`
+             * - *dimT_user* 
+               - :class:`pandas.DataFrame`
+             * - *plant_number* 
+               - :class:`int`
+             * - *cohort_probabilities* 
+               - :class:`dict`
+             * - *MS_leaves_number_probabilities* 
+               - :class:`dict`
+             * - *TT_bolting* 
+               - :class:`float`
+             * - *TT_flowering* 
+               - :class:`float`
+             * - *final_axes_number* 
+               - :class:`int`
+             * - *GL_number* 
+               - :class:`dict`
+             * - *delais_TT_stop_del_axis* 
+               - :class:`int`
+             * - *TT_col_break* 
+               - :class:`float`    
+                      
+    '''    
+    assert isinstance(dynT_user, pandas.DataFrame)
+    assert isinstance(dimT_user, pandas.DataFrame)
+    assert isinstance(plant_number, int)
+    assert isinstance(cohort_probabilities, dict)
+    assert isinstance(MS_leaves_number_probabilities, dict)
+    assert isinstance(TT_bolting, float)
+    assert isinstance(TT_flowering, float)
+    assert isinstance(final_axes_number, int)
+    assert isinstance(GL_number, dict)
+    assert isinstance(delais_TT_stop_del_axis, int)
+    assert isinstance(TT_col_break, float)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
+
+
+def gen_adel_input_data(dynT_user,
+                        dimT_user,
+                        plant_number=100, 
+                        cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                        MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
+                        TT_bolting=500.0,
+                        TT_flowering=1440.0,
+                        final_axes_number=250,
+                        GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
+                        delais_TT_stop_del_axis=600,
+                        TT_col_break=0.0,
+                        dynT_user_completeness=DataCompleteness.MIN,
+                        dimT_user_completeness=DataCompleteness.MIN                        
+                        ):
+    '''
+    Create the dataframes which contain the plant data to be used as input for 
+    generating plot with ADEL, and some other dataframes for debugging purpose.
+    See :ref:`adel_input` for a description of the input tables expected by ADEL, 
+    and :ref:`plantgen` for a description of the dataframes created for debug. 
+    
+    Different degrees of completeness of data provided by the user are acceptable. 
+    The user must specify the degree of completeness selecting a value within the 
+    enumerate :class:`DataCompleteness`.
+    
+    The dataframes are created as follows:
+        * initialization of the following dataframes:
+            * *axeT_tmp*, calling :func:`alinea.adel.plantgen.axeT.create_axeT_tmp`,
+            * *dynT_tmp*, calling :func:`alinea.adel.plantgen.dynT.create_dynT_tmp`.
+            * *dimT_tmp*, calling :func:`alinea.adel.plantgen.dimT.create_dimT_tmp`
+            * :ref:`tilleringT <tilleringT>`, calling :func:`alinea.adel.plantgen.axeT.create_tilleringT`
+        * filling of the datframes set by the user:
+            * *dynT_user*, according to *dynT_user_completeness*
+            * *dimT_user*, according to *dimT_user_completeness*
+        * calculate the number of elongated internodes
+        * construction of the following dataframes:
+            * :ref:`dynT <dynT>`, calling :func:`alinea.adel.plantgen.dynT.create_dynT`,
+            * :ref:`phenT_abs <phenT_abs>`, calling :func:`alinea.adel.plantgen.phenT.create_phenT_abs`,
+            * :ref:`phenT_first <phenT_first>`, calling :func:`alinea.adel.plantgen.phenT.create_phenT_first`,
+            * :ref:`phenT <phenT>`, calling :func:`alinea.adel.plantgen.phenT.create_phenT`,
+            * :ref:`axeT <axeT>`, calling :func:`alinea.adel.plantgen.axeT.create_axeT`,
+            * :ref:`dimT_abs <dimT_abs>`, calling :func:`alinea.adel.plantgen.dimT.create_dimT_abs`,
+            * :ref:`dimT <dimT>`, calling :func:`alinea.adel.plantgen.dimT.create_dimT`,
+            * :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, calling :func:`alinea.adel.plantgen.phenT.create_HS_GL_SSI_T`,
+
+        These tables are returned to be used as ADEL input:
+            * the :ref:`axeT <axeT>`, 
+            * the :ref:`dimT <dimT>`, 
+            * the :ref:`phenT <phenT>`.
+          
+        These tables are intermediate tables and are returned for debugging purpose:
+            * the :ref:`tilleringT <tilleringT>`,
+            * the :ref:`phenT_abs <phenT_abs>`,
+            * the :ref:`dimT_abs <dimT_abs>`,
+            * the :ref:`dynT <dynT>`, 
+            * the :ref:`phenT_first <phenT_first>`,
+            * the :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`,
+        
+    :Parameters:
+    
+        - `dynT_user` (:class:`dict` | :class:`pandas.DataFrame`) - the leaf dynamic 
+          parameters set by the user.
+          The type and the content depend on the *dynT_user_completeness*.
+          See :ref:`levels_of_completeness`.       
+                
+        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs 
+          set by the user. 
+          The content depends on the *dimT_user_completeness* argument. 
+          See :ref:`levels_of_completeness`.
+              
+        - `plant_number` (:class:`int`) - the number of plants to be generated.
+        
+        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
+          of emergence of an axis when the parent axis is present. The keys are 
+          the cohort numbers and the values are the probabilities.
+        
+        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          the probability distribution of the final number of main stem leaves. 
+          The keys are the final numbers of main stem leaves, and the values are 
+          the probabilities distribution.
+          
+        - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
+        
+        - `TT_flowering` (:class:`int`) - The flowering date. 
+        
+        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+          ear, per square meter.
+        
+        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
+          several thermal times (including the senescence end). The keys are the 
+          thermal times, and the values are the GL decimal numbers.
+        
+        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
+          thermal time between an axis stop growing and its disappearance (it 
+          concerns only the axes that do not regress and which do not produce any 
+          cob).
+        
+        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
+          is changing.
+        
+        - `dynT_user_completeness` (:class:`DataCompleteness`) - the level of 
+          completeness of the *dynT_user* set by the user. 
+        
+        - `dimT_user_completeness` (:class:`DataCompleteness`) - the level of completeness of the 
+          *dimT_user* set by the user. 
+        
+    :Returns:
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
+        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+    
+    :Returns Type:
+        tuple of :class:`pandas.DataFrame`
+        
+    .. seealso:: :class:`DataCompleteness`
+                 :mod:`alinea.adel.plantgen.axeT`
+                 :mod:`alinea.adel.plantgen.dimT`
+                 :mod:`alinea.adel.plantgen.dynT`
+                 :mod:`alinea.adel.plantgen.params`
+                 :mod:`alinea.adel.plantgen.phenT`
+                 :mod:`alinea.adel.plantgen.tools`
+                 
+    .. warning:: the type of the arguments is checked as follows:
+    
+                 .. list-table::
+                     :widths: 10 50
+                     :header-rows: 1
+                
+                     * - Argument
+                       - Type
+                     * - *dynT_user* 
+                       - :class:`dict` or a :class:`pandas.DataFrame`
+                     * - *dimT_user* 
+                       - :class:`pandas.DataFrame`
+                     * - *plant_number* 
+                       - :class:`int`
+                     * - *cohort_probabilities* 
+                       - :class:`dict`
+                     * - *MS_leaves_number_probabilities* 
+                       - :class:`dict`
+                     * - *TT_bolting* 
+                       - :class:`float`
+                     * - *TT_flowering* 
+                       - :class:`float`
+                     * - *final_axes_number* 
+                       - :class:`int`
+                     * - *GL_number* 
+                       - :class:`dict`
+                     * - *delais_TT_stop_del_axis* 
+                       - :class:`int`
+                     * - *TT_col_break* 
+                       - :class:`float`
+                     * - *dynT_user_completeness* 
+                       - :class:`DataCompleteness`
+                     * - *dimT_user_completeness* 
+                       - :class:`DataCompleteness`
+    
+    '''
+    assert isinstance(dynT_user, (dict, pandas.DataFrame)) and \
+            isinstance(dimT_user, pandas.DataFrame) and \
+            isinstance(plant_number, int) and \
+            isinstance(cohort_probabilities, dict) and \
+            isinstance(MS_leaves_number_probabilities, dict) and \
+            isinstance(TT_bolting, float) and \
+            isinstance(TT_flowering, float) and \
+            isinstance(final_axes_number, int) and \
+            isinstance(GL_number, dict) and \
+            isinstance(delais_TT_stop_del_axis, int) and \
+            isinstance(TT_col_break, float) and \
+            dynT_user_completeness in DataCompleteness.__dict__.values() and \
+            dimT_user_completeness in DataCompleteness.__dict__.values()
+            
+    if dynT_user_completeness == DataCompleteness.MIN:
+        # check dynT_user validity
+        expected_dynT_user_keys_value_types = {'a_cohort': float, 
+                                                 'TT_col_0': float, 
+                                                 'TT_col_nff': dict, 
+                                                 'n0': float,
+                                                 'n1': float,
+                                                 'n2': float}
+        dynT_user_keys_value_types = dict(zip(dynT_user.keys(), 
+                                                    [type(value) for value in dynT_user.values()]))
+        assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
+        # check dimT_user validity
+        assert isinstance(dimT_user, pandas.DataFrame)
+        expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (dimT_user.columns == expected_dimT_user_columns).all()
+        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
+    elif dynT_user_completeness == DataCompleteness.SHORT:
+        # check dynT_user validity
+        assert isinstance(dynT_user, pandas.DataFrame)
+        expected_dynT_user_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
+        assert (dynT_user.columns == expected_dynT_user_columns).all()
+        assert dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        assert dynT_user['N_cohort'].unique().size == dynT_user['N_cohort'].size
+        # check dimT_user validity
+        assert isinstance(dimT_user, pandas.DataFrame)
+        expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (dimT_user.columns == expected_dimT_user_columns).all()
+        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
+        assert len(grouped.groups) == dimT_user.index.size            
+    elif dynT_user_completeness == DataCompleteness.FULL:
+        # check dynT_user validity
+        assert isinstance(dynT_user, pandas.DataFrame)
+        expected_dynT_user_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
+        assert (dynT_user.columns == expected_dynT_user_columns).all()
+        assert dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = dynT_user.groupby(['N_cohort', 'Nff'])
+        assert len(grouped.groups) == dynT_user.index.size    
+        # check dimT_user validity
+        assert isinstance(dimT_user, pandas.DataFrame)
+        expected_dimT_user_columns = ['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (dimT_user.columns == expected_dimT_user_columns).all()
+        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = dimT_user.groupby(['id_dim', 'index_phytomer'])
+        assert len(grouped.groups) == dimT_user.index.size    
+    
+    # 2. first step of the fit process
+    (axeT_tmp_dataframe, 
+    dimT_tmp_dataframe, 
+    dynT_tmp_dataframe, 
+    tilleringT_dataframe) = _gen_adel_input_data_first(plant_number, 
+                                                     cohort_probabilities, 
+                                                     MS_leaves_number_probabilities, 
+                                                     TT_bolting, 
+                                                     TT_flowering, 
+                                                     final_axes_number) 
+    
+    # 3. complete dynT_user
+    if dynT_user_completeness == DataCompleteness.MIN:
+        dynT_tmp_dataframe.ix[0]['TT_col_break'] = TT_col_break
+        dynT_tmp_dataframe.ix[0]['a_cohort'] = dynT_user['a_cohort']
+        dynT_tmp_dataframe.ix[0]['TT_col_0'] = dynT_user['TT_col_0']
+        TT_col_nff_keys = dynT_user['TT_col_nff'].keys()
+        TT_col_nff_keys.sort()
+        first_TT_col_nff = dynT_user['TT_col_nff'][TT_col_nff_keys[0]]
+        for N_cohort, dynT_tmp_dataframe_grouped_by_N_cohort in dynT_tmp_dataframe.groupby('N_cohort'):
+            N_cohort_int = int(N_cohort)
+            current_TT_col_nff = dynT_user['TT_col_nff'][str(N_cohort_int)]
+            current_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
+            index_to_set = dynT_tmp_dataframe_grouped_by_N_cohort.index[0]
+            dynT_tmp_dataframe['TT_col_nff'][index_to_set] = current_TT_col_nff
+            dynT_tmp_dataframe['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort
+        dynT_tmp_dataframe.ix[0]['n0'] = dynT_user['n0']
+        dynT_tmp_dataframe.ix[0]['n1'] = dynT_user['n1']
+        dynT_tmp_dataframe.ix[0]['n2'] = dynT_user['n2']
+    elif dynT_user_completeness == DataCompleteness.SHORT:
+        user_grouped = dynT_user.groupby('N_cohort')
+        for N_cohort, generated_group in dynT_tmp_dataframe.groupby('N_cohort'):
+            if N_cohort not in user_grouped.groups:
+                continue
+            user_group = user_grouped.get_group(N_cohort)
+            index_to_get = user_group.index[0]
+            index_to_set = generated_group.index[0]
+            if N_cohort == 1.0:
+                first_TT_col_nff = user_group['TT_col_nff'][index_to_get]
+            columns_to_set = dynT_user.columns
+            dynT_tmp_dataframe.ix[index_to_set][columns_to_set] = dynT_user.ix[index_to_get]
+            dynT_tmp_dataframe.ix[index_to_set]['TT_col_break'] = TT_col_break
+            current_TT_col_nff = user_group['TT_col_nff'][index_to_get]
+            current_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
+            dynT_tmp_dataframe.ix[index_to_set]['dTT_MS_cohort'] = current_dTT_MS_cohort
+    elif dynT_user_completeness == DataCompleteness.FULL:
+        user_grouped_N_cohort = dynT_user.groupby('N_cohort')
+        for N_cohort, N_cohort_generated_group in dynT_tmp_dataframe.groupby('N_cohort'):
+            if N_cohort not in user_grouped_N_cohort.groups:
+                continue
+            user_N_cohort_group = user_grouped_N_cohort.get_group(N_cohort)
+            N_cohort_index_to_get = user_N_cohort_group.index[0]
+            N_cohort_index_to_set = N_cohort_generated_group.index[0]
+            if N_cohort == 1.0:
+                first_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
+            current_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
+            most_frequent_axis_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
+            dynT_tmp_dataframe.ix[N_cohort_index_to_set]['dTT_MS_cohort'] = most_frequent_axis_dTT_MS_cohort
+            highest_cardinality = N_cohort_generated_group['cardinality'][N_cohort_index_to_set]
+            user_grouped_Nff = user_N_cohort_group.groupby('Nff')
+            for Nff, Nff_generated_group in N_cohort_generated_group.groupby('Nff'):
+                if Nff not in user_grouped_Nff.groups:
+                    continue
+                Nff_index_to_get = user_grouped_Nff.get_group(Nff).index[0]
+                Nff_index_to_set = Nff_generated_group.index[0]
+                if Nff_generated_group['cardinality'][Nff_index_to_set] != highest_cardinality:
+                    current_dTT_MS_cohort = most_frequent_axis_dTT_MS_cohort + (Nff_generated_group['id_axis'][Nff_index_to_set] - N_cohort_generated_group['id_axis'][N_cohort_index_to_set]) / (4 * dynT_user['a_cohort'][0]) 
+                    dynT_tmp_dataframe.ix[Nff_index_to_set]['dTT_MS_cohort'] = current_dTT_MS_cohort                   
+                columns_to_set = dynT_user.columns
+                dynT_tmp_dataframe.ix[Nff_index_to_set][columns_to_set] = dynT_user.ix[Nff_index_to_get]
+                dynT_tmp_dataframe.ix[Nff_index_to_set]['TT_col_break'] = TT_col_break
+    else:
+        raise Exception('''%s is an unknown user data completeness value. \
+The values can be one of %s''', (str(dynT_user_completeness), 
+                                 str([DataCompleteness.MIN, 
+                                      DataCompleteness.SHORT, 
+                                      DataCompleteness.FULL])))
+    
+    # 4. complete dimT_user
+    organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+    if dimT_user_completeness == DataCompleteness.MIN:
+        index_to_set = dimT_tmp_dataframe[dimT_tmp_dataframe['id_dim']==dimT_tmp_dataframe['id_dim'][0]].index
+        for organ_dim in organ_dim_list:
+            dimT_tmp_dataframe[organ_dim][index_to_set] = dimT_user[organ_dim][index_to_set]
+    elif dimT_user_completeness == DataCompleteness.SHORT:
+        user_grouped = dimT_user.groupby('id_axis')
+        for generated_id_dim, generated_group in dimT_tmp_dataframe.groupby('id_dim'):
+            generated_id_axis = float(str(int(generated_id_dim))[:-2])
+            if generated_id_axis not in user_grouped.groups:
+                continue
+            user_group = user_grouped.get_group(generated_id_axis)
+            user_index_phytomer = user_group['index_phytomer'][user_group.index[-1]]
+            user_id_dim = float(''.join([str(int(generated_id_axis)), str(int(user_index_phytomer))]))
+            if user_id_dim != generated_id_dim:
+                continue
+            index_to_get = user_group.index
+            index_to_set = generated_group.index
+            for organ_dim in organ_dim_list:
+                dimT_tmp_dataframe[organ_dim][index_to_set] = dimT_user[organ_dim][index_to_get]     
+    elif dimT_user_completeness == DataCompleteness.FULL:
+        user_grouped = dimT_user.groupby('id_dim')
+        for generated_id_dim, generated_group in dimT_tmp_dataframe.groupby('id_dim'):
+            if generated_id_dim not in user_grouped.groups:
+                continue
+            user_group = user_grouped.get_group(generated_id_dim)
+            dimT_tmp_dataframe.ix[generated_group.index] = dimT_user.ix[user_group.index]
+    else:
+        raise Exception('''%s is an unknown user data completeness value. \
+The values can be one of %s''', (str(dimT_user_completeness), 
+                                 str([DataCompleteness.MIN, 
+                                      DataCompleteness.SHORT, 
+                                      DataCompleteness.FULL]))) 
+    
+    # 5. second step of the fit process    
+    (axeT_dataframe, 
+     phenT_abs_dataframe, 
+     phenT_dataframe,
+     dimT_abs_dataframe, 
+     dynT_dataframe, 
+     phenT_first_dataframe,
+     HS_GL_SSI_T_dataframe, 
+     dimT_dataframe) = _gen_adel_input_data_second(axeT_tmp_dataframe, 
+                                                    dimT_tmp_dataframe, 
+                                                    dynT_tmp_dataframe, 
+                                                    GL_number, 
+                                                    TT_bolting, 
+                                                    TT_flowering, 
+                                                    delais_TT_stop_del_axis, 
+                                                    final_axes_number)
+    
+    return axeT_dataframe, dimT_dataframe, phenT_dataframe, phenT_abs_dataframe, \
+           dimT_abs_dataframe, dynT_dataframe, phenT_first_dataframe, \
+           HS_GL_SSI_T_dataframe, tilleringT_dataframe
+
+
+def _gen_adel_input_data_first(plant_number, 
+                              cohort_probabilities, 
+                              MS_leaves_number_probabilities,
+                              TT_bolting, 
+                              TT_flowering,
+                              final_axes_number):    
+    '''Generate the input data: first step.'''
+    # create axeT_tmp
+    axeT_tmp_dataframe = axeT.create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabilities)
+    # create dynT_tmp
+    dynT_tmp_dataframe = dynT.create_dynT_tmp(axeT_tmp_dataframe['id_phen'].tolist())
+    # create dimT_tmp
+    dimT_tmp_dataframe = dimT.create_dimT_tmp(dynT_tmp_dataframe)
+    # create tilleringT
+    tilleringT_dataframe =  axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_number)
+
+    return axeT_tmp_dataframe, dimT_tmp_dataframe, dynT_tmp_dataframe, tilleringT_dataframe
+
+
+def _gen_adel_input_data_second(axeT_tmp_dataframe, 
+                                dimT_user, 
+                                dynT_user, 
+                                GL_number, 
+                                TT_bolting, 
+                                TT_flowering, 
+                                delais_TT_stop_del_axis,
+                                final_axes_number):
+    '''Generate the input data: second step.'''
+    # calculate decimal_elongated_internode_number
+    decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_user) 
+    # create dynT
+    dynT_dataframe = dynT.create_dynT(dynT_user, dimT_user, GL_number, decimal_elongated_internode_number)
+    # create phenT_abs
+    phenT_abs_dataframe = phenT.create_phenT_abs(dynT_dataframe, decimal_elongated_internode_number)
+    # create phenT_first
+    phenT_first_dataframe = phenT.create_phenT_first(phenT_abs_dataframe)
+    # create phenT
+    phenT_dataframe = phenT.create_phenT(phenT_abs_dataframe, phenT_first_dataframe)
+    # create axeT
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_number)
+    # create dimT_abs
+    dimT_abs_dataframe = dimT.create_dimT_abs(dimT_user, phenT_abs_dataframe)
+    # create dimT
+    dimT_dataframe = dimT.create_dimT(dimT_abs_dataframe)
+    # create HS_GL_SSI_T 
+    HS_GL_SSI_T_dataframe = phenT.create_HS_GL_SSI_T(dynT_dataframe)
+    
+    return axeT_dataframe, phenT_abs_dataframe, phenT_dataframe, \
+           dimT_abs_dataframe, dynT_dataframe, phenT_first_dataframe, \
+           HS_GL_SSI_T_dataframe, dimT_dataframe

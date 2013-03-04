@@ -47,15 +47,14 @@ Reference guide
     :show-inheritance:
     :synopsis: doc todo
 
-.. 
-    :mod:`alinea.adel.mtg` module
-    ===============================================
-    .. automodule:: alinea.adel.mtg
-        :members:
-        :undoc-members:
-        :inherited-members:
-        :show-inheritance:
-        :synopsis: doc todo
+:mod:`alinea.adel.mtg` module
+===============================================
+.. automodule:: alinea.adel.mtg
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: doc todo
 
 :mod:`alinea.adel.plantgen` package
 =========================================================

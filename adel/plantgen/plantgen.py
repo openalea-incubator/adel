@@ -182,10 +182,10 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
             
     # check dynT_user validity
     expected_dynT_user_keys_value_types = {'a_cohort': float, 
-                                             'TT_col_0': float, 
-                                             'n0': float,
-                                             'n1': float,
-                                             'n2': float}
+                                           'TT_col_0': float, 
+                                           'n0': float,
+                                           'n1': float,
+                                           'n2': float}
     dynT_user_keys_value_types = dict(zip(dynT_user.keys(), 
                                           [type(value) for value in dynT_user.values()]))
     assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
@@ -286,37 +286,51 @@ def gen_adel_input_data_from_short(dynT_user,
                  :mod:`alinea.adel.plantgen.phenT`
                  :mod:`alinea.adel.plantgen.tools`
                  
-    .. warning:: the type of the arguments is checked as follows:
+    .. warning:: the arguments are checked as follows:
 
          .. list-table::
-             :widths: 10 50
+             :widths: 10 10 30
              :header-rows: 1
         
              * - Argument
                - Type
+               - Constraint
              * - *dynT_user* 
                - :class:`pandas.DataFrame`
+               - **MUST** contain a row of data for each possible cohort. 
+                 See *cohort_probabilities*.
              * - *dimT_user* 
                - :class:`pandas.DataFrame`
+               - **MUST** contain a row of data for each possible cohort. 
+                 See *cohort_probabilities*.
              * - *plant_number* 
                - :class:`int`
+               - None
              * - *cohort_probabilities* 
                - :class:`dict`
+               - None
              * - *MS_leaves_number_probabilities* 
                - :class:`dict`
+               - None
              * - *TT_bolting* 
                - :class:`float`
+               - None
              * - *TT_flowering* 
                - :class:`float`
+               - None
              * - *final_axes_number* 
                - :class:`int`
+               - None
              * - *GL_number* 
                - :class:`dict`
+               - None
              * - *delais_TT_stop_del_axis* 
                - :class:`int`
+               - None
              * - *TT_col_break* 
                - :class:`float`
-                      
+               - None
+
     '''    
     assert isinstance(dynT_user, pandas.DataFrame) and \
             isinstance(dimT_user, pandas.DataFrame) and \
@@ -329,6 +343,9 @@ def gen_adel_input_data_from_short(dynT_user,
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
             isinstance(TT_col_break, float)
+    
+            
+    
     return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
 
@@ -413,36 +430,52 @@ def gen_adel_input_data_from_full(dynT_user,
                  :mod:`alinea.adel.plantgen.phenT`
                  :mod:`alinea.adel.plantgen.tools`
                  
-    .. warning:: the type of the arguments is checked as follows:
+    .. warning:: the arguments are checked as follows:
 
          .. list-table::
-             :widths: 10 50
+             :widths: 10 10 30
              :header-rows: 1
         
              * - Argument
                - Type
-             * - *dynT_user* 
+               - Constraint
+             * - *dynT_user*
                - :class:`pandas.DataFrame`
-             * - *dimT_user* 
+               - **MUST** contain a row of data for each possible phytomer of the 
+                 most frequent axis of the main stem, and for each possible cohort. 
+                 See *cohort_probabilities* and *MS_leaves_number_probabilities*.
+             * - *dimT_user*
                - :class:`pandas.DataFrame`
+               - **MUST** contain a row of data for each possible phytomer of the 
+                 most frequent axis of the main stem, and for each possible cohort. 
+                 See *cohort_probabilities* and *MS_leaves_number_probabilities*.
              * - *plant_number* 
                - :class:`int`
+               - None
              * - *cohort_probabilities* 
                - :class:`dict`
+               - None
              * - *MS_leaves_number_probabilities* 
                - :class:`dict`
+               - None
              * - *TT_bolting* 
                - :class:`float`
+               - None
              * - *TT_flowering* 
                - :class:`float`
+               - None
              * - *final_axes_number* 
                - :class:`int`
+               - None
              * - *GL_number* 
                - :class:`dict`
+               - None
              * - *delais_TT_stop_del_axis* 
                - :class:`int`
+               - None
              * - *TT_col_break* 
-               - :class:`float`    
+               - :class:`float`
+               - None    
                       
     '''    
     assert isinstance(dynT_user, pandas.DataFrame)
@@ -582,37 +615,73 @@ def gen_adel_input_data(dynT_user,
     .. warning:: the type of the arguments is checked as follows:
     
                  .. list-table::
-                     :widths: 10 50
+                     :widths: 10 20 20 20
                      :header-rows: 1
                 
                      * - Argument
-                       - Type
-                     * - *dynT_user* 
-                       - :class:`dict` or a :class:`pandas.DataFrame`
-                     * - *dimT_user* 
+                       - MIN
+                       - SHORT
+                       - FULL
+                     * - *dynT_user*
+                       - :class:`dict`
+                       - :class:`pandas.DataFrame` which contains a row of data 
+                         for each possible cohort. See *cohort_probabilities*.
+                       - :class:`pandas.DataFrame` which contains a row of data 
+                         for each possible leaves number of the most frequent axis 
+                         of the main stem, and for each possible cohort. 
+                         See *cohort_probabilities* and *MS_leaves_number_probabilities*.
+                     * - *dimT_user*
                        - :class:`pandas.DataFrame`
+                       - :class:`pandas.DataFrame` which contains a row of data 
+                         for each possible cohort. See *cohort_probabilities*.
+                       - :class:`pandas.DataFrame` which contains a row of data 
+                         for each possible leaves number of the most frequent axis 
+                         of the main stem, and for each possible cohort.
+                         See *cohort_probabilities* and *MS_leaves_number_probabilities*. 
                      * - *plant_number* 
+                       - :class:`int`
+                       - :class:`int`
                        - :class:`int`
                      * - *cohort_probabilities* 
                        - :class:`dict`
+                       - :class:`dict`
+                       - :class:`dict`
                      * - *MS_leaves_number_probabilities* 
+                       - :class:`dict`
+                       - :class:`dict`
                        - :class:`dict`
                      * - *TT_bolting* 
                        - :class:`float`
+                       - :class:`float`
+                       - :class:`float`
                      * - *TT_flowering* 
+                       - :class:`float`
+                       - :class:`float`
                        - :class:`float`
                      * - *final_axes_number* 
                        - :class:`int`
+                       - :class:`int`
+                       - :class:`int`
                      * - *GL_number* 
+                       - :class:`dict`
+                       - :class:`dict`
                        - :class:`dict`
                      * - *delais_TT_stop_del_axis* 
                        - :class:`int`
+                       - :class:`int`
+                       - :class:`int`
                      * - *TT_col_break* 
                        - :class:`float`
+                       - :class:`float`
+                       - :class:`float`
                      * - *dynT_user_completeness* 
-                       - :class:`DataCompleteness`
+                       - :attr:`DataCompleteness.MIN`
+                       - :attr:`DataCompleteness.SHORT`
+                       - :attr:`DataCompleteness.FULL`
                      * - *dimT_user_completeness* 
-                       - :class:`DataCompleteness`
+                       - :attr:`DataCompleteness.MIN`
+                       - :attr:`DataCompleteness.SHORT`
+                       - :attr:`DataCompleteness.FULL`
     
     '''
     assert isinstance(dynT_user, (dict, pandas.DataFrame)) and \
@@ -628,9 +697,15 @@ def gen_adel_input_data(dynT_user,
             isinstance(TT_col_break, float) and \
             dynT_user_completeness in DataCompleteness.__dict__.values() and \
             dimT_user_completeness in DataCompleteness.__dict__.values()
-            
+    
+    possible_cohorts = \
+        set([idx_of_cohort for (idx_of_cohort, probability) in
+             cohort_probabilities.iteritems() if probability != 0.0])
+    possible_MS_leave_numbers = \
+        set([number_of_leaves for (number_of_leaves, probability) in
+             MS_leaves_number_probabilities.iteritems() if probability != 0.0])
+    # check dynT_user validity
     if dynT_user_completeness == DataCompleteness.MIN:
-        # check dynT_user validity
         expected_dynT_user_keys_value_types = {'a_cohort': float, 
                                                  'TT_col_0': float, 
                                                  'TT_col_nff': dict, 
@@ -638,43 +713,55 @@ def gen_adel_input_data(dynT_user,
                                                  'n1': float,
                                                  'n2': float}
         dynT_user_keys_value_types = dict(zip(dynT_user.keys(), 
-                                                    [type(value) for value in dynT_user.values()]))
+                                              [type(value) for value in dynT_user.values()]))
         assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
-        # check dimT_user validity
-        assert isinstance(dimT_user, pandas.DataFrame)
-        expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        assert (dimT_user.columns == expected_dimT_user_columns).all()
-        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
-        assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
     elif dynT_user_completeness == DataCompleteness.SHORT:
-        # check dynT_user validity
         assert isinstance(dynT_user, pandas.DataFrame)
         expected_dynT_user_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
         assert (dynT_user.columns == expected_dynT_user_columns).all()
         assert dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
         assert dynT_user['N_cohort'].unique().size == dynT_user['N_cohort'].size
-        # check dimT_user validity
-        assert isinstance(dimT_user, pandas.DataFrame)
-        expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        assert (dimT_user.columns == expected_dimT_user_columns).all()
-        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
-        grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
-        assert len(grouped.groups) == dimT_user.index.size            
+        available_cohorts = set(dynT_user['N_cohort'].astype(int).astype(str).tolist())
+        assert possible_cohorts.issubset(available_cohorts)
     elif dynT_user_completeness == DataCompleteness.FULL:
-        # check dynT_user validity
         assert isinstance(dynT_user, pandas.DataFrame)
         expected_dynT_user_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
         assert (dynT_user.columns == expected_dynT_user_columns).all()
         assert dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
         grouped = dynT_user.groupby(['N_cohort', 'Nff'])
-        assert len(grouped.groups) == dynT_user.index.size    
-        # check dimT_user validity
+        assert len(grouped.groups) == dynT_user.index.size   
+        available_cohorts = set(dynT_user['N_cohort'].astype(int).astype(str).tolist())
+        assert possible_cohorts.issubset(available_cohorts) 
+        available_MS_leave_numbers = set([str(Nff) for Nff in dynT_user[dynT_user['N_cohort'] == 1]['Nff'].astype(int).tolist()])
+        assert possible_MS_leave_numbers.issubset(available_MS_leave_numbers)
+        
+    # check dimT_user validity
+    if dimT_user_completeness == DataCompleteness.MIN:
+        assert isinstance(dimT_user, pandas.DataFrame)
+        expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (dimT_user.columns == expected_dimT_user_columns).all()
+        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
+    elif dimT_user_completeness == DataCompleteness.SHORT:
+        assert isinstance(dimT_user, pandas.DataFrame)
+        expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        assert (dimT_user.columns == expected_dimT_user_columns).all()
+        assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
+        grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
+        assert len(grouped.groups) == dimT_user.index.size    
+        available_cohorts = set(dimT_user['id_axis'].astype(int).astype(str).tolist())
+        assert possible_cohorts.issubset(available_cohorts)
+    elif dimT_user_completeness == DataCompleteness.FULL:
         assert isinstance(dimT_user, pandas.DataFrame)
         expected_dimT_user_columns = ['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
         assert (dimT_user.columns == expected_dimT_user_columns).all()
         assert dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all()
         grouped = dimT_user.groupby(['id_dim', 'index_phytomer'])
-        assert len(grouped.groups) == dimT_user.index.size    
+        assert len(grouped.groups) == dimT_user.index.size
+        available_cohorts = set([str(id_dim)[:-2] for id_dim in dimT_user['id_dim'].astype(int).tolist()])
+        assert possible_cohorts.issubset(available_cohorts)
+        available_MS_leave_numbers = set([str(int(id_dim))[-2:] for id_dim in dimT_user['id_dim'].tolist() if str(int(id_dim))[:-2] == '1']) 
+        assert possible_MS_leave_numbers.issubset(available_MS_leave_numbers)
     
     # 2. first step of the fit process
     (axeT_tmp_dataframe, 

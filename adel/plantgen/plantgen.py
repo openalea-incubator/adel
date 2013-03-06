@@ -814,10 +814,12 @@ def gen_adel_input_data(dynT_user,
             if N_cohort not in user_grouped_N_cohort.groups:
                 continue
             user_N_cohort_group = user_grouped_N_cohort.get_group(N_cohort)
-            N_cohort_index_to_get = user_N_cohort_group.index[0]
+            most_frequent_Nff = N_cohort_generated_group['Nff'][N_cohort_generated_group.index[0]]
+            N_cohort_index_to_get = user_N_cohort_group[user_N_cohort_group['Nff'] == most_frequent_Nff].index[0]
             N_cohort_index_to_set = N_cohort_generated_group.index[0]
             if N_cohort == 1.0:
                 first_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
+                most_frequent_MS_a_cohort = dynT_user['a_cohort'][N_cohort_index_to_get]
             current_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
             most_frequent_axis_dTT_MS_cohort = current_TT_col_nff - first_TT_col_nff
             dynT_tmp_dataframe.ix[N_cohort_index_to_set]['dTT_MS_cohort'] = most_frequent_axis_dTT_MS_cohort
@@ -829,7 +831,7 @@ def gen_adel_input_data(dynT_user,
                 Nff_index_to_get = user_grouped_Nff.get_group(Nff).index[0]
                 Nff_index_to_set = Nff_generated_group.index[0]
                 if Nff_generated_group['cardinality'][Nff_index_to_set] != highest_cardinality:
-                    current_dTT_MS_cohort = most_frequent_axis_dTT_MS_cohort + (Nff_generated_group['id_axis'][Nff_index_to_set] - N_cohort_generated_group['id_axis'][N_cohort_index_to_set]) / (4 * dynT_user['a_cohort'][0]) 
+                    current_dTT_MS_cohort = most_frequent_axis_dTT_MS_cohort + (Nff_generated_group['id_axis'][Nff_index_to_set] - N_cohort_generated_group['id_axis'][N_cohort_index_to_set]) / (4 * most_frequent_MS_a_cohort) 
                     dynT_tmp_dataframe.ix[Nff_index_to_set]['dTT_MS_cohort'] = current_dTT_MS_cohort                   
                 columns_to_set = dynT_user.columns
                 dynT_tmp_dataframe.ix[Nff_index_to_set][columns_to_set] = dynT_user.ix[Nff_index_to_get]

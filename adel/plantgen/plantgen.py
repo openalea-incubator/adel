@@ -42,7 +42,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                                  TT_col_nff={'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178},
                                  dimT_user=None,
                                  plant_number=100, 
-                                 cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                 decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                  MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                  TT_bolting=500.0,
                                  TT_flowering=1440.0,
@@ -89,9 +89,10 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
               
         - `plant_number` (:class:`int`) - the number of plants to be generated.
         
-        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
-          of emergence of an axis when the parent axis is present. The keys are 
-          the cohort numbers and the values are the probabilities.
+        - `decide_child_cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          for each child cohort the probability of emergence of an axis when the parent 
+          axis is present. The keys are the numbers of the child cohorts and the 
+          values are the probabilities.
         
         - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
           the probability distribution of the final number of main stem leaves. 
@@ -118,8 +119,11 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
           is changing.
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
-        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
+        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
+        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`, 
+        :ref:`cohortT <cohortT>`
     
     :Returns Type:
         tuple of :class:`pandas.DataFrame`
@@ -149,7 +153,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                    - :class:`pandas.DataFrame`
                  * - *plant_number* 
                    - :class:`int`
-                 * - *cohort_probabilities* 
+                 * - *decide_child_cohort_probabilities* 
                    - :class:`dict`
                  * - *MS_leaves_number_probabilities* 
                    - :class:`dict`
@@ -171,7 +175,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
             isinstance(TT_col_nff, dict) and \
             isinstance(dimT_user, pandas.DataFrame) and \
             isinstance(plant_number, int) and \
-            isinstance(cohort_probabilities, dict) and \
+            isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
@@ -202,13 +206,13 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
     dynT_user = dynT_user.copy()
     dynT_user['TT_col_nff'] = TT_col_nff
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
 
 
 def gen_adel_input_data_from_short(dynT_user,
                                     dimT_user,
                                     plant_number=100, 
-                                    cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                    decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
                                     TT_flowering=1440.0,
@@ -242,9 +246,10 @@ def gen_adel_input_data_from_short(dynT_user,
               
         - `plant_number` (:class:`int`) - the number of plants to be generated.
         
-        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
-          of emergence of an axis when the parent axis is present. The keys are 
-          the cohort numbers and the values are the probabilities.
+        - `decide_child_cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          for each child cohort the probability of emergence of an axis when the parent 
+          axis is present. The keys are the numbers of the child cohorts and the 
+          values are the probabilities.
         
         - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
           the probability distribution of the final number of main stem leaves. 
@@ -271,8 +276,11 @@ def gen_adel_input_data_from_short(dynT_user,
           is changing.
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
-        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
+        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
+        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
+        :ref:`cohortT <cohortT>`
     
     :Returns Type:
         tuple of :class:`pandas.DataFrame`
@@ -298,15 +306,15 @@ def gen_adel_input_data_from_short(dynT_user,
              * - *dynT_user* 
                - :class:`pandas.DataFrame`
                - **MUST** contain a row of data for each possible cohort. 
-                 See *cohort_probabilities*.
+                 See *decide_child_cohort_probabilities*.
              * - *dimT_user* 
                - :class:`pandas.DataFrame`
                - **MUST** contain a row of data for each possible cohort. 
-                 See *cohort_probabilities*.
+                 See *decide_child_cohort_probabilities*.
              * - *plant_number* 
                - :class:`int`
                - None
-             * - *cohort_probabilities* 
+             * - *decide_child_cohort_probabilities* 
                - :class:`dict`
                - None
              * - *MS_leaves_number_probabilities* 
@@ -335,7 +343,7 @@ def gen_adel_input_data_from_short(dynT_user,
     assert isinstance(dynT_user, pandas.DataFrame) and \
             isinstance(dimT_user, pandas.DataFrame) and \
             isinstance(plant_number, int) and \
-            isinstance(cohort_probabilities, dict) and \
+            isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
@@ -346,13 +354,13 @@ def gen_adel_input_data_from_short(dynT_user,
     
             
     
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
 
 def gen_adel_input_data_from_full(dynT_user,
                                     dimT_user,
                                     plant_number=100, 
-                                    cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                                    decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
                                     TT_flowering=1440.0,
@@ -386,9 +394,10 @@ def gen_adel_input_data_from_full(dynT_user,
               
         - `plant_number` (:class:`int`) - the number of plants to be generated.
         
-        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
-          of emergence of an axis when the parent axis is present. The keys are 
-          the cohort numbers and the values are the probabilities.
+        - `decide_child_cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          for each child cohort the probability of emergence of an axis when the parent 
+          axis is present. The keys are the numbers of the child cohorts and the 
+          values are the probabilities.
         
         - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
           the probability distribution of the final number of main stem leaves. 
@@ -415,8 +424,11 @@ def gen_adel_input_data_from_full(dynT_user,
           is changing.
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
-        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
+        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
+        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
+        :ref:`cohortT <cohortT>`.
     
     :Returns Type:
         tuple of :class:`pandas.DataFrame`
@@ -443,16 +455,16 @@ def gen_adel_input_data_from_full(dynT_user,
                - :class:`pandas.DataFrame`
                - **MUST** contain a row of data for each possible phytomer of the 
                  most frequent axis of the main stem, and for each possible cohort. 
-                 See *cohort_probabilities* and *MS_leaves_number_probabilities*.
+                 See *decide_child_cohort_probabilities* and *MS_leaves_number_probabilities*.
              * - *dimT_user*
                - :class:`pandas.DataFrame`
                - **MUST** contain a row of data for each possible phytomer of the 
                  most frequent axis of the main stem, and for each possible cohort. 
-                 See *cohort_probabilities* and *MS_leaves_number_probabilities*.
+                 See *decide_child_cohort_probabilities* and *MS_leaves_number_probabilities*.
              * - *plant_number* 
                - :class:`int`
                - None
-             * - *cohort_probabilities* 
+             * - *decide_child_cohort_probabilities* 
                - :class:`dict`
                - None
              * - *MS_leaves_number_probabilities* 
@@ -481,7 +493,7 @@ def gen_adel_input_data_from_full(dynT_user,
     assert isinstance(dynT_user, pandas.DataFrame)
     assert isinstance(dimT_user, pandas.DataFrame)
     assert isinstance(plant_number, int)
-    assert isinstance(cohort_probabilities, dict)
+    assert isinstance(decide_child_cohort_probabilities, dict)
     assert isinstance(MS_leaves_number_probabilities, dict)
     assert isinstance(TT_bolting, float)
     assert isinstance(TT_flowering, float)
@@ -489,13 +501,13 @@ def gen_adel_input_data_from_full(dynT_user,
     assert isinstance(GL_number, dict)
     assert isinstance(delais_TT_stop_del_axis, int)
     assert isinstance(TT_col_break, float)
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
 
 
 def gen_adel_input_data(dynT_user,
                         dimT_user,
                         plant_number=100, 
-                        cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
+                        decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                         MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                         TT_bolting=500.0,
                         TT_flowering=1440.0,
@@ -522,6 +534,7 @@ def gen_adel_input_data(dynT_user,
             * *dynT_tmp*, calling :func:`alinea.adel.plantgen.dynT.create_dynT_tmp`.
             * *dimT_tmp*, calling :func:`alinea.adel.plantgen.dimT.create_dimT_tmp`
             * :ref:`tilleringT <tilleringT>`, calling :func:`alinea.adel.plantgen.axeT.create_tilleringT`
+            * :ref:`cohortT <cohortT>`, calling :func:`alinea.adel.plantgen.axeT.create_cohortT`
         * filling of the datframes set by the user:
             * *dynT_user*, according to *dynT_user_completeness*
             * *dimT_user*, according to *dimT_user_completeness*
@@ -543,6 +556,7 @@ def gen_adel_input_data(dynT_user,
           
         These tables are intermediate tables and are returned for debugging purpose:
             * the :ref:`tilleringT <tilleringT>`,
+            * the :ref:`cohortT <cohortT>`,
             * the :ref:`phenT_abs <phenT_abs>`,
             * the :ref:`dimT_abs <dimT_abs>`,
             * the :ref:`dynT <dynT>`, 
@@ -563,9 +577,10 @@ def gen_adel_input_data(dynT_user,
               
         - `plant_number` (:class:`int`) - the number of plants to be generated.
         
-        - `cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - for each cohort the probability 
-          of emergence of an axis when the parent axis is present. The keys are 
-          the cohort numbers and the values are the probabilities.
+        - `decide_child_cohort_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
+          for each child cohort the probability of emergence of an axis when the parent 
+          axis is present. The keys are the numbers of the child cohorts and the 
+          values are the probabilities.
         
         - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
           the probability distribution of the final number of main stem leaves. 
@@ -598,8 +613,10 @@ def gen_adel_input_data(dynT_user,
           *dimT_user* set by the user. 
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, 
-        :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
+        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, 
+        :ref:`tilleringT <tilleringT>`, :ref:`cohortT <cohortT>`.
     
     :Returns Type:
         tuple of :class:`pandas.DataFrame`
@@ -625,24 +642,24 @@ def gen_adel_input_data(dynT_user,
                      * - *dynT_user*
                        - :class:`dict`
                        - :class:`pandas.DataFrame` which contains a row of data 
-                         for each possible cohort. See *cohort_probabilities*.
+                         for each possible cohort. See *decide_child_cohort_probabilities*.
                        - :class:`pandas.DataFrame` which contains a row of data 
                          for each possible leaves number of the most frequent axis 
                          of the main stem, and for each possible cohort. 
-                         See *cohort_probabilities* and *MS_leaves_number_probabilities*.
+                         See *decide_child_cohort_probabilities* and *MS_leaves_number_probabilities*.
                      * - *dimT_user*
                        - :class:`pandas.DataFrame`
                        - :class:`pandas.DataFrame` which contains a row of data 
-                         for each possible cohort. See *cohort_probabilities*.
+                         for each possible cohort. See *decide_child_cohort_probabilities*.
                        - :class:`pandas.DataFrame` which contains a row of data 
                          for each possible leaves number of the most frequent axis 
                          of the main stem, and for each possible cohort.
-                         See *cohort_probabilities* and *MS_leaves_number_probabilities*. 
+                         See *decide_child_cohort_probabilities* and *MS_leaves_number_probabilities*. 
                      * - *plant_number* 
                        - :class:`int`
                        - :class:`int`
                        - :class:`int`
-                     * - *cohort_probabilities* 
+                     * - *decide_child_cohort_probabilities* 
                        - :class:`dict`
                        - :class:`dict`
                        - :class:`dict`
@@ -687,7 +704,7 @@ def gen_adel_input_data(dynT_user,
     assert isinstance(dynT_user, (dict, pandas.DataFrame)) and \
             isinstance(dimT_user, pandas.DataFrame) and \
             isinstance(plant_number, int) and \
-            isinstance(cohort_probabilities, dict) and \
+            isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
@@ -700,7 +717,7 @@ def gen_adel_input_data(dynT_user,
     
     possible_cohorts = \
         set([idx_of_cohort for (idx_of_cohort, probability) in
-             cohort_probabilities.iteritems() if probability != 0.0])
+             decide_child_cohort_probabilities.iteritems() if probability != 0.0])
     possible_MS_leave_numbers = \
         set([number_of_leaves for (number_of_leaves, probability) in
              MS_leaves_number_probabilities.iteritems() if probability != 0.0])
@@ -767,12 +784,13 @@ def gen_adel_input_data(dynT_user,
     (axeT_tmp_dataframe, 
     dimT_tmp_dataframe, 
     dynT_tmp_dataframe, 
-    tilleringT_dataframe) = _gen_adel_input_data_first(plant_number, 
-                                                     cohort_probabilities, 
-                                                     MS_leaves_number_probabilities, 
-                                                     TT_bolting, 
-                                                     TT_flowering, 
-                                                     final_axes_number) 
+    tilleringT_dataframe,
+    cohortT_dataframe) = _gen_adel_input_data_first(plant_number, 
+                                                       decide_child_cohort_probabilities, 
+                                                       MS_leaves_number_probabilities, 
+                                                       TT_bolting, 
+                                                       TT_flowering, 
+                                                       final_axes_number) 
     
     # 3. complete dynT_user
     if dynT_user_completeness == DataCompleteness.MIN:
@@ -897,26 +915,28 @@ The values can be one of %s''', (str(dimT_user_completeness),
     
     return axeT_dataframe, dimT_dataframe, phenT_dataframe, phenT_abs_dataframe, \
            dimT_abs_dataframe, dynT_dataframe, phenT_first_dataframe, \
-           HS_GL_SSI_T_dataframe, tilleringT_dataframe
+           HS_GL_SSI_T_dataframe, tilleringT_dataframe, cohortT_dataframe
 
 
 def _gen_adel_input_data_first(plant_number, 
-                              cohort_probabilities, 
+                              decide_child_cohort_probabilities, 
                               MS_leaves_number_probabilities,
                               TT_bolting, 
                               TT_flowering,
                               final_axes_number):    
     '''Generate the input data: first step.'''
     # create axeT_tmp
-    axeT_tmp_dataframe = axeT.create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabilities)
+    axeT_tmp_dataframe = axeT.create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
     # create dynT_tmp
     dynT_tmp_dataframe = dynT.create_dynT_tmp(axeT_tmp_dataframe['id_phen'].tolist())
     # create dimT_tmp
     dimT_tmp_dataframe = dimT.create_dimT_tmp(dynT_tmp_dataframe)
     # create tilleringT
-    tilleringT_dataframe =  axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_number)
+    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_number)
+    # create cohortT
+    cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_tmp_dataframe['id_cohort_axis'])
 
-    return axeT_tmp_dataframe, dimT_tmp_dataframe, dynT_tmp_dataframe, tilleringT_dataframe
+    return axeT_tmp_dataframe, dimT_tmp_dataframe, dynT_tmp_dataframe, tilleringT_dataframe, cohortT_dataframe
 
 
 def _gen_adel_input_data_second(axeT_tmp_dataframe, 

@@ -403,12 +403,12 @@ In the next subsections, we explain how to define the arguments of ``gen_adel_in
       dimT_user_completeness = DataCompleteness.SHORT
     
 
-* *plant_number*, *cohort_probabilities*, *MS_leaves_number_probability_distribution*, ...
+* *plant_number*, *decide_child_cohort_probabilities*, *MS_leaves_number_probability_distribution*, ...
 
   The other arguments of the routine are: 
     
       * *plant_number*, the number of plants to be generated,
-      * *cohort_probabilities*, for each cohort the probability of emergence of an axis when the parent axis is present,
+      * *decide_child_cohort_probabilities*, for each child cohort the probability of emergence of an axis when the parent axis is present,  
       * *MS_leaves_number_probability_distribution*, the probability distribution of the final number of main stem leaves,
       * *TT_bolting*, the date in thermal time at which the bolting starts,
       * *TT_flowering*, the flowering date in thermal time,
@@ -420,7 +420,7 @@ In the next subsections, we explain how to define the arguments of ``gen_adel_in
   They can be defined as follows::
   
       plant_number = 100
-      cohort_probabilities = {'3': 0.0, '4': 0.900, 
+      decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, 
                               '5': 0.983, '6': 0.817, 
                               '7': 0.117}
       MS_leaves_number_probabilities = {'10': 0.145, 
@@ -457,19 +457,20 @@ with the appropriate arguments::
     dynT, 
     phenT_first,
     HS_GL_SSI_T,
-    tilleringT) = gen_adel_input_data(dynT_user, 
-                                      dimT_user, 
-                                      plant_number, 
-                                      cohort_probabilities, 
-                                      MS_leaves_number_probability_distribution, 
-                                      TT_bolting, 
-                                      TT_flowering, 
-                                      final_axes_number, 
-                                      GL_number, 
-                                      delais_TT_stop_del_axis, 
-                                      TT_col_break, 
-                                      dynT_user_completeness, 
-                                      dimT_user_completeness)
+    tilleringT,
+    cohortT) = gen_adel_input_data(dynT_user, 
+                                   dimT_user, 
+                                   plant_number, 
+                                   decide_child_cohort_probabilities, 
+                                   MS_leaves_number_probability_distribution, 
+                                   TT_bolting, 
+                                   TT_flowering, 
+                                   final_axes_number, 
+                                   GL_number, 
+                                   delais_TT_stop_del_axis, 
+                                   TT_col_break, 
+                                   dynT_user_completeness, 
+                                   dimT_user_completeness)
 
 The returned values are all :class:`pandas.DataFrame`. 
 
@@ -484,7 +485,8 @@ The returned values are all :class:`pandas.DataFrame`.
 
 See :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, 
 :ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
-:ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`.
+:ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`, 
+:ref:`cohortT <cohortT>`.
 
 
 .. _construct_inputs_from_visualea:
@@ -520,7 +522,7 @@ The following table summarizes the nodes, the routines and the levels of complet
 of :ref:`dynT <dynT>` and :ref:`dimT <dimT>`:
 
 .. list-table::
-    :widths: 15 15 30 30
+    :widths: 15 15 40 30
     :header-rows: 1
 
     * - Completeness of :ref:`dynT`
@@ -529,15 +531,15 @@ of :ref:`dynT <dynT>` and :ref:`dimT <dimT>`:
       - Visualea node
     * - **MIN** 
       - **MIN**
-      - ``gen_adel_input_data_from_min(...)``
+      - ``gen_adel_input_data_from_min``
       - ``plantgen_MIN``
     * - **SHORT** 
       - **SHORT**
-      - ``gen_adel_input_data_from_short(...)``
+      - ``gen_adel_input_data_from_short``
       - ``plantgen_SHORT``
     * - **FULL** 
       - **FULL**
-      - ``gen_adel_input_data_from_full(...)``
+      - ``gen_adel_input_data_from_full``
       - ``plantgen_FULL``
  
 The following dataflow demonstrates how to use ``plantgen_MIN``, ``plantgen_SHORT``, 
@@ -904,3 +906,39 @@ Example:
 .. seealso:: :download:`tilleringT.csv <./data/tilleringT.csv>`
 
 
+.. _cohortT:
+
+cohortT
+------------
+
+:ref:`cohortT` describes the theoretical and the simulated cardinalities of 
+each cohort. It permits the user to validate the simulated cardinalities against 
+the theoretical ones. The theoretical cardinalities are calculated from the 
+probabilities of emergence of an axis when the parent axis is present (given by 
+the user). The simulated cardinalities are calculated for each plant using 
+:func:`alinea.adel.plantgen.tools.decide_child_cohorts`.
+
+.. list-table::
+    :widths: 10 50
+    :header-rows: 1
+
+    * - Column
+      - Description
+    * - **cohort** 
+      - the index of the cohort
+    * - **theoretical_cardinality** 
+      - the theoretical cardinality
+    * - **simulated_cardinality** 
+      - the simulated cardinality
+
+:ref:`cohortT` is constructed for debugging purpose.
+
+.. _cohortT_example:
+
+Example:
+
+    .. csv-table::
+        :file: ./data/cohortT.csv
+        :header-rows: 1
+
+.. seealso:: :download:`cohortT.csv <./data/cohortT.csv>`

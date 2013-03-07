@@ -13,7 +13,7 @@ random.seed(1234)
 initial_random_state = random.getstate()
 
 plant_number = 100
-cohort_probabilities = {'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}
+decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}
 MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
 TT_bolting = 500.0
 TT_flowering = 1440.0
@@ -44,7 +44,7 @@ def reinit_random_state():
 @with_setup(reinit_random_state)
 def test_create_axeT_tmp():
     expected_axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    axeT_dataframe = axeT.create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabilities)
+    axeT_dataframe = axeT.create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
     test_table_filepath = default_results.joinpath('axeT_tmp.csv')
     axeT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -169,6 +169,17 @@ def test_create_tilleringT():
 
 
 @with_setup(reinit_random_state)
+def test_create_cohortT():
+    axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
+    expected_cohortT_dataframe = pandas.read_csv(default_expected_results_dir/'cohortT.csv')
+    cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_dataframe['id_cohort_axis'])
+    test_table_filepath = default_results.joinpath('cohortT.csv')
+    cohortT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(cohortT_dataframe.values, expected_cohortT_dataframe.values, relative_tolerance, absolute_tolerance)
+    
+
+@with_setup(reinit_random_state)
 def test_create_dimT():
     dimT_abs_dataframe = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
     expected_dimT_dataframe = pandas.read_csv(default_expected_results_dir/'dimT.csv')
@@ -194,7 +205,7 @@ def test_gen_adel_input_data_from_min():
                                                 TT_col_nff,
                                                 dimT_user, 
                                                 plant_number, 
-                                                cohort_probabilities, 
+                                                decide_child_cohort_probabilities, 
                                                 MS_leaves_number_probabilities, 
                                                 TT_bolting, 
                                                 TT_flowering, 
@@ -212,6 +223,7 @@ def test_gen_adel_input_data_from_min():
     expected_HS_GL_SSI_T = pandas.read_csv(min_min_expected_results_dir/'HS_GL_SSI_T.csv')
     expected_dimT = pandas.read_csv(min_min_expected_results_dir/'dimT.csv')
     expected_tilleringT = pandas.read_csv(min_min_expected_results_dir/'tilleringT.csv')
+    expected_cohortT = pandas.read_csv(min_min_expected_results_dir/'cohortT.csv')
 
     to_compare = {'axeT': (expected_axeT, results[0]),
                  'dimT': (expected_dimT, results[1]),
@@ -221,7 +233,8 @@ def test_gen_adel_input_data_from_min():
                  'dynT': (expected_dynT, results[5]),
                  'phenT_first': (expected_phenT_first, results[6]),
                  'HS_GL_SSI_T': (expected_HS_GL_SSI_T, results[7]),
-                 'tilleringT': (expected_tilleringT, results[8])}
+                 'tilleringT': (expected_tilleringT, results[8]),
+                 'cohortT': (expected_cohortT, results[9])}
     
     _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
 
@@ -236,7 +249,7 @@ def test_gen_adel_input_data_from_short():
     results = plantgen.gen_adel_input_data_from_short(dynT_user,
                                                   dimT_user, 
                                                   plant_number, 
-                                                  cohort_probabilities, 
+                                                  decide_child_cohort_probabilities, 
                                                   MS_leaves_number_probabilities, 
                                                   TT_bolting, 
                                                   TT_flowering, 
@@ -254,6 +267,7 @@ def test_gen_adel_input_data_from_short():
     expected_HS_GL_SSI_T = pandas.read_csv(short_short_expected_results_dir/'HS_GL_SSI_T.csv')
     expected_dimT = pandas.read_csv(short_short_expected_results_dir/'dimT.csv')
     expected_tilleringT = pandas.read_csv(short_short_expected_results_dir/'tilleringT.csv')
+    expected_cohortT = pandas.read_csv(short_short_expected_results_dir/'cohortT.csv')
 
     to_compare = {'axeT': (expected_axeT, results[0]),
                  'dimT': (expected_dimT, results[1]),
@@ -263,7 +277,8 @@ def test_gen_adel_input_data_from_short():
                  'dynT': (expected_dynT, results[5]),
                  'phenT_first': (expected_phenT_first, results[6]),
                  'HS_GL_SSI_T': (expected_HS_GL_SSI_T, results[7]),
-                 'tilleringT': (expected_tilleringT, results[8])}
+                 'tilleringT': (expected_tilleringT, results[8]),
+                 'cohortT': (expected_cohortT, results[9])}
     
     _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
 
@@ -278,7 +293,7 @@ def test_gen_adel_input_data_from_full():
     results = plantgen.gen_adel_input_data_from_full(dynT_user,
                                                  dimT_user,
                                                  plant_number, 
-                                                 cohort_probabilities, 
+                                                 decide_child_cohort_probabilities, 
                                                  MS_leaves_number_probabilities, 
                                                  TT_bolting, 
                                                  TT_flowering, 
@@ -296,6 +311,7 @@ def test_gen_adel_input_data_from_full():
     expected_HS_GL_SSI_T = pandas.read_csv(full_full_expected_results_dir/'HS_GL_SSI_T.csv')
     expected_dimT = pandas.read_csv(full_full_expected_results_dir/'dimT.csv')
     expected_tilleringT = pandas.read_csv(full_full_expected_results_dir/'tilleringT.csv')
+    expected_cohortT = pandas.read_csv(full_full_expected_results_dir/'cohortT.csv')
 
     to_compare = {'axeT': (expected_axeT, results[0]),
                  'dimT': (expected_dimT, results[1]),
@@ -305,7 +321,8 @@ def test_gen_adel_input_data_from_full():
                  'dynT': (expected_dynT, results[5]),
                  'phenT_first': (expected_phenT_first, results[6]),
                  'HS_GL_SSI_T': (expected_HS_GL_SSI_T, results[7]),
-                 'tilleringT': (expected_tilleringT, results[8])}
+                 'tilleringT': (expected_tilleringT, results[8]),
+                 'cohortT': (expected_cohortT, results[9])}
     
     _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
 

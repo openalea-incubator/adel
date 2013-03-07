@@ -27,15 +27,16 @@ import math
 import numpy as np
 from scipy.optimize import leastsq
 
-def decide_child_cohorts(cohort_probabilities, parent_cohort_index=-1, first_child_delay=2):
+def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=-1, first_child_delay=2):
     '''
     Decide (recursively) of the child cohorts actually produced by a parent cohort, 
-    according to the *cohort_probabilities* and the *parent_cohort_index*. The main 
+    according to the *decide_child_cohort_probabilities* and the *parent_cohort_index*. The main 
     stem always exists.
     
     :Parameters:
     
-        - `cohort_probabilities` (:class:`dict`) - the cohort probabilities.
+        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the 
+          child cohorts.
         - `parent_cohort_index` (:class:`int`) - the index of the parent cohort.
         - `first_child_delay` (:class:`int`) - the delay between the parent cohort and 
           the first child cohort. This delay is expressed in number of cohorts.
@@ -46,12 +47,12 @@ def decide_child_cohorts(cohort_probabilities, parent_cohort_index=-1, first_chi
     :Returns Type:
         list
     
-    .. warning:: *cohort_probabilities* must be a dict.
+    .. warning:: *decide_child_cohort_probabilities* must be a dict.
                  *parent_cohort_index* must be a int.
                  *first_child_delay* must be a int.
     
     '''
-    assert isinstance(cohort_probabilities, dict)
+    assert isinstance(decide_child_cohort_probabilities, dict)
     assert isinstance(parent_cohort_index, int)
     assert isinstance(first_child_delay, int)
     child_cohort_numbers = []
@@ -59,16 +60,16 @@ def decide_child_cohorts(cohort_probabilities, parent_cohort_index=-1, first_chi
     if first_possible_cohort_number == 1:
         # The main stem always exists, thus add it.
         child_cohort_numbers.append(first_possible_cohort_number)
-        child_cohort_numbers.extend(decide_child_cohorts(cohort_probabilities, 
+        child_cohort_numbers.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
                                                                first_possible_cohort_number))
     else:
         # Find the children of the secondary stem.
-        for cohort_number_str, cohort_probability in cohort_probabilities.iteritems():
+        for cohort_number_str, cohort_probability in decide_child_cohort_probabilities.iteritems():
             cohort_number = int(cohort_number_str)
             if cohort_number >= first_possible_cohort_number:
                 if cohort_probability >= random.random():
                     child_cohort_numbers.append(cohort_number)
-                    child_cohort_numbers.extend(decide_child_cohorts(cohort_probabilities, 
+                    child_cohort_numbers.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
                                                                            cohort_number))
     return child_cohort_numbers
 

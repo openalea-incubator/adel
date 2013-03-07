@@ -31,7 +31,7 @@ import pandas
 from adel.plantgen import tools, params
 
 
-def create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabilities):
+def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities):
     '''
     Create the *axeT_tmp* dataframe. 
     Compute the following columns: *id_cohort_axis*, *id_plt*, *N_phytomer*, *id_dim*, *id_phen*, *id_ear*. 
@@ -39,7 +39,8 @@ def create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabi
     :Parameters:
     
         - `plant_number` (:class:`int`) - the number of plants. 
-        - `cohort_probabilities` (:class:`dict`) - the cohort probabilities. 
+        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the 
+          child cohorts. 
         - `MS_leaves_number_probabilities` (:class:`dict`) - the probability 
           distribution of the main stem leaves number. 
           
@@ -59,18 +60,18 @@ def create_axeT_tmp(plant_number, cohort_probabilities, MS_leaves_number_probabi
                - Type
              * - *plant_number* 
                - :class:`int`
-             * - *cohort_probabilities* 
+             * - *decide_child_cohort_probabilities* 
                - :class:`dict`
              * - *MS_leaves_number_probabilities* 
                - :class:`dict`
 
     '''
     assert isinstance(plant_number, int)
-    assert isinstance(cohort_probabilities, dict)
+    assert isinstance(decide_child_cohort_probabilities, dict)
     assert isinstance(MS_leaves_number_probabilities, dict)
     
     plant_ids = range(1,plant_number + 1)
-    id_cohort_axis_list = _gen_id_cohort_axis_list(plant_ids, cohort_probabilities)
+    id_cohort_axis_list = _gen_id_cohort_axis_list(plant_ids, decide_child_cohort_probabilities)
     index_plt_list = _gen_index_plt_list(plant_ids, id_cohort_axis_list)
     N_phytomer_list = _gen_N_phytomer_list(id_cohort_axis_list, 
                                        MS_leaves_number_probabilities, 
@@ -166,11 +167,11 @@ def _gen_index_plt_list(plant_ids, id_cohort_axis_list):
     return index_plt_list
 
 
-def _gen_id_cohort_axis_list(plant_ids, cohort_probabilities):
+def _gen_id_cohort_axis_list(plant_ids, decide_child_cohort_probabilities):
     '''Generate the *id_cohort_axis* column.'''
     id_cohort_axis_list = []
     for plant_id in plant_ids:
-        cohort_numbers = tools.decide_child_cohorts(cohort_probabilities)
+        cohort_numbers = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.first_child_delay)
         cohort_numbers.sort()
         id_cohort_axis_list.extend(cohort_numbers)
     return id_cohort_axis_list
@@ -307,3 +308,79 @@ def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT
     return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flowering], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_number]}, columns=['TT', 'NbrAxes'])
 
 
+def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_axes):
+    '''
+    Create the :ref:`cohortT <cohortT>` dataframe.
+    
+    :Parameters:
+    
+        - `plant_number` (:class:`int`) - the number of plants. 
+        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the child 
+          cohorts. 
+        - `id_cohort_axes` (:class:`pandas.Series`) - the *id_cohort_axis* column of 
+          :ref:`axeT <axeT>`
+          
+    :Returns:
+        the :ref:`cohortT <cohortT>` dataframe.
+    
+    :Returns Type:
+        :class:`pandas.DataFrame`
+
+    .. warning:: the type of the arguments is checked as follows:
+
+         .. list-table::
+             :widths: 10 50
+             :header-rows: 1
+        
+             * - Argument
+               - Type
+             * - *plant_number* 
+               - :class:`int`
+             * - *decide_child_cohort_probabilities* 
+               - :class:`dict`
+             * - *id_cohort_axes* 
+               - :class:`pandas.Series`
+    
+    '''
+    assert isinstance(plant_number, int)
+    assert isinstance(decide_child_cohort_probabilities, dict)
+    assert isinstance(id_cohort_axes, pandas.Series)
+    
+    decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
+    # the cohort '1' always exists, so its probability is 1.0.
+    decide_cohort_probabilities['1'] = 1.0
+    possible_cohorts = np.array(decide_cohort_probabilities.keys()).astype(int)
+    decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
+    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys()).astype(int)
+    decide_child_cohort_probability_values = np.array(decide_child_cohort_probabilities.values())
+    possible_parent_cohorts = possible_child_cohorts - params.first_child_delay
+    commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
+    possible_parent_cohorts = possible_cohorts[commons]
+    decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
+    
+    cohortT_dataframe = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
+                                         columns=['cohort', 
+                                                  'theoretical_cardinality', 
+                                                  'simulated_cardinality'])
+    theoretical_probabilities_series = pandas.Series(index=cohortT_dataframe.index)
+    simulated_cardinalities = id_cohort_axes.astype(int).value_counts()
+    idx = 0
+    for (cohort_str, decide_probability) in decide_cohort_probabilities.iteritems():
+        cohort_int = int(cohort_str)
+        cohortT_dataframe['cohort'][idx] = cohort_int
+        if cohort_str == '1':
+            theoretical_probabilities_series[idx] = decide_cohort_probabilities['1']
+        else:
+            first_possible_parent = cohort_int - params.first_child_delay
+            curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
+            curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
+            theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()
+        if cohort_int in simulated_cardinalities:
+            cohortT_dataframe['simulated_cardinality'][idx] = simulated_cardinalities[cohort_int]
+        else:
+            cohortT_dataframe['simulated_cardinality'][idx] = 0
+        idx += 1 
+    cohortT_dataframe['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
+    cohortT_dataframe = cohortT_dataframe.sort_index(by='cohort')
+    return cohortT_dataframe
+        

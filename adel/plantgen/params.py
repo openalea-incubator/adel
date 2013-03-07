@@ -82,3 +82,7 @@ TT_del_Fhaut = 3000
 The thermal time is given in degree.day. 
 '''
 
+
+first_child_delay = 2
+'''The delay between a parent cohort and its first possible child cohort. 
+This delay is expressed in number of cohorts.'''

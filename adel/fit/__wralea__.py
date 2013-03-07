@@ -1,5 +1,5 @@
 
-# This file has been generated at Fri Oct 26 16:39:35 2012
+# This file has been generated at Mon Nov 26 10:24:12 2012
 
 from openalea.core import *
 
@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_fit_leaf', 'fit_adel_input_data_fit_adel_input_data', 'dimension_fitting_dimension_fitting', 'fit_fit']
+__all__ = ['thermal_time_thermal_time', 'fit_fit_leaves', 'fit_simplify', 'fit_fit_leaf', 'dimension_fitting_dimension_fitting', 'fit_fit']
 
 
 

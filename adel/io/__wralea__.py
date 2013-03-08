@@ -17,7 +17,7 @@ __institutes__ = 'INRA, CIRAD, INRIA'
 __icon__ = ''
 
 
-__all__ = ['io_canL2canS', 'io_pandasDataframe2csv', 'io_select_data_file', 'io_dataframe', 'io_readRData', 'data2PandasDataframe', 'GetAdelString_GetAdelString', 'io_to_canestra', 'PairAsDict_PairAsDict', 'io_lpy2mtg', 'io_duplicate', 'io_mtg_factory', 'io_csvAsDict', 'io_saveRData', 'io_mtg2lpy', 'io_load_leaf_data', 'io_csv2pandasDataframe', 'io_dataframeAsdict', 'io_RlistAsDict', 'io_thermal_time', 'io_apply_property', 'image_save_image', 'pandasDataframe2data', 'io_to_plantgl']
+__all__ = ['io_canL2canS', 'io_pandasDataframe2csv', 'io_select_adel_geometric_data', 'io_select_adel_botanic_data', 'io_dataframe', 'io_readRData', 'data2PandasDataframe', 'GetAdelString_GetAdelString', 'io_to_canestra', 'PairAsDict_PairAsDict', 'io_lpy2mtg', 'io_duplicate', 'io_mtg_factory', 'io_csvAsDict', 'io_saveRData', 'io_mtg2lpy', 'io_load_leaf_data', 'io_csv2pandasDataframe', 'io_dataframeAsdict', 'io_RlistAsDict', 'io_thermal_time', 'io_apply_property', 'image_save_image', 'pandasDataframe2data', 'io_to_plantgl']
 
 
 
@@ -51,7 +51,7 @@ io_pandasDataframe2csv = Factory(name='pandasDataframe2csv',
 
 
 
-io_select_data_file = Factory(name='select_adel_geometric_data',
+io_select_adel_geometric_data = Factory(name='select_adel_geometric_data',
                 authors='C.Chambon',
                 description='',
                 category='data i/o',
@@ -59,6 +59,35 @@ io_select_data_file = Factory(name='select_adel_geometric_data',
                 nodeclass='select_data_file',
                 inputs=[{'interface': IDirStr, 'name': 'directory_path', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'laminaCur_pattern', 'value': 'laminaCur*.RData', 'desc': ''}, {'interface': IStr, 'name': 'lamina2D_pattern', 'value': 'lamina2D*.RData', 'desc': ''}, {'interface': IStr, 'name': 'laminaCur_filename', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'lamina2D_filename', 'value': None, 'desc': ''}],
                 outputs=[{'interface': IStr, 'name': 'laminaCur_filepath'}, {'interface': IStr, 'name': 'lamina2D_filepath'}],
+                widgetmodule='io',
+                widgetclass='SelectDataFile',
+               )
+
+
+
+
+io_select_adel_botanic_data = Factory(name='select_adel_botanic_data',
+                authors='C.Chambon',
+                description='',
+                category='data i/o',
+                nodemodule='io',
+                nodeclass='select_data_file',
+                inputs=[{'interface': IDirStr, 'name': 'directory_path', 'value': None, 'desc': ''}, 
+                        {'interface': IStr, 'name': 'axeT_pattern', 'value': '*axeT*.csv', 'desc': ''}, 
+                        {'interface': IStr, 'name': 'dimT_pattern', 'value': '*dimT*.csv', 'desc': ''},
+                        {'interface': IStr, 'name': 'phenT_pattern', 'value': '*phenT*.csv', 'desc': ''},
+                        {'interface': IStr, 'name': 'earT_pattern', 'value': '*earT*.csv', 'desc': ''},
+                        {'interface': IStr, 'name': 'ssi2sen_pattern', 'value': '*ssi2sen*.csv', 'desc': ''},
+                        {'interface': IStr, 'name': 'axeT_filename', 'value': None, 'desc': ''}, 
+                        {'interface': IStr, 'name': 'dimT_filename', 'value': None, 'desc': ''},
+                        {'interface': IStr, 'name': 'phenT_filename', 'value': None, 'desc': ''},
+                        {'interface': IStr, 'name': 'earT_filename', 'value': None, 'desc': ''},
+                        {'interface': IStr, 'name': 'ssi2sen_filename', 'value': None, 'desc': ''}],
+                outputs=[{'interface': IStr, 'name': 'axeT_filepath'}, 
+                         {'interface': IStr, 'name': 'dimT_filepath'},
+                         {'interface': IStr, 'name': 'phenT_filepath'},
+                         {'interface': IStr, 'name': 'earT_filepath'},
+                         {'interface': IStr, 'name': 'ssi2sen_filepath'}],
                 widgetmodule='io',
                 widgetclass='SelectDataFile',
                )

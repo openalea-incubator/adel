@@ -135,7 +135,7 @@ def _gen_absolute_TT_em_phytomer_list(TT_col_phytomer_list, dynT_dataframe):
 
 
 def _gen_absolute_TT_sen_phytomer_list(dynT_dataframe):
-    '''Generate the *id_dim* column.'''
+    '''Generate the *TT_sen_phytomer* column.'''
     TT_sen_phytomer_list = []
     
     def get_real_roots(poly):
@@ -166,25 +166,37 @@ def _gen_absolute_TT_sen_phytomer_list(dynT_dataframe):
             else:
                 # Find (SSI - j) real root.
                 SSI_root_array = get_real_roots(SSI - j)
-                if SSI_root_array.size == 0 or SSI_root_array[0] > t0_i:
+                if SSI_root_array.size == 0 \
+                    or (SSI_root_array[0] > t0_i \
+                        and not np.allclose(SSI_root_array[0], t0_i)):
                     # Suppose we are in the ]t0_i,t1_i] phase.
                     GL = GL_2
                     SSI = HS - GL
                     # Find (SSI - j) real root.
                     SSI_root_array = get_real_roots(SSI - j)
-                    if SSI_root_array.size == 0 or SSI_root_array[0] <= t0_i or SSI_root_array[0] > t1_i:
+                    if SSI_root_array.size == 0 \
+                        or (SSI_root_array[0] <= t0_i \
+                            and not np.allclose(SSI_root_array[0], t0_i)) \
+                        or (SSI_root_array[0] > t1_i \
+                            and not np.allclose(SSI_root_array[0], t1_i)):
                         # Suppose we are in the ]t1_i,TT_col_nff_i] phase.
                         GL = GL_3
                         SSI = HS - GL
                         # Find (SSI - j) real root.
                         SSI_root_array = get_real_roots(SSI - j)
-                        if SSI_root_array.size == 0 or SSI_root_array[0] <= t1_i or SSI_root_array[0] > TT_col_nff_i:
+                        if SSI_root_array.size == 0 \
+                            or (SSI_root_array[0] <= t1_i \
+                                and not np.allclose(SSI_root_array[0], t1_i)) \
+                            or (SSI_root_array[0] > TT_col_nff_i \
+                                and not np.allclose(SSI_root_array[0], TT_col_nff_i)):
                             # We must be in the ]TT_col_nff_i,infinity[ phase.
                             GL = GL_4
                             SSI = HS - GL
                             # Find (SSI - j) real root.
                             SSI_root_array = get_real_roots(SSI - j)
-                            if SSI_root_array.size == 0 or SSI_root_array[0] <= TT_col_nff_i:
+                            if SSI_root_array.size == 0 \
+                                or (SSI_root_array[0] <= TT_col_nff_i \
+                                    and not np.allclose(SSI_root_array[0], TT_col_nff_i)):
                                 raise Exception('ERROR !!!!! This shouldn\'t occurred')
                             if HS(SSI_root_array[0]) > Nff_i:
                                 HS = np.poly1d([Nff_i])
@@ -193,7 +205,9 @@ def _gen_absolute_TT_sen_phytomer_list(dynT_dataframe):
                             SSI = HS - GL
                             # Find (SSI - j) real root again.
                             SSI_root_array = get_real_roots(SSI - j)
-                            if SSI_root_array.size == 0 or SSI_root_array[0] <= TT_col_nff_i:
+                            if SSI_root_array.size == 0 \
+                                or (SSI_root_array[0] <= TT_col_nff_i \
+                                    and not np.allclose(SSI_root_array[0], TT_col_nff_i)):
                                 raise Exception('ERROR !!!!! This shouldn\'t occurred')   
                 TT_sen_phytomer_i_list.append(SSI_root_array[0])
         

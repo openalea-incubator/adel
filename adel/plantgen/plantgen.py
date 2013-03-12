@@ -718,9 +718,6 @@ def gen_adel_input_data(dynT_user,
     possible_cohorts = \
         set([idx_of_cohort for (idx_of_cohort, probability) in
              decide_child_cohort_probabilities.iteritems() if probability != 0.0])
-    possible_MS_leave_numbers = \
-        set([number_of_leaves for (number_of_leaves, probability) in
-             MS_leaves_number_probabilities.iteritems() if probability != 0.0])
     # check dynT_user validity
     if dynT_user_completeness == DataCompleteness.MIN:
         expected_dynT_user_keys_value_types = {'a_cohort': float, 
@@ -749,8 +746,6 @@ def gen_adel_input_data(dynT_user,
         assert len(grouped.groups) == dynT_user.index.size   
         available_cohorts = set(dynT_user['N_cohort'].astype(int).astype(str).tolist())
         assert possible_cohorts.issubset(available_cohorts) 
-        available_MS_leave_numbers = set([str(Nff) for Nff in dynT_user[dynT_user['N_cohort'] == 1]['Nff'].astype(int).tolist()])
-        assert possible_MS_leave_numbers.issubset(available_MS_leave_numbers)
         
     # check dimT_user validity
     if dimT_user_completeness == DataCompleteness.MIN:
@@ -777,8 +772,6 @@ def gen_adel_input_data(dynT_user,
         assert len(grouped.groups) == dimT_user.index.size
         available_cohorts = set([str(id_dim)[:-2] for id_dim in dimT_user['id_dim'].astype(int).tolist()])
         assert possible_cohorts.issubset(available_cohorts)
-        available_MS_leave_numbers = set([str(int(id_dim))[-2:] for id_dim in dimT_user['id_dim'].tolist() if str(int(id_dim))[:-2] == '1']) 
-        assert possible_MS_leave_numbers.issubset(available_MS_leave_numbers)
     
     # 2. first step of the fit process
     (axeT_tmp_dataframe, 
@@ -832,9 +825,13 @@ def gen_adel_input_data(dynT_user,
             if N_cohort not in user_grouped_N_cohort.groups:
                 continue
             user_N_cohort_group = user_grouped_N_cohort.get_group(N_cohort)
-            most_frequent_Nff = N_cohort_generated_group['Nff'][N_cohort_generated_group.index[0]]
+            i = 0
+            most_frequent_Nff = N_cohort_generated_group['Nff'][N_cohort_generated_group.index[i]]
+            while user_N_cohort_group[user_N_cohort_group['Nff'] == most_frequent_Nff].index.size == 0:
+                i += 1
+                most_frequent_Nff = N_cohort_generated_group['Nff'][N_cohort_generated_group.index[i]]
             N_cohort_index_to_get = user_N_cohort_group[user_N_cohort_group['Nff'] == most_frequent_Nff].index[0]
-            N_cohort_index_to_set = N_cohort_generated_group.index[0]
+            N_cohort_index_to_set = N_cohort_generated_group[N_cohort_generated_group['Nff'] == most_frequent_Nff].index[0]
             if N_cohort == 1.0:
                 first_TT_col_nff = user_N_cohort_group['TT_col_nff'][N_cohort_index_to_get]
                 most_frequent_MS_a_cohort = dynT_user['a_cohort'][N_cohort_index_to_get]
@@ -847,6 +844,8 @@ def gen_adel_input_data(dynT_user,
                 if Nff not in user_grouped_Nff.groups:
                     continue
                 Nff_index_to_get = user_grouped_Nff.get_group(Nff).index[0]
+                if not dynT_user.ix[Nff_index_to_get].notnull().all():
+                    continue
                 Nff_index_to_set = Nff_generated_group.index[0]
                 if Nff_generated_group['cardinality'][Nff_index_to_set] != highest_cardinality:
                     current_dTT_MS_cohort = most_frequent_axis_dTT_MS_cohort + (Nff_generated_group['id_axis'][Nff_index_to_set] - N_cohort_generated_group['id_axis'][N_cohort_index_to_set]) / (4 * most_frequent_MS_a_cohort) 
@@ -886,6 +885,9 @@ The values can be one of %s''', (str(dynT_user_completeness),
         user_grouped = dimT_user.groupby('id_dim')
         for generated_id_dim, generated_group in dimT_tmp_dataframe.groupby('id_dim'):
             if generated_id_dim not in user_grouped.groups:
+                continue
+            curr_id_dim_user_group_first_index = user_grouped.get_group(generated_id_dim).index[0]
+            if not dimT_user.ix[curr_id_dim_user_group_first_index].notnull().all():
                 continue
             user_group = user_grouped.get_group(generated_id_dim)
             dimT_tmp_dataframe.ix[generated_group.index] = dimT_user.ix[user_group.index]

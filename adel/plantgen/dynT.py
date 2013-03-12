@@ -413,7 +413,7 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
     other_tiller_axes['TT_col_nff'].ix[nan_other_tiller_axis_indexes] = other_tiller_axes['dTT_MS_cohort'].ix[nan_other_tiller_axis_indexes] + most_frequent_MS['TT_col_nff'][0]
     # calculation of a_cohort in linear mode
     if most_frequent_MS['TT_col_break'][0] == 0.0:
-        other_tiller_axes['a_cohort'].ix[nan_other_tiller_axis_indexes] = other_tiller_axes['Nff'].ix[nan_other_tiller_axis_indexes] / (other_tiller_axes['TT_col_nff'].ix[nan_other_tiller_axis_indexes] - other_tiller_axes['TT_col_0'])
+        other_tiller_axes['a_cohort'].ix[nan_other_tiller_axis_indexes] = other_tiller_axes['Nff'].ix[nan_other_tiller_axis_indexes] / (other_tiller_axes['TT_col_nff'].ix[nan_other_tiller_axis_indexes] - other_tiller_axes['TT_col_0'].ix[nan_other_tiller_axis_indexes])
     return other_tiller_axes
     
 

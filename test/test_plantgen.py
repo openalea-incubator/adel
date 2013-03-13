@@ -20,7 +20,7 @@ TT_flowering = 1440.0
 final_axes_number = 250
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
-TT_col_nff = {'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178}
+TT_col_nff = {'1': 1078.0, '4': 1148.0, '5': 1158.0, '6': 1168.0, '7': 1178.0}
 
 expected_results_dir = path('data/test_plantgen')
 default_expected_results_dir = expected_results_dir.joinpath('default')

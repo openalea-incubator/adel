@@ -39,7 +39,7 @@ class DataCompleteness:
 
 
 def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8},
-                                 TT_col_nff={'1': 1078, '4': 1148, '5': 1158, '6': 1168, '7': 1178},
+                                 TT_col_nff={'1': 1078.0, '4': 1148.0, '5': 1158.0, '6': 1168.0, '7': 1178.0},
                                  dimT_user=None,
                                  plant_number=100, 
                                  decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
@@ -77,7 +77,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
               {'1': value_1, '4': value_4, '5': value_5, 
                '6': value_6, '7': value_7}
         
-          where ``value_\*`` are integers. 
+          where ``value_\*`` are floats. 
         
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
           the user. See :ref:`dimT_user_MIN <dimT_user_MIN>`.
@@ -194,7 +194,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                                           [type(value) for value in dynT_user.values()]))
     assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
     # check TT_col_nff validity
-    expected_TT_col_nff_keys_value_types = {'1': int, '4': int, '5': int, '6': int, '7': int}
+    expected_TT_col_nff_keys_value_types = {'1': float, '4': float, '5': float, '6': float, '7': float}
     TT_col_nff_keys_value_types = dict(zip(TT_col_nff.keys(), 
                                           [type(value) for value in TT_col_nff.values()]))
     assert expected_TT_col_nff_keys_value_types == TT_col_nff_keys_value_types
@@ -729,6 +729,11 @@ def gen_adel_input_data(dynT_user,
         dynT_user_keys_value_types = dict(zip(dynT_user.keys(), 
                                               [type(value) for value in dynT_user.values()]))
         assert expected_dynT_user_keys_value_types == dynT_user_keys_value_types
+        # check the validity of the dict associated to 'TT_col_nff'
+        expected_TT_col_nff_keys_value_types = {'1': float, '4': float, '5': float, '6': float, '7': float}
+        TT_col_nff_keys_value_types = dict(zip(dynT_user['TT_col_nff'].keys(), 
+                                               [type(value) for value in dynT_user['TT_col_nff'].values()]))
+        assert expected_TT_col_nff_keys_value_types == TT_col_nff_keys_value_types
     elif dynT_user_completeness == DataCompleteness.SHORT:
         assert isinstance(dynT_user, pandas.DataFrame)
         expected_dynT_user_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']

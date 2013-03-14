@@ -337,21 +337,20 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     if peraxis_postprocessing_path_.exists():
         peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
     else:
-        columns_peraxis = ['Filename', 'axe', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
+        columns_peraxis = ['Filename', 'ThermalTime', 'axe', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
                            'PAI total', 'PAI vert']
         peraxis_postprocessing_df = pandas.DataFrame(columns=columns_peraxis)
     
     grouped = intermediate_df.groupby(['axe'], as_index=False)
     for axe, group in grouped:
-        curr_row = group.ix[group.index[0]]
-        HS = curr_row['HS']
-        SSI = curr_row['SSI']
-        tot_LAI = curr_row['Slv'] / area_in_cm
-        green_LAI = curr_row['SLgreen'] / area_in_cm
-        tot_PAI = (curr_row['Slv'] + (curr_row['SGv'] + curr_row['SEv']) / 2.0 ) / area_in_cm
-        green_PAI = (curr_row['SLgreen'] + (curr_row['SGgreen'] + curr_row['SEgreen']) / 2.0 ) / area_in_cm
+        HS = group['HS'].mean()
+        SSI = group['SSI'].mean()
+        tot_LAI = group['Slv'].sum() / area_in_cm
+        green_LAI = group['SLgreen'].sum() / area_in_cm
+        tot_PAI = (group['Slv'] + (group['SGv'] + group['SEv']) / 2.0 ).sum() / area_in_cm
+        green_PAI = (group['SLgreen'] + (group['SGgreen'] + group['SEgreen']) / 2.0 ).sum() / area_in_cm
         
-        new_peraxis_postprocessing_data = [[Filename, axe, HS, SSI, tot_LAI, 
+        new_peraxis_postprocessing_data = [[Filename, date, axe, HS, SSI, tot_LAI, 
                                             green_LAI, tot_PAI, green_PAI]]
         new_peraxis_postprocessing_df = pandas.DataFrame(new_peraxis_postprocessing_data, 
                                                          columns=peraxis_postprocessing_df.columns)

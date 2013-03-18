@@ -149,17 +149,6 @@ stand_agronomicplot = Factory(name='agronomic plot',
                )
 
 
-stand_agronomicplot = Factory(name='getFieldPlotDescription',
-                authors='C. Chambon',
-                description='Compute positions of plants for a standard agronomic row-based stand',
-                category='Unclassified',
-                nodemodule='stand',
-                nodeclass='agronomicplot',
-                inputs=[{'interface': IFloat, 'name': 'Plot length (m)', 'value': 1, 'desc': 'plot dimension along row direction'}, {'interface': IFloat, 'name': 'Plot width (m)', 'value': 1, 'desc': 'plot dimension across row direction'}, {'interface': IFloat, 'name': 'sowing density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'actual plant density (pl/m2)', 'value': 150, 'desc': ''}, {'interface': IFloat, 'name': 'inter row (m)', 'value': 0.125, 'desc': 'Distance between ranks'}, {'interface': IFloat, 'name': 'noise (%)', 'value': 0, 'desc': ''}, {'interface': IInt, 'name': 'conversion factor from meter to scene unit', 'value': 100, 'desc': ''}, {'interface': IBool, 'name': 'center scene', 'value': True, 'desc': 'center the scene on origin'}],
-                outputs=[{'interface': IInt, 'name': 'number of plants', 'desc': ''}, {'interface': ISequence, 'name': 'positions', 'desc': 'List of plant positions'}, {'interface': ISequence, 'name': 'domain', 'desc': '2D bounding box of the stand'}, {'interface': IFloat, 'name': 'domain area (m2)', 'desc': 'area of the simulated plot'}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
 
 
 CanMTGPlanter_CanMTGPlanter = Factory(name='CanMTGPlanter',

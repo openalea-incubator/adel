@@ -145,7 +145,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
   }
   
   plantdb <- by(axeT,list(axeT$plant),function(x) {
-    if (! 0 %in% x$axe)
+    if (! "MS" %in% x$axe)
       stop(paste("No main stem found for plant",x$plant[1],", Check axeT table"))
     x})
   #sampling nplants in the database

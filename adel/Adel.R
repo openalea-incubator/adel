@@ -138,7 +138,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     for (i in 1:(nfa+3))
       kin[,i,"Elsen"] <- ifelse(xa < ped$senPed,0,dim$El[i])
     }
-    ##disparition axe = longueurs nulles sauf pour entrenoeuds
+    ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allongésauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
       kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
     #rang depuis flag leaf
@@ -223,11 +223,22 @@ Hmax <- function(kin) {
   kin <- data.frame(kin)
   max(cumsum(kin$El)+kin$Gl+kin$Ll)
 }
+#
+# ms_pos : position of axis on main stem from axis_id.returns -1 for ms itself
+ms_pos <- function(axeid) {
+  idpos <- strsplit(axeid,split=".",fixed=TRUE)[[1]][1]
+  if (idpos=="MS")
+    pos <- 0
+  else
+    pos <- as.numeric(strsplit(idpos,split="T")[[1]][2])
+  pos
+}
+#
 #model: kinlist is the output of kinL : all axes computed as ramification emerging from stem (no enclosing sheath). Length of the enclosing sheath is accomodated by rolling first blade if needed.
 #
 kinLvis <- function(kinlist,pars=NULL) {
   res <- kinlist
-  axes <- as.numeric(names(kinlist))
+  axes <- names(kinlist)
   for (d in seq(dim(kinlist[[1]])[1])) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
@@ -235,13 +246,15 @@ kinLvis <- function(kinlist,pars=NULL) {
       #initialisation of rolling/opening
       kin[,c("Llrolled","Glopen")] <- 0
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
-      if (axes[a] == 0) {
+      if (axes[a] == "MS") {
         ht0 = max(kin$Lhem[1],kin$Gl[1])
         kin$ht <- htube(kin,ht0)
         kin <- checktube(kin,ht0)
         htbm <- kin$ht
       } else {
-        axil <- htbm[axes[a] + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe
+        # numero de la gaine axillante sur le bm
+        axilrank <- ms_pos(axes[a])
+        axil <- htbm[axilrank + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe
         kin$ht <- htube(kin,axil)
         kin <- checktube(kin,axil)
       }
@@ -301,7 +314,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     for (a in seq(kin)) {
       #print(paste("axe",a))
       axename <- names(kin)[a]
-      numaxe <- as.numeric(axename)
+      #numaxe <- as.numeric(axename)
       dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen")])
       if (sum(dat) > epsillon | a == 1) {#do not represent empty tillers (BUT main stems are needed even if empty! )
         colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen")
@@ -315,7 +328,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
       # 1er phyto = entrenoeud a incT
         Einc <- rep(0,nbphy)
         Ginc <- rep(0,nbphy)
-        if (numaxe == 0) {
+        if (axename == "MS") {
           incT <- dataxe$incT
         } else {
           en <- which(datp$El > epsillon)
@@ -386,8 +399,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
-                                         axe_id = rep(a,nbphy),
-                                         axe=rep(as.numeric(axename),nbphy),
+                                         axe_id = rep(axename,nbphy),
+                                         #axe=rep(as.numeric(axename),nbphy),
                                          numphy=1:nbphy,
                                          L_shape=datp$Ll,
                                          Lw_shape=datp$Lw,

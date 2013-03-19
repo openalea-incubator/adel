@@ -18,7 +18,7 @@ def test_organ_length():
     pars = setAdel(devT,geoLeaf,geoAxe,1,seed = 1)
     cantables = map(lambda(x): RunAdel(x,pars), range(0,2300,100))
     expected = csvAsDict(dir + 'reference_simulation.csv')
-    for k in ('date','plant','axe_id','numphy','Ll','Gl','El','Lv','Gv','Ev','Esen','Lsen','Gsen'):
+    for k in ('TT','plant','numphy','Ll','Gl','El','Lv','Gv','Ev','Esen','Lsen','Gsen'):
         sim = reduce(lambda x,y: x + y, (t[k].tolist() for t in cantables))
         exp = expected[k]
         np.testing.assert_allclose(sim,exp)

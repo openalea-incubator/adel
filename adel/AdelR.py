@@ -85,6 +85,8 @@ def _rvect_asarray(rvect):
     Will be deprecated when numpy will offer true NA type """
 
     if r['length'](r['which'](r['is.na'](rvect)))[0] > 0:
+        return numpy.array(r['ifelse'](r['is.na'](rvect),'NA',rvect))#as.character fails if first value is less than one character  (eg (1,NA,..))
+    elif isinstance(rvect,robj.vectors.FactorVector):
         return numpy.array(r['as.character'](rvect))
     else:
         return numpy.array(rvect)
@@ -93,15 +95,15 @@ def dataframeAsdict(df):
     """ convert an RDataframe to a python dict """
     if r['is.null'](df)[0]:
         return None
+#    try:
+#        d = dict(zip( df.colnames, numpy.array(df)))
+#        return d
+#    except:
     try:
-        d = dict(zip( df.colnames, numpy.array(df)))
-        return d
+        d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
     except:
-        try:
-            d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
-        except:
-            d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx in new rpy2
-        return d
+        d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
+    return d
 
 def dataframe(d):
     """ convert a dict of numbers to an RDataframe  """
@@ -110,7 +112,11 @@ def dataframe(d):
         return r('as.null()')
     else:
         for k, v in d.iteritems():
-            df[k] = r['as.numeric'](numpy2ri(numpy.array(v)))
+            rval = numpy2ri(numpy.array(v))
+            if 'NA' in v:
+                df[k] = r['as.numeric'](rval)
+            else :
+                df[k] = rval
     dataf = r['data.frame'](**df)
     return dataf
 

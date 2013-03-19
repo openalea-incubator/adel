@@ -17,7 +17,7 @@ runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5,'sta
     desc <- getdesc(kinlist,plants,pars)
     #chn <- genString(desc,pars)
     if (!is.null(desc))
-      out[[i]] <- cbind(date=dates[i],desc)
+      out[[i]] <- cbind(TT=dates[i],desc)
   }
   out
 }
@@ -38,6 +38,12 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   #conversion nouvelle nomencalture
   #axeT
   axeT <- reader(axeTfile)
+  # nouvelle convention (kirby) id_axe
+  if ("axe" %in% colnames(axeT))
+    axeT$axe <- ifelse(axeT$axe==0,"MS",paste("T",axeT$axe,sep=""))
+  #
+  #conversions nouveaux noms
+    
   conv <- c("plant","axe","nf","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
   names(conv) <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
   if (all(conv %in% colnames(axeT)))

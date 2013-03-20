@@ -17,6 +17,10 @@ openapprox <- function(x,y,xout,extrapolate=TRUE) {
     lastrate <- 0
     firstrate <- 0
   }
+  if (!is.finite(lastrate)) # last two x identical
+    lastrate <- diff(xy[twolast,2])
+  if (!is.finite(firstrate)) # last two x identical
+    firstrate <- diff(xy[1:2,2])
   extrax <- xout > xy[last,1]
   res[extrax] <- xy[last,2] + lastrate * (xout[extrax] - xy[last,1])
   extrax <- xout < xy[1,1]
@@ -151,8 +155,8 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
   #sampling nplants in the database
   if (sample == 'random')
     plnb <- ceiling(runif(nplants) * length(unique(axeT$plant)))
-  else
-    plnb <- rep(seq(plantdb),lenght.out=nplants)[1:nplants]
+  else 
+    plnb <- rep(seq(plantdb),length.out=nplants)
   #
   out <- vector("list",nplants)
   names(out) <- names(plantdb)[plnb]
@@ -173,6 +177,8 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     nomsdim <- c("Ll","Lw","Gl","Gd","El","Ed","pAngle","dpAngle","incB","dincB")
     #row = phytomer number + 3 (peduncle, ear, awns)
     nfM <- max(pT$nf) + 3
+    if (! all(is.finite(c(nfM,nrow(pT)))))
+      stop("setAdel: Can't create phytoT array")
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]

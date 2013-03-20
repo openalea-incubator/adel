@@ -138,7 +138,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     for (i in 1:(nfa+3))
       kin[,i,"Elsen"] <- ifelse(xa < ped$senPed,0,dim$El[i])
     }
-    ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allongésauf pour entrenoeuds
+    ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allonges sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
       kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
     #rang depuis flag leaf

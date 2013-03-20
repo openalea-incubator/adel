@@ -242,18 +242,18 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7):
     rcode = """
     geoAxe <- list(
     azT = function(a) {{
-          ifelse(a == 0,
+          ifelse(a == 'MS',
           runif(1) * 360,#plant azimuth
           {azTM:.2f} + (runif(1) - .5) * {dazT:.2f})
        }},
     incT = function(a) {{
-       ifelse(a == 0,
+       ifelse(a == 'MS',
               {incBmM:.2f} + (runif(1) - .5) * {dincBm:.2f},
               {incT:.2f} + (runif(1) - .5) * {dincT:.2f})
               }},
     dredT = function(a) {{
          #1.5 is an offset to avoid tiller superposed to mainstem
-          ifelse(a == 0,
+          ifelse(a == 'MS',
                  0,
                  1.5 + runif(1) * ({depMax:.2f}-1.5))
         }}
@@ -265,13 +265,14 @@ def genGeoLeaf(nlim=4,dazt=60,dazb=10):
     """ generate geoLeaf function for Adel """
     rcode = """
     geoLeaf <- list(
-     Azim = function(a,n,ntop) {{
+     Azim = function(a,n,nf) {{
+            ntop = nf - n
             ifelse(ntop <= {ntoplim:d},
             180 + {dazTop:.2f} * (runif(1) - .5),
             180 + {dazBase:.2f} * (runif(1) - .5))
             }},
-     Lindex = function(a,n,ntop) {{
-              ntop + 1}}
+     Lindex = function(a,n,nf) {{
+              nf - n + 1}}
               )
         """
     return rcode.format(ntoplim = nlim, dazTop = dazt, dazBase = dazb)

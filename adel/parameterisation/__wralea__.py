@@ -39,14 +39,15 @@ geoLeafStr = """
 
 geoLeaf <- list(
 
-        Azim = function(a,n,ntop) {
+        Azim = function(a,n,nf) {
+          ntop = nf - n + 1
           ifelse(ntop <= 4,
                  180 + 60 * runif(1),
                  180 + 20 * runif(1))
                },
 
-        Lindex = function(a,n,ntop) {
-                 ntop + 1
+        Lindex = function(a,n,nf) {
+                 nf - n + 1
                }
         )
 

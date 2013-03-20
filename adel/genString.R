@@ -187,8 +187,8 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
   if (!is.null(can)) {#no plant is emerged
     for (p in unique(can$plant)) {
       pl <- can[can$plant == p,]
-      pl$axe <- axe_code(as.character(pl$axe_id))
-      axes <- unique(pl$axe)
+      pl$axe <- sapply(as.character(pl$axe_id),axe_code)
+      axepos <- unique(pl$axe[pl$axe_id != "MS"])
       axe <- pl[pl$axe_id == 'MS',]#main stem
       if (nrow(axe) > 0) {
         azcum <- 0
@@ -197,7 +197,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
                                         # stringify main stem and delegates to Metamer axilary branches, if any
         nf <- nrow(axe) - ifelse(nrow(axe) > 3, 3, 0)
         for (m in axe$numphy[1:nf]) {
-          if (m %in% axes)
+          if (m %in% axepos)
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
           else
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))

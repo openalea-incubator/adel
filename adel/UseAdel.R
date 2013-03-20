@@ -104,18 +104,18 @@ readCsv <- function(file,type=1) {
 genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT = 5,depMax = 7) {
   list(
        azT = function(a) {
-         ifelse(a == 0,
+         ifelse(a == 'MS',
                 runif(1) * 360,#plant azimuth
                 azTM + (runif(1) - .5) * dazT)
        },
        incT = function(a) {
-         ifelse(a == 0,
+         ifelse(a == 'MS',
                 incBmM + (runif(1) - .5) * dincBm,
                 incT + (runif(1) - .5) * dincT)
        },
        dredT = function(a) {
          #1.5 is an offset to avoid tiller superposed to mainstem
-         ifelse(a == 0,
+         ifelse(a == 'MS',
                 0,
                 1.5 + runif(1) * (depMax-1.5))
        }
@@ -126,14 +126,15 @@ genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT =
 #
 genGeoLeaf <- function(ntoplim = 4,dazTop = 60,dazBase = 30,topIndex=TRUE) {
    list(
-        Azim = function(a,n,ntop) {
+        Azim = function(a,n,nf) {
+          ntop = nf - n
           ifelse(ntop <= ntoplim,
                  180 + dazTop * (runif(1) - .5),
                  180 + dazBase * (runif(1) - .5))
                },
-        Lindex = function(a,n,ntop) {
+        Lindex = function(a,n,nf) {
           ifelse(topIndex,
-                 ntop + 1,
+                 nf - n + 1,
                  n)}
         )
  }

@@ -182,16 +182,17 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]
+      idaxe <- pT$axe[a]
       pred <- predictDim(dimT,pT$dimIndex[a],nf)[,nomsdim]
       if (!is.null(pred))
         phytoT[seq(nf),nomsdim,a] <- unlist(pred)
       phytoT[seq(nf),"incB",a] <- phytoT[seq(nf),"incB",a] + (runif(nf) - .5) * phytoT[seq(nf),"dincB",a]
       if (useAzim) 
-        phytoT[seq(nf),"Azim",a] <- sapply(seq(nf),function(n) geoLeaf$Azim(a,n,nf-n))
+        phytoT[seq(nf),"Azim",a] <- sapply(seq(nf),function(n) geoLeaf$Azim(idaxe,n,nf))
       else
         phytoT[seq(nf),"Azim",a] <- phytoT[seq(nf),"pAngle",a] + (runif(nf) - .5) * phytoT[seq(nf),"dpAngle",a]
       #
-      lindex <- sapply(seq(nf),function(n) geoLeaf$Lindex(a,n,nf-n))
+      lindex <- sapply(seq(nf),function(n) geoLeaf$Lindex(idaxe,n,nf))
       lseed <- runif(nf)
       if (is.null(xy_db)) {
         phytoT[seq(nf),"Lindex",a] <- lindex

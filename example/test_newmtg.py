@@ -39,7 +39,7 @@ Viewer.display(scene)
 #
 def test_leaf_shape():
     """ test leaf positioning/ inclination """
-    d = {'plant':[1,1],'axe':[0,1],'numphy':[1,1], 
+    d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
          'Laz': [0,90], 'Ll' :[3,3], 'Lv' :[3,3] , 'Lsen':[0,0], 'L_shape':[3,3], 'Lw_shape':[.3,.3], 'Linc':[0,0],
          'Einc':[0,45],'El':[1,1],'Ev':[1,1],'Esen':[0,0],'Ed': [0.1,0.1]}
     g=mtg_factory(d,adel_metamer,leaf_db=leaves_db())

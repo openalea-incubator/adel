@@ -43,7 +43,7 @@ fit_fit_leaves = Factory(name='fit leaves',
                 nodemodule='fit',
                 nodeclass='fit_leaves',
                 inputs=[{'interface': IDict, 'name': 'leaves', 'value': {}, 'desc': ''}, {'interface': IInt, 'name': 'nb_points', 'value': 7, 'desc': ''}],
-                outputs=[{'interface': IDict, 'name': 'leaves', 'desc': 'New database'}],
+                outputs=[{'interface': IDict, 'name': 'leaves', 'desc': 'New database'},{'interface': IDict, 'name': 'discarded leaves', 'desc': 'Rindex (starting at 1) of discarded leaves'}],
                 widgetmodule=None,
                 widgetclass=None,
                )

@@ -541,16 +541,18 @@ def leaf_shape2(leaf, nb_triangles, length_max, length, radius_max ):
 
 def fit_leaves( leaves, nb_points):
     new_db = {}
+    discarded={}
     db = leaves
     for key in db:
         l = db[key]
-        for el in l:
+        for i,el in enumerate(l):
             x, y, s, r = el
             try:
                 leaf = fit3(x, y, s, r, nb_points)
                 new_db.setdefault(key,[]).append(leaf)
             except:
-                print("fit_leaves: can't fit leaf shape at index %s"%(key))
+                print("alinea.adel.fitting->fit_leaves: can't fit leaf shape index %s, Rsub-index %d (python sub-index %d)=> leaf shape discarded"%(key,i+1,i))
+                discarded.setdefault(key,[]).append(i+1)
                 pass
-    return new_db
+    return new_db,discarded,
 

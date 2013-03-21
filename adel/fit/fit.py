@@ -11,5 +11,6 @@ def fit_leaf( leaf ):
 simplify = fitting.simplify
 
 def fit_leaves( db, nb_points):
-    return fitting.fit_leaves(db, nb_points),
+    db,discard = fitting.fit_leaves(db, nb_points)
+    return db,discard
 

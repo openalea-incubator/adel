@@ -110,7 +110,7 @@ def compute_element(element_node, classic=False):
             # x-> -x to place the shape along with the tiller positioned with turtle.down()
             leaf = (-shape[0],)+shape[1:]
             geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
-                                n.length, n.srb, n.srt)   
+                                blade.visible_length, n.srb, n.srt)   
     elif n.label.startswith('Stem'): #stem element
         stem = n.complex()
         #diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter

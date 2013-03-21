@@ -224,7 +224,7 @@ Hmax <- function(kin) {
   max(cumsum(kin$El)+kin$Gl+kin$Ll)
 }
 #
-# ms_pos : position of axis on main stem from axis_id.returns -1 for ms itself
+# ms_pos : position of axis on main stem from axis_id.returns 0 for ms itself
 ms_pos <- function(axeid) {
   idpos <- strsplit(axeid,split=".",fixed=TRUE)[[1]][1]
   if (idpos=="MS")
@@ -400,7 +400,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
                                          axe_id = rep(axename,nbphy),
-                                         #axe=rep(as.numeric(axename),nbphy),
+                                         ms_insertion=rep(ms_pos(axename),nbphy),
                                          numphy=1:nbphy,
                                          L_shape=datp$Ll,
                                          Lw_shape=datp$Lw,

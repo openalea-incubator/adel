@@ -19,7 +19,7 @@ def leaves_db():
     f = open(fn)
     leaves = Pickle.load(f)
     f.close()
-    leaves = fitting.fit_leaves(leaves, 9)
+    leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
        
 #from openalea.mtg import mtg2axialtree

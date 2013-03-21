@@ -115,10 +115,11 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
                 ls_sen = st_sen - sb_sen
                 #print(sb_green,st_green,st_sen)
                 if lvis > 0:
-                    srb_green = (sb_green - s_limvis) / lvis
-                    srt_green = (st_green - s_limvis) / lvis
-                    srb_sen = (sb_sen - s_limvis) / lvis
-                    srt_sen = (st_sen - s_limvis) / lvis
+                    srb_green = float(sb_green - s_limvis) / lvis
+                    srt_green = float(st_green - s_limvis) / lvis
+                    srb_sen = float(sb_sen - s_limvis) / lvis
+                    srt_sen = float(st_sen - s_limvis) / lvis
+                    #print(srb_green,srt_green,srb_sen,srt_sen)
         except TypeError:
             pass
         green_elt = {'label': 'LeafElement', 'length': ls_green, 'is_green': True,
@@ -201,7 +202,7 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe','numphy']):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy']):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
@@ -242,8 +243,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
     nrow = len(dp['plant'])
     
     for i in range(nrow):
-        plant, axe, num_metamer = [int(convert(dp.get(x)[i],undef=None)) for x in topology]        
-
+        plant, num_metamer = [int(convert(dp.get(x)[i],undef=None)) for x in [topology[e] for e in [0,2]]]        
+        axe = dp.get(topology[1])[i]
+        mspos = int(convert(dp.get('ms_insertion')[i],undef=None))
         # Add plant if new
         if plant != prev_plant:
             label = 'plant' + str(plant)
@@ -267,11 +269,11 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             
         # Add axis
         if axe != prev_axe:
-            label = 'axe' + str(axe)
+            label = axe
             timetable = None
             if axis_dynamics:
                 timetable = axis_dynamics[str(plant)][str(axe)]
-            if axe == 0:
+            if axe == 'MS':
                 vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable)
                 vid_main_stem = vid_axe
             else:
@@ -307,11 +309,11 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         #
         label = 'metamer'+str(num_metamer)
         new_metamer = g.add_component(vid_axe, edge_type='/', label = label, **args)
-        if axe==0 and num_metamer==1:
+        if axe=='MS' and num_metamer==1:
             vid_metamer = new_metamer
         elif num_metamer == 1:
             # add the edge with the bearing metamer on main stem
-            vid_metamer = metamers[axe-1]
+            vid_metamer = metamers[mspos-1]
             vid_metamer =  g.add_child(vid_metamer, child=new_metamer, edge_type='+')
         else:
             vid_metamer = g.add_child(vid_metamer, child=new_metamer, edge_type='<')
@@ -323,13 +325,13 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             element = elements[0]
             new_node = g.add_component(vid_metamer, edge_type='/', **node)
             new_elt = g.add_component(new_node, edge_type='/', **element)
-            if axe==0 and num_metamer==1: #root of main stem
+            if axe=='MS' and num_metamer==1: #root of main stem
                 vid_node = new_node
                 vid_elt =  new_elt                   
             elif num_metamer == 1: # root of tiller                   
-                vid_node = nodes[axe - 1]
+                vid_node = nodes[mspos - 1]
                 vid_node = g.add_child(vid_node, child = new_node, edge_type='+')
-                vid_elt = elts[axe - 1]
+                vid_elt = elts[mspos - 1]
                 vid_elt = g.add_child(vid_elt, child = new_elt, edge_type='+')
             else:
                 vid_node = g.add_child(vid_topstem_node, child=new_node, edge_type='<')
@@ -357,7 +359,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                     vid_elt = g.add_child(vid_elt, edge_type='<',**element) 
                 
         #update buffers 
-        if axe == 0 :
+        if axe == 'MS' :
             metamers.append(vid_metamer)
             if len(components) > 0:
                 nodes.append(vid_topstem_node)

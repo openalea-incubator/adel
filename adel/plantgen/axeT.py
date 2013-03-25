@@ -89,7 +89,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     return pandas.DataFrame(axeT_array, columns=['id_plt', 'id_cohort_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'], dtype=float)
 
 
-def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_number):
+def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_density):
     '''
     Create the :ref:`axeT <axeT>` dataframe filling the *axeT_tmp* dataframe.
     
@@ -103,7 +103,7 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flower
           thermal time between an axis stop growing and its disappearance (it 
           concerns only the axes that do not regress and which do not produce any 
           cob).
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an ear, 
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an ear, 
           per square meter.
           
     :Returns:
@@ -130,7 +130,7 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flower
                - :class:`float`
              * - *delais_TT_stop_del_axis* 
                - :class:`int`
-             * - *final_axes_number* 
+             * - *final_axes_density* 
                - :class:`int`
           
     '''
@@ -139,13 +139,13 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flower
     assert isinstance(TT_bolting, float)
     assert isinstance(TT_flowering, float)
     assert isinstance(delais_TT_stop_del_axis, int)
-    assert isinstance(final_axes_number, int)
+    assert isinstance(final_axes_density, int)
     axeT_dataframe = axeT_tmp_dataframe.copy()
     (axeT_dataframe['TT_em_phytomer1'], 
      axeT_dataframe['TT_col_phytomer1'], 
      axeT_dataframe['TT_sen_phytomer1'],
      axeT_dataframe['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp_dataframe, params.emf_1_MS_standard_deviation, phenT_first_dataframe)
-    axeT_dataframe['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp_dataframe.index.size, final_axes_number, axeT_dataframe['TT_em_phytomer1'].tolist(), TT_bolting, TT_flowering)
+    axeT_dataframe['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp_dataframe.index.size, final_axes_density, axeT_dataframe['TT_em_phytomer1'].tolist(), TT_bolting, TT_flowering)
     axeT_dataframe['TT_del_axis'] = _gen_TT_del_axis_list(axeT_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
     
     return axeT_dataframe
@@ -258,7 +258,7 @@ def _gen_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
     return TT_stop_axis_series + delais_TT_stop_del_axis
 
 
-def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_number):
+def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_density):
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     
@@ -269,7 +269,7 @@ def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT
         - `TT_flowering` (:class:`float`) - the flowering date.
         - `plant_number` (:class:`int`) - the number of plants. 
         - `axeT_tmp_dataframe` (:class:`pandas.Dataframe`) - the *axeT_tmp* dataframe.
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an ear, per square meter.
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an ear, per square meter.
           
     :Returns:
         the :ref:`tilleringT <tilleringT>` dataframe.
@@ -295,7 +295,7 @@ def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT
                - :class:`int`
              * - *axeT_tmp_dataframe* 
                - :class:`pandas.DataFrame`  
-             * - *final_axes_number* 
+             * - *final_axes_density* 
                - :class:`int`
     
     '''
@@ -304,8 +304,8 @@ def create_tilleringT(initial_date, TT_bolting, TT_flowering, plant_number, axeT
     assert isinstance(TT_flowering, float)
     assert isinstance(plant_number, int)
     assert isinstance(axeT_tmp_dataframe, pandas.DataFrame)
-    assert isinstance(final_axes_number, int)
-    return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flowering], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_number]}, columns=['TT', 'NbrAxes'])
+    assert isinstance(final_axes_density, int)
+    return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flowering], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
 
 
 def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_axes):

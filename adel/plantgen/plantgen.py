@@ -46,7 +46,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                                  MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                  TT_bolting=500.0,
                                  TT_flowering=1440.0,
-                                 final_axes_number=250,
+                                 final_axes_density=250,
                                  GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                  delais_TT_stop_del_axis=600,
                                  TT_col_break=0.0):
@@ -103,7 +103,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
         
         - `TT_flowering` (:class:`int`) - The flowering date. 
         
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -116,7 +116,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
           cob).
         
         - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing.
+          is changing. If phyllochron is constant, then *TT_col_break* is null.
         
     :Returns:
         Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -161,7 +161,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                    - :class:`float`
                  * - *TT_flowering* 
                    - :class:`float`
-                 * - *final_axes_number* 
+                 * - *final_axes_density* 
                    - :class:`int`
                  * - *GL_number* 
                    - :class:`dict`
@@ -179,7 +179,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
-            isinstance(final_axes_number, int) and \
+            isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
             isinstance(TT_col_break, float)
@@ -206,7 +206,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
     dynT_user = dynT_user.copy()
     dynT_user['TT_col_nff'] = TT_col_nff
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
 
 
 def gen_adel_input_data_from_short(dynT_user,
@@ -216,7 +216,7 @@ def gen_adel_input_data_from_short(dynT_user,
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
                                     TT_flowering=1440.0,
-                                    final_axes_number=250,
+                                    final_axes_density=250,
                                     GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                     delais_TT_stop_del_axis=600,
                                     TT_col_break=0.0):
@@ -260,7 +260,7 @@ def gen_adel_input_data_from_short(dynT_user,
         
         - `TT_flowering` (:class:`int`) - The flowering date. 
         
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -273,7 +273,7 @@ def gen_adel_input_data_from_short(dynT_user,
           cob).
         
         - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing.
+          is changing. If phyllochron is constant, then *TT_col_break* is null.
         
     :Returns:
         Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -326,7 +326,7 @@ def gen_adel_input_data_from_short(dynT_user,
              * - *TT_flowering* 
                - :class:`float`
                - None
-             * - *final_axes_number* 
+             * - *final_axes_density* 
                - :class:`int`
                - None
              * - *GL_number* 
@@ -347,14 +347,14 @@ def gen_adel_input_data_from_short(dynT_user,
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
-            isinstance(final_axes_number, int) and \
+            isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
             isinstance(TT_col_break, float)
     
             
     
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
 
 def gen_adel_input_data_from_full(dynT_user,
@@ -364,7 +364,7 @@ def gen_adel_input_data_from_full(dynT_user,
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
                                     TT_flowering=1440.0,
-                                    final_axes_number=250,
+                                    final_axes_density=250,
                                     GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                     delais_TT_stop_del_axis=600,
                                     TT_col_break=0.0):
@@ -408,7 +408,7 @@ def gen_adel_input_data_from_full(dynT_user,
         
         - `TT_flowering` (:class:`int`) - The flowering date. 
         
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -421,7 +421,7 @@ def gen_adel_input_data_from_full(dynT_user,
           cob).
         
         - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing.
+          is changing. If phyllochron is constant, then *TT_col_break* is null.
         
     :Returns:
         Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -476,7 +476,7 @@ def gen_adel_input_data_from_full(dynT_user,
              * - *TT_flowering* 
                - :class:`float`
                - None
-             * - *final_axes_number* 
+             * - *final_axes_density* 
                - :class:`int`
                - None
              * - *GL_number* 
@@ -497,11 +497,11 @@ def gen_adel_input_data_from_full(dynT_user,
     assert isinstance(MS_leaves_number_probabilities, dict)
     assert isinstance(TT_bolting, float)
     assert isinstance(TT_flowering, float)
-    assert isinstance(final_axes_number, int)
+    assert isinstance(final_axes_density, int)
     assert isinstance(GL_number, dict)
     assert isinstance(delais_TT_stop_del_axis, int)
     assert isinstance(TT_col_break, float)
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_number, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
 
 
 def gen_adel_input_data(dynT_user,
@@ -511,7 +511,7 @@ def gen_adel_input_data(dynT_user,
                         MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                         TT_bolting=500.0,
                         TT_flowering=1440.0,
-                        final_axes_number=250,
+                        final_axes_density=250,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
                         TT_col_break=0.0,
@@ -535,7 +535,7 @@ def gen_adel_input_data(dynT_user,
             * *dimT_tmp*, calling :func:`alinea.adel.plantgen.dimT.create_dimT_tmp`
             * :ref:`tilleringT <tilleringT>`, calling :func:`alinea.adel.plantgen.axeT.create_tilleringT`
             * :ref:`cohortT <cohortT>`, calling :func:`alinea.adel.plantgen.axeT.create_cohortT`
-        * filling of the datframes set by the user:
+        * filling of the dataframes set by the user:
             * *dynT_user*, according to *dynT_user_completeness*
             * *dimT_user*, according to *dimT_user_completeness*
         * calculate the number of elongated internodes
@@ -591,7 +591,7 @@ def gen_adel_input_data(dynT_user,
         
         - `TT_flowering` (:class:`int`) - The flowering date. 
         
-        - `final_axes_number` (:class:`int`) - the final number of axes which have an 
+        - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -604,7 +604,7 @@ def gen_adel_input_data(dynT_user,
           cob).
         
         - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing.
+          is changing. If phyllochron is constant, then *TT_col_break* is null.
         
         - `dynT_user_completeness` (:class:`DataCompleteness`) - the level of 
           completeness of the *dynT_user* set by the user. 
@@ -675,7 +675,7 @@ def gen_adel_input_data(dynT_user,
                        - :class:`float`
                        - :class:`float`
                        - :class:`float`
-                     * - *final_axes_number* 
+                     * - *final_axes_density* 
                        - :class:`int`
                        - :class:`int`
                        - :class:`int`
@@ -708,7 +708,7 @@ def gen_adel_input_data(dynT_user,
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
             isinstance(TT_flowering, float) and \
-            isinstance(final_axes_number, int) and \
+            isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
             isinstance(TT_col_break, float) and \
@@ -788,7 +788,7 @@ def gen_adel_input_data(dynT_user,
                                                        MS_leaves_number_probabilities, 
                                                        TT_bolting, 
                                                        TT_flowering, 
-                                                       final_axes_number) 
+                                                       final_axes_density) 
     
     # 3. complete dynT_user
     if dynT_user_completeness == DataCompleteness.MIN:
@@ -918,7 +918,7 @@ The values can be one of %s''', (str(dimT_user_completeness),
                                                     TT_bolting, 
                                                     TT_flowering, 
                                                     delais_TT_stop_del_axis, 
-                                                    final_axes_number)
+                                                    final_axes_density)
     
     return axeT_dataframe, dimT_dataframe, phenT_dataframe, phenT_abs_dataframe, \
            dimT_abs_dataframe, dynT_dataframe, phenT_first_dataframe, \
@@ -930,7 +930,7 @@ def _gen_adel_input_data_first(plant_number,
                               MS_leaves_number_probabilities,
                               TT_bolting, 
                               TT_flowering,
-                              final_axes_number):    
+                              final_axes_density):    
     '''Generate the input data: first step.'''
     # create axeT_tmp
     axeT_tmp_dataframe = axeT.create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
@@ -939,7 +939,7 @@ def _gen_adel_input_data_first(plant_number,
     # create dimT_tmp
     dimT_tmp_dataframe = dimT.create_dimT_tmp(dynT_tmp_dataframe)
     # create tilleringT
-    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_number)
+    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_density)
     # create cohortT
     cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_tmp_dataframe['id_cohort_axis'])
 
@@ -953,7 +953,7 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
                                 TT_bolting, 
                                 TT_flowering, 
                                 delais_TT_stop_del_axis,
-                                final_axes_number):
+                                final_axes_density):
     '''Generate the input data: second step.'''
     # calculate decimal_elongated_internode_number
     decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_user) 
@@ -966,7 +966,7 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
     # create phenT
     phenT_dataframe = phenT.create_phenT(phenT_abs_dataframe, phenT_first_dataframe)
     # create axeT
-    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_number)
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_density)
     # create dimT_abs
     dimT_abs_dataframe = dimT.create_dimT_abs(dimT_user, phenT_abs_dataframe)
     # create dimT

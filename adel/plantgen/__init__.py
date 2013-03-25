@@ -4,7 +4,7 @@ plant data to be used as input for generating plot with ADEL.
 
 Available submodules are:
 
-* :mod:`alinea.adel.plantgen.`:
+* :mod:`alinea.adel.plantgen.plantgen`:
     Front-end for the generation of the :class:`pandas.DataFrame` which contain the plant data 
     expected by ADEL. Uses the routines of the modules listed below.
 * :mod:`alinea.adel.plantgen.axeT`: 

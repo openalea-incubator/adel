@@ -17,7 +17,7 @@ decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.81
 MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
 TT_bolting = 500.0
 TT_flowering = 1440.0
-final_axes_number = 250
+final_axes_density = 250
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_nff = {'1': 1078.0, '4': 1148.0, '5': 1158.0, '6': 1168.0, '7': 1178.0}
@@ -138,7 +138,7 @@ def test_create_axeT():
     axeT_tmp_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     phenT_first_dataframe = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_number)
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_density)
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -161,7 +161,7 @@ def test_create_dimT_abs():
 def test_create_tilleringT():
     axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_tilleringT_dataframe = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
-    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_dataframe, final_axes_number)
+    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_dataframe, final_axes_density)
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -209,7 +209,7 @@ def test_gen_adel_input_data_from_min():
                                                 MS_leaves_number_probabilities, 
                                                 TT_bolting, 
                                                 TT_flowering, 
-                                                final_axes_number, 
+                                                final_axes_density, 
                                                 GL_number, 
                                                 delais_TT_stop_del_axis, 
                                                 TT_col_break)
@@ -253,7 +253,7 @@ def test_gen_adel_input_data_from_short():
                                                   MS_leaves_number_probabilities, 
                                                   TT_bolting, 
                                                   TT_flowering, 
-                                                  final_axes_number, 
+                                                  final_axes_density, 
                                                   GL_number, 
                                                   delais_TT_stop_del_axis, 
                                                   TT_col_break)
@@ -297,7 +297,7 @@ def test_gen_adel_input_data_from_full():
                                                  MS_leaves_number_probabilities, 
                                                  TT_bolting, 
                                                  TT_flowering, 
-                                                 final_axes_number, 
+                                                 final_axes_density, 
                                                  GL_number, 
                                                  delais_TT_stop_del_axis, 
                                                  TT_col_break)

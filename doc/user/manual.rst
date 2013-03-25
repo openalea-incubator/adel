@@ -13,8 +13,8 @@
 .. contents:: **Alinea.Adel Documentation**
    
 
-General introduction (write authors names)
-===========================================
+General introduction 
+=====================
 
 ADEL-Wheat (Architectural model of DEvelopment based on L-systems) is designed for
 simulating the 3D architectural development of the aerial part of wheat plants. The model has been
@@ -33,8 +33,8 @@ correctly reproduced important agronomic features such as kinetics of LAI and of
 
 .. _adel_input:
 
-Description of Adel's inputs (write authors names)
-==========================================================
+Description of Adel's inputs
+=============================
 
 Adel has three kinds of inputs available for the user:
 
@@ -235,17 +235,17 @@ A sample definition may be :
 
 .. code-block:: r
 
-	geoAxe <- list(
-	  azT = function(a) {
-	    ifelse(a == 0, 0, 75 + (runif(1)-0.5)*5) 
-	  },
-	  incT = function(a) {
-		ifelse(a == 0, runif(1) * 5, 82 + (runif(1) - .5) * 5)
-	  },
-	  dredT = function(a) {
-		ifelse(a == 0, 0, runif(1) * 7)
-	  }
-	)
+    geoAxe <- list(
+      azT = function(a) {
+        ifelse(a == 0, 0, 75 + (runif(1)-0.5)*5) 
+      },
+      incT = function(a) {
+        ifelse(a == 0, runif(1) * 5, 82 + (runif(1) - .5) * 5)
+      },
+      dredT = function(a) {
+        ifelse(a == 0, 0, runif(1) * 7)
+      }
+    )
 
 
 The second list should provide two Rfunctions of axe number, 
@@ -261,10 +261,10 @@ A sample dfinition may be :
 
 .. code-block:: r
 
-	geoLeaf <- list(
-		Azim = function(a,n,ntop) {0 * runif(1)},
-		Lindex = function(a,n,ntop,stage) {ntop + 1}
-		)
+    geoLeaf <- list(
+        Azim = function(a,n,ntop) {0 * runif(1)},
+        Lindex = function(a,n,ntop,stage) {ntop + 1}
+        )
 
 Inputs describing simulation
 ********************************
@@ -272,57 +272,75 @@ Inputs describing simulation
 Time step is given as a list of date for which a mock-up is wished
 position of plants within the plot are given externally from adel to a planter.
 
-Description of Adel's outputs (write authors names)
-============================================================
+Description of Adel's outputs
+==============================
 
 
 .. _plantgen:
 
-Construction of the input tables (Mariem ABICHOU, Bruno ANDRIEU and Camille CHAMBON)
-============================================================================================
+Construction of the input tables 
+=================================
 
-ADEL expects inputs characterising the development of plants in the canopy. These 
-inputs are described in :ref:`development_input`.
-ADEL user who does not have a complete set of inputs may wish to use ADEL anyway,
-constructing the missing inputs. That's the aim of the ``plantgen`` package 
-(see :mod:`alinea.adel.plantgen`). 
+Authors: Mariem ABICHOU, Bruno ANDRIEU and Camille CHAMBON
 
-According to the level of completeness of the raw inputs, and given some parameters, 
-the ``plantgen.plantgen`` module provides routines to construct 
-:ref:`axeT <axeT>`, :ref:`dimT <dimT>` and :ref:`phenT <phenT>`, and some other 
-dataframes for debugging purpose (see :mod:`alinea.adel.plantgen.plantgen`).
+ADEL requires inputs characterizing the development of plants as described 
+in :ref:`development_input`.
 
-In the next subsections, we first describe the different levels of completeness 
-of the inputs and of the parameters set by the user. 
+The :mod:`plantgen <alinea.adel.plantgen>` package allows the user who does not have 
+a complete set of data to estimate the missing inputs. 
+Inside this package, the :mod:`plantgen <alinea.adel.plantgen.plantgen>` module 
+provides routines to construct axeT, dimT and phenT. 
+It provides also some other tables for debugging purpose.
 
-Then we see how to construct the inputs of ADEL from a Python interpreter, using 
-the routine ``gen_adel_input_data(...)``. This routine can be used whatever the 
-level of completeness of the raw inputs, adapting the processing automatically 
-(see :func:`alinea.adel.plantgen.plantgen.gen_adel_input_data`).
+We have considered three possible levels of completeness of data, denote as MIN, 
+SHORT, and FULL. In the next subsections, we 
 
-Finally, we see how to construct the inputs of ADEL from the Visualea interface, 
-using the following convenience routines: 
+* describe the levels of completeness of the data and of the parameters set 
+  by the user,
+* describe how to construct the inputs of ADEL from a Python interpreter, 
+  using the routine :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`. 
+  This routine can be used whatever the level of completeness of the raw inputs, 
+  adapting the processing automatically,
+* describe how to construct the inputs of ADEL from the Visualea interface, 
+  using one of the following routines:
+  
+  * :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`
+  * :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`
+  * :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`.
+        
+All routines belong to :mod:`plantgen <alinea.adel.plantgen.plantgen>`.
+All routines produce the same output tables: 
 
-    * ``gen_adel_input_data_from_min(...)``,
-    * ``gen_adel_input_data_from_short(...)``,  
-    * and ``gen_adel_input_data_from_full(...)``.
-    
-All these routines belong to :mod:`alinea.adel.plantgen.plantgen`. They 
-permit to ease the construction from respectively a minimum, short, and full set 
-of inputs. 
-
+* :ref:`axeT <axeT>`: TODO: add short description
+* :ref:`dimT <dimT>`: TODO: add short description
+* :ref:`phenT <phenT>`: TODO: add short description
+* :ref:`phenT_abs <phenT_abs>`: the equivalent of :ref:`phenT <phenT>`, but 
+  with absolute dates and absolute positions.
+* :ref:`dimT_abs <dimT_abs>`: the equivalent of :ref:`dimT <dimT>`, but with 
+  absolute positions.
+* :ref:`dynT <dynT>`: the dynamic of the leaves for each type of axis. 
+* :ref:`phenT_first <phenT_first>`: a subset of :ref:`phenT_abs <phenT_abs>`, 
+  containing only the rows of :ref:`phenT_abs` which correspond to the first 
+  phytomer of each axis.
+* :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`: the dynamic of *HS*, *GL* and *SSI* when 
+  *TT* varies, for each type of axis. 
+* :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
+* :ref:`cohortT <cohortT>`: the theoretical and the simulated cardinalities of 
+  each cohort.
 
 .. _levels_of_completeness:
 
 The levels of completeness
 ***************************
 
-The inputs and the parameters needed for the construction are ``dynT_user`` and 
-``dimT_user``.
-``dynT_user`` and ``dimT_user`` can have different levels of completeness: ``FULL``, 
-``SHORT`` and ``MIN``. 
-According to their level of completeness, ``dynT_user`` and ``dimT_user`` take 
-different types, shapes and/or contents:
+The information provided to generate Adel input must be provided in two tables: 
+``dynT_user`` and ``dimT_user``. ``dynT_user`` and ``dimT_user`` can  have 
+different  levels  of  completeness:  ``FULL``,  ``SHORT`` and  ``MIN``.  
+According  to  their  level  of completeness, ``dynT_user`` and ``dimT_user`` 
+take different types, shapes and/or contents.
+
+The table below list the specific designation in :func:`plantgen <alinea.adel.plantgen>`
+for ``dynT_user``  and ``dimT_user`` for each level of completeness:
 
 .. list-table::
     :widths: 10 25 25
@@ -341,114 +359,107 @@ different types, shapes and/or contents:
       - :ref:`dynT_user_MIN`
       - :ref:`dimT_user_MIN`
       
-.. seealso:: :class:`alinea.adel.plantgen.plantgen.DataCompleteness`
-
+.. seealso:: the documentation of :class:`DataCompleteness <alinea.adel.plantgen.plantgen.DataCompleteness>`
+             in the :ref:`adel_reference`.                       
       
 .. _construct_inputs_from_interpreter:
 
 Construct the inputs from Python interpreter
 ***********************************************
 
-``gen_adel_input_data(...)`` is aimed to be used from Python interpreter 
-(see :func:`alinea.adel.plantgen.plantgen.gen_adel_input_data`).
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+is aimed to be used from Python interpreter.
 
-In the next subsections, we explain how to define the arguments of ``gen_adel_input_data(...)``.
+First we explain the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+that the user has to define. Second we present a complete code example to use 
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+from a Python interpreter.          
 
-.. note : in the examples below, the csv tables are supposed to be located in the 
-          working directory.
-          
+The arguments to define by the user
+-------------------------------------
+
+The arguments to define are:
 
 * dynT_user : *the leaf dynamic parameters set by the user*
 
   *dynT_user* can be either a :class:`pandas.DataFrame` or a :class:`dict`, 
-  depending on its level of completeness. See :ref:`levels_of_completeness` for more 
-  details.
-
-  For example, if *dynT_user_completeness* is ``SHORT``, then the user may import the 
-  table: :ref:`dynT_user_SHORT_example <dynT_user_SHORT_example>` example, using :mod:`pandas` as follows::
-
-      import pandas
-
-      dynT_user = pandas.read_csv('dynT_user_SHORT.csv')
-    
+  depending on the argument :ref:`*dynT_user_completeness* <levels_of_completeness>`. 
 
 * dimT_user : *the dimensions of the axes set by the user*
 
   *dimT_user* is a :class:`pandas.DataFrame`, which content depends on 
-  *dynT_user_completeness*. See :ref:`levels_of_completeness` for more details. 
-    
-  For example, if *dimT_user_completeness* is ``SHORT``, then the user may import the 
-  table: :ref:`dimT_user_SHORT_example <dimT_user_SHORT_example>` example, using :mod:`pandas` as follows::
-    
-      import pandas
-    
-      dimT_user = pandas.read_csv('dimT_user_SHORT.csv')
-
+  :ref:`*dimT_user_completeness* <levels_of_completeness>`.
 
 * dynT_user_completeness and dimT_user_completeness : *the levels of completeness of dynT_user and dimT_user*
 
-  *dynT_user_completeness* and *dimT_user_completeness* are the levels of completeness 
-  of respectively *dynT_user* and *dimT_user* (see :ref:`levels_of_completeness`). 
+  :ref:`*dynT_user_completeness* <levels_of_completeness>` and :ref:`*dimT_user_completeness* <levels_of_completeness>` are the levels of completeness 
+  of respectively *dynT_user* and *dimT_user*. 
     
-  *dynT_user_completeness* and *dimT_user_completeness* have to be coherent with 
+  :ref:`*dynT_user_completeness* <levels_of_completeness>` and :ref:`*dimT_user_completeness* <levels_of_completeness>` have to be coherent with 
   respectively *dynT_user* and *dimT_user*.
-    
-  For example, if the levels of completeness of *dynT_user* and *dimT_user* are 
-  both ``SHORT``, then *dynT_user_completeness* and *dimT_user_completeness* 
-  must be defined as follows::
-    
-      from alinea.adel.plantgen.plantgen import DataCompleteness
-    
-      dynT_user_completeness = DataCompleteness.SHORT
-      dimT_user_completeness = DataCompleteness.SHORT
-    
 
 * *plant_number*, *decide_child_cohort_probabilities*, *MS_leaves_number_probability_distribution*, ...
 
   The other arguments of the routine are: 
     
-      * *plant_number*, the number of plants to be generated,
-      * *decide_child_cohort_probabilities*, for each child cohort the probability of emergence of an axis when the parent axis is present,  
-      * *MS_leaves_number_probability_distribution*, the probability distribution of the final number of main stem leaves,
-      * *TT_bolting*, the date in thermal time at which the bolting starts,
-      * *TT_flowering*, the flowering date in thermal time,
-      * *final_axes_number*, the final number of axes which have an ear, per square meter,
-      * *GL_number*, the GL decimal numbers measured at several thermal times (including the senescence end),
-      * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
-      * and *TT_col_break*, the thermal time when the rate of Haun Stage is changing.
-            
-  They can be defined as follows::
+  * *plant_number*, the number of plants to be generated,
+  * *decide_child_cohort_probabilities*, for each child cohort the probability 
+    of emergence of an axis when the parent axis is present,  
+  * *MS_leaves_number_probability_distribution*, the probability distribution 
+    of the final number of main stem leaves,
+  * *TT_bolting*, the thermal time at which the bolting starts,
+  * *TT_flowering*, the thermal time of the flowering,
+  * *final_axes_number*, the final number of axes which have an ear, per square meter,
+  * *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
+  * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
+  * and *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
+    If phyllochron is constant, then *TT_col_break* is null.
   
-      plant_number = 100
-      decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, 
-                              '5': 0.983, '6': 0.817, 
-                              '7': 0.117}
-      MS_leaves_number_probabilities = {'10': 0.145, 
-                                        '11': 0.818, 
-                                        '12': 0.036, 
-                                        '13': 0.0, 
-                                        '14': 0.0}
-      TT_bolting = 500
-      TT_flowering = 1440
-      final_axes_number = 250
-      GL_number = {1117.0: 5.6, 1212.1:5.4, 
-                   1368.7:4.9, 1686.8:2.4, 
-                   1880.0:0.0}
-      delais_TT_stop_del_axis = 600
-      TT_col_break = 0.0
-        
+Code example
+-------------
+  
+Now let's see a complete code example to use 
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+from a Python interpreter::
     
-  See :func:`alinea.adel.plantgen.plantgen.gen_adel_input_data` for more details.
+    # define the levels of completness
+    from alinea.adel.plantgen.plantgen import DataCompleteness
+    dynT_user_completeness = DataCompleteness.SHORT
+    dimT_user_completeness = DataCompleteness.SHORT
+    
+    # import the pandas library. In this example, pandas is used to read and 
+    # write the tables.
+    import pandas
 
-
-Launch the construction 
---------------------------
-
-To launch the construction, simply call ``gen_adel_input_data(...)`` 
-with the appropriate arguments:: 
-
+    # read the dynT_user table. "dynT_user_SHORT.csv" must be in the working directory. 
+    # "dynT_user_SHORT.csv" must be coherent with dynT_user_completeness.
+    dynT_user = pandas.read_csv('dynT_user_SHORT.csv')
+        
+    # read the dynT_user table. "dimT_user_SHORT.csv" must be in the working directory.
+    # "dimT_user_SHORT.csv" must be coherent with dimT_user_completeness.
+    dimT_user = pandas.read_csv('dimT_user_SHORT.csv')    
+    
+    # define the other arguments
+    plant_number = 100
+    decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, 
+                                         '5': 0.983, '6': 0.817, 
+                                         '7': 0.117}
+    MS_leaves_number_probabilities = {'10': 0.145, 
+                                      '11': 0.818, 
+                                      '12': 0.036, 
+                                      '13': 0.0, 
+                                      '14': 0.0}
+    TT_bolting = 500
+    TT_flowering = 1440
+    final_axes_number = 250
+    GL_number = {1117.0: 5.6, 1212.1:5.4, 
+                 1368.7:4.9, 1686.8:2.4, 
+                 1880.0:0.0}
+    delais_TT_stop_del_axis = 600
+    TT_col_break = 0.0
+    
+    # launch the construction
     from alinea.adel.plantgen.plantgen import gen_adel_input_data
-
     (axeT, 
     dimT, 
     phenT, 
@@ -472,36 +483,29 @@ with the appropriate arguments::
                                    dynT_user_completeness, 
                                    dimT_user_completeness)
 
-The returned values are all :class:`pandas.DataFrame`. 
-
-*axeT*, *dimT* and *phenT* can be converted to csv files and used as ADEL inputs::
-
     # write axeT, dimT and phenT to csv files in the working directory, replacing
     # missing values by 'NA' and ignoring the indexes (the indexes are the labels of
-    # the rows)
+    # the rows). 
     axeT.to_csv('axeT.csv', na_rep='NA', index=False)
     dimT.to_csv('dimT.csv', na_rep='NA', index=False)
     phenT.to_csv('phenT.csv', na_rep='NA', index=False)
-
-See :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, 
-:ref:`dimT_abs <dimT_abs>`, :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
-:ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`, 
-:ref:`cohortT <cohortT>`.
-
-
+    
+    # "axeT.csv", "dimT.csv" and "phenT.csv" are now ready to be used by Adel.
+    
+    
 .. _construct_inputs_from_visualea:
 
 Construct the data from Visualea
 ***********************************
 
-The following routines are convenience routines to construct the inputs of ADEL: 
+The following routines allow to construct the inputs of ADEL: 
 
-    * ``gen_adel_input_data_from_min(...)``: construct the inputs of ADEL from 
-      :ref:`dynT_user_MIN` and :ref:`dimT_user_MIN`,
-    * ``gen_adel_input_data_from_short(...)``: construct the inputs of ADEL from 
-      :ref:`dynT_user_SHORT` and :ref:`dimT_user_SHORT`,  
-    * and ``gen_adel_input_data_from_full(...)``: construct the inputs of ADEL from 
-      :ref:`dynT_user_FULL` and :ref:`dimT_user_FULL`.
+* :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`: 
+  construct the inputs of ADEL from :ref:`dynT_user_MIN` and :ref:`dimT_user_MIN`,
+* :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`: 
+  construct the inputs of ADEL from :ref:`dynT_user_SHORT` and :ref:`dimT_user_SHORT`,  
+* and :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`: 
+  construct the inputs of ADEL from :ref:`dynT_user_FULL` and :ref:`dimT_user_FULL`.
     
 All these routines belong to :mod:`alinea.adel.plantgen.plantgen`.
 
@@ -514,32 +518,31 @@ These routines are wrapped in the following Visualea nodes:
     * - ``plantgen_MIN``
       - ``plantgen_SHORT``
       - ``plantgen_FULL``
-    * - .. image:: image/plantgen_MIN.png
-      - .. image:: image/plantgen_SHORT.png
-      - .. image:: image/plantgen_FULL.png
+    * - .. image:: image/plantgen_MIN_node.png
+      - .. image:: image/plantgen_SHORT_node.png
+      - .. image:: image/plantgen_FULL_node.png
+    * - .. image:: image/plantgen_MIN_widget.png
+      - .. image:: image/plantgen_SHORT_widget.png
+      - .. image:: image/plantgen_FULL_widget.png
 
 The following table summarizes the nodes, the routines and the levels of completeness 
 of :ref:`dynT <dynT>` and :ref:`dimT <dimT>`:
 
 .. list-table::
-    :widths: 15 15 40 30
+    :widths: 15 50 20
     :header-rows: 1
 
-    * - Completeness of :ref:`dynT`
-      - Completeness of :ref:`dimT <dimT>`
+    * - Level of completeness
       - Convenience routine
       - Visualea node
     * - **MIN** 
-      - **MIN**
-      - ``gen_adel_input_data_from_min``
+      - :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`
       - ``plantgen_MIN``
     * - **SHORT** 
-      - **SHORT**
-      - ``gen_adel_input_data_from_short``
+      - :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`
       - ``plantgen_SHORT``
     * - **FULL** 
-      - **FULL**
-      - ``gen_adel_input_data_from_full``
+      - :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`
       - ``plantgen_FULL``
  
 The following dataflow demonstrates how to use ``plantgen_MIN``, ``plantgen_SHORT``, 
@@ -554,29 +557,53 @@ This dataflow is accessible from the Package explorer of Visualea, in
 Appendices
 ***********
 
-The appendices contain the description of the tables or dictionaries referred to 
-in :ref:`construct_inputs_from_interpreter` and :ref:`construct_inputs_from_visualea`.
+The appendices contain the description of the following data:
 
+* :ref:`dynT_user_FULL <dynT_user_FULL>`: the dynamic of the Haun stage for 
+  *at least* the most frequent axis of each cohort.
+* :ref:`dynT_user_SHORT <dynT_user_SHORT>`: the dynamic of the Haun stage for 
+  *exactly* the most frequent axis of each cohort.
+* :ref:`dynT_user_MIN <dynT_user_MIN>`: the dynamic of the Haun stage for 
+  the main stem.
+* :ref:`dimT_user_FULL <dimT_user_FULL>`: the dimensions of *at least* the 
+  most frequent axis of each cohort.
+* :ref:`dimT_user_SHORT <dimT_user_SHORT>`: the dimensions of *exactly* the 
+  most frequent axis of each cohort.
+* :ref:`dimT_user_MIN <dimT_user_MIN>`: the dimensions of the main stem. 
+* :ref:`phenT_abs <phenT_abs>`: the equivalent of :ref:`phenT <phenT>`, but 
+  with absolute dates and absolute positions.
+* :ref:`dimT_abs <dimT_abs>`: the equivalent of :ref:`dimT <dimT>`, but with 
+  absolute positions.
+* :ref:`dynT <dynT>`: the dynamic of the leaves for each type of axis. 
+* :ref:`phenT_first <phenT_first>`: a subset of :ref:`phenT_abs <phenT_abs>`, 
+  containing only the rows of :ref:`phenT_abs` which correspond to the first 
+  phytomer of each axis.    
+* :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`: the dynamic of *HS*, *GL* and *SSI* when 
+  *TT* varies, for each type of axis. 
+* :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
+* :ref:`cohortT <cohortT>`: the theoretical and the simulated cardinalities of 
+  each cohort.
+    
 .. _dynT_user_FULL:
 
 dynT_user_FULL
 ---------------
 
-*dynT_user_FULL* is a table which contains the dynamic of the leaves. Actually, 
-each type of axis is described by one row. The type of an axis is defined by its 
-cohort index and its final number of leaves. Each row contains the following data: 
-*N_cohort*, *Nff*, *a_cohort*, *TT_col_0*, *TT_col_nff*, *n0*, *n1* and *n2*.
-See :ref:`dynT` for a description of these data.
+*dynT_user_FULL* is a table which describes the dynamic of the Haun stage for each 
+type of axis. The type of an axis is defined by its cohort index and its final 
+number of leaves. One type of axis is described by one row, which contains the 
+following parameters *N_cohort*, *Nff*, *a_cohort*, *TT_col_0*, *TT_col_nff*, 
+*n0*, *n1* and *n2*. See :ref:`dynT` for the definition of these parameters
 
 .. _dynT_user_FULL_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/dynT_user_FULL.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/dynT_user_FULL.csv
+    :header-rows: 1
 
-.. seealso:: :download:`dynT_user_FULL.csv <./data/dynT_user_FULL.csv>`
+.. seealso:: the csv-file :download:`dynT_user_FULL.csv <../../adel/data/Mariem_dynT_user_FULL.csv>`
 
 
 .. _dynT_user_SHORT:
@@ -584,21 +611,21 @@ Example:
 dynT_user_SHORT
 ----------------
 
-*dynT_user_SHORT* is a table which contains the dynamic of a subset of the leaves. 
-Actually, there is one row for each cohort, each row referring to the most frequent 
-axis of the cohort. Each row contains the following data: 
-*N_cohort*, *a_cohort*, *TT_col_0*, *TT_col_nff*, *n0*, *n1* and *n2*.
-See :ref:`dynT` for a description of these data.
+*dynT_user_SHORT* is a table which describes the dynamic Haun stage for each cohort. 
+Values are supposed to represent an axis having the most frequent number of leaves 
+for the cohort. One row refers to one cohort and contains the following parameters: 
+*N_cohort*, *a_cohort*, *TT_col_0*, *TT_col_nff*, *n0*, *n1* and *n2*. See 
+:ref:`dynT` for a description of these parameters.
 
 .. _dynT_user_SHORT_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/dynT_user_SHORT.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/dynT_user_SHORT.csv
+    :header-rows: 1
         
-.. seealso:: :download:`dynT_user_SHORT.csv <./data/dynT_user_SHORT.csv>`
+.. seealso:: the csv-file :download:`dynT_user_SHORT.csv <../../adel/data/Mariem_dynT_user_SHORT.csv>`
 
 
 .. _dynT_user_MIN:
@@ -606,11 +633,10 @@ Example:
 dynT_user_MIN
 --------------
 
-*dynT_user_MIN* is a dictionary which contains the dynamic of a subset of the 
-leaves. This subset is composed by the leaves of the main stem. 
-The dictionary contains the following keys: *a_cohort*, *TT_col_0*, *TT_col_nff*, 
-*n0*, *n1* and *n2*. 
-See :ref:`dynT` for a description of these data.
+*dynT_user_MIN* is a dictionary which describes the dynamic of the Haun stage for 
+the main stem. The dictionary contains the following keys: *a_cohort*, *TT_col_0*, 
+*TT_col_nff*, *n0*, *n1* and *n2*. See :ref:`dynT` for a description of these 
+parameters.
 
 .. _dynT_user_MIN_example:
 
@@ -638,13 +664,14 @@ dimT_user_FULL
 
 .. _dimT_user_FULL_example:
 
-Example:
+In the example below, for each *id_dim*, we show only the rows corresponding 
+to the first, the second and the last *index_phytomer*:
 
-    .. csv-table::
-        :file: ./data/dimT_user_FULL.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/dimT_user_FULL.csv
+    :header-rows: 1
        
-.. seealso:: :download:`dimT_user_FULL.csv <./data/dimT_user_FULL.csv>`
+.. seealso:: the csv-file (non-truncated) :download:`dimT_user_FULL.csv <../../adel/data/Mariem_dimT_user_FULL.csv>`
 
 
 .. _dimT_user_SHORT:
@@ -652,22 +679,23 @@ Example:
 dimT_user_SHORT
 ----------------
 
-*dimT_user_SHORT* is a table which contains the dimensions of the organs, for each 
-phytomer of the most frequent axis of each cohort. Each row contains the following 
-data: *id_axis*, *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, 
-*L_internode* and *W_internode*. 
-*id_axis* is the index of the cohort to which belongs the current most frequent axis.
-See :ref:`dimT <dimT>` for a description of the other data. 
+*dimT_user_SHORT* is a table which contains one profile of dimensions of the organs 
+for each cohort. Values represent an axe having the most frequent leaf number for 
+that cohort. Each row contains the following data: *id_axis*, *index_phytomer*, 
+*L_blade*, *W_blade*, *L_sheath*, *W_sheath*, *L_internode* and *W_internode*. 
+*id_axis* is the index of the cohort. See :ref:`dimT <dimT>` for a description 
+of the other data.
 
 .. _dimT_user_SHORT_example:
 
-Example:
+In the example below, for each *id_axis*, we show only the rows corresponding 
+to the first, the second and the last *index_phytomer*:
 
-    .. csv-table::
-        :file: ./data/dimT_user_SHORT.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/dimT_user_SHORT.csv
+    :header-rows: 1
         
-.. seealso:: :download:`dimT_user_SHORT.csv <./data/dimT_user_SHORT.csv>`
+.. seealso:: the csv-file (non-truncated) :download:`dimT_user_SHORT.csv <../../adel/data/Mariem_dimT_user_SHORT.csv>`
 
 
 .. _dimT_user_MIN:
@@ -676,20 +704,21 @@ dimT_user_MIN
 --------------
 
 *dimT_user_MIN* is a table which contains the dimensions of the organs, for each 
-phytomer of the most frequent axis of the main stem. Each row contains the following 
-data: *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, *L_internode* 
-and *W_internode*.
-See :ref:`dimT <dimT>` for a description of these data. 
+phytomer of the main stem. Values are given only for a main stem having the 
+most frequent number of phytomers. Each row contains the following data: 
+*index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, *L_internode* 
+and *W_internode*. See :ref:`dimT <dimT>` for a description of these data.
 
 .. _dimT_user_MIN_example:
 
-Example:
+In the example below, we show only the rows corresponding to the first, the second 
+and the last *index_phytomer*:
 
-    .. csv-table::
-        :file: ./data/dimT_user_MIN.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/dimT_user_MIN.csv
+    :header-rows: 1
 
-.. seealso:: :download:`dimT_user_MIN.csv <./data/dimT_user_MIN.csv>`
+.. seealso:: the csv-file (non-truncated) :download:`dimT_user_MIN.csv <../../adel/data/Mariem_dimT_user_MIN.csv>`
 
 
 .. _phenT_abs:
@@ -697,48 +726,55 @@ Example:
 phenT_abs
 ----------
 
-:ref:`phenT_abs` is exactly the same as :ref:`phenT <phenT>`, except that:
+:ref:`phenT_abs` is an intermediate table used to construct :ref:`phenT <phenT>`. 
+This table is not an input of Adel. Thus the user normally need't it. This table 
+can be useful for debugging.
+
+:ref:`phenT_abs` is the same as :ref:`phenT <phenT>`, except that:
     * the positions of the phytomers are not normalized,
     * the dates of developmental events are absolute.
-    
-:ref:`phenT_abs` is an intermediate dataframe used to construct :ref:`phenT <phenT>`.
 
 .. _phenT_abs_example:
 
-Example:
+In the example below, for each *id_phen*, we show only the rows corresponding 
+to the first, the second and the last *index_phytomer*:
 
-    .. csv-table::
-        :file: ./data/phenT_abs.csv
-        :header-rows: 1
-
-.. seealso:: :download:`phenT_abs.csv <./data/phenT_abs.csv>`
-      
+.. csv-table::
+    :file: ./data/phenT_abs.csv
+    :header-rows: 1
+        
 
 .. _dimT_abs:
+
 
 dimT_abs
 ----------
 
-:ref:`dimT_abs` is exactly the same as :ref:`dimT <dimT>`, except that the positions 
-of the phytomers are not normalized.
+:ref:`dimT_abs` is an intermediate table used to construct :ref:`dimT <dimT>`. 
+This table is not an input of Adel. Thus the user normally need't it. This table 
+can be useful for debugging.
 
-:ref:`dimT_abs` is an intermediate dataframe used to construct :ref:`dimT <dimT>`.  
+:ref:`dimT_abs` is the same as :ref:`dimT <dimT>`, except that the positions 
+of the phytomers are not normalized.
 
 .. _dimT_abs_example:
 
-Example:
+In the example below, for each *id_dim*, we show only the rows corresponding 
+to the first, the second and the last *index_phytomer*:
 
-    .. csv-table::
-        :file: ./data/dimT_abs.csv
-        :header-rows: 1
-
-.. seealso:: :download:`dimT_abs.csv <./data/dimT_abs.csv>`
+.. csv-table::
+    :file: ./data/dimT_abs.csv
+    :header-rows: 1
 
 
 .. _dynT:        
 
 dynT
 -----
+
+:ref:`dynT` is an intermediate table used to construct :ref:`phenT_abs <phenT_abs>`. 
+This table is not an input of Adel. Thus the user normally need't it. This table 
+can be useful for debugging.
 
 :ref:`dynT` is a table which contains the dynamic of the leaves, for each type 
 of axis. The type of an axis is defined by its cohort index and its final number 
@@ -752,14 +788,14 @@ There is one row per type of axis. Each row contains the following data:
     * - Column
       - Description
     * - **N_cohort** 
-      - the index of the cohort to which belongs **id_axis**
+      - the index of the cohort to which belongs *id_axis*
     * - **id_axis** 
-      - the current type of axis. This type is the concatenation of **N_cohort** 
-        and **Nff**.
+      - the current type of axis. This type is the concatenation of *N_cohort* 
+        and *Nff*.
     * - **cardinality**
-      - the cardinality of the set composed of **id_axis**
+      - the cardinality of the set composed of *id_axis*
     * - **Nff** 
-      - the final number of leaves of **id_axis**
+      - the final number of leaves of *id_axis*
     * - **a_cohort** 
       - the rate of Haun Stage vs Thermal time. This is the rate of the 
         first phase in case of bilinear behavior.
@@ -768,17 +804,17 @@ There is one row per type of axis. Each row contains the following data:
     * - **TT_col_break**
       - the thermal time when the rate of phytomers emergence is changing
     * - **TT_col_nff** 
-      - the thermal time when Haun Stage is equal to **Nff**
+      - the thermal time when Haun Stage is equal to *Nff*
     * - **n0** 
-      - number of green leaves at **t0**
+      - number of green leaves at *t0*
     * - **n1** 
-      - number of green leaves at **t1**
+      - number of green leaves at *t1*
     * - **n2** 
-      - number of green leaves at **TT_col_nff**
+      - number of green leaves at *TT_col_nff*
     * - **t0**
       - the thermal time at the start of leaf senescence 
     * - **t1**
-      - the date in thermal time at which the senescence starts
+      - the thermal time at which the senescence starts
     * - **hs_t1**
       - the Haun Stage at t1
     * - **a**
@@ -791,19 +827,16 @@ There is one row per type of axis. Each row contains the following data:
       - the RMSE for the dynamic of green leaf number after estimation of 
         parameter a.
 
-The rows are ordered by cohort index (**N_cohort**), and, within each cohort index, 
-by **cardinality**.   
-
+The rows are ordered by cohort index (*N_cohort*), and, within each cohort index, 
+by *cardinality*.   
 
 .. _dynT_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/dynT.csv
-        :header-rows: 1
-
-.. seealso:: :download:`dynT.csv <./data/dynT.csv>`
+.. csv-table::
+    :file: ./data/dynT.csv
+    :header-rows: 1
         
 
 .. _phenT_first:
@@ -811,27 +844,28 @@ Example:
 phenT_first
 ------------
 
-:ref:`phenT_first` is a subset of :ref:`phenT_abs`. Actually, :ref:`phenT_first` 
-contains only the rows of :ref:`phenT_abs` which correspond to the first phytomer 
-of each axis. These rows have *index_phytomer* equal to 1. 
+:ref:`phenT_first` is an intermediate table used to construct :ref:`phenT <phenT>` and 
+:ref:`axeT <axeT>`. This table is not an input of Adel. Thus the user normally 
+need't it. This table can be useful for debugging.
 
-:ref:`phenT_first` is an intermediate dataframe used to construct :ref:`phenT <phenT>`.
+:ref:`phenT_first` contains only the rows of :ref:`phenT_abs` which correspond to 
+the first phytomer of each axis. These rows have *index_phytomer* equal to 1.
 
 .. _phenT_first_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/phenT.csv
-        :header-rows: 1
-
-.. seealso:: :download:`phenT.csv <./data/phenT.csv>`
+.. csv-table::
+    :file: ./data/phenT_first.csv
+    :header-rows: 1
 
 
 .. _HS_GL_SSI_T:
 
 HS_GL_SSI_T
 ------------
+
+:ref:`HS_GL_SSI_T` is constructed for debugging purpose.    
 
 :ref:`HS_GL_SSI_T` describes, for each type of axis, the dynamic of *HS*, *GL* 
 and *SSI* when *TT* varies. The type of an axis is defined by its cohort index 
@@ -857,21 +891,16 @@ and its final number of leaves.
       
 .. note::
 
-   For each axis, *TT* varies from 0 to :attr:`alinea.adel.plantgen.params.TT_del_Fhaut`. 
-   
-:ref:`HS_GL_SSI_T` is constructed for debugging purpose.        
+   For each axis, *TT* varies from 0 to :attr:`alinea.adel.plantgen.params.TT_del_Fhaut`.     
 
 .. _HS_GL_SSI_T_example:
 
-Example:
+In the example below, for each *id_axis*, we show only the rows corresponding 
+to the first, the second and the last *TT*:
 
-    .. csv-table::
-        :file: ./data/HS_GL_SSI_T.csv
-        :header-rows: 1
-        
-.. seealso:: :download:`HS_GL_SSI_T.csv <./data/HS_GL_SSI_T.csv>`
-
-.. note:: this is a shortened version of :ref:`HS_GL_SSI_T`.
+.. csv-table::
+    :file: ./data/HS_GL_SSI_T.csv
+    :header-rows: 1
 
 
 .. _tilleringT:
@@ -879,8 +908,11 @@ Example:
 tilleringT
 ------------
 
+:ref:`tilleringT` is constructed for debugging purpose.
+
 :ref:`tilleringT` describes the dynamic of tillering. It stores the number of axes at 
-important dates: the start of growth, the bolting date, and the flowering date.
+important dates: the start of growth, the thermal time of the bolting, and the thermal 
+time of the flowering.
 
 .. list-table::
     :widths: 10 50
@@ -889,27 +921,25 @@ important dates: the start of growth, the bolting date, and the flowering date.
     * - Column
       - Description
     * - **TT** 
-      - the date in thermal time.
+      - the thermal time.
     * - **NbrAxes** 
       - the number of axes.
-
-:ref:`tilleringT` is constructed for debugging purpose.
 
 .. _tilleringT_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/tilleringT.csv
-        :header-rows: 1
-
-.. seealso:: :download:`tilleringT.csv <./data/tilleringT.csv>`
+.. csv-table::
+    :file: ./data/tilleringT.csv
+    :header-rows: 1
 
 
 .. _cohortT:
 
 cohortT
 ------------
+
+:ref:`cohortT` is constructed for debugging purpose.
 
 :ref:`cohortT` describes the theoretical and the simulated cardinalities of 
 each cohort. It permits the user to validate the simulated cardinalities against 
@@ -931,14 +961,11 @@ the user). The simulated cardinalities are calculated for each plant using
     * - **simulated_cardinality** 
       - the simulated cardinality
 
-:ref:`cohortT` is constructed for debugging purpose.
-
 .. _cohortT_example:
 
 Example:
 
-    .. csv-table::
-        :file: ./data/cohortT.csv
-        :header-rows: 1
+.. csv-table::
+    :file: ./data/cohortT.csv
+    :header-rows: 1
 
-.. seealso:: :download:`cohortT.csv <./data/cohortT.csv>`

@@ -664,8 +664,7 @@ dimT_user_FULL
 
 .. _dimT_user_FULL_example:
 
-In the example below, for each *id_dim*, we show only the rows corresponding 
-to the first, the second and the last *index_phytomer*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/dimT_user_FULL.csv
@@ -688,8 +687,7 @@ of the other data.
 
 .. _dimT_user_SHORT_example:
 
-In the example below, for each *id_axis*, we show only the rows corresponding 
-to the first, the second and the last *index_phytomer*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/dimT_user_SHORT.csv
@@ -711,8 +709,7 @@ and *W_internode*. See :ref:`dimT <dimT>` for a description of these data.
 
 .. _dimT_user_MIN_example:
 
-In the example below, we show only the rows corresponding to the first, the second 
-and the last *index_phytomer*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/dimT_user_MIN.csv
@@ -736,8 +733,7 @@ can be useful for debugging.
 
 .. _phenT_abs_example:
 
-In the example below, for each *id_phen*, we show only the rows corresponding 
-to the first, the second and the last *index_phytomer*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/phenT_abs.csv
@@ -759,8 +755,7 @@ of the phytomers are not normalized.
 
 .. _dimT_abs_example:
 
-In the example below, for each *id_dim*, we show only the rows corresponding 
-to the first, the second and the last *index_phytomer*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/dimT_abs.csv
@@ -895,8 +890,7 @@ and its final number of leaves.
 
 .. _HS_GL_SSI_T_example:
 
-In the example below, for each *id_axis*, we show only the rows corresponding 
-to the first, the second and the last *TT*:
+The table below is a truncated version of the actual table:
 
 .. csv-table::
     :file: ./data/HS_GL_SSI_T.csv

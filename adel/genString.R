@@ -84,6 +84,16 @@ Sheath <- function(lv,lvsen,diam,po,pos,epsillon) {
   chn
 }
 #
+RolledBlade <- function(lv,lvsen,diam,po,pos,epsillon) {
+  chn <- ""
+  lvgreen = lv - lvsen
+  if (lvgreen > epsillon)
+    chn <- paste(chn,StemElement(ttype$green_lamina,lvgreen,diam,diam),sep="")
+  if (lvsen > epsillon)
+    chn <- paste(chn,StemElement(ttype$sen_lamina,lvsen,diam,diam))
+  chn
+}
+#
 Blade <- function(lv, lvsen, Lf, wM, lsenshrink,lctype, lcindex, incB, po, pos, epsillon,randindex) {
   chn <- ""
   lvgreen = lv - lvsen
@@ -126,6 +136,10 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
   if (dat$Gv > epsillon)
     chn <- paste(chn,
                  Sheath(dat$Gv,min(dat$Gsen,dat$Gv),dat$Gd,dat$Gpo,dat$Gpos,epsillon))
+
+  if (dat$Lr > epsillon)
+    chn <- paste(chn,
+                 RolledBlade(dat$Lr,min(dat$Lsen,dat$Lr),dat$Gd,dat$Lpo,dat$Lpos,epsillon))
 
   if (dat$Lv > epsillon) 
     chn <- paste(chn,

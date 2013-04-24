@@ -315,9 +315,9 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
       #print(paste("axe",a))
       axename <- names(kin)[a]
       #numaxe <- as.numeric(axename)
-      dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen")])
+      dat <- data.frame(kin[[a]][t,,c("Ll","Gl","El","Llvis","Glvis","Elvis","Llsen","Glsen","Elsen","Llrolled")])
       if (sum(dat) > epsillon | a == 1) {#do not represent empty tillers (BUT main stems are needed even if empty! )
-        colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen")
+        colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen","Lr")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,a])
         dataxe <- plant$axeT[a,]

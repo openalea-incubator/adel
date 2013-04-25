@@ -105,6 +105,14 @@ def dataframeAsdict(df):
         d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
     return d
 
+def _is_iterable(x):
+    try:
+        x = iter(x)
+    except TypeError: 
+        return False
+    return True
+    
+    
 def dataframe(d):
     """ convert a dict of numbers to an RDataframe  """
     df = {}
@@ -113,6 +121,8 @@ def dataframe(d):
     else:
         for k, v in d.iteritems():
             rval = numpy2ri(numpy.array(v))
+            if not _is_iterable(v):
+                v = [v]
             if 'NA' in v:
                 df[k] = r['as.numeric'](rval)
             else :

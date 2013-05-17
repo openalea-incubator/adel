@@ -550,7 +550,19 @@ and ``plantgen_FULL`` through Visualea:
 
 .. image:: image/plantgen_dataflow.png
 
-This dataflow is accessible from the Package explorer of Visualea, in 
+The user must select existing data nodes to set the input and ouput tables.
+
+The following dataflow also demonstrates how to use ``plantgen_MIN`` through 
+Visualea:
+
+.. image:: image/plantgen_MIN_csv_dataflow.png
+  
+In this case the user must give the paths of csv files for inputs and outputs. 
+Attention: the paths set in the example will not work on your computer. You have 
+to adapt them to your needs. This example is more straightful because you don't 
+have to create output data nodes before running, but it is also less portable.     
+
+These dataflows are accessible from the Package explorer of Visualea, in 
 ``alinea.adel.tutorials.plangen``.
 
 

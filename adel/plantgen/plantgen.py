@@ -45,7 +45,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                                  decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                  MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                  TT_bolting=500.0,
-                                 TT_flowering=1440.0,
                                  final_axes_density=250,
                                  GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                  delais_TT_stop_del_axis=600,
@@ -100,8 +99,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
           the probability distribution.
           
         - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
-        
-        - `TT_flowering` (:class:`int`) - The flowering date. 
         
         - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
@@ -159,8 +156,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                    - :class:`dict`
                  * - *TT_bolting* 
                    - :class:`float`
-                 * - *TT_flowering* 
-                   - :class:`float`
                  * - *final_axes_density* 
                    - :class:`int`
                  * - *GL_number* 
@@ -178,7 +173,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
             isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
-            isinstance(TT_flowering, float) and \
             isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
@@ -206,7 +200,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     assert dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size
     dynT_user = dynT_user.copy()
     dynT_user['TT_col_nff'] = TT_col_nff
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
 
 
 def gen_adel_input_data_from_short(dynT_user,
@@ -215,7 +209,6 @@ def gen_adel_input_data_from_short(dynT_user,
                                     decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
-                                    TT_flowering=1440.0,
                                     final_axes_density=250,
                                     GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                     delais_TT_stop_del_axis=600,
@@ -257,8 +250,6 @@ def gen_adel_input_data_from_short(dynT_user,
           the probability distribution.
           
         - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
-        
-        - `TT_flowering` (:class:`int`) - The flowering date. 
         
         - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
@@ -323,9 +314,6 @@ def gen_adel_input_data_from_short(dynT_user,
              * - *TT_bolting* 
                - :class:`float`
                - None
-             * - *TT_flowering* 
-               - :class:`float`
-               - None
              * - *final_axes_density* 
                - :class:`int`
                - None
@@ -346,15 +334,12 @@ def gen_adel_input_data_from_short(dynT_user,
             isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
-            isinstance(TT_flowering, float) and \
             isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
             isinstance(TT_col_break, float)
-    
-            
-    
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
+
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
 
 def gen_adel_input_data_from_full(dynT_user,
@@ -363,7 +348,6 @@ def gen_adel_input_data_from_full(dynT_user,
                                     decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                                     MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                                     TT_bolting=500.0,
-                                    TT_flowering=1440.0,
                                     final_axes_density=250,
                                     GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                     delais_TT_stop_del_axis=600,
@@ -405,8 +389,6 @@ def gen_adel_input_data_from_full(dynT_user,
           the probability distribution.
           
         - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
-        
-        - `TT_flowering` (:class:`int`) - The flowering date. 
         
         - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
@@ -473,9 +455,6 @@ def gen_adel_input_data_from_full(dynT_user,
              * - *TT_bolting* 
                - :class:`float`
                - None
-             * - *TT_flowering* 
-               - :class:`float`
-               - None
              * - *final_axes_density* 
                - :class:`int`
                - None
@@ -496,12 +475,12 @@ def gen_adel_input_data_from_full(dynT_user,
     assert isinstance(decide_child_cohort_probabilities, dict)
     assert isinstance(MS_leaves_number_probabilities, dict)
     assert isinstance(TT_bolting, float)
-    assert isinstance(TT_flowering, float)
     assert isinstance(final_axes_density, int)
     assert isinstance(GL_number, dict)
     assert isinstance(delais_TT_stop_del_axis, int)
     assert isinstance(TT_col_break, float)
-    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, TT_flowering, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
+
+    return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
 
 
 def gen_adel_input_data(dynT_user,
@@ -510,7 +489,6 @@ def gen_adel_input_data(dynT_user,
                         decide_child_cohort_probabilities={'3': 0.0, '4': 0.900, '5': 0.983, '6': 0.817, '7': 0.117}, 
                         MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
                         TT_bolting=500.0,
-                        TT_flowering=1440.0,
                         final_axes_density=250,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
@@ -588,8 +566,6 @@ def gen_adel_input_data(dynT_user,
           the probabilities distribution.
           
         - `TT_bolting` (:class:`int`) - date in thermal time at which the bolting starts.
-        
-        - `TT_flowering` (:class:`int`) - The flowering date. 
         
         - `final_axes_density` (:class:`int`) - the final number of axes which have an 
           ear, per square meter.
@@ -671,10 +647,6 @@ def gen_adel_input_data(dynT_user,
                        - :class:`float`
                        - :class:`float`
                        - :class:`float`
-                     * - *TT_flowering* 
-                       - :class:`float`
-                       - :class:`float`
-                       - :class:`float`
                      * - *final_axes_density* 
                        - :class:`int`
                        - :class:`int`
@@ -707,7 +679,6 @@ def gen_adel_input_data(dynT_user,
             isinstance(decide_child_cohort_probabilities, dict) and \
             isinstance(MS_leaves_number_probabilities, dict) and \
             isinstance(TT_bolting, float) and \
-            isinstance(TT_flowering, float) and \
             isinstance(final_axes_density, int) and \
             isinstance(GL_number, dict) and \
             isinstance(delais_TT_stop_del_axis, int) and \
@@ -779,6 +750,11 @@ def gen_adel_input_data(dynT_user,
         assert possible_cohorts.issubset(available_cohorts)
     
     # 2. first step of the fit process
+    if dynT_user_completeness == DataCompleteness.MIN:
+        TT_flag_leaf_ligulation = dynT_user['TT_col_nff']['1']
+    else:
+        TT_flag_leaf_ligulation = dynT_user['TT_col_nff'][dynT_user.first_valid_index()]
+    
     (axeT_tmp_dataframe, 
     dimT_tmp_dataframe, 
     dynT_tmp_dataframe, 
@@ -787,7 +763,7 @@ def gen_adel_input_data(dynT_user,
                                                        decide_child_cohort_probabilities, 
                                                        MS_leaves_number_probabilities, 
                                                        TT_bolting, 
-                                                       TT_flowering, 
+                                                       TT_flag_leaf_ligulation, 
                                                        final_axes_density) 
     
     # 3. complete dynT_user
@@ -916,7 +892,7 @@ The values can be one of %s''', (str(dimT_user_completeness),
                                                     dynT_tmp_dataframe, 
                                                     GL_number, 
                                                     TT_bolting, 
-                                                    TT_flowering, 
+                                                    TT_flag_leaf_ligulation, 
                                                     delais_TT_stop_del_axis, 
                                                     final_axes_density)
     
@@ -929,7 +905,7 @@ def _gen_adel_input_data_first(plant_number,
                               decide_child_cohort_probabilities, 
                               MS_leaves_number_probabilities,
                               TT_bolting, 
-                              TT_flowering,
+                              TT_flag_leaf_ligulation,
                               final_axes_density):    
     '''Generate the input data: first step.'''
     # create axeT_tmp
@@ -939,7 +915,7 @@ def _gen_adel_input_data_first(plant_number,
     # create dimT_tmp
     dimT_tmp_dataframe = dimT.create_dimT_tmp(dynT_tmp_dataframe)
     # create tilleringT
-    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flowering, plant_number, axeT_tmp_dataframe, final_axes_density)
+    tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flag_leaf_ligulation, plant_number, axeT_tmp_dataframe, final_axes_density)
     # create cohortT
     cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_tmp_dataframe['id_cohort_axis'])
 
@@ -951,7 +927,7 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
                                 dynT_user, 
                                 GL_number, 
                                 TT_bolting, 
-                                TT_flowering, 
+                                TT_flag_leaf_ligulation, 
                                 delais_TT_stop_del_axis,
                                 final_axes_density):
     '''Generate the input data: second step.'''
@@ -966,7 +942,7 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
     # create phenT
     phenT_dataframe = phenT.create_phenT(phenT_abs_dataframe, phenT_first_dataframe)
     # create axeT
-    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flowering, delais_TT_stop_del_axis, final_axes_density)
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density)
     # create dimT_abs
     dimT_abs_dataframe = dimT.create_dimT_abs(dimT_user, phenT_abs_dataframe)
     # create dimT

@@ -408,7 +408,6 @@ The arguments to define are:
   * *MS_leaves_number_probability_distribution*, the probability distribution 
     of the final number of main stem leaves,
   * *TT_bolting*, the thermal time at which the bolting starts,
-  * *TT_flowering*, the thermal time of the flowering,
   * *final_axes_density*, the final number of axes which have an ear, per square meter,
   * *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
   * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
@@ -435,7 +434,7 @@ from a Python interpreter::
     # "dynT_user_SHORT.csv" must be coherent with dynT_user_completeness.
     dynT_user = pandas.read_csv('dynT_user_SHORT.csv')
         
-    # read the dynT_user table. "dimT_user_SHORT.csv" must be in the working directory.
+    # read the dimT_user table. "dimT_user_SHORT.csv" must be in the working directory.
     # "dimT_user_SHORT.csv" must be coherent with dimT_user_completeness.
     dimT_user = pandas.read_csv('dimT_user_SHORT.csv')    
     
@@ -450,7 +449,6 @@ from a Python interpreter::
                                       '13': 0.0, 
                                       '14': 0.0}
     TT_bolting = 500
-    TT_flowering = 1440
     final_axes_density = 250
     GL_number = {1117.0: 5.6, 1212.1:5.4, 
                  1368.7:4.9, 1686.8:2.4, 
@@ -475,7 +473,6 @@ from a Python interpreter::
                                    decide_child_cohort_probabilities, 
                                    MS_leaves_number_probability_distribution, 
                                    TT_bolting, 
-                                   TT_flowering, 
                                    final_axes_density, 
                                    GL_number, 
                                    delais_TT_stop_del_axis, 

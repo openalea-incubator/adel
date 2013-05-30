@@ -30,32 +30,23 @@ def test_post_processing():
     # check intermediate results
     intermediate_results_array = \
         pandas.read_csv(intermediate_results_file_path).values
-    expected_intermediate_results_file_path = \
-        expected_results_dir_path/'intermediate.csv'
+    intermediate_results_array = np.delete(intermediate_results_array, 3, 1).astype(float)
     expected_intermediate_results_array = \
-        pandas.read_csv(expected_intermediate_results_file_path).values
-    np.testing.assert_allclose(intermediate_results_array, 
-                               expected_intermediate_results_array,
-                               relative_tolerance, 
-                               absolute_tolerance)
+        pandas.read_csv(expected_results_dir_path/'intermediate.csv').values
+    expected_intermediate_results_array = np.delete(expected_intermediate_results_array, 3, 1).astype(float)
+    np.testing.assert_allclose(intermediate_results_array, expected_intermediate_results_array, relative_tolerance, absolute_tolerance)
     
-    for (expected_results, results_to_test) \
-        in [(expected_results_dir_path/'global_postprocessing.csv', global_postprocessing_file_path),
-            (expected_results_dir_path/'peraxis_postprocessing.csv', peraxis_postprocessing_file_path)]:
-        # check postprocessing results
-        postprocessing_results_df = pandas.read_csv(results_to_test)
-        postprocessing_results_df = \
-            postprocessing_results_df.take(
-                range(postprocessing_results_df.columns.size)[1:], 
-                1)
-        postprocessing_results_array = postprocessing_results_df.values
-        expected_postprocessing_results_df = pandas.read_csv(expected_results)
-        expected_postprocessing_results_array = expected_postprocessing_results_df.values
-        np.testing.assert_allclose(postprocessing_results_array, 
-                                   expected_postprocessing_results_array,
-                                   relative_tolerance, 
-                                   absolute_tolerance)
+    # check global post processing results
+    global_postprocessing_results_array = pandas.read_csv(global_postprocessing_file_path).values
+    global_postprocessing_results_array = np.delete(global_postprocessing_results_array, 0, 1).astype(float)
+    expected_global_postprocessing_results_array = pandas.read_csv(expected_results_dir_path/'global_postprocessing.csv').values
+    expected_global_postprocessing_results_array = np.delete(expected_global_postprocessing_results_array, 0, 1).astype(float)
+    np.testing.assert_allclose(global_postprocessing_results_array, expected_global_postprocessing_results_array, relative_tolerance, absolute_tolerance)
     
-if __name__ == '__main__':
-    test_post_processing()
+    # check per axis post processing results
+    peraxis_postprocessing_results_array = pandas.read_csv(peraxis_postprocessing_file_path).values
+    peraxis_postprocessing_results_array = np.delete(peraxis_postprocessing_results_array, [0, 2], 1).astype(float)
+    expected_peraxis_postprocessing_results_array = pandas.read_csv(expected_results_dir_path/'peraxis_postprocessing.csv').values
+    expected_peraxis_postprocessing_results_array = np.delete(expected_peraxis_postprocessing_results_array, [0, 2], 1).astype(float)
+    np.testing.assert_allclose(peraxis_postprocessing_results_array, expected_peraxis_postprocessing_results_array, relative_tolerance, absolute_tolerance)
     

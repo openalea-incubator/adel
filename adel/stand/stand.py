@@ -167,7 +167,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     '''
     Apply post processing on the ADEL output.
     
-    For one date, the variables calculated are : TODO: list and explain the 
+    For one TT, the variables calculated are : TODO: list and explain the 
     variables.
     The results of the post processing are added at the end of two csv files: one 
     for the global results, and another one for the results per axis. These files 
@@ -179,20 +179,20 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     
         - `adel_output_path` (str) -  
           path to the csv file describing ADEL output. This file contains data 
-          for one date. 
+          for one TT. 
           
         - `plant_number` (int) -  
           the number of plants simulated by ADEL
           
-        - `plant_number` (int) -  
+        - `domain_area` (float) -  
           the area of the domain on which ADEL simulation has been done.
           
         - `global_postprocessing_path` (str) -  
           path to the csv file describing the results of the post processing 
-          for each date. 
+          for each TT. 
           
         - `peraxis_postprocessing_path` (str) -  
-          path to the csv file describing the results, for each date, of the post 
+          path to the csv file describing the results, for each TT, of the post 
           processing for each axis 
     
     :Returns:
@@ -216,19 +216,18 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     adel_output_path = path(adel_output_path)
     adel_output_df = pandas.read_csv(adel_output_path)
     # Construct the intermediate table
-    grouped = adel_output_df.groupby(['plant', 'axe'], as_index=False)
-    intermediate_df = pandas.DataFrame(columns=['date', 'refplant_id', 'plant', 
-                                              'axe_id', 'axe', 'Slv', 'SLsen', 
+    grouped = adel_output_df.groupby(['plant', 'axe_id'], as_index=False)
+    intermediate_df = pandas.DataFrame(columns=['TT', 'refplant_id', 'plant', 
+                                              'axe_id', 'Slv', 'SLsen', 
                                               'SGv', 'SGsen', 'SEv', 'SEsen', 
                                               'SLgreen', 'SGgreen', 'SEgreen', 
                                               'NFF', 'HS', 'SSI', 'GreenLeaf'])
     
-    date = adel_output_df['date'][0]
+    TT = adel_output_df['TT'][0]
     for name, group in grouped:
         refplant_id = group['refplant_id'][group.index[0]]
         plant = name[0]
-        axe_id = group['axe_id'][group.index[0]]
-        axe = name[1]
+        axe_id = name[1]
         Slv = group['Slv'].sum()
         SLsen = group['SLsen'].sum()
         SGv = group['SGv'].sum()
@@ -277,7 +276,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                  .sum()
               
         GreenLeaf = HS - SSI
-        new_intermediate_data = [[date, refplant_id, plant, axe_id, axe, Slv,
+        new_intermediate_data = [[TT, refplant_id, plant, axe_id, Slv,
                                   SLsen, SGv, SGsen, SEv, SEsen, SLgreen, 
                                   SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf]]
         new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
@@ -286,7 +285,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                                         ignore_index=True)
     
     import tempfile
-    intermediate_file_suffix = '-%d.csv' % int(date)
+    intermediate_file_suffix = '-%d.csv' % int(TT)
     intermediate_path = path(tempfile.mktemp(intermediate_file_suffix))
     intermediate_df.to_csv(intermediate_path, na_rep='NA', index=False)
     
@@ -318,7 +317,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     growing_axes_density_df = growing_axes_density_df[growing_axes_density_df['SLgreen'] > 0.0]
     growing_axes_density = growing_axes_density_df.index.size / float(domain_area)
     
-    new_global_postprocessing_data = [[Filename, domain_area, plant_number, date, 
+    new_global_postprocessing_data = [[Filename, domain_area, plant_number, TT, 
                                        tot_LAI, green_LAI, tot_PAI, green_PAI, 
                                        axes_density, growing_axes_density]]
     new_global_postprocessing_df = \
@@ -337,12 +336,12 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     if peraxis_postprocessing_path_.exists():
         peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
     else:
-        columns_peraxis = ['Filename', 'ThermalTime', 'axe', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
+        columns_peraxis = ['Filename', 'ThermalTime', 'axe_id', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
                            'PAI total', 'PAI vert']
         peraxis_postprocessing_df = pandas.DataFrame(columns=columns_peraxis)
     
-    grouped = intermediate_df.groupby(['axe'], as_index=False)
-    for axe, group in grouped:
+    grouped = intermediate_df.groupby(['axe_id'], as_index=False)
+    for axe_id, group in grouped:
         HS = group['HS'].mean()
         SSI = group['SSI'].mean()
         tot_LAI = group['Slv'].sum() / area_in_cm
@@ -350,7 +349,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         tot_PAI = (group['Slv'] + (group['SGv'] + group['SEv']) / 2.0 ).sum() / area_in_cm
         green_PAI = (group['SLgreen'] + (group['SGgreen'] + group['SEgreen']) / 2.0 ).sum() / area_in_cm
         
-        new_peraxis_postprocessing_data = [[Filename, date, axe, HS, SSI, tot_LAI, 
+        new_peraxis_postprocessing_data = [[Filename, TT, axe_id, HS, SSI, tot_LAI, 
                                             green_LAI, tot_PAI, green_PAI]]
         new_peraxis_postprocessing_df = pandas.DataFrame(new_peraxis_postprocessing_data, 
                                                          columns=peraxis_postprocessing_df.columns)

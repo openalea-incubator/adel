@@ -71,7 +71,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     assert isinstance(MS_leaves_number_probabilities, dict)
     
     plant_ids = range(1,plant_number + 1)
-    id_cohort_axis_list = _gen_id_cohort_axis_list(plant_ids, decide_child_cohort_probabilities)
+    id_cohort_axis_list, id_axis_list = _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities)
     index_plt_list = _gen_index_plt_list(plant_ids, id_cohort_axis_list)
     N_phytomer_list = _gen_N_phytomer_list(id_cohort_axis_list, 
                                        MS_leaves_number_probabilities, 
@@ -86,7 +86,9 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     TT_sen_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_del_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
     axeT_array = np.array([index_plt_list, id_cohort_axis_list, N_phytomer_list, TT_stop_axis_list, TT_del_axis_list, id_dim_list, id_phen_list, id_ear_list, TT_em_phytomer1_list, TT_col_phytomer1_list, TT_sen_phytomer1_list, TT_del_phytomer1_list]).transpose()
-    return pandas.DataFrame(axeT_array, columns=['id_plt', 'id_cohort_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'], dtype=float)
+    axeT_array_df = pandas.DataFrame(axeT_array, columns=['id_plt', 'id_cohort_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1']).astype(float)
+    axeT_array_df.insert(2, 'id_axis', id_axis_list)
+    return axeT_array_df
 
 
 def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density):
@@ -167,14 +169,17 @@ def _gen_index_plt_list(plant_ids, id_cohort_axis_list):
     return index_plt_list
 
 
-def _gen_id_cohort_axis_list(plant_ids, decide_child_cohort_probabilities):
-    '''Generate the *id_cohort_axis* column.'''
-    id_cohort_axis_list = []
+def _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities):
+    '''Generate the columns *id_axis* and *id_cohort_axis* .'''
+    all_child_cohorts = []
     for plant_id in plant_ids:
-        cohort_numbers = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.first_child_delay)
-        cohort_numbers.sort()
-        id_cohort_axis_list.extend(cohort_numbers)
-    return id_cohort_axis_list
+        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.first_child_delay)
+        child_cohorts.sort()
+        all_child_cohorts.extend(child_cohorts)
+    all_child_cohorts_array = np.array(all_child_cohorts)
+    cohort_numbers = all_child_cohorts_array[:, 0].astype(int).tolist()
+    cohort_positions = all_child_cohorts_array[:, 1].tolist()
+    return (cohort_numbers, cohort_positions)
 
 
 def _gen_N_phytomer_list(id_cohort_axis_list, 

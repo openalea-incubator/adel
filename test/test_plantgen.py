@@ -47,6 +47,9 @@ def test_create_axeT_tmp():
     test_table_filepath = default_results.joinpath('axeT_tmp.csv')
     axeT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
+    assert (axeT_dataframe['id_axis'] == expected_axeT_dataframe['id_axis']).all() 
+    del axeT_dataframe['id_axis']
+    del expected_axeT_dataframe['id_axis']
     np.testing.assert_allclose(axeT_dataframe.values, expected_axeT_dataframe.values, relative_tolerance, absolute_tolerance)
 
 
@@ -141,6 +144,9 @@ def test_create_axeT():
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
+    assert (axeT_dataframe['id_axis'] == expected_axeT_dataframe['id_axis']).all() 
+    del axeT_dataframe['id_axis']
+    del expected_axeT_dataframe['id_axis']
     np.testing.assert_allclose(axeT_dataframe.values, expected_axeT_dataframe.values, relative_tolerance, absolute_tolerance)
  
 
@@ -333,6 +339,10 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
         result_table_filepath = result_table_dir.joinpath(key + '.csv')
         result_table.to_csv(result_table_filepath, na_rep='NA', index=False)  
         print 'The results have been saved to %s' % result_table_filepath
+        if key == 'axeT':
+            assert (result_table['id_axis'] == expected_table['id_axis']).all()
+            del result_table['id_axis']
+            del expected_table['id_axis'] 
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
 
 

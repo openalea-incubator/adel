@@ -23,29 +23,33 @@ Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
 
 import random
 import math
+import types
 
 import numpy as np
 from scipy.optimize import leastsq
 
-def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=-1, first_child_delay=2):
+def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=None, parent_cohort_position=None, first_child_delay=2):
     '''
     Decide (recursively) of the child cohorts actually produced by a parent cohort, 
-    according to the *decide_child_cohort_probabilities* and the *parent_cohort_index*. The main 
-    stem always exists.
+    according to the *decide_child_cohort_probabilities* and the *parent_cohort_index*. 
+    The main stem always exists.
     
     :Parameters:
     
         - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the 
           child cohorts.
-        - `parent_cohort_index` (:class:`int`) - the index of the parent cohort.
+        - `parent_cohort_index` (:class:`int`) - the index of the parent cohort. 
+          ``None`` (the default) means that there isn't any parent cohort. 
+        - `parent_cohort_position` (:class:`str`) - the position of the parent cohort. 
+          ``None`` (the default) means that there isn't any parent cohort.
         - `first_child_delay` (:class:`int`) - the delay between the parent cohort and 
           the first child cohort. This delay is expressed in number of cohorts.
 
     :Returns:
-        The indices of the child cohorts.
+        The indices of the child cohorts and their positions in the tree.
     
     :Returns Type:
-        list
+        list of tuples
     
     .. warning:: *decide_child_cohort_probabilities* must be a dict.
                  *parent_cohort_index* must be a int.
@@ -53,25 +57,37 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
     
     '''
     assert isinstance(decide_child_cohort_probabilities, dict)
-    assert isinstance(parent_cohort_index, int)
+    assert isinstance(parent_cohort_index, (int, types.NoneType))
+    assert isinstance(parent_cohort_position, (str, types.NoneType))
     assert isinstance(first_child_delay, int)
-    child_cohort_numbers = []
-    first_possible_cohort_number = parent_cohort_index + first_child_delay
+    child_cohorts = []
+    if parent_cohort_index is None:
+        first_possible_cohort_number = 1
+    else:
+        first_possible_cohort_number = parent_cohort_index + first_child_delay
     if first_possible_cohort_number == 1:
-        # The main stem always exists, thus add it.
-        child_cohort_numbers.append(first_possible_cohort_number)
-        child_cohort_numbers.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
-                                                               first_possible_cohort_number))
+        # The main stem always exists: add it.
+        cohort_position = 'MS'
+        child_cohorts.append((first_possible_cohort_number, 'MS'))
+        child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
+                                                  first_possible_cohort_number, 
+                                                  cohort_position))
     else:
         # Find the children of the secondary stem.
         for cohort_number_str, cohort_probability in decide_child_cohort_probabilities.iteritems():
             cohort_number = int(cohort_number_str)
             if cohort_number >= first_possible_cohort_number:
                 if cohort_probability >= random.random():
-                    child_cohort_numbers.append(cohort_number)
-                    child_cohort_numbers.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
-                                                                           cohort_number))
-    return child_cohort_numbers
+                    child_cohort_position = cohort_number - parent_cohort_index - first_child_delay
+                    if parent_cohort_position == 'MS':
+                        cohort_position = 'T%s' % child_cohort_position
+                    else:
+                        cohort_position = '%s.%s' % (parent_cohort_position, child_cohort_position)
+                    child_cohorts.append((cohort_number, cohort_position)) 
+                    child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
+                                                              cohort_number, 
+                                                              cohort_position))
+    return child_cohorts
 
 
 def calculate_MS_final_leaves_number(MS_leaves_number_probabilities):

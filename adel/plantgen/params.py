@@ -86,3 +86,19 @@ The thermal time is given in degree.day.
 first_child_delay = 2
 '''The delay between a parent cohort and its first possible child cohort. 
 This delay is expressed in number of cohorts.'''
+
+
+regression_of_dimensions = {'L_blade': (0.06, 0.1, 0.15), 
+                            'L_internode': (0.06, 0.1, 0.15), 
+                            'L_sheath': (0.06, 0.1, 0.15), 
+                            'W_blade': (0.06, 0.1, 0.15), 
+                            'W_internode': (0.06, 0.1, 0.15), 
+                            'W_sheath': (0.06, 0.1, 0.15)}
+'''The regression of the dimensions for the last 3 phytomers of each organ.
+
+Each key "dimension_organ" is associated to a 3-tuple. In each 3-tuple, the first 
+value is the reduction of the phytomer N-2, the second value is the reduction of 
+the phytomer N-1, and the third value is the reduction of the phytomer N, where 
+N is the final number of leaves of an axis. The reduction are given in percent, 
+from 0.0 to 1.0. 
+'''

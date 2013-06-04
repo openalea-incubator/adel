@@ -942,9 +942,9 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
     # create phenT
     phenT_dataframe = phenT.create_phenT(phenT_abs_dataframe, phenT_first_dataframe)
     # create axeT
-    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density)
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density)
     # create dimT_abs
-    dimT_abs_dataframe = dimT.create_dimT_abs(dimT_user, phenT_abs_dataframe)
+    dimT_abs_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user, phenT_abs_dataframe)
     # create dimT
     dimT_dataframe = dimT.create_dimT(dimT_abs_dataframe)
     # create HS_GL_SSI_T 

@@ -76,22 +76,23 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     N_phytomer_list = _gen_N_phytomer_list(id_cohort_axis_list, 
                                        MS_leaves_number_probabilities, 
                                        params.secondary_stem_leaves_number_coefficients)
+    HS_final_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_stop_axis_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_del_axis_list = [np.nan for i in range(len(id_cohort_axis_list))]
-    id_dim_list = _gen_id_dim_list(id_cohort_axis_list, N_phytomer_list)
+    id_dim_list = [np.nan for i in range(len(id_cohort_axis_list))]
     id_phen_list = _gen_id_phen_list(id_cohort_axis_list, N_phytomer_list)
-    id_ear_list = _gen_id_ear_list(index_plt_list)
+    id_ear_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_em_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_col_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_sen_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_del_phytomer1_list = [np.nan for i in range(len(id_cohort_axis_list))]
-    axeT_array = np.array([index_plt_list, id_cohort_axis_list, N_phytomer_list, TT_stop_axis_list, TT_del_axis_list, id_dim_list, id_phen_list, id_ear_list, TT_em_phytomer1_list, TT_col_phytomer1_list, TT_sen_phytomer1_list, TT_del_phytomer1_list]).transpose()
-    axeT_array_df = pandas.DataFrame(axeT_array, columns=['id_plt', 'id_cohort_axis', 'N_phytomer', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1']).astype(float)
+    axeT_array = np.array([index_plt_list, id_cohort_axis_list, N_phytomer_list, HS_final_list, TT_stop_axis_list, TT_del_axis_list, id_dim_list, id_phen_list, id_ear_list, TT_em_phytomer1_list, TT_col_phytomer1_list, TT_sen_phytomer1_list, TT_del_phytomer1_list]).transpose()
+    axeT_array_df = pandas.DataFrame(axeT_array, columns=['id_plt', 'id_cohort_axis', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'])
     axeT_array_df.insert(2, 'id_axis', id_axis_list)
     return axeT_array_df
 
 
-def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density):
+def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density):
     '''
     Create the :ref:`axeT <axeT>` dataframe filling the *axeT_tmp* dataframe.
     
@@ -99,6 +100,7 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_l
     
         - `axeT_tmp_dataframe` (:class:`pandas.DataFrame`) - the *axeT_tmp* dataframe.
         - `phenT_first_dataframe` (:class:`pandas.DataFrame`) - the :ref:`phenT_first <phenT_first>` dataframe.  
+        - `dynT_dataframe` (:class:`pandas.DataFrame`) - the :ref:`dynT <dynT>` dataframe.
         - `TT_bolting` (:class:`float`) - date in thermal time at which the bolting starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation. 
         - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
@@ -126,6 +128,8 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_l
                - :class:`pandas.DataFrame`
              * - *phenT_first_dataframe* 
                - :class:`pandas.DataFrame`
+             * - *dynT_dataframe* 
+               - :class:`pandas.DataFrame`
              * - *TT_bolting* 
                - :class:`float`
              * - *TT_flag_leaf_ligulation* 
@@ -138,6 +142,7 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_l
     '''
     assert isinstance(axeT_tmp_dataframe, pandas.DataFrame)
     assert isinstance(phenT_first_dataframe, pandas.DataFrame)
+    assert isinstance(dynT_dataframe, pandas.DataFrame)
     assert isinstance(TT_bolting, float)
     assert isinstance(TT_flag_leaf_ligulation, (int, float))
     assert isinstance(delais_TT_stop_del_axis, int)
@@ -149,6 +154,9 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_flag_l
      axeT_dataframe['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp_dataframe, params.emf_1_MS_standard_deviation, phenT_first_dataframe)
     axeT_dataframe['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp_dataframe.index.size, final_axes_density, axeT_dataframe['TT_em_phytomer1'].tolist(), TT_bolting, TT_flag_leaf_ligulation)
     axeT_dataframe['TT_del_axis'] = _gen_TT_del_axis_list(axeT_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
+    axeT_dataframe['HS_final'] = _gen_HS_final_list(axeT_dataframe, dynT_dataframe)
+    axeT_dataframe['id_dim'] = _gen_id_dim_list(axeT_dataframe['id_cohort_axis'], axeT_dataframe['HS_final'], axeT_dataframe['N_phytomer'])
+    axeT_dataframe['id_ear'] = _gen_id_ear_list(axeT_dataframe['TT_stop_axis'])
     
     return axeT_dataframe
     
@@ -235,32 +243,52 @@ def _gen_all_TT_phytomer1_list(axeT_tmp_dataframe, emf_1_MS_standard_deviation, 
     return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 
-def _gen_id_dim_list(id_cohort_axis_list, N_phyt_list):
+def _gen_id_dim_list(id_cohort_axis_series, HS_final_series, N_phytomer_series):
     '''Generate the *id_dim* column.'''
-    return _gen_ids(id_cohort_axis_list, N_phyt_list)
+    is_ear = pandas.Series(1, index=HS_final_series.index)
+    is_ear[HS_final_series.dropna().index] = 0
+    HS_final_series.fillna(N_phytomer_series, inplace=True)
+    ceiled_HS_final_series = np.ceil(HS_final_series)
+    zfilled_array = np.core.defchararray.zfill(np.char.mod('%d', ceiled_HS_final_series), 2)
+    id_cohort_axis_str_array = np.char.mod('%d', id_cohort_axis_series)
+    id_dim_array = np.core.defchararray.add(id_cohort_axis_str_array, zfilled_array)
+    id_dim_array = np.core.defchararray.add(id_dim_array, np.char.mod('%d', is_ear)).astype(int)
+    return id_dim_array.tolist()
 
 
 def _gen_id_phen_list(id_cohort_axis_list, N_phyt_list):
     '''Generate the *id_phen* column.'''
-    return _gen_ids(id_cohort_axis_list, N_phyt_list)
-
-
-def _gen_ids(id_cohort_axis_list, N_phyt_list):
-    '''Generate an *id_\** column.'''
-    id_list = []
+    id_phen_list = []
     for i in range(len(id_cohort_axis_list)):
-        id_list.append(''.join([str(id_cohort_axis_list[i]), str(N_phyt_list[i]).zfill(2)]))
-    return id_list
+        id_phen_list.append(int(''.join([str(id_cohort_axis_list[i]), str(N_phyt_list[i]).zfill(2)])))
+    return id_phen_list
 
 
-def _gen_id_ear_list(index_plt_list):
+def _gen_id_ear_list(TT_stop_axis):
     '''Generate the *id_ear* column.'''
-    return ['1' for plant_id in index_plt_list]
+    TT_stop_axis_series = pandas.Series(TT_stop_axis)
+    id_ear = pandas.Series(1.0, index=TT_stop_axis_series.index)
+    id_ear[TT_stop_axis_series.dropna().index] = np.nan
+    return id_ear.tolist()
     
     
 def _gen_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
-    '''Construct the *TT_del_axis* column.'''
+    '''Generate the *TT_del_axis* column.'''
     return TT_stop_axis_series + delais_TT_stop_del_axis
+
+
+def _gen_HS_final_list(axeT_dataframe, dynT_dataframe):
+    '''Generate the *HS_final* column.'''
+    HS_final_series = pandas.Series(index=axeT_dataframe.index)
+    dynT_grouped = dynT_dataframe.groupby(['N_cohort', 'Nff'])
+    for axeT_key, axeT_group in axeT_dataframe.groupby(['id_cohort_axis', 'N_phytomer']):
+        dynT_group = dynT_grouped.get_group(axeT_key)
+        current_a_cohort = dynT_group['a_cohort'][dynT_group.first_valid_index()]
+        current_TT_col_0 = dynT_group['TT_col_0'][dynT_group.first_valid_index()]
+        HS_final_series[axeT_group.index] = current_a_cohort * (axeT_group['TT_stop_axis'][axeT_group.index] - current_TT_col_0)
+    index_to_modify = HS_final_series[HS_final_series > axeT_dataframe['N_phytomer']].index
+    HS_final_series[index_to_modify] = axeT_dataframe['N_phytomer'][index_to_modify]
+    return HS_final_series.tolist()
 
 
 def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_number, axeT_tmp_dataframe, final_axes_density):

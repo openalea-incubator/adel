@@ -140,24 +140,26 @@ def test_create_axeT():
     axeT_tmp_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     phenT_first_dataframe = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, TT_bolting, TT_col_nff['1'], delais_TT_stop_del_axis, final_axes_density)
+    dynT_dataframe = pandas.read_csv(default_expected_results_dir/'dynT.csv')
+    axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bolting, TT_col_nff['1'], delais_TT_stop_del_axis, final_axes_density)
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    assert (axeT_dataframe['id_axis'] == expected_axeT_dataframe['id_axis']).all() 
-    del axeT_dataframe['id_axis']
-    del expected_axeT_dataframe['id_axis']
+    assert (axeT_dataframe['id_axis'] == expected_axeT_dataframe['id_axis']).all()
+    axeT_dataframe = axeT_dataframe.select(lambda x: x not in ['id_axis'], 1)
+    expected_axeT_dataframe = expected_axeT_dataframe.select(lambda x: x not in ['id_axis'], 1)
     np.testing.assert_allclose(axeT_dataframe.values, expected_axeT_dataframe.values, relative_tolerance, absolute_tolerance)
  
 
 @with_setup(reinit_random_state)
 def test_create_dimT_abs():
+    axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     dimT_user_dataframe = pandas.read_csv(default_expected_results_dir/'dimT_user.csv')
     phenT_abs_dataframe = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
     expected_dimT_dataframe = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    dimT_dataframe = dimT.create_dimT_abs(dimT_user_dataframe, phenT_abs_dataframe)
+    dimT_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user_dataframe, phenT_abs_dataframe)
     test_table_filepath = default_results.joinpath('dimT_abs.csv')
-    dimT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    dimT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(dimT_dataframe.values, expected_dimT_dataframe.values, relative_tolerance, absolute_tolerance)
 
@@ -341,8 +343,8 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
         print 'The results have been saved to %s' % result_table_filepath
         if key == 'axeT':
             assert (result_table['id_axis'] == expected_table['id_axis']).all()
-            del result_table['id_axis']
-            del expected_table['id_axis'] 
+            result_table = result_table.select(lambda x: x not in ['id_axis'], 1)
+            expected_table = expected_table.select(lambda x: x not in ['id_axis'], 1)
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
 
 

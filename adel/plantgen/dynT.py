@@ -112,12 +112,11 @@ def create_dynT_tmp(id_phen):
                                    'hs_t1', 
                                    'a', 
                                    'c', 
-                                   'RMSE_gl'], dtype=float)
+                                   'RMSE_gl'])
     # sort the table according to N_cohort (ascending order), then cardinality 
     # (descending order).
     dynT_tmp_dataframe = pandas.DataFrame(
-        columns=unsorted_dynT_tmp_dataframe.columns, 
-        dtype=float)
+        columns=unsorted_dynT_tmp_dataframe.columns)
     for name, group in unsorted_dynT_tmp_dataframe.groupby('N_cohort'):
         sorted_group = group.sort_index(by='cardinality', ascending=False)
         dynT_tmp_dataframe = \

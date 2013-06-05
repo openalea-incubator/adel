@@ -56,7 +56,7 @@ def create_dimT_tmp(dynT_tmp):
     L_internode_list = [np.nan for i in range(len(id_dim_tmp_list))]
     W_internode_list = [np.nan for i in range(len(id_dim_tmp_list))]
     dimT_tmp_array = np.array([id_dim_tmp_list, index_phytomer_tmp_list, L_blade_list, W_blade_list, L_sheath_list, W_sheath_list, L_internode_list, W_internode_list]).transpose()
-    return pandas.DataFrame(dimT_tmp_array, columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'], dtype=float)
+    return pandas.DataFrame(dimT_tmp_array, columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'])
     
 
 def create_dimT_abs(axeT, dimT_user, phenT_abs):

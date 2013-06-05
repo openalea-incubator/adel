@@ -64,7 +64,7 @@ def create_phenT_abs(dynT_dataframe, decimal_elongated_internode_number):
     absolute_TT_sen_phytomer_list = _gen_absolute_TT_sen_phytomer_list(dynT_dataframe)
     absolute_TT_del_phytomer_list = _gen_absolute_TT_del_phytomer_list(id_phen_list, absolute_TT_sen_phytomer_list, dynT_dataframe, decimal_elongated_internode_number)
     phenT_abs_array = np.array([id_phen_list, absolute_index_phytomer_list, absolute_TT_em_phytomer_list, absolute_TT_col_phytomer_list, absolute_TT_sen_phytomer_list, absolute_TT_del_phytomer_list]).transpose()
-    return pandas.DataFrame(phenT_abs_array, columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'], dtype=float)
+    return pandas.DataFrame(phenT_abs_array, columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'])
 
 
 def _gen_id_phen_list(dynT_dataframe):

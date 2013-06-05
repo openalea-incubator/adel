@@ -1,6 +1,6 @@
 from alinea.adel.newmtg import *
 from alinea.adel.mtg_interpreter import *
-from openalea.plantgl.all import *
+import openalea.plantgl.all as pgl
 from alinea.adel.AdelR import devCsv,setAdel,RunAdel,genGeoLeaf,genGeoAxe
 import alinea.adel.fitting as fitting
 
@@ -13,13 +13,13 @@ def adelR(nplants,dd):
     cantable = RunAdel(dd,pars)
     return pars,cantable
     
-def leaves_db():
+def leaves_db(dlevel=9):
     import cPickle as Pickle
     fn = r'../adel/data/leaves_simple.db'
     f = open(fn)
     leaves = Pickle.load(f)
     f.close()
-    leaves,discard = fitting.fit_leaves(leaves, 9)
+    leaves,discard = fitting.fit_leaves(leaves, dlevel)
     return leaves
        
 #from openalea.mtg import mtg2axialtree
@@ -35,7 +35,7 @@ leaves=leaves_db()
 g=mtg_factory(d,adel_metamer,leaf_db=leaves, stand=[((0,0,0),0),((10,0,0),90), ((0,10,0), 0)])
 g=mtg_interpreter(g)
 scene = plot3d(g)
-Viewer.display(scene)
+pgl.Viewer.display(scene)
 #
 def test_leaf_shape():
     """ test leaf positioning/ inclination """
@@ -45,5 +45,5 @@ def test_leaf_shape():
     g=mtg_factory(d,adel_metamer,leaf_db=leaves_db())
     g=mtg_interpreter(g)
     scene = plot3d(g)
-    Viewer.display(scene)    
+    pgl.Viewer.display(scene)    
     return(g)

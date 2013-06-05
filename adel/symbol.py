@@ -87,7 +87,7 @@ class LeafElement(Symbol):
             random.seed(self.seed)
 
         if args and len(args) > 1 and args[1] >= 0:
-            i = args[1]
+            i = args[1] - 1 #R index starts at 1
         else:
             i = random.randint(0,n-1)
             

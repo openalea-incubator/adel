@@ -102,7 +102,7 @@ def compute_element(element_node, classic=False):
     
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
-        if blade.shape_xysr:
+        if blade.shape_xysr is not None:
             if blade.inclination > 0:
                 shape = incline_leaf(blade.shape_xysr, blade.inclination)
             else: 
@@ -110,7 +110,7 @@ def compute_element(element_node, classic=False):
             # x-> -x to place the shape along with the tiller positioned with turtle.down()
             leaf = (-shape[0],)+shape[1:]
             geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
-                                blade.visible_length, n.srb, n.srt)   
+                                n.length, n.srb, n.srt)   
     elif n.label.startswith('Stem'): #stem element
         stem = n.complex()
         #diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter
@@ -170,7 +170,7 @@ def adel_visitor(g, v, turtle):
                 turtle.down(inclin)
                 #replace turtle in original azimuth plane
                 #print 'angle ', angle
-                turtle.rollR(-angle)
+                turtle.rollR(angle)
         if azim:
             #print 'node', n._vid, 'azim ', azim
             turtle.rollR(azim)

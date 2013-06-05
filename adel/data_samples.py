@@ -25,3 +25,16 @@ def devT():
     ssisenT = datadir + '/data/ssi2sen.csv'
     
     return devCsv(axeT,dimT,phenT,earT,ssisenT)
+    
+def srdb():
+    return datadir + '/data/SRSo.RData'
+    
+def xydb():
+    return datadir + '/data/So99.RData'
+    
+def wheat_leaf_db():
+    from alinea.adel.wheat.extract_wheat import extract_leaf_info
+    import alinea.adel.fitting as fitting
+    leaves= extract_leaf_info(xydb(),srdb())
+    leaves,discard = fitting.fit_leaves(leaves, 9)
+    return leaves

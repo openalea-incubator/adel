@@ -65,33 +65,35 @@ def sheath_elements(l, lvis, lsen, az, inc):
     # same logic as internodes
     return internode_elements(l,lvis,lsen, az, inc)
     
-def blade_elements(sectors, l, lvis, lsen, Lshape):
+def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape):
     """ return parameters of blade elements (visible parts of the blade).
     sectors is the number of sectors dividing pattern blade shape
     l is the length of the blade
-    lvis is the visible length (senesced + green)
+    lvis is the visible length (senesced + green, rolled + flat)
+    lrolled is the visible rolled length of the blade
     lsen is the senescent apical length
     Lshape is length of the blade used as a pattern shape
 """
     lhide = None
     lgreen = None
-    #relative s (on mature shape) at which leaf becomes visible
+    # s (on mature shape) at which leaf becomes flat and visible
     s_limvis = 1.
-    #relative s (on mature shape) at which leaf becomes senescent
+    #s (on mature shape) at which leaf becomes senescent
     s_limsen = 1.
     try:
         lhide = max(l - lvis, 0.)
-        lgreen = lvis - min(lsen,lvis)
-        lsen = lvis - lgreen        
-        s_limvis = Lshape - lvis
+        lflat = lvis - min(lrolled,lvis)
+        lgreen = lflat - min(lsen,lflat)
+        lsen = lflat - lgreen        
+        s_limvis = Lshape - lflat
         s_limsen = Lshape - lsen
         #print(lgreen,lsen,s_limvis,s_limsen)
     except TypeError:
         pass
 
-    # hidden part
-    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': 0, 'is_green': True}
-    elements=[hidden_elt]
+    # hidden part + rolled
+    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'is_green': True}
+    elements = [hidden_elt]
     ds = 0
     if Lshape:
         ds = float(Lshape) / sectors
@@ -114,11 +116,11 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
                 ls_green = st_green - sb_green
                 ls_sen = st_sen - sb_sen
                 #print(sb_green,st_green,st_sen)
-                if lvis > 0:
-                    srb_green = float(sb_green - s_limvis) / lvis
-                    srt_green = float(st_green - s_limvis) / lvis
-                    srb_sen = float(sb_sen - s_limvis) / lvis
-                    srt_sen = float(st_sen - s_limvis) / lvis
+                if lflat > 0:
+                    srb_green = float(sb_green - s_limvis) / lflat
+                    srt_green = float(st_green - s_limvis) / lflat
+                    srb_sen = float(sb_sen - s_limvis) / lflat
+                    srt_sen = float(st_sen - s_limvis) / lflat
                     #print(srb_green,srt_green,srb_sen,srt_sen)
         except TypeError:
             pass
@@ -130,11 +132,12 @@ def blade_elements(sectors, l, lvis, lsen, Lshape):
         st += ds
     return elements
     
-def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, **kwargs):
+def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
        - Ll : length of the blade
-       - Lv : visible (emerged) length of blade (green + senesced)
+       - Lv : visible (emerged) length of blade (green + senesced, rolled + unrolled)
+       - Lr : rolled part of the blade
        - Lsen : length of the senescent part of the blade (hidden + visible)       
        - L_shape : Mature length of the blade used to compute blade shape
        - Lw_shape : Maximal width of the blade used to compute blade shape
@@ -176,6 +179,8 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
         'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc)}, 
         {'label': 'blade',
         'length': Ll,
+        'rolled_length': Lr,
+        'diameter': Gd,
         'visible_length': Lv,
         'senesced_length': Lsen,
         'n_sect': Lsect,
@@ -183,7 +188,7 @@ def adel_metamer(Ll=None, Lv=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_
         'shape_max_width' : Lw_shape,
         'shape_xysr': xysr_shape,
         'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lsen, L_shape)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape)} 
     ]
     
     if elongation:
@@ -285,9 +290,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         args = properties_from_dict(dp,i,exclude=topology)
         components = []
         if metamer_factory:
-            if leaf_db:
+            if leaf_db is not None:
                 try:
-                    xysr = leaf_db[str(args['LcType'])][args['LcIndex']]
+                    xysr = leaf_db[str(int(args['LcType']))][int(args['LcIndex']) - 1]#R index starts at 1
                 except KeyError:
                     xysr=leaf_db[leaf_db.keys()[0]][0]
             else:
@@ -425,3 +430,9 @@ def mtg_update_at_time(g, time):
                     if numaxe == 0:
                         hw[o.complex().index()] = o.length
 
+# to do
+
+# varaibles sur element : area, senesced_area, senescenece_position (0,1 sur la feuille)
+# generer dans alep.wheat.py un tableau axisdynamic
+# la fonction grow
+# 

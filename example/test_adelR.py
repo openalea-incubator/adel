@@ -2,28 +2,17 @@
 #
 #
 from openalea.plantgl.all import Viewer
+from pandas import DataFrame
+import alinea.adel.data_samples as adel_data
 
-
-def leaves_db():
-    from alinea.adel.fitting import fit_leaves
-    import cPickle as Pickle
-    fn = r'./data/leaves_simple.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
-    f.close()
-    leaves = fit_leaves(leaves, 9)
-    return leaves[0]
-
-
-leafdb = leaves_db()
-
+leafdb = adel_data.wheat_leaf_db()
 
 def adelR(nplants,dd):
-    from alinea.adel.AdelR import devCsv,setAdel,RunAdel,genGeoLeaf,genGeoAxe
-    devT = devCsv('./data/axeTCa0N.csv','./data/dimTCa0N.csv','./data/phenTCa0N.csv','./data/earTCa0N.csv','./data/ssi2sen.csv')
+    from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe
+    devT = adel_data.devT()
     geoLeaf = genGeoLeaf()
     geoAxe = genGeoAxe()
-    pars = setAdel(devT,geoLeaf,geoAxe,nplants)
+    pars = setAdel(devT,geoLeaf,geoAxe,nplants,xydb=adel_data.xydb(),srdb=adel_data.srdb())
     cantable = RunAdel(dd,pars)
     return pars,cantable
    
@@ -68,3 +57,12 @@ def test(date=500,dec=10):
     g2,s2 = newmtg(d,dec=dec)
     Viewer.display(s1+s2)
     
+  
+#df=DataFrame(d)
+    #df.Lv
+    #df.ix[1:7,6:9]
+    #df[['Gl','Gv','Ll','Lv','Lr','L_shape']]
+# import numpy as np
+# from alinea.popdrops.Rain import get_area_and_normal
+# a1,_=get_area_and_normal(g1.property('geometry'))
+# a1 = dict(((k,np.sum(v)) for k,v in a1.iteritems()))

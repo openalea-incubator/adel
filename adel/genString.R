@@ -145,7 +145,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
     chn <- paste(chn,
                  "[",
                  roll(azm),
-                 Blade(Lvflat, min(dat$Lsen,Lvflat), dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1)),
+                 Blade(Lvflat, min(dat$Lsen,Lvflat), dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1) & !all(dat$LcIndex == 1)),
                  "]")
   
   if (!is.null(axil))

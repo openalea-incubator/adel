@@ -133,7 +133,7 @@ def create_dynT(
        dimT_user, 
        GL_number, 
        decimal_elongated_internode_number,
-       leaf_number_delay_MS_cohort=params.leaf_number_delay_MS_cohort):
+       leaf_number_delay_MS_cohort=params.LEAF_NUMBER_DELAY_MS_COHORT):
     '''
     Create the :ref:`dynT <dynT>` dataframe.
     
@@ -333,7 +333,7 @@ def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_ti
     nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index - without_nan_most_frequent_tiller_axis_indexes
     # calculation of TT_col_0
     cohorts = most_frequent_tiller_axes['N_cohort'].ix[nan_most_frequent_tiller_axis_indexes].astype(int).values
-    leaf_number_delay_MS_cohorts = np.array([params.leaf_number_delay_MS_cohort[cohort] for cohort in cohorts])
+    leaf_number_delay_MS_cohorts = np.array([params.LEAF_NUMBER_DELAY_MS_COHORT[cohort] for cohort in cohorts])
     most_frequent_tiller_axes['TT_col_0'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS['a_cohort'][0])
     # dTT_MS_cohort is set by the user. Thus there is nothing to do.
     # calculation of TT_col_nff
@@ -366,7 +366,7 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
     if n1_hs_t1.index.size != 0:
         most_frequent_tiller_axes['n0'].ix[nan_most_frequent_tiller_axis_indexes] = n1_hs_t1.apply(np.min, 1)                      
     # calculation of n2
-    most_frequent_tiller_axes['n2'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['n2'][0] * params.n2_MS_div_n2_cohort
+    most_frequent_tiller_axes['n2'].ix[nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['n2'][0] * params.N2_MS_DIV_N2_COHORT
     # calculation of t0
     if most_frequent_MS['TT_col_break'][0] == 0.0: # linear mode
         most_frequent_tiller_axes['t0'] = most_frequent_tiller_axes['TT_col_0'] + most_frequent_tiller_axes['n0'] / most_frequent_tiller_axes['a_cohort']

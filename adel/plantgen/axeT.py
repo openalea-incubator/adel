@@ -75,7 +75,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     id_plt_list = _gen_id_plt_list(plant_ids, id_cohort_axis_list)
     N_phytomer_list = _gen_N_phytomer_list(id_cohort_axis_list, 
                                            MS_leaves_number_probabilities, 
-                                           params.secondary_stem_leaves_number_coefficients)
+                                           params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
     HS_final_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_stop_axis_list = [np.nan for i in range(len(id_cohort_axis_list))]
     TT_del_axis_list = [np.nan for i in range(len(id_cohort_axis_list))]
@@ -151,7 +151,7 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bo
     (axeT_dataframe['TT_em_phytomer1'], 
      axeT_dataframe['TT_col_phytomer1'], 
      axeT_dataframe['TT_sen_phytomer1'],
-     axeT_dataframe['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp_dataframe, params.emf_1_MS_standard_deviation, phenT_first_dataframe)
+     axeT_dataframe['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp_dataframe, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first_dataframe)
     axeT_dataframe['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp_dataframe.index.size, final_axes_density, axeT_dataframe['TT_em_phytomer1'].tolist(), TT_bolting, TT_flag_leaf_ligulation)
     axeT_dataframe['TT_del_axis'] = _gen_TT_del_axis_list(axeT_dataframe['TT_stop_axis'], delais_TT_stop_del_axis)
     axeT_dataframe['HS_final'] = _gen_HS_final_list(axeT_dataframe, dynT_dataframe)
@@ -181,7 +181,7 @@ def _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities):
     '''Generate the columns *id_axis* and *id_cohort_axis* .'''
     all_child_cohorts = []
     for plant_id in plant_ids:
-        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.first_child_delay)
+        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.FIRST_CHILD_DELAY)
         child_cohorts.sort()
         all_child_cohorts.extend(child_cohorts)
     all_child_cohorts_array = np.array(all_child_cohorts)
@@ -386,7 +386,7 @@ def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_ax
     decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
     possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys()).astype(int)
     decide_child_cohort_probability_values = np.array(decide_child_cohort_probabilities.values())
-    possible_parent_cohorts = possible_child_cohorts - params.first_child_delay
+    possible_parent_cohorts = possible_child_cohorts - params.FIRST_CHILD_DELAY
     commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
     possible_parent_cohorts = possible_cohorts[commons]
     decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
@@ -404,7 +404,7 @@ def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_ax
         if cohort_str == '1':
             theoretical_probabilities_series[idx] = decide_cohort_probabilities['1']
         else:
-            first_possible_parent = cohort_int - params.first_child_delay
+            first_possible_parent = cohort_int - params.FIRST_CHILD_DELAY
             curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
             curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
             theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()

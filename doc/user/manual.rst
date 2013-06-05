@@ -895,7 +895,7 @@ and its final number of leaves.
       
 .. note::
 
-   For each axis, *TT* varies from 0 to :attr:`alinea.adel.plantgen.params.TT_del_Fhaut`.     
+   For each axis, *TT* varies from 0 to :attr:`alinea.adel.plantgen.params.TT_DEL_FHAUT`.     
 
 .. _HS_GL_SSI_T_example:
 

@@ -194,8 +194,8 @@ def _gen_lengths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe)
                                                            TT_em_phytomer_group)
             if group['is_ear'][group.first_valid_index()] == 0:
                 # regression
-                for i in range(len(params.regression_of_dimensions[length])):
-                    fitted_length_series[group.index[i-3]] *= (1.0 - params.regression_of_dimensions[length][i])
+                for i in range(len(params.REGRESSION_OF_DIMENSIONS[length])):
+                    fitted_length_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[length][i])
 
         # thresholding
         if length == 'L_internode':
@@ -242,8 +242,8 @@ def _gen_widths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe):
             fitted_width_series[group.index] = np.polyval(polynomial_coefficient_array, TT_em_phytomer_sub_series)
             if group['is_ear'][group.first_valid_index()] == 0:
                 # regression
-                for i in range(len(params.regression_of_dimensions[width])):
-                    fitted_width_series[group.index[i-3]] *= (1.0 - params.regression_of_dimensions[width][i])
+                for i in range(len(params.REGRESSION_OF_DIMENSIONS[width])):
+                    fitted_width_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[width][i])
         
         if width == 'W_internode':
             # thresholding of the width of the phytomers which have a TT_em_phytomer 

@@ -119,15 +119,15 @@ def _gen_absolute_TT_em_phytomer_list(TT_col_phytomer_list, dynT_dataframe):
         for j in phytomer_indexes: 
             TT_col_phytomer_j = TT_col_phytomer_list[j]
             if TT_col_phytomer_j < TT_col_break_i:
-                TT_em_phytomer_j = TT_col_phytomer_j - (params.delais_phyll_col_tip / a_cohort_i)
+                TT_em_phytomer_j = TT_col_phytomer_j - (params.DELAIS_PHYLL_COL_TIP / a_cohort_i)
             else:
                 HS_break_i = a_cohort_i * (TT_col_break_i - TT_col_0_i)
                 a2_i = (Nff_i - HS_break_i) / (TT_col_nff_i - TT_col_break_i)
-                tmp_res = TT_col_phytomer_j - (params.delais_phyll_col_tip / a2_i)
+                tmp_res = TT_col_phytomer_j - (params.DELAIS_PHYLL_COL_TIP / a2_i)
                 if tmp_res > HS_break_i:
                     TT_em_phytomer_j = tmp_res
                 else:
-                    TT_em_phytomer_j = TT_col_break_i - (params.delais_phyll_col_tip - a2_i * (TT_col_phytomer_j - TT_col_break_i)) / a_cohort_i
+                    TT_em_phytomer_j = TT_col_break_i - (params.DELAIS_PHYLL_COL_TIP - a2_i * (TT_col_phytomer_j - TT_col_break_i)) / a_cohort_i
             TT_em_phytomer_list.append(TT_em_phytomer_j)
         current_TT_em_phytomer_row_index += phytomer_indexes.size
             
@@ -227,8 +227,8 @@ def _gen_absolute_TT_del_phytomer_list(id_phen_list, TT_sen_phytomer_list, dynT_
         Nff_i = dynT_dataframe_i['Nff'][dynT_dataframe_i.first_valid_index()]
         N_cohort_i = dynT_dataframe_i['N_cohort'][dynT_dataframe_i.first_valid_index()]
         TT_del_Fhaut_phytomer_index = Nff_i - Nbr_Fhaut_persistant + N_cohort_i
-        TT_del_phytomer_series[group.index[:TT_del_Fhaut_phytomer_index]] = group[:TT_del_Fhaut_phytomer_index]['TT_sen_phytomer'] + params.delais_phyll_sen_disp / a_cohort_i
-        TT_del_phytomer_series[group.index[TT_del_Fhaut_phytomer_index:]] = params.TT_del_Fhaut
+        TT_del_phytomer_series[group.index[:TT_del_Fhaut_phytomer_index]] = group[:TT_del_Fhaut_phytomer_index]['TT_sen_phytomer'] + params.DELAIS_PHYLL_SEN_DISP / a_cohort_i
+        TT_del_phytomer_series[group.index[TT_del_Fhaut_phytomer_index:]] = params.TT_DEL_FHAUT
     return TT_del_phytomer_series.tolist()
     
     
@@ -364,8 +364,8 @@ def create_HS_GL_SSI_T(dynT_dataframe):
         TT_2_2 = np.arange(t1_i, t1_i)
         TT_3_1 = np.arange(t1_i, TT_col_nff_i)
         TT_3_2 = np.arange(TT_col_nff_i, TT_col_nff_i)
-        TT_4_1 = np.arange(TT_col_nff_i, params.TT_del_Fhaut)
-        TT_4_2 = np.arange(params.TT_del_Fhaut, params.TT_del_Fhaut)
+        TT_4_1 = np.arange(TT_col_nff_i, params.TT_DEL_FHAUT)
+        TT_4_2 = np.arange(params.TT_DEL_FHAUT, params.TT_DEL_FHAUT)
         
         if TT_col_break_i != 0.0: # bilinear mode
             if TT_col_break_i <= t0_i:
@@ -379,7 +379,7 @@ def create_HS_GL_SSI_T(dynT_dataframe):
                 TT_3_2 = np.arange(TT_col_break_i, TT_col_nff_i)
             else:
                 TT_4_1 = np.arange(TT_col_nff_i, TT_col_break_i)
-                TT_4_2 = np.arange(TT_col_break_i, params.TT_del_Fhaut)
+                TT_4_2 = np.arange(TT_col_break_i, params.TT_DEL_FHAUT)
             
         HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, Nff_i)
         HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, Nff_i)
@@ -408,7 +408,7 @@ def create_HS_GL_SSI_T(dynT_dataframe):
         SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
         SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
         
-        HS_GL_SSI_dynamic_dataframe_i = pandas.DataFrame(index=np.arange(params.TT_del_Fhaut), columns=HS_GL_SSI_dynamic_dataframe.columns)
+        HS_GL_SSI_dynamic_dataframe_i = pandas.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic_dataframe.columns)
         HS_GL_SSI_dynamic_dataframe_i['TT'] = pandas.Series(np.concatenate((TT_1_1, TT_1_2, TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
         HS_GL_SSI_dynamic_dataframe_i['HS'] = pandas.Series(np.concatenate((HS_1_TT_1_1, HS_1_TT_1_2, HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
         HS_GL_SSI_dynamic_dataframe_i['GL'] = pandas.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))

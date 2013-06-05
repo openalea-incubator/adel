@@ -179,53 +179,50 @@ def _gen_lengths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe)
     TT_em_phytomer_series = dimT_abs_dataframe['TT_em_phytomer']
     MS_last_TT_em_phytomer = TT_em_phytomer_series[first_axis_rows_number - 1]
     indexes_to_ceil = TT_em_phytomer_series[TT_em_phytomer_series > MS_last_TT_em_phytomer].index
-    indexes_to_ceil = indexes_to_ceil.intersection(row_indexes_to_fit)
     
     for length in ['L_blade', 'L_sheath', 'L_internode']:
-        first_axis_rows_series = dimT_abs_dataframe[length][:first_axis_rows_number]
+        current_length_series = dimT_abs_dataframe[length]
+        first_axis_rows_series = current_length_series[:first_axis_rows_number]
         first_null_axis_rows_series = first_axis_rows_series[first_axis_rows_series == 0.0]
         position_of_first_non_null_data = first_null_axis_rows_series.index.size
         polynomial_coefficients_array = np.polyfit(dimT_abs_dataframe['TT_em_phytomer'][position_of_first_non_null_data:first_axis_rows_number].values, 
-                                                   dimT_abs_dataframe[length][position_of_first_non_null_data:first_axis_rows_number].values, 6)
+                                                   current_length_series[position_of_first_non_null_data:first_axis_rows_number].values, 6)
+        MS_last_length = current_length_series[first_axis_rows_number - 1]
         for name, group in dimT_abs_dataframe.ix[row_indexes_to_fit].groupby(by='id_dim'):
             TT_em_phytomer_group = group['TT_em_phytomer']
-            fitted_length_series = dimT_abs_dataframe[length]
-            fitted_length_series[group.index] = np.polyval(polynomial_coefficients_array, 
+            current_length_series[group.index] = np.polyval(polynomial_coefficients_array, 
                                                            TT_em_phytomer_group)
+            # ceiling
+            current_length_series[indexes_to_ceil.intersection(group.index)] = MS_last_length
             if group['is_ear'][group.first_valid_index()] == 0:
                 # regression
                 for i in range(len(params.REGRESSION_OF_DIMENSIONS[length])):
-                    fitted_length_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[length][i])
+                    current_length_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[length][i])
 
         # thresholding
         if length == 'L_internode':
             MS_first_TT_em_phytomer = TT_em_phytomer_series[position_of_first_non_null_data]
             indexes_to_threshold = TT_em_phytomer_series[TT_em_phytomer_series <= MS_first_TT_em_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
-            dimT_abs_dataframe[length][indexes_to_threshold] = 0.0
-        # ceiling
-        MS_last_length = dimT_abs_dataframe[length][first_axis_rows_number - 1]
-        dimT_abs_dataframe[length][indexes_to_ceil] = MS_last_length
+            current_length_series[indexes_to_threshold] = 0.0
 
 
 def _gen_widths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe):
     '''Fit the widths in-place.'''
     for width in ['W_blade', 'W_sheath', 'W_internode']:
-        first_axis_rows_series = dimT_abs_dataframe[width][:first_axis_rows_number]
+        current_width_series = dimT_abs_dataframe[width]
+        first_axis_rows_series = current_width_series[:first_axis_rows_number]
         first_null_axis_rows_series = first_axis_rows_series[first_axis_rows_series == 0.0]
         position_of_first_non_null_data = first_null_axis_rows_series.index.size
-        first_axis_W_tuple = (dimT_abs_dataframe[width][position_of_first_non_null_data], dimT_abs_dataframe[width][first_axis_rows_number - 1])
+        first_axis_W_tuple = (current_width_series[position_of_first_non_null_data], current_width_series[first_axis_rows_number - 1])
         if width == 'W_internode':
             first_axis_TT_em_phytomer_tuple = (dimT_abs_dataframe['TT_em_phytomer'][position_of_first_non_null_data], dimT_abs_dataframe['TT_em_phytomer'][first_axis_rows_number - 1])
-        else:
-            first_axis_TT_em_phytomer_tuple = None
+            MS_last_TT_em_phytomer = first_axis_TT_em_phytomer_tuple[1]
+            indexes_to_ceil = current_width_series[current_width_series > MS_last_TT_em_phytomer].index
+            
         for name, group in dimT_abs_dataframe.ix[row_indexes_to_fit].groupby(by='id_dim'):
             TT_em_phytomer_sub_series = group['TT_em_phytomer']
-            fitted_width_series = dimT_abs_dataframe[width]
-            if first_axis_TT_em_phytomer_tuple is None: # NOT internode
-                x1 = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series.first_valid_index()]
-                x2 = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series.last_valid_index()]
-            else: # internode
+            if width == 'W_internode':
                 # get TT_em_phytomer of the main stem first phytomer which has a 
                 # TT_em_phytomer greater than the first main stem phytomer with 
                 # a non null width
@@ -235,15 +232,23 @@ def _gen_widths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe):
                 # TT_em_phytomer lesser than the last main stem phytomer
                 valid_TT_em_phytomers = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series <= first_axis_TT_em_phytomer_tuple[-1]]
                 x2 = valid_TT_em_phytomers[valid_TT_em_phytomers.index[-1]]
+            else:
+                x1 = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series.first_valid_index()]
+                x2 = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series.last_valid_index()]
                 
             y1 = first_axis_W_tuple[0]
             y2 = first_axis_W_tuple[1]
             polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
-            fitted_width_series[group.index] = np.polyval(polynomial_coefficient_array, TT_em_phytomer_sub_series)
+            current_width_series[group.index] = np.polyval(polynomial_coefficient_array, TT_em_phytomer_sub_series)
+            if width == 'W_internode':
+                # ceiling of the width of the phytomers which have a TT_em_phytomer 
+                # greater than the TT_em_phytomer of the last main stem 
+                current_width_series[indexes_to_ceil.intersection(group.index)] = first_axis_W_tuple[1]
+            
             if group['is_ear'][group.first_valid_index()] == 0:
                 # regression
                 for i in range(len(params.REGRESSION_OF_DIMENSIONS[width])):
-                    fitted_width_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[width][i])
+                    current_width_series[group.index[i-3]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[width][i])
         
         if width == 'W_internode':
             # thresholding of the width of the phytomers which have a TT_em_phytomer 
@@ -252,15 +257,9 @@ def _gen_widths(first_axis_rows_number, row_indexes_to_fit, dimT_abs_dataframe):
             TT_em_phytomer_sub_series = dimT_abs_dataframe['TT_em_phytomer']
             indexes_to_threshold = TT_em_phytomer_sub_series[TT_em_phytomer_sub_series <= MS_first_TT_em_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
-            dimT_abs_dataframe[width][indexes_to_threshold] = 0.0
-            # ceiling of the the width of the phytomers which have a TT_em_phytomer 
-            # greater than the TT_em_phytomer of the last main stem 
-            MS_last_TT_em_phytomer = first_axis_TT_em_phytomer_tuple[1]
-            width_series = dimT_abs_dataframe[width]
-            indexes_to_ceil = width_series[width_series > MS_last_TT_em_phytomer].index
-            indexes_to_ceil = indexes_to_ceil.intersection(row_indexes_to_fit)
-            dimT_abs_dataframe[width][indexes_to_ceil] = first_axis_W_tuple[1]
-        dimT_abs_dataframe[width] = dimT_abs_dataframe[width].clip_lower(0.0)
+            current_width_series[indexes_to_threshold] = 0.0
+            
+        current_width_series = current_width_series.clip_lower(0.0)
     
 
 def create_dimT(dimT_abs):

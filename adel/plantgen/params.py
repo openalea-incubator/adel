@@ -100,5 +100,5 @@ Each key "dimension_organ" is associated to a 3-tuple. In each 3-tuple, the firs
 value is the reduction of the phytomer N-2, the second value is the reduction of 
 the phytomer N-1, and the third value is the reduction of the phytomer N, where 
 N is the final number of leaves of an axis. The reduction are given in percent, 
-from 0.0 to 1.0. 
+from 0.0 to 1.0: 0.0 means no reduction, 1.0 means 100 % of reduction.
 '''

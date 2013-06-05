@@ -25,7 +25,7 @@ Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
 import pandas
 import numpy as np
 
-from adel.plantgen import params
+from adel.plantgen import tools, params
 
 
 def create_dimT_tmp(dynT_tmp):
@@ -46,7 +46,7 @@ def create_dimT_tmp(dynT_tmp):
     .. warning:: *dynT_tmp* must be a :class:`pandas.DataFrame`.
     
     '''
-    assert isinstance(dynT_tmp, pandas.DataFrame)
+    tools.checkValidity(isinstance(dynT_tmp, pandas.DataFrame))
     id_dim_tmp_list = _gen_id_dim_tmp_list(dynT_tmp)
     index_phytomer_tmp_list = _gen_index_phytomer_tmp_list(id_dim_tmp_list)
     L_blade_list = [np.nan for i in range(len(id_dim_tmp_list))]
@@ -84,14 +84,14 @@ def create_dimT_abs(axeT, dimT_user, phenT_abs):
           completely filled, i.e. there must not contain any NA value.
         
     '''
-    assert isinstance(axeT, pandas.DataFrame) and \
-           isinstance(dimT_user, pandas.DataFrame) and \
-           isinstance(phenT_abs, pandas.DataFrame)
-    assert dimT_user['id_dim'].count() == dimT_user['id_dim'].size
-    assert dimT_user['index_phytomer'].count() == dimT_user['index_phytomer'].size
+    tools.checkValidity(isinstance(axeT, pandas.DataFrame))
+    tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
+    tools.checkValidity(isinstance(phenT_abs, pandas.DataFrame))
+    tools.checkValidity(dimT_user['id_dim'].count() == dimT_user['id_dim'].size)
+    tools.checkValidity(dimT_user['index_phytomer'].count() == dimT_user['index_phytomer'].size)
     first_axis_rows_number = int(str(int(dimT_user['id_dim'][0]))[-2:])
     for column_name in dimT_user:
-        assert dimT_user[column_name][:first_axis_rows_number].map(lambda x: x == 0.0 and 1.0 or x).fillna(0.0).all()
+        tools.checkValidity(dimT_user[column_name][:first_axis_rows_number].map(lambda x: x == 0.0 and 1.0 or x).fillna(0.0).all())
            
     dimT_abs_dataframe = _init_dimT_abs(axeT['id_dim'].unique(), 
                                         dimT_user, 
@@ -284,8 +284,8 @@ def create_dimT(dimT_abs):
           NA value.
                  
     '''
-    assert isinstance(dimT_abs, pandas.DataFrame)
-    assert dimT_abs.count().max() == dimT_abs.count().min() == dimT_abs.index.size
+    tools.checkValidity(isinstance(dimT_abs, pandas.DataFrame))
+    tools.checkValidity(dimT_abs.count().max() == dimT_abs.count().min() == dimT_abs.index.size)
     dimT_dataframe = pandas.DataFrame(index=dimT_abs.index, columns=['id_dim', 'index_rel_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'])
     dimT_dataframe[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = dimT_abs[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]
     tmp_series = pandas.Series(dimT_dataframe.index)

@@ -45,7 +45,7 @@ def create_dynT_tmp(id_phen):
     .. warning:: *id_phen* must be a :class:`list`.
     
     ''' 
-    assert isinstance(id_phen, list)
+    tools.checkValidity(isinstance(id_phen, list))
     # create id_axis from id_phen by deleting any duplicated value.
     id_axis = list(set(id_phen))
     
@@ -164,17 +164,17 @@ def create_dynT(
           any NA value.
     
     ''' 
-    assert isinstance(dynT_user, pandas.DataFrame)
-    assert isinstance(dimT_user, pandas.DataFrame)
-    assert isinstance(GL_number, dict)
-    assert isinstance(decimal_elongated_internode_number, float)
-    assert isinstance(leaf_number_delay_MS_cohort, dict)
+    tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
+    tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
+    tools.checkValidity(isinstance(GL_number, dict))
+    tools.checkValidity(isinstance(decimal_elongated_internode_number, float))
+    tools.checkValidity(isinstance(leaf_number_delay_MS_cohort, dict))
     # in 'dynT_user', check that the columns 'N_cohort',
     # 'id_axis', 'cardinality' and 'Nff' are non-NA.
-    assert dynT_user['N_cohort'].count() == dynT_user['N_cohort'].size
-    assert dynT_user['id_axis'].count() == dynT_user['id_axis'].size
-    assert dynT_user['cardinality'].count() == dynT_user['cardinality'].size
-    assert dynT_user['Nff'].count() == dynT_user['Nff'].size
+    tools.checkValidity(dynT_user['N_cohort'].count() == dynT_user['N_cohort'].size)
+    tools.checkValidity(dynT_user['id_axis'].count() == dynT_user['id_axis'].size)
+    tools.checkValidity(dynT_user['cardinality'].count() == dynT_user['cardinality'].size)
+    tools.checkValidity(dynT_user['Nff'].count() == dynT_user['Nff'].size)
     # get all main stem rows
     MS = dynT_user[dynT_user['N_cohort'] == 1.0]
     

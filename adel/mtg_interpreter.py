@@ -2,7 +2,8 @@
 
 from math import degrees, radians, pi, cos, sin
 import openalea.plantgl.all as pgl
-from openalea.mtg import turtle, MTG
+from openalea.mtg import MTG
+from openalea.mtg.turtle import TurtleFrame
 from openalea.mtg.algo import union
 
 
@@ -121,38 +122,44 @@ def compute_element(element_node, classic=False):
         
     return geom
         
-def _transform(turtle, mesh):
-        x = turtle.getUp()
-        z = turtle.getHeading()
+
+class AdelTurtle(pgl.PglTurtle):
+
+    def __init__(self):
+        super(AdelTurtle,self).__init__()
+        self.context={}
+
+    def transform(self, mesh):
+        x = self.getUp()
+        z = self.getHeading()
 
         bo = pgl.BaseOrientation(x, z^x)
         matrix = pgl.Transform4(bo.getMatrix())
-        matrix.translate(turtle.getPosition())
+        matrix.translate(self.getPosition())
         #print 'Position ', turtle.getPosition()
         mesh = mesh.transform(matrix)
         return mesh
 
   
-def getFrame(turtle):
-    pos = turtle.getPosition()
-    Head = turtle.getHeading()
-    Up = turtle.getUp()
-    return {'Position':pos, 'Head' : Head, 'Up' : Up}
+    def getFrame(self):
+        pos = self.getPosition()
+        Head = self.getHeading()
+        Up = self.getUp()
+        return {'Position':pos, 'Head' : Head, 'Up' : Up}
 
-def setFrame(turtle, frame):
-    turtle.move(frame['Position'])
-    turtle.setHead(frame['Head'], frame['Up'])
+    def setFrame(self, frame):
+        self.move(frame['Position'])
+        self.setHead(frame['Head'], frame['Up'])
+    
         
-def adel_visitor(g, v, turtle, context):
+def adel_visitor(g, v, turtle):
     """ Performs geometric interpretation of mtg nodes
     """
-    
-    
     
     # 1. retrieve the node
     n = g.node(v)
     axis = n.complex_at_scale(scale=2).label
-    prev_axis = context.get("axis",axis)
+    prev_axis = turtle.context.get("axis",axis)
     metamer = n.complex_at_scale(scale=3)
     
     # Go to plant position if first plant element
@@ -167,18 +174,18 @@ def adel_visitor(g, v, turtle, context):
         turtle.setHead(0,0,1,-1,0,0)
         if 'azimuth' in p.properties():
             turtle.rollR(p.azimuth)
-        context.update({'axe_base':getFrame(turtle), 'axe_top':getFrame(turtle)})
+        turtle.context.update({'axe_base':turtle.getFrame(), 'axe_top':turtle.getFrame()})
         
     if axis != prev_axis:
         if metamer.edge_type() == '+' :#this is the begining of an axe
-            context['axe_base'] = context['axe_top']
+            turtle.context['axe_base'] = turtle.context['axe_top']
         else:#this is the end of the axe
-            context['axe_top'] = context['axe_base']
+            turtle.context['axe_top'] = turtle.context['axe_base']
 
     #hypothesis that inclin is to be applied at the base of the visible elements
     #if n.offset > 0:
     #    turtle.f(n.offset)
-    setFrame(turtle,context['axe_top'])
+    turtle.setFrame(turtle.context['axe_top'])
     #incline turtle at the base of stems,
     if n.label.startswith('Stem'):
         inclin = float(n.inclination) if n.inclination else 0.
@@ -198,7 +205,7 @@ def adel_visitor(g, v, turtle, context):
                 turtle.down(inclin)
                 #replace turtle in original azimuth plane
                 #print 'angle ', angle
-                turtle.rollR(-angle)
+                turtle.rollR(angle)
         if azim:
             #print 'node', n._vid, 'azim ', azim
             turtle.rollR(azim)
@@ -210,14 +217,14 @@ def adel_visitor(g, v, turtle, context):
     if n.length > 0:
         mesh = compute_element(n)
         if mesh:#To DO : reset to None if calculated so ?
-            n.geometry = _transform(turtle, mesh)
+            n.geometry = turtle.transform(mesh)
     # 3. Update the turtle and context
     turtle.setId(v)
     if n.label.startswith('Stem'):
         if n.length > 0:
             turtle.f(n.length)
-        context.update({'axe_top': getFrame(turtle)})       
-    context.update({'axis':axis})
+        turtle.context.update({'axe_top': turtle.getFrame()})       
+    turtle.context.update({'axis':axis})
         
 def mtg_interpreter(g, visitor = adel_visitor):
     ''' Compute/update the geometry on each node of the MTG using Turtle geometry. '''
@@ -228,7 +235,8 @@ def mtg_interpreter(g, visitor = adel_visitor):
     
     #for plant in plants:
     #   gplant = g.sub_mtg(plant)
-    scene = turtle.TurtleFrame(g,visitor=visitor, gc=False, all_roots=True, context={})
+    turtle = AdelTurtle()
+    scene = TurtleFrame(g, visitor=visitor, turtle=turtle, gc=False, all_roots=True)
     #   gt = union(gplant,gt)
        
     return g

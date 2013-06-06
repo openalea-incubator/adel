@@ -42,10 +42,7 @@ def create_dynT_tmp(id_phen):
     :Returns Type:
         :class:`pandas.DataFrame`
         
-    .. warning:: *id_phen* must be a :class:`list`.
-    
     ''' 
-    tools.checkValidity(isinstance(id_phen, list))
     # create id_axis from id_phen by deleting any duplicated value.
     id_axis = list(set(id_phen))
     
@@ -154,21 +151,11 @@ def create_dynT(
         
     .. warning:: 
     
-        * *dynT_user* must be a :class:`pandas.DataFrame`.
-        * *dimT_user* must be a :class:`pandas.DataFrame`.
-        * *GL_number* must be a :class:`dict`.
-        * *decimal_elongated_internode_number* must be a :class:`float`.
-        * *leaf_number_delay_MS_cohort* must be a :class:`dict`.
         * in *dynT_user*, the column *N_cohort*, *id_axis*, *cardinality* 
           and *Nff* must be completely filled, i.e. they must not contain 
           any NA value.
     
     ''' 
-    tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(tools.isFloat(decimal_elongated_internode_number))
-    tools.checkValidity(isinstance(leaf_number_delay_MS_cohort, dict))
     # in 'dynT_user', check that the columns 'N_cohort',
     # 'id_axis', 'cardinality' and 'Nff' are non-NA.
     tools.checkValidity(dynT_user['N_cohort'].count() == dynT_user['N_cohort'].size)

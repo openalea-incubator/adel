@@ -50,25 +50,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     :Returns Type:
         :class:`pandas.DataFrame`
 
-    .. warning:: the type of the arguments is checked as follows:
-
-         .. list-table::
-             :widths: 10 50
-             :header-rows: 1
-        
-             * - Argument
-               - Type
-             * - *plant_number* 
-               - :class:`int`
-             * - *decide_child_cohort_probabilities* 
-               - :class:`dict`
-             * - *MS_leaves_number_probabilities* 
-               - :class:`dict`
-
     '''
-    tools.checkValidity(tools.isInt(plant_number))
-    tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
-    tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
     
     plant_ids = range(1,plant_number + 1)
     id_cohort_axis_list, id_axis_list = _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities)
@@ -115,38 +97,9 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bo
     
     :Returns Type:
         :class:`pandas.DataFrame`
-
-    .. warning:: the type of the arguments is checked as follows:
-
-         .. list-table::
-             :widths: 10 50
-             :header-rows: 1
-        
-             * - Argument
-               - Type
-             * - *axeT_tmp_dataframe* 
-               - :class:`pandas.DataFrame`
-             * - *phenT_first_dataframe* 
-               - :class:`pandas.DataFrame`
-             * - *dynT_dataframe* 
-               - :class:`pandas.DataFrame`
-             * - *TT_bolting* 
-               - :class:`float`
-             * - *TT_flag_leaf_ligulation* 
-               - :class:`float`
-             * - *delais_TT_stop_del_axis* 
-               - :class:`int`
-             * - *final_axes_density* 
-               - :class:`int`
           
     '''
-    tools.checkValidity(isinstance(axeT_tmp_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(phenT_first_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(dynT_dataframe, pandas.DataFrame))
-    tools.checkValidity(tools.isFloat(TT_bolting))
-    tools.checkValidity(tools.isIntOrFloat(TT_flag_leaf_ligulation))
-    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
-    tools.checkValidity(tools.isInt(final_axes_density))
+    
     axeT_dataframe = axeT_tmp_dataframe.copy()
     (axeT_dataframe['TT_em_phytomer1'], 
      axeT_dataframe['TT_col_phytomer1'], 
@@ -310,34 +263,8 @@ def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_n
     :Returns Type:
         :class:`pandas.DataFrame`
 
-    .. warning:: the type of the arguments is checked as follows:
-
-         .. list-table::
-             :widths: 10 50
-             :header-rows: 1
-        
-             * - Argument
-               - Type
-             * - *initial_date* 
-               - :class:`int`
-             * - *TT_bolting* 
-               - :class:`float`
-             * - *TT_flag_leaf_ligulation* 
-               - :class:`float`
-             * - *plant_number* 
-               - :class:`int`
-             * - *axeT_tmp_dataframe* 
-               - :class:`pandas.DataFrame`  
-             * - *final_axes_density* 
-               - :class:`int`
-    
     '''
-    tools.checkValidity(tools.isInt(initial_date))
-    tools.checkValidity(tools.isFloat(TT_bolting))
-    tools.checkValidity(tools.isIntOrFloat(TT_flag_leaf_ligulation))
-    tools.checkValidity(tools.isInt(plant_number))
-    tools.checkValidity(isinstance(axeT_tmp_dataframe, pandas.DataFrame))
-    tools.checkValidity(tools.isInt(final_axes_density))
+    
     return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flag_leaf_ligulation], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
 
 
@@ -358,26 +285,8 @@ def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_ax
     
     :Returns Type:
         :class:`pandas.DataFrame`
-
-    .. warning:: the type of the arguments is checked as follows:
-
-         .. list-table::
-             :widths: 10 50
-             :header-rows: 1
-        
-             * - Argument
-               - Type
-             * - *plant_number* 
-               - :class:`int`
-             * - *decide_child_cohort_probabilities* 
-               - :class:`dict`
-             * - *id_cohort_axes* 
-               - :class:`pandas.Series`
     
     '''
-    tools.checkValidity(tools.isInt(plant_number))
-    tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
-    tools.checkValidity(isinstance(id_cohort_axes, pandas.Series))
     
     decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
     # the cohort '1' always exists, so its probability is 1.0.

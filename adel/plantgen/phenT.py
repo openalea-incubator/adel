@@ -47,14 +47,10 @@ def create_phenT_abs(dynT_dataframe, decimal_elongated_internode_number):
     
     .. warning:: 
     
-        * *dynT_dataframe* must be a :class:`pandas.DataFrame`.
         * *dynT_dataframe* must be completely filled, i.e. must not contain any 
           NA value.
-        * *decimal_elongated_internode_number* must be a :class:`pandas.DataFrame`.
     
     '''
-    tools.checkValidity(isinstance(dynT_dataframe, pandas.DataFrame))
-    tools.checkValidity(tools.isFloat(decimal_elongated_internode_number))
     
     tools.checkValidity(dynT_dataframe.count().max() == dynT_dataframe.count().min() == dynT_dataframe.index.size)
     id_phen_list = _gen_id_phen_list(dynT_dataframe)
@@ -248,12 +244,10 @@ def create_phenT_first(phenT_abs_dataframe):
         
     .. warning:: 
     
-        * *phenT_abs_dataframe* must be a :class:`pandas.DataFrame`.
         * *phenT_abs_dataframe* must be completely filled, i.e. must not contain 
           any NA value.
     
     '''
-    tools.checkValidity(isinstance(phenT_abs_dataframe, pandas.DataFrame))
     tools.checkValidity(phenT_abs_dataframe.count().max() == phenT_abs_dataframe.count().min() == phenT_abs_dataframe.index.size)
     # Create a dataframe for first leaf (i.e. index_phytomer == 1) from phenT_abs_dataframe
     def first_leaf_criterion(index_i):
@@ -282,14 +276,10 @@ def create_phenT(phenT_abs_dataframe, phenT_first_dataframe):
         
     .. warning:: 
     
-        * *phenT_abs_dataframe* must be a :class:`pandas.DataFrame`.
-        * *phenT_first_dataframe* must be a :class:`pandas.DataFrame`.
         * *phenT_abs_dataframe* must be completely filled, i.e. must not contain 
           any NA value.
     
     '''
-    tools.checkValidity(isinstance(phenT_abs_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(phenT_first_dataframe, pandas.DataFrame))
     tools.checkValidity(phenT_abs_dataframe.count().max() == phenT_abs_dataframe.count().min() == phenT_abs_dataframe.index.size)
     phenT_dataframe = pandas.DataFrame(index=phenT_abs_dataframe.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_em_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'])
     phenT_dataframe['id_phen'] = phenT_abs_dataframe['id_phen']
@@ -346,10 +336,7 @@ def create_HS_GL_SSI_T(dynT_dataframe):
     :Returns Type:
         :class:`pandas.DataFrame`
         
-    .. warning:: *dynT_dataframe* must be a :class:`pandas.DataFrame`.
-    
     '''
-    tools.checkValidity(isinstance(dynT_dataframe, pandas.DataFrame))
     HS_GL_SSI_dynamic_dataframe = pandas.DataFrame(columns=['id_axis', 'TT', 'HS', 'GL', 'SSI'])
     for i in dynT_dataframe.index:
         N_cohort_i, id_axis_i, cardinality_i, Nff_i, a_cohort_i, TT_col_0_i, TT_col_break_i, TT_col_nff_i, dTT_MS_cohort_i, n0_i, n1_i, n2_i, t0_i, t1_i, hs_t1_i, a_i, c_i, RMSE_gl = dynT_dataframe.ix[i].tolist()

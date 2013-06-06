@@ -43,10 +43,7 @@ def create_dimT_tmp(dynT_tmp):
     :Returns Type: 
         :class:`pandas.DataFrame`
     
-    .. warning:: *dynT_tmp* must be a :class:`pandas.DataFrame`.
-    
     '''
-    tools.checkValidity(isinstance(dynT_tmp, pandas.DataFrame))
     id_dim_tmp_list = _gen_id_dim_tmp_list(dynT_tmp)
     index_phytomer_tmp_list = _gen_index_phytomer_tmp_list(id_dim_tmp_list)
     L_blade_list = [np.nan for i in range(len(id_dim_tmp_list))]
@@ -77,16 +74,12 @@ def create_dimT_abs(axeT, dimT_user, phenT_abs):
         
     .. warning:: 
     
-        * *axeT*, *dimT_user* and *phenT_abs* must be of type :class:`pandas.DataFrame`
         * in *dimT_user*, the column *id_dim* and *index_phytomer* must be 
           completely filled, i.e. they must not contain any NA value.
         * in *dimT_user*, the rows which describe the first axis must be 
           completely filled, i.e. there must not contain any NA value.
         
     '''
-    tools.checkValidity(isinstance(axeT, pandas.DataFrame))
-    tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(phenT_abs, pandas.DataFrame))
     tools.checkValidity(dimT_user['id_dim'].count() == dimT_user['id_dim'].size)
     tools.checkValidity(dimT_user['index_phytomer'].count() == dimT_user['index_phytomer'].size)
     first_axis_rows_number = int(str(int(dimT_user['id_dim'][0]))[-2:])
@@ -278,12 +271,10 @@ def create_dimT(dimT_abs):
         
     .. warning:: 
         
-        * *dimT_abs* must be a :class:`pandas.DataFrame`.
         * *dimT_abs* must be completely filled, i.e. must not contain any 
           NA value.
                  
     '''
-    tools.checkValidity(isinstance(dimT_abs, pandas.DataFrame))
     tools.checkValidity(dimT_abs.count().max() == dimT_abs.count().min() == dimT_abs.index.size)
     dimT_dataframe = pandas.DataFrame(index=dimT_abs.index, columns=['id_dim', 'index_rel_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'])
     dimT_dataframe[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = dimT_abs[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]

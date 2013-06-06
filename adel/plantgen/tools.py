@@ -51,15 +51,7 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
     :Returns Type:
         list of tuples
     
-    .. warning:: *decide_child_cohort_probabilities* must be a dict.
-                 *parent_cohort_index* must be a int.
-                 *first_child_delay* must be a int.
-    
     '''
-    checkValidity(isinstance(decide_child_cohort_probabilities, dict))
-    checkValidity(isinstance(parent_cohort_index, (int, types.NoneType)))
-    checkValidity(isinstance(parent_cohort_position, (str, types.NoneType)))
-    checkValidity(isinstance(first_child_delay, int))
     child_cohorts = []
     if parent_cohort_index is None:
         first_possible_cohort_number = 1
@@ -107,10 +99,7 @@ def calculate_MS_final_leaves_number(MS_leaves_number_probabilities):
     :Returns Type:
         :class:`float`
         
-    .. warning:: *MS_leaves_number_probabilities* must be a :class:`dict`.
-    
     '''
-    checkValidity(isinstance(MS_leaves_number_probabilities, dict))
     random_value = random.random()
     probabilities_sum = 0.0
     MS_final_leaves_number = None
@@ -146,16 +135,7 @@ def calculate_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, 
     :Returns Type:
         :class:`float`
         
-    .. warning:: 
-        
-        * *MS_final_leaves_number* must be a :class:`float`.
-        * *cohort_number* must be an :class:`int`.
-        * *secondary_stem_leaves_number_coefficients* must be a :class:`dict`.
-    
     '''
-    checkValidity(isinstance(MS_final_leaves_number, float))
-    checkValidity(isinstance(cohort_number, int))
-    checkValidity(isinstance(secondary_stem_leaves_number_coefficients, dict))
     a_1 = secondary_stem_leaves_number_coefficients['a_1']
     a_2 = secondary_stem_leaves_number_coefficients['a_2']
     return a_1* MS_final_leaves_number - a_2 * cohort_number
@@ -183,22 +163,12 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
         
     .. warning:: 
     
-        * *max_axes_number* must an :class:`int`.
-        * *min_axes_number* must an :class:`int`.
-        * *TT_em_phytomer1* must a :class:`list`.
-        * *TT_bolting* must an :class:`float`.
-        * *TT_flag_leaf_ligulation* must an :class:`float`.
         * *min_axes_number*, *max_axes_number*, *TT_bolting* and *TT_flag_leaf_ligulation* 
           must be positive or null.
         * *TT_bolting* must be smaller (or equal) than *TT_flag_leaf_ligulation*.
         * *min_axes_number* must be smaller (or equal) than *max_axes_number*.
 
     '''
-    checkValidity(isinstance(max_axes_number, int))
-    checkValidity(isinstance(min_axes_number, int))
-    checkValidity(isinstance(TT_em_phytomer1, list))
-    checkValidity(isinstance(TT_bolting, float))
-    checkValidity(isinstance(TT_flag_leaf_ligulation, (int, float)))
     
     checkValidity(max_axes_number >= 0 and min_axes_number >=0 and TT_bolting >= 0 and TT_flag_leaf_ligulation >= 0)
     checkValidity(TT_bolting <= TT_flag_leaf_ligulation)
@@ -259,19 +229,7 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
     :Returns Type: 
         :class:`tuple` of :class:`float`
         
-    .. warning:: 
-    
-        * *x_meas_array* must be a :class:`np.ndarray`.
-        * *y_meas_array* must be a :class:`np.ndarray`.
-        * *fixed_coefs* must be a :class:`list`.
-        * *a_starting_estimate* must be a float.
-                 
-        
     '''
-    checkValidity(isinstance(x_meas_array, np.ndarray))
-    checkValidity(isinstance(y_meas_array, np.ndarray))
-    checkValidity(isinstance(fixed_coefs, list))
-    checkValidity(isinstance(a_starting_estimate, float))
     def residuals(p, y, x):
         a, = p
         err = y - peval(x, a)
@@ -304,13 +262,4 @@ the invalid input.'''
         
     def __str__(self):
         return self.message
-    
-    
-def isInt(data_to_check):
-    return isinstance(data_to_check, (int, np.int, np.int8, np.int16, np.int32, np.int64))
 
-def isFloat(data_to_check):
-    return isinstance(data_to_check, (float, np.float, np.float16, np.float32, np.float64, np.float128))
-
-def isIntOrFloat(data_to_check):
-    return isInt(data_to_check) or isFloat(data_to_check)

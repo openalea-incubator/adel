@@ -76,6 +76,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape):
 """
     lhide = None
     lgreen = None
+    lflat = None
     # s (on mature shape) at which leaf becomes flat and visible
     s_limvis = 1.
     #s (on mature shape) at which leaf becomes senescent

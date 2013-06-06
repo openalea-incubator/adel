@@ -54,7 +54,7 @@ def create_phenT_abs(dynT_dataframe, decimal_elongated_internode_number):
     
     '''
     tools.checkValidity(isinstance(dynT_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(decimal_elongated_internode_number, float))
+    tools.checkValidity(tools.isFloat(decimal_elongated_internode_number))
     
     tools.checkValidity(dynT_dataframe.count().max() == dynT_dataframe.count().min() == dynT_dataframe.index.size)
     id_phen_list = _gen_id_phen_list(dynT_dataframe)

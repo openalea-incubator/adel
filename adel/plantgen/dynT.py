@@ -167,7 +167,7 @@ def create_dynT(
     tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
     tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(isinstance(decimal_elongated_internode_number, float))
+    tools.checkValidity(tools.isFloat(decimal_elongated_internode_number))
     tools.checkValidity(isinstance(leaf_number_delay_MS_cohort, dict))
     # in 'dynT_user', check that the columns 'N_cohort',
     # 'id_axis', 'cardinality' and 'Nff' are non-NA.

@@ -66,7 +66,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
                - :class:`dict`
 
     '''
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
     
@@ -143,10 +143,10 @@ def create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bo
     tools.checkValidity(isinstance(axeT_tmp_dataframe, pandas.DataFrame))
     tools.checkValidity(isinstance(phenT_first_dataframe, pandas.DataFrame))
     tools.checkValidity(isinstance(dynT_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(TT_flag_leaf_ligulation, (int, float)))
-    tools.checkValidity(isinstance(delais_TT_stop_del_axis, int))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isIntOrFloat(TT_flag_leaf_ligulation))
+    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
+    tools.checkValidity(tools.isInt(final_axes_density))
     axeT_dataframe = axeT_tmp_dataframe.copy()
     (axeT_dataframe['TT_em_phytomer1'], 
      axeT_dataframe['TT_col_phytomer1'], 
@@ -332,12 +332,12 @@ def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_n
                - :class:`int`
     
     '''
-    tools.checkValidity(isinstance(initial_date, int))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(TT_flag_leaf_ligulation, (int, float)))
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(initial_date))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isIntOrFloat(TT_flag_leaf_ligulation))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(axeT_tmp_dataframe, pandas.DataFrame))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isInt(final_axes_density))
     return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flag_leaf_ligulation], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
 
 
@@ -375,7 +375,7 @@ def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_ax
                - :class:`pandas.Series`
     
     '''
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(id_cohort_axes, pandas.Series))
     

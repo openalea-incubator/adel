@@ -243,9 +243,9 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
 
     :Parameters:
     
-        - `x_meas_array` (:class:`numpy.ndarray`) - the x-coordinates. These data are 
+        - `x_meas_array` (:class:`np.ndarray`) - the x-coordinates. These data are 
           measured.
-        - `y_meas_array` (:class:`numpy.ndarray`) - the y-coordinates. These data are 
+        - `y_meas_array` (:class:`np.ndarray`) - the y-coordinates. These data are 
           measured.
         - `fixed_coefs` (:class:`list`) - the other coefficients of the polynomial to fit 
           (*x_meas_array*, *y_meas_array*) to. 
@@ -261,8 +261,8 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
         
     .. warning:: 
     
-        * *x_meas_array* must be a :class:`numpy.ndarray`.
-        * *y_meas_array* must be a :class:`numpy.ndarray`.
+        * *x_meas_array* must be a :class:`np.ndarray`.
+        * *y_meas_array* must be a :class:`np.ndarray`.
         * *fixed_coefs* must be a :class:`list`.
         * *a_starting_estimate* must be a float.
                  
@@ -304,3 +304,13 @@ the invalid input.'''
         
     def __str__(self):
         return self.message
+    
+    
+def isInt(data_to_check):
+    return isinstance(data_to_check, (int, np.int, np.int8, np.int16, np.int32, np.int64))
+
+def isFloat(data_to_check):
+    return isinstance(data_to_check, (float, np.float, np.float16, np.float32, np.float64, np.float128))
+
+def isIntOrFloat(data_to_check):
+    return isInt(data_to_check) or isFloat(data_to_check)

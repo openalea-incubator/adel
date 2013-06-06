@@ -169,14 +169,14 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     tools.checkValidity(isinstance(dynT_user, dict))
     tools.checkValidity(isinstance(TT_col_nff, dict))
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isInt(final_axes_density))
     tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(isinstance(delais_TT_stop_del_axis, int))
-    tools.checkValidity(isinstance(TT_col_break, float))
+    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
+    tools.checkValidity(tools.isFloat(TT_col_break))
             
     # check dynT_user validity
     expected_dynT_user_keys_value_types = {'a_cohort': float, 
@@ -195,7 +195,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     # check dimT_user validity
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
     expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-    tools.checkValidity((dimT_user.columns == expected_dimT_user_columns).all())
+    tools.checkValidity(dimT_user.columns.tolist() == expected_dimT_user_columns)
     tools.checkValidity(dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
     tools.checkValidity(dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size)
     dynT_user = dynT_user.copy()
@@ -330,14 +330,14 @@ def gen_adel_input_data_from_short(dynT_user,
     '''    
     tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isInt(final_axes_density))
     tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(isinstance(delais_TT_stop_del_axis, int))
-    tools.checkValidity(isinstance(TT_col_break, float))
+    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
+    tools.checkValidity(tools.isFloat(TT_col_break))
 
     return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
@@ -471,14 +471,14 @@ def gen_adel_input_data_from_full(dynT_user,
     '''    
     tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isInt(final_axes_density))
     tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(isinstance(delais_TT_stop_del_axis, int))
-    tools.checkValidity(isinstance(TT_col_break, float))
+    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
+    tools.checkValidity(tools.isFloat(TT_col_break))
 
     return gen_adel_input_data(dynT_user, dimT_user, plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
 
@@ -675,14 +675,14 @@ def gen_adel_input_data(dynT_user,
     '''
     tools.checkValidity(isinstance(dynT_user, (dict, pandas.DataFrame)))
     tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
-    tools.checkValidity(isinstance(plant_number, int))
+    tools.checkValidity(tools.isInt(plant_number))
     tools.checkValidity(isinstance(decide_child_cohort_probabilities, dict))
     tools.checkValidity(isinstance(MS_leaves_number_probabilities, dict))
-    tools.checkValidity(isinstance(TT_bolting, float))
-    tools.checkValidity(isinstance(final_axes_density, int))
+    tools.checkValidity(tools.isFloat(TT_bolting))
+    tools.checkValidity(tools.isInt(final_axes_density))
     tools.checkValidity(isinstance(GL_number, dict))
-    tools.checkValidity(isinstance(delais_TT_stop_del_axis, int))
-    tools.checkValidity(isinstance(TT_col_break, float))
+    tools.checkValidity(tools.isInt(delais_TT_stop_del_axis))
+    tools.checkValidity(tools.isFloat(TT_col_break))
     tools.checkValidity(dynT_user_completeness in DataCompleteness.__dict__.values())
     tools.checkValidity(dimT_user_completeness in DataCompleteness.__dict__.values())
     
@@ -708,7 +708,7 @@ def gen_adel_input_data(dynT_user,
     elif dynT_user_completeness == DataCompleteness.SHORT:
         tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
         expected_dynT_user_columns = ['N_cohort', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
-        tools.checkValidity((dynT_user.columns == expected_dynT_user_columns).all())
+        tools.checkValidity(dynT_user.columns.tolist() == expected_dynT_user_columns)
         tools.checkValidity(dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
         tools.checkValidity(dynT_user['N_cohort'].unique().size == dynT_user['N_cohort'].size)
         available_cohorts = set(dynT_user['N_cohort'].astype(int).astype(str).tolist())
@@ -716,7 +716,7 @@ def gen_adel_input_data(dynT_user,
     elif dynT_user_completeness == DataCompleteness.FULL:
         tools.checkValidity(isinstance(dynT_user, pandas.DataFrame))
         expected_dynT_user_columns = ['N_cohort', 'Nff', 'a_cohort', 'TT_col_0', 'TT_col_nff', 'n0', 'n1', 'n2']
-        tools.checkValidity((dynT_user.columns == expected_dynT_user_columns).all())
+        tools.checkValidity(dynT_user.columns.tolist() == expected_dynT_user_columns)
         tools.checkValidity(dynT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
         grouped = dynT_user.groupby(['N_cohort', 'Nff'])
         tools.checkValidity(len(grouped.groups) == dynT_user.index.size   )
@@ -727,13 +727,13 @@ def gen_adel_input_data(dynT_user,
     if dimT_user_completeness == DataCompleteness.MIN:
         tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
         expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        tools.checkValidity((dimT_user.columns == expected_dimT_user_columns).all())
+        tools.checkValidity(dimT_user.columns.tolist() == expected_dimT_user_columns)
         tools.checkValidity(dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
         tools.checkValidity(dimT_user['index_phytomer'].unique().size == dimT_user['index_phytomer'].size)
     elif dimT_user_completeness == DataCompleteness.SHORT:
         tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
         expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        tools.checkValidity((dimT_user.columns == expected_dimT_user_columns).all())
+        tools.checkValidity(dimT_user.columns.tolist() == expected_dimT_user_columns)
         tools.checkValidity(dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
         grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
         tools.checkValidity(len(grouped.groups) == dimT_user.index.size    )
@@ -742,7 +742,7 @@ def gen_adel_input_data(dynT_user,
     elif dimT_user_completeness == DataCompleteness.FULL:
         tools.checkValidity(isinstance(dimT_user, pandas.DataFrame))
         expected_dimT_user_columns = ['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        tools.checkValidity((dimT_user.columns == expected_dimT_user_columns).all())
+        tools.checkValidity(dimT_user.columns.tolist() == expected_dimT_user_columns)
         tools.checkValidity(dimT_user.dtypes.isin([np.dtype(np.int64), np.dtype(np.float64)]).all())
         grouped = dimT_user.groupby(['id_dim', 'index_phytomer'])
         tools.checkValidity(len(grouped.groups) == dimT_user.index.size)

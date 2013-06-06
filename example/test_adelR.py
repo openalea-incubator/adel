@@ -57,7 +57,9 @@ def test(date=500,dec=10):
     g2,s2 = newmtg(d,dec=dec)
     Viewer.display(s1+s2)
     
-  
+ # TO DO : senescence leaf shrink
+ # tester secteurs > 1
+ 
 #df=DataFrame(d)
     #df.Lv
     #df.ix[1:7,6:9]

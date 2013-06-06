@@ -104,10 +104,7 @@ def compute_element(element_node, classic=False):
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
         if blade.shape_xysr is not None:
-            if blade.inclination > 0:
-                shape = incline_leaf(blade.shape_xysr, blade.inclination)
-            else: 
-                shape = blade.shape_xysr
+            shape = incline_leaf(blade.shape_xysr, blade.inclination)
             # x-> -x to place the shape along with the tiller positioned with turtle.down()
             leaf = (-shape[0],)+shape[1:]
             geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
@@ -132,7 +129,6 @@ class AdelTurtle(pgl.PglTurtle):
     def transform(self, mesh):
         x = self.getUp()
         z = self.getHeading()
-
         bo = pgl.BaseOrientation(x, z^x)
         matrix = pgl.Transform4(bo.getMatrix())
         matrix.translate(self.getPosition())
@@ -199,13 +195,17 @@ def adel_visitor(g, v, turtle):
             # if not incline towardss vertical
             else:
                 up = turtle.getUp()
+                zleft = turtle.getLeft()[2]
                 turtle.rollToVert()
                 #print 'up after rollToVert', turtle.getUp()
                 angle = degrees(pgl.angle(up,turtle.getUp()))
+                dzl = zleft - turtle.getLeft()[2]
                 turtle.down(inclin)
                 #replace turtle in original azimuth plane
-                #print 'angle ', angle
-                turtle.rollR(angle)
+                #print 'angle ', angle, 'dzl', dzl
+                if dzl < 0:
+                    angle = -angle
+                turtle.rollR(-angle)
         if azim:
             #print 'node', n._vid, 'azim ', azim
             turtle.rollR(azim)

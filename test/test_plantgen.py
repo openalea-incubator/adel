@@ -27,6 +27,8 @@ min_min_expected_results_dir = expected_results_dir.joinpath('min_min')
 short_short_expected_results_dir = expected_results_dir.joinpath('short_short')
 full_full_expected_results_dir = expected_results_dir.joinpath('full_full')
 
+completeness_mapping = {1: 'min', 2: 'short', 3: 'full'}
+
 import tempfile
 tmp_results_directory = path(tempfile.mkdtemp(suffix='_plantgen_results'))
 default_results = tmp_results_directory.joinpath('default')
@@ -156,8 +158,9 @@ def test_create_dimT_abs():
     axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     dimT_user_dataframe = pandas.read_csv(default_expected_results_dir/'dimT_user.csv')
     phenT_abs_dataframe = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
+    dynT_dataframe = pandas.read_csv(default_expected_results_dir/'dynT.csv')
     expected_dimT_dataframe = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    dimT_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user_dataframe, phenT_abs_dataframe)
+    dimT_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user_dataframe, phenT_abs_dataframe, dynT_dataframe)
     test_table_filepath = default_results.joinpath('dimT_abs.csv')
     dimT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
@@ -332,7 +335,8 @@ def test_gen_adel_input_data_from_full():
 
 
 def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
-    result_table_dir = tmp_results_directory.joinpath('%d_%d' % (dynT_user_completeness, dimT_user_completeness))
+    result_table_dir = tmp_results_directory.joinpath('%s_%s' % (completeness_mapping[dynT_user_completeness], 
+                                                                 completeness_mapping[dimT_user_completeness]))
     if not result_table_dir.exists():
         result_table_dir.mkdir()
     for key, value in to_compare.iteritems():

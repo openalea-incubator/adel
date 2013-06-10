@@ -756,15 +756,15 @@ def gen_adel_input_data(dynT_user,
         TT_flag_leaf_ligulation = dynT_user['TT_col_nff'][dynT_user.first_valid_index()]
     
     (axeT_tmp_dataframe, 
-    dimT_tmp_dataframe, 
-    dynT_tmp_dataframe, 
-    tilleringT_dataframe,
-    cohortT_dataframe) = _gen_adel_input_data_first(plant_number, 
-                                                       decide_child_cohort_probabilities, 
-                                                       MS_leaves_number_probabilities, 
-                                                       TT_bolting, 
-                                                       TT_flag_leaf_ligulation, 
-                                                       final_axes_density) 
+     dimT_tmp_dataframe, 
+     dynT_tmp_dataframe, 
+     tilleringT_dataframe,
+     cohortT_dataframe) = _gen_adel_input_data_first(plant_number, 
+                                                     decide_child_cohort_probabilities, 
+                                                     MS_leaves_number_probabilities, 
+                                                     TT_bolting, 
+                                                     TT_flag_leaf_ligulation, 
+                                                     final_axes_density) 
     
     # 3. complete dynT_user
     if dynT_user_completeness == DataCompleteness.MIN:
@@ -944,7 +944,7 @@ def _gen_adel_input_data_second(axeT_tmp_dataframe,
     # create axeT
     axeT_dataframe = axeT.create_axeT(axeT_tmp_dataframe, phenT_first_dataframe, dynT_dataframe, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density)
     # create dimT_abs
-    dimT_abs_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user, phenT_abs_dataframe)
+    dimT_abs_dataframe = dimT.create_dimT_abs(axeT_dataframe, dimT_user, phenT_abs_dataframe, dynT_dataframe)
     # create dimT
     dimT_dataframe = dimT.create_dimT(dimT_abs_dataframe)
     # create HS_GL_SSI_T 

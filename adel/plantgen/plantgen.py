@@ -24,7 +24,7 @@ Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
 import numpy as np
 import pandas
 
-from adel.plantgen import axeT, dimT, dynT, phenT, tools
+from adel.plantgen import axeT, dimT, dynT, phenT, tools, params
 
 class DataCompleteness:
     '''
@@ -689,6 +689,14 @@ def gen_adel_input_data(dynT_user,
     possible_cohorts = \
         set([idx_of_cohort for (idx_of_cohort, probability) in
              decide_child_cohort_probabilities.iteritems() if probability != 0.0])
+        
+    # check plant_number, decide_child_cohort_probabilities and final_axes_density validity
+    theoretical_cohorts_cardinalities = tools.calculate_theoretical_cohorts_cardinalities(plant_number, 
+                                                                                          decide_child_cohort_probabilities,
+                                                                                          params.FIRST_CHILD_DELAY)
+    theoretical_cardinalities_sum = sum(theoretical_cohorts_cardinalities.values())
+    tools.checkValidity(final_axes_density <= int(theoretical_cardinalities_sum))
+    
     # check dynT_user validity
     if dynT_user_completeness == DataCompleteness.MIN:
         expected_dynT_user_keys_value_types = {'a_cohort': float, 
@@ -906,7 +914,8 @@ def _gen_adel_input_data_first(plant_number,
                               MS_leaves_number_probabilities,
                               TT_bolting, 
                               TT_flag_leaf_ligulation,
-                              final_axes_density):    
+                              final_axes_density,
+                              theoretical_cohorts_cardinalities):    
     '''Generate the input data: first step.'''
     # create axeT_tmp
     axeT_tmp_dataframe = axeT.create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
@@ -917,7 +926,7 @@ def _gen_adel_input_data_first(plant_number,
     # create tilleringT
     tilleringT_dataframe = axeT.create_tilleringT(0, TT_bolting, TT_flag_leaf_ligulation, plant_number, axeT_tmp_dataframe, final_axes_density)
     # create cohortT
-    cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_tmp_dataframe['id_cohort_axis'])
+    cohortT_dataframe = axeT.create_cohortT(theoretical_cohorts_cardinalities, axeT_tmp_dataframe['id_cohort_axis'])
 
     return axeT_tmp_dataframe, dimT_tmp_dataframe, dynT_tmp_dataframe, tilleringT_dataframe, cohortT_dataframe
 

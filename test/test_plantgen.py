@@ -1,7 +1,7 @@
 import random
 
 from adel.plantgen import axeT, dimT, phenT, \
-    plantgen, dynT
+    plantgen, dynT, params, tools
 import numpy as np
 import pandas
 from openalea.core.path import path
@@ -12,11 +12,11 @@ random.seed(1234)
 
 initial_random_state = random.getstate()
 
-plant_number = 100
+plant_number = 5
 decide_child_cohort_probabilities = {'3': 0.0, '4': 0.900, '5': 0.967, '6': 0.817, '7': 0.083}
 MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
 TT_bolting = 500.0
-final_axes_density = 250
+final_axes_density = 15
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_nff = {'1': 1078.0, '4': 1148.0, '5': 1158.0, '6': 1168.0, '7': 1178.0}
@@ -182,7 +182,10 @@ def test_create_tilleringT():
 def test_create_cohortT():
     axeT_dataframe = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_cohortT_dataframe = pandas.read_csv(default_expected_results_dir/'cohortT.csv')
-    cohortT_dataframe = axeT.create_cohortT(plant_number, decide_child_cohort_probabilities, axeT_dataframe['id_cohort_axis'])
+    theoretical_cohorts_cardinalities = tools.calculate_theoretical_cohorts_cardinalities(plant_number, 
+                                                                                          decide_child_cohort_probabilities,
+                                                                                          params.FIRST_CHILD_DELAY)
+    cohortT_dataframe = axeT.create_cohortT(theoretical_cohorts_cardinalities, axeT_dataframe['id_cohort_axis'])
     test_table_filepath = default_results.joinpath('cohortT.csv')
     cohortT_dataframe.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath

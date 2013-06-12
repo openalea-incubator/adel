@@ -26,6 +26,7 @@ import math
 import types
 
 import numpy as np
+import pandas
 from scipy.optimize import leastsq
 
 def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=None, parent_cohort_position=None, first_child_delay=2):
@@ -244,9 +245,74 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
     return p[0], rmse
 
 
+def calculate_theoretical_cohorts_cardinalities(plant_number, 
+                                                decide_child_cohort_probabilities, 
+                                                first_child_delay):
+    '''
+    Calculate the theoretical cardinality of each cohort. 
+    
+    :Parameters:
+    
+        - `plant_number` (:class:`int`) - the number of plants. 
+        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the child 
+          cohorts. 
+        - `first_child_delay` (:class:`int`) - The delay between 
+          a parent cohort and its first possible child cohort. This delay is 
+          expressed in number of cohorts.
+          
+    :Returns:
+        a dictionary which contains, for each cohort, the cardinality of the cohort. 
+        Keys are the index of the cohorts (int), values are the cardinalities of 
+        the cohorts (float).
+    
+    :Returns Type:
+        :class:`dict`
+        
+    '''
+    decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
+    # the cohort '1' always exists, so its probability is 1.0.
+    decide_cohort_probabilities['1'] = 1.0
+    possible_cohorts = np.array(decide_cohort_probabilities.keys()).astype(int)
+    decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
+    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys()).astype(int)
+    possible_parent_cohorts = possible_child_cohorts - first_child_delay
+    commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
+    possible_parent_cohorts = possible_cohorts[commons]
+    decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
+    
+    cohort_cardinalities_dataframe = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
+                                         columns=['cohort', 
+                                                  'theoretical_cardinality'])
+    theoretical_probabilities_series = pandas.Series(index=cohort_cardinalities_dataframe.index)
+    idx = 0
+    for (cohort_str, decide_probability) in decide_cohort_probabilities.iteritems():
+        cohort_int = int(cohort_str)
+        cohort_cardinalities_dataframe['cohort'][idx] = cohort_int
+        if cohort_str == '1':
+            theoretical_probabilities_series[idx] = decide_cohort_probabilities['1']
+        else:
+            first_possible_parent = cohort_int - first_child_delay
+            curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
+            curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
+            theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()
+        idx += 1
+    cohort_cardinalities_dataframe['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
+    
+    return dict(zip(cohort_cardinalities_dataframe.values[:, 0], cohort_cardinalities_dataframe.values[:, 1],))
+    
+
 def checkValidity(is_valid):
-        if not is_valid:
-            raise InputError()
+    '''
+    Raise an InputError exception when an invalid input is detected. 
+    
+    :Parameters:
+    
+        - `is_valid` (bool) - the result of the expression which has been used 
+          to test the validity of an input.
+    
+    '''
+    if not is_valid:
+        raise InputError()
 
 
 class Error(Exception):

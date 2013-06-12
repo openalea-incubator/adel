@@ -268,15 +268,14 @@ def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_n
     return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flag_leaf_ligulation], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
 
 
-def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_axes):
+def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axes):
     '''
     Create the :ref:`cohortT <cohortT>` dataframe.
     
     :Parameters:
     
-        - `plant_number` (:class:`int`) - the number of plants. 
-        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the child 
-          cohorts. 
+        - `theoretical_cohorts_cardinalities` (:class:`dict`) - the theoretical 
+          cardinalities of the cohorts. 
         - `id_cohort_axes` (:class:`pandas.Series`) - the *id_cohort_axis* column of 
           :ref:`axeT <axeT>`
           
@@ -287,42 +286,23 @@ def create_cohortT(plant_number, decide_child_cohort_probabilities, id_cohort_ax
         :class:`pandas.DataFrame`
     
     '''
-    
-    decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
-    # the cohort '1' always exists, so its probability is 1.0.
-    decide_cohort_probabilities['1'] = 1.0
-    possible_cohorts = np.array(decide_cohort_probabilities.keys()).astype(int)
-    decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
-    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys()).astype(int)
-    decide_child_cohort_probability_values = np.array(decide_child_cohort_probabilities.values())
-    possible_parent_cohorts = possible_child_cohorts - params.FIRST_CHILD_DELAY
-    commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
-    possible_parent_cohorts = possible_cohorts[commons]
-    decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
-    
-    cohortT_dataframe = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
+    theoretical_cohorts = theoretical_cohorts_cardinalities.keys()
+    cohortT_dataframe = pandas.DataFrame(index=range(len(theoretical_cohorts)), 
                                          columns=['cohort', 
                                                   'theoretical_cardinality', 
                                                   'simulated_cardinality'])
-    theoretical_probabilities_series = pandas.Series(index=cohortT_dataframe.index)
+    
     simulated_cardinalities = id_cohort_axes.astype(int).value_counts()
     idx = 0
-    for (cohort_str, decide_probability) in decide_cohort_probabilities.iteritems():
-        cohort_int = int(cohort_str)
-        cohortT_dataframe['cohort'][idx] = cohort_int
-        if cohort_str == '1':
-            theoretical_probabilities_series[idx] = decide_cohort_probabilities['1']
-        else:
-            first_possible_parent = cohort_int - params.FIRST_CHILD_DELAY
-            curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
-            curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
-            theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()
-        if cohort_int in simulated_cardinalities:
-            cohortT_dataframe['simulated_cardinality'][idx] = simulated_cardinalities[cohort_int]
+    for theoretical_cohort, theoretical_cardinality in theoretical_cohorts_cardinalities.iteritems():
+        cohortT_dataframe['cohort'][idx] = theoretical_cohort
+        cohortT_dataframe['theoretical_cardinality'][idx] = theoretical_cardinality
+        if theoretical_cohort in simulated_cardinalities:
+            cohortT_dataframe['simulated_cardinality'][idx] = simulated_cardinalities[theoretical_cohort]
         else:
             cohortT_dataframe['simulated_cardinality'][idx] = 0
         idx += 1 
-    cohortT_dataframe['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
     cohortT_dataframe = cohortT_dataframe.sort_index(by='cohort')
+    cohortT_dataframe.index = range(len(cohortT_dataframe))
     return cohortT_dataframe
-        
+

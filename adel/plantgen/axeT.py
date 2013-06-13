@@ -268,7 +268,7 @@ def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_n
     return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flag_leaf_ligulation], 'NbrAxes': [plant_number, axeT_tmp_dataframe.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
 
 
-def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axes):
+def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axis):
     '''
     Create the :ref:`cohortT <cohortT>` dataframe.
     
@@ -276,7 +276,7 @@ def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axes):
     
         - `theoretical_cohorts_cardinalities` (:class:`dict`) - the theoretical 
           cardinalities of the cohorts. 
-        - `id_cohort_axes` (:class:`pandas.Series`) - the *id_cohort_axis* column of 
+        - `id_cohort_axis` (:class:`pandas.Series`) - the *id_cohort_axis* column of 
           :ref:`axeT <axeT>`
           
     :Returns:
@@ -292,7 +292,7 @@ def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axes):
                                                   'theoretical_cardinality', 
                                                   'simulated_cardinality'])
     
-    simulated_cardinalities = id_cohort_axes.astype(int).value_counts()
+    simulated_cardinalities = id_cohort_axis.astype(int).value_counts()
     idx = 0
     for theoretical_cohort, theoretical_cardinality in theoretical_cohorts_cardinalities.iteritems():
         cohortT_dataframe['cohort'][idx] = theoretical_cohort

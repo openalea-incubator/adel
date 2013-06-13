@@ -772,7 +772,8 @@ def gen_adel_input_data(dynT_user,
                                                      MS_leaves_number_probabilities, 
                                                      TT_bolting, 
                                                      TT_flag_leaf_ligulation, 
-                                                     final_axes_density) 
+                                                     final_axes_density,
+                                                     theoretical_cohorts_cardinalities) 
     
     # 3. complete dynT_user
     if dynT_user_completeness == DataCompleteness.MIN:

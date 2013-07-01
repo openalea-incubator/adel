@@ -24,11 +24,11 @@ pars <- devTcsv(paste(chem,"axeT",manip,".csv",sep=""),
                 paste(chem,"ssi2sen.csv",sep=""))
 #
 #avatar
-pars <- devTcsv(paste(chem,"axeTSoissonsNormal_10plants.csv",sep=""),
-                paste(chem,"dimTSoissons.csv",sep=""),
-                paste(chem,"phenTNormalPhyllochron.csv",sep=""),
-                paste(chem,"earT",manip,".csv",sep=""),
-                paste(chem,"ssi2sen.csv",sep=""))
+#pars <- devTcsv(paste(chem,"axeTSoissonsNormal_10plants.csv",sep=""),
+#                paste(chem,"dimTSoissons.csv",sep=""),
+#                paste(chem,"phenTNormalPhyllochron.csv",sep=""),
+#                paste(chem,"earT",manip,".csv",sep=""),
+#                paste(chem,"ssi2sen.csv",sep=""))
 #Specify geoLeaf & geoAxe
 geoLeaf <- genGeoLeaf()
 geoAxe <- genGeoAxe()

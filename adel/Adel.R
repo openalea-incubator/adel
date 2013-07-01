@@ -164,9 +164,7 @@ htube <- function(kin,ht0) {
   pmax(0,ht - stem)
 }
 #
-checktube <- function(kin,ht0=0) {
-  #try to accomodate tube length to emergence constrainst using rolling/opening
-  n <- max(seq(nrow(kin))[kin$ntop >=0])
+basetube <- function(kin,ht0=0) {
   # for first phytomer, try to accomodate for ht0 if first sheath is too short
   if (ht0 > kin$Gl[1] & kin$xh[1] > 0) {
     delta = ht0 - kin$Gl[1]
@@ -177,6 +175,12 @@ checktube <- function(kin,ht0=0) {
     kin$ht[1] <- 0
     kin$ht <- htube(kin,0)
   }
+  kin
+}
+#
+checktube <- function(kin,ht0=0) {
+  n <- max(seq(nrow(kin))[kin$ntop >=0])
+  #try to accomodate tube length to emergence constrainst using rolling/opening
   if (n >=2)
     for (i in 2:n) {
       # for emerged collar, ht must be less than Lh
@@ -234,6 +238,25 @@ ms_pos <- function(axeid) {
   pos
 }
 #
+# Construct whorl, compute rolling and visibility
+#
+visibility <- function(kin,ht0=0) {
+  #initialisation of rolling/opening
+  kin[,c("Llrolled","Glopen")] <- 0
+  kin$ht <- htube(kin,ht0)
+  if (all(c("Lhem","Lhcol","xh","Lh") %in% colnames(kin))) {
+    kin <- basetube(kin,ht0)
+    kin <- checktube(kin)
+  } else {
+    kin$xh <- 1
+    kin <- basetube(kin,ht0)
+  }
+  kin$Llvis <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
+  kin$Glvis <- pmin(pmax(0,kin$Gl + kin$El - kin$ht),kin$Gl)
+  kin$Elvis <- pmin(pmax(0,kin$El - kin$ht),kin$El)
+  kin
+}
+#
 #model: kinlist is the output of kinL : all axes computed as ramification emerging from stem (no enclosing sheath). Length of the enclosing sheath is accomodated by rolling first blade if needed.
 #
 kinLvis <- function(kinlist,pars=NULL) {
@@ -242,29 +265,25 @@ kinLvis <- function(kinlist,pars=NULL) {
   for (d in seq(dim(kinlist[[1]])[1])) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
-      kin <- data.frame(kinlist[[a]][d,,])
-      #initialisation of rolling/opening
-      kin[,c("Llrolled","Glopen")] <- 0
+      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh")])
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == "MS") {
         ht0 = max(kin$Lhem[1],kin$Gl[1])
-        kin$ht <- htube(kin,ht0)
-        kin <- checktube(kin,ht0)
+        kin <- visibility(kin,ht0)
         htbm <- kin$ht
       } else {
         # numero de la gaine axillante sur le bm
         axilrank <- ms_pos(axes[a])
         axil <- htbm[axilrank + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe
-        kin$ht <- htube(kin,axil)
-        kin <- checktube(kin,axil)
+        kin <- visibility(kin,axil)
       }
                                         #calcul Lvis
       res[[a]][d,,"ht"] <- kin$ht
       res[[a]][d,,"Llrolled"] <- kin$Llrolled
       res[[a]][d,,"Glopen"] <- kin$Glopen      
-      res[[a]][d,,"Llvis"] <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
-      res[[a]][d,,"Glvis"] <- pmin(pmax(0,kin$Gl + kin$El - kin$ht),kin$Gl)
-      res[[a]][d,,"Elvis"] <- pmin(pmax(0,kin$El - kin$ht),kin$El)
+      res[[a]][d,,"Llvis"] <- kin$Llvis
+      res[[a]][d,,"Glvis"] <- kin$Glvis
+      res[[a]][d,,"Elvis"] <- kin$Elvis
     }
   }
        res

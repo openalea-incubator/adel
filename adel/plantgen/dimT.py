@@ -164,9 +164,10 @@ def _init_dimT_abs(id_dim_from_axeT_unique, dimT_user, phenT_abs, dynT):
             
             new_dimT = pandas.DataFrame(index=index_phytomer_list, 
                                         columns=dimT_abs.columns)
+            new_dimT[['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = np.nan
+            new_dimT = new_dimT.astype(float)
             new_dimT['id_dim'] = id_dim_from_axeT_
             new_dimT['index_phytomer'] = index_phytomer_list
-            new_dimT[['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = np.nan
             new_dimT['TT_em_phytomer'] = new_TT_em_phytomer
             new_dimT['is_ear'] = int(current_id_dim_from_axeT_str[-1])
             dimT_abs = pandas.concat([dimT_abs, new_dimT], ignore_index=True)
@@ -304,7 +305,7 @@ def create_dimT(dimT_abs):
                  
     '''
     tools.checkValidity(dimT_abs.count().max() == dimT_abs.count().min() == dimT_abs.index.size)
-    dimT_dataframe = pandas.DataFrame(index=dimT_abs.index, columns=['id_dim', 'index_rel_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'])
+    dimT_dataframe = pandas.DataFrame(index=dimT_abs.index, columns=['id_dim', 'index_rel_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'], dtype=float)
     dimT_dataframe[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = dimT_abs[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]
     tmp_series = pandas.Series(dimT_dataframe.index)
     for name, group in dimT_abs.groupby('id_dim'):

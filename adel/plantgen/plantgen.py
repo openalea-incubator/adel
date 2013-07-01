@@ -880,7 +880,7 @@ The values can be one of %s''', (str(dynT_user_completeness),
             if not dimT_user.ix[curr_id_dim_user_group_first_index].notnull().all():
                 continue
             user_group = user_grouped.get_group(generated_id_dim)
-            dimT_tmp_dataframe.ix[generated_group.index] = dimT_user.ix[user_group.index]
+            dimT_tmp_dataframe.ix[generated_group.index] = dimT_user.ix[user_group.index].values
     else:
         raise Exception('''%s is an unknown user data completeness value. \
 The values can be one of %s''', (str(dimT_user_completeness), 

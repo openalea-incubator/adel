@@ -281,7 +281,7 @@ def create_phenT(phenT_abs_dataframe, phenT_first_dataframe):
     
     '''
     tools.checkValidity(phenT_abs_dataframe.count().max() == phenT_abs_dataframe.count().min() == phenT_abs_dataframe.index.size)
-    phenT_dataframe = pandas.DataFrame(index=phenT_abs_dataframe.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_em_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'])
+    phenT_dataframe = pandas.DataFrame(index=phenT_abs_dataframe.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_em_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
     phenT_dataframe['id_phen'] = phenT_abs_dataframe['id_phen']
     tmp_series = pandas.Series(phenT_dataframe.index)
     for name, group in phenT_abs_dataframe.groupby('id_phen'):

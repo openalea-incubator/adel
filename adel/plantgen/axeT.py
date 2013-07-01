@@ -290,7 +290,8 @@ def create_cohortT(theoretical_cohorts_cardinalities, id_cohort_axis):
     cohortT_dataframe = pandas.DataFrame(index=range(len(theoretical_cohorts)), 
                                          columns=['cohort', 
                                                   'theoretical_cardinality', 
-                                                  'simulated_cardinality'])
+                                                  'simulated_cardinality'],
+                                         dtype=float)
     
     simulated_cardinalities = id_cohort_axis.astype(int).value_counts()
     idx = 0

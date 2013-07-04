@@ -277,7 +277,6 @@ kinLvis <- function(kinlist,pars=NULL) {
         axil <- htbm[axilrank + 1]# tiller a emerges from same tube as leaf a+1 on the bearing axe
         kin <- visibility(kin,axil)
       }
-                                        #calcul Lvis
       res[[a]][d,,"ht"] <- kin$ht
       res[[a]][d,,"Llrolled"] <- kin$Llrolled
       res[[a]][d,,"Glopen"] <- kin$Glopen      
@@ -319,6 +318,72 @@ stemElements <- function(desc) {
   data.frame(metamer=metamer,elt=elt,dl=dl)
 }
 #
+# Compute inclinations of stem elements
+#
+axe_inclination <- function(dat, matureEl, axename, incBase, dredT,epsillon=1e-6) {
+  nbphy <- nrow(dat)#inclus ear,ped et awn
+      # Calcul des inclinaisons de tiges
+      # 1er phyto = entrenoeud a incT
+  Einc <- rep(0,nbphy)
+  Ginc <- rep(0,nbphy)
+  if (axename == "MS") {
+    incT <- incBase
+  } else {
+    en <- which(matureEl > epsillon)
+    if (length(en) > 0) {
+      firstEn <- min(en)
+      incT <- max(3,incBase * dat$El[firstEn] / matureEl[firstEn])
+    } else {
+      incT <- 3
+    }
+  }
+  Einc[1] <- incT
+                                        # redressement (if any)
+  if (dredT > 0 & sum(dat$Ev+dat$Gv) > epsillon) {
+          #distance inserton talle -> extremite stemElements
+    stem <- stemElements(dat)
+    alpha <- (90 - incT) * pi / 180
+    hc <- cumsum(stem$dl)
+    dc <- hc * cos(alpha)
+    #phytomer a redresser
+    if (any(dc >= dredT)) {
+      nd <- min(which(dc >= dredT))
+      #beta : angle entre l'horizontale et l'element nd pour que son extremite tombe a  dredT
+      if (nd > 1) {
+        beta <- acos( (dredT - dc[nd - 1]) / (hc[nd] - hc[nd - 1]) )
+        inc <- -(beta - alpha) / pi * 180
+        if (stem$elt[nd] == "en") {
+          Einc[stem$metamer[nd]] <- inc
+        } else {
+          Ginc[stem$metamer[nd]] <- inc
+        }
+        if (nd < nrow(stem)) {
+          inc <- - (pi / 2 - beta) / pi * 180
+          if (stem$elt[nd+1] == "en") {
+            Einc[stem$metamer[nd+1]] <- inc
+          } else {
+            Ginc[stem$metamer[nd+1]] <- inc
+          } 
+        }
+      } else {#incT too large
+        beta <- acos(dredT / hc[1])
+        Einc[1] <- (pi / 2 - beta) / pi * 180
+        if (nrow(stem) > 1) {
+          inc <- -Einc[1]
+          if (stem$elt[2] == "en") {
+            Einc[stem$metamer[2]] <- inc
+          } else {
+            Ginc[stem$metamer[2]] <- inc
+          }
+        }
+      }
+    }
+  }
+  dat$Einc <- Einc
+  dat$Ginc <- Ginc
+  dat
+}
+#
 getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE),t=1) {
   epsillon = pars$epsillon
   fshrink = pars$senescence_leaf_shrink
@@ -339,67 +404,12 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen","Lr")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,a])
-        dataxe <- plant$axeT[a,]
+        dataxe <- plant$axeT[a,]       
         nbleaf <- dataxe$nf
         nbphy <- nrow(dat)#inclus ear,ped et awn
         datp <- datp[1:nbphy,]
       # Calcul des inclinaisons de tiges
-      # 1er phyto = entrenoeud a incT
-        Einc <- rep(0,nbphy)
-        Ginc <- rep(0,nbphy)
-        if (axename == "MS") {
-          incT <- dataxe$incT
-        } else {
-          en <- which(datp$El > epsillon)
-          if (length(en) > 0) {
-            firstEn <- min(en)
-            incT <- max(3,dataxe$incT * dat$El[firstEn] / datp$El[firstEn])
-          } else {
-            incT <- 3
-          }
-        }
-        Einc[1] <- incT
-      # redressement (if any)
-        if (dataxe$dredT > 0 & sum(dat$Ev+dat$Gv) > epsillon) {
-          #distance inserton talle -> extremite stemElements
-          stem <- stemElements(dat)
-          alpha <- (90 - incT) * pi / 180
-          hc <- cumsum(stem$dl)
-          dc <- hc * cos(alpha)
-          #phytomer a redresser
-          if (any(dc >= dataxe$dredT)) {
-            nd <- min(which(dc >= dataxe$dredT))
-            #beta : angle entre l'horizontale et l'element nd pour que son extremite tombe a  dredT
-            if (nd > 1) {
-              beta <- acos( (dataxe$dredT - dc[nd - 1]) / (hc[nd] - hc[nd - 1]) )
-              inc <- -(beta - alpha) / pi * 180
-              if (stem$elt[nd] == "en") {
-                Einc[stem$metamer[nd]] <- inc
-              } else {
-                Ginc[stem$metamer[nd]] <- inc
-              }
-              if (nd < nrow(stem)) {
-                inc <- - (pi / 2 - beta) / pi * 180
-                if (stem$elt[nd] == "en") {
-                  Einc[stem$metamer[nd+1]] <- inc
-                } else {
-                  Ginc[stem$metamer[nd+1]] <- inc
-                } 
-              }
-            } else {#incT too large
-              beta <- acos(dataxe$dredT / hc[1])
-              Einc[1] <- (pi / 2 - beta) / pi * 180
-              if (nrow(stem) > 1) {
-                inc <- -Einc[1]
-                if (stem$elt[2] == "en") {
-                  Einc[stem$metamer[2]] <- inc
-                } else {
-                  Ginc[stem$metamer[2]] <- inc
-                }
-              }
-            }
-          }
-        }           
+        dat <- axe_inclination(dat, datp$El, axename, dataxe$incT, dataxe$dredT)
 
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim
@@ -431,11 +441,11 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Lpo=pogreen,
                                          Lpos=posen,
                                          Gd=datp$Gd,
-                                         Ginc=Ginc,
+                                         Ginc=dat$Ginc,
                                          Gpo=pogreen,
                                          Gpos=posen,
                                          Ed=datp$Ed,
-                                         Einc=Einc,
+                                         Einc=dat$Einc,
                                          Epo=Epo,
                                          Epos=Epos),
                               dat))

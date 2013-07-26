@@ -189,7 +189,7 @@ def plantSample(setAdelPars):
 def checkAxeDyn(setAdelPars, dates, plotArea = 1):
     """ Compute the number of axes present in the canopy at given dates"""
     if (type(dates) is not list):
-        dates = [datesTT]
+        dates = [dates]
     d = robj.FloatVector(dates)
     naxes = RcheckAxeDyn(d, setAdelPars)
     return _rvect_asarray(naxes) * plotArea

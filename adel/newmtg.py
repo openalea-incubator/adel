@@ -11,7 +11,7 @@ from alinea.adel.mtg import convert,properties_from_dict
 from openalea.mtg import MTG, fat_mtg
 
 import numpy as np
-
+import pandas as pd
 # try:
     # from openalea.mtg.traversal import *
 # except:
@@ -32,7 +32,7 @@ import numpy as np
 # import random
 # from math import pi
 
-def internode_elements(l,lvis, lsen, az, inc):
+def internode_elements(l,lvis, lsen, az, inc, split = False):
     """ returns parameters of internode elements (visible parts of the internode).
     l is the length of the internode
     lv is the visible length (senesced + green)
@@ -50,11 +50,15 @@ def internode_elements(l,lvis, lsen, az, inc):
         lsen = lvis - lgreen
     except TypeError:
         pass
-    green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
-    sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
-    return [green_elt, sen_elt]
+    if split :
+        green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
+        sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
+        return [green_elt, sen_elt]
+    else : 
+        elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen + lsen, 'l_sen' : lsen, 'is_green': lgreen >= lsen, 'azimuth': az, 'inclination': inc}
+        return [elt]
     
-def sheath_elements(l, lvis, lsen, az, inc):
+def sheath_elements(l, lvis, lsen, az, inc, split = False):
     """ returns parameters of sheath elements (visible parts of the sheath).
     l is the length of the sheath
     lv is the visible length (senesced + green)
@@ -63,9 +67,9 @@ def sheath_elements(l, lvis, lsen, az, inc):
     Second elements is for senesced visible part of the sheath
     """
     # same logic as internodes
-    return internode_elements(l,lvis,lsen, az, inc)
+    return internode_elements(l,lvis,lsen, az, inc, split)
     
-def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape):
+def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, split = False):
     """ return parameters of blade elements (visible parts of the blade).
     sectors is the number of sectors dividing pattern blade shape
     l is the length of the blade
@@ -128,8 +132,13 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape):
         green_elt = {'label': 'LeafElement', 'length': ls_green, 'is_green': True,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'is_green': False, 
-                'srb': srb_sen, 'srt': srt_sen} 
-        elements.extend([green_elt,sen_elt])
+                'srb': srb_sen, 'srt': srt_sen}
+        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'is_green': (ls_green > ls_sen), 
+                'srb': srb_green, 'srt': srt_sen} 
+        if split: 
+            elements.extend([green_elt,sen_elt])
+        else:
+            elements.extend([elt])
         st += ds
     return elements
     
@@ -305,7 +314,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                 endleaf = 1.6
                 stemleaf = 1.2
                 startE = endleaf
-                endE = startE + (endLeaf - startLeaf) / stemleaf
+                endE = startE + (endleaf - startleaf) / stemleaf
                 endBlade = endleaf
                 if args['Gl'] > 0:
                     endBlade = args['Ll'] / args['Gl'] * (endleaf - startleaf)
@@ -378,7 +387,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
 
 def update_elements(organ):
     if organ.label.startswith('blade'):
-        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, organ.senesced_length, organ.shape_mature_length)
+        rolled_length = 0
+        elements =  blade_elements(organ.n_sect, organ.length, rolled_length, organ.visible_length, organ.senesced_length, organ.shape_mature_length)
         for i,e in enumerate(organ.components()):
             for k in elements[i]:
                 exec "e.%s = elements[i]['%s']"%(k,k)
@@ -390,7 +400,8 @@ def update_plant(plant, time):
 def update_axe(axe):
     """ update phenology on axes """
     if 'timetable' in axe.properties():
-        axe.phyllochronic_time = np.interp(axe.complex().time, axe.timetable['n'], axe.timetable['tip'])
+        axe.phyllochronic_time = np.interp(axe.complex().time, axe.timetable['tip'], axe.timetable['n'])
+        print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
         
 def update_organ(organ,h_whorl=0):
     rank = int(organ.complex().index())
@@ -398,38 +409,69 @@ def update_organ(organ,h_whorl=0):
     rph = axe.phyllochronic_time - rank
     length = organ.length
     vlength = organ.visible_length
+    #vlength = organ.length
     if 'elongation_curve' in organ.properties():
         organ.length = np.interp(rph, organ.elongation_curve['x'], organ.elongation_curve['y'])
     organ.visible_length = organ.length - h_whorl
+    #organ.visible_length = organ.length
     update_elements(organ)
     organ.dl = organ.length - length
-    organ.dl_visible = organ.visible_length - visible_length
+    organ.dl_visible = organ.visible_length - vlength
+
+def update_organ_from_table(organ,metamer):
+    neworg = metamer[organ.label]
+    new_elts = neworg.pop('elements')
+    for k in neworg:
+        if k is not 'shape_xysr':
+            exec "organ.%s = neworg['%s']"%(k,k)
+    for i,e in enumerate(organ.components()):
+        for k in new_elts[i]:
+            exec "e.%s = new_elts[i]['%s']"%(k,k)
 
     
-def mtg_update_at_time(g, time): 
+    
+def mtg_update_at_time(g, time, pars): 
     """ Compute plant state at a given time according to dynamical parameters found in mtg
-    """    
+    """ 
+    from alinea.adel.AdelR import RunAdel
+    cantable = RunAdel(time,pars)
+    df = pd.DataFrame(cantable)
     for pid in g.component_roots_at_scale_iter(g.root, scale=1):
         p = g.node(pid)
-        update_plant(p, time)
-        hw = {'0': 0}
-        for a in p.components_at_scale(2):
-            update_axe(a)
-            numaxe = int(a.index())
-            hwhorl = hw[str(numaxe)]
-            for o in a.components_at_scale(4):
-                update_organ(o,hwhorl)
-                #update whorl
-                if o.label.startswith('internode'):
-                    if o.inclination < 0:
-                        hwhorl = 0 #redressement
-                    else:
-                        hwhorl = max(0,hwhorl - o.length)
-                elif o.label.statswith('sheath'):
-                    hwhorl += o.visible_length
+        #update_plant(p, time)
+        # ms_index = p.components_at_scale(2)[0].index()
+        # hw = {str(ms_index): 0}
+        for ax in p.components_at_scale(2):
+            #print ax.label
+            #update_axe(ax)
+            # numaxe = int(a.index())
+            # hwhorl = hw[str(numaxe)]
+            for m in ax.components_at_scale(3):
+                dm = df[(df['plant'] == int(p.index())) & (df['axe_id'] == ax.label) & (df['numphy'] == int(m.index()))]
+                #if i > 0:
+                #    raise Exception("")
+                if (len(dm) > 0):
+                    #if (ax.label == "T1"):
+                    #    print "T1 is there"
+                    dmd = dict([(k,v[0]) for k,v in dm.to_dict('list').iteritems()])
+                    met = adel_metamer(**dmd)
+                    newmetamer = dict([(mm['label'],mm) for mm in met])
+                    for o in m.components_at_scale(4):
+                        update_organ_from_table(o,newmetamer)
+                        #if o.label is 'blade':
+                    #    raise Exception("")
+                # update_organ(o,hwhorl)
+                # update whorl
+                # if o.label.startswith('internode'):
+                    # if o.inclination < 0:
+                        # hwhorl = 0 #redressement
+                    # else:
+                        # hwhorl = max(0,hwhorl - o.length)
+                # elif o.label.startswith('sheath'):
+                    # hwhorl += o.visible_length
                     # memorise main stem values
-                    if numaxe == 0:
-                        hw[o.complex().index()] = o.length
+                    # if numaxe == ms_index:
+                        # hw[o.complex().index()] = o.length
 
 # to do
 

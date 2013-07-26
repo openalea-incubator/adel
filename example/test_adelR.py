@@ -4,11 +4,18 @@
 from openalea.plantgl.all import Viewer
 from pandas import DataFrame
 import alinea.adel.data_samples as adel_data
+import numpy as np
+
+
+from alinea.adel.newmtg import *
+from alinea.adel.mtg_interpreter import mtg_interpreter, plot3d
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe
 
 leafdb = adel_data.wheat_leaf_db()
 
 def adelR(nplants,dd):
     from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe
+    import alinea.adel.data_samples as adel_data
     devT = adel_data.devT()
     geoLeaf = genGeoLeaf()
     geoAxe = genGeoAxe()
@@ -56,6 +63,28 @@ def test(date=500,dec=10):
     g1,s1 = canMTG(chn)
     g2,s2 = newmtg(d,dec=dec)
     Viewer.display(s1+s2)
+    
+    
+def testdyn(nplants=1,start = 100,step = 50, nstep=30,dec=10,az=0):
+    from time import sleep
+   
+    pars, d = adelR(nplants,start)
+    
+    pos = [(i*dec,0,0) for i in range(nplants)]
+    
+    g=mtg_factory(d,adel_metamer, leaf_sectors=1,leaf_db=leafdb, stand = [(pos[i],az) for i in range(nplants)])
+    g=mtg_interpreter(g)
+    
+    time = start
+    for i in range(nstep):
+        s = plot3d(g)
+        Viewer.display(s)
+        #sleep(2)
+        time = start + (i + 1) * step
+        mtg_update_at_time(g, time, pars)
+        g=mtg_interpreter(g)
+       
+    return g,d
     
  # TO DO : senescence leaf shrink
  # tester secteurs > 1

@@ -157,7 +157,8 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                     S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_green, srt_green)
                 if ls_sen > 0:
                     S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_sen, srt_sen)
-                position_senescence = 1 - float(ls_sen) / lflat
+                # attention a garder une position constante quand on utlise une feuille stresse
+                position_senescence = 1 - float(ls_sen) / Lshape
         #except TypeError:
         #    print "passing"
         #    pass
@@ -165,7 +166,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'area': S_sen, 'is_green': False, 
                 'srb': srb_sen, 'srt': srt_sen}
-        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'healthy_surface' : S_green, 'is_green': (ls_green > ls_sen), 
+        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_area' : S_green, 'is_green': (ls_green > ls_sen), 
                 'srb': srb_green, 'srt': srt_sen, 'position_senescence':position_senescence} 
         if split: 
             elements.extend([green_elt,sen_elt])

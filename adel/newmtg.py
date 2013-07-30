@@ -401,7 +401,7 @@ def update_axe(axe):
     """ update phenology on axes """
     if 'timetable' in axe.properties():
         axe.phyllochronic_time = np.interp(axe.complex().time, axe.timetable['tip'], axe.timetable['n'])
-        print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
+        #print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
         
 def update_organ(organ,h_whorl=0):
     rank = int(organ.complex().index())
@@ -409,11 +409,9 @@ def update_organ(organ,h_whorl=0):
     rph = axe.phyllochronic_time - rank
     length = organ.length
     vlength = organ.visible_length
-    #vlength = organ.length
     if 'elongation_curve' in organ.properties():
         organ.length = np.interp(rph, organ.elongation_curve['x'], organ.elongation_curve['y'])
     organ.visible_length = organ.length - h_whorl
-    #organ.visible_length = organ.length
     update_elements(organ)
     organ.dl = organ.length - length
     organ.dl_visible = organ.visible_length - vlength
@@ -429,49 +427,49 @@ def update_organ_from_table(organ,metamer):
             exec "e.%s = new_elts[i]['%s']"%(k,k)
 
     
-    
-def mtg_update_at_time(g, time, pars): 
+
+def mtg_update_at_time(g, time): 
+    """ Compute plant state at a given time according to dynamical parameters found in mtg
+    """    
+    for pid in g.component_roots_at_scale_iter(g.root, scale=1):
+        p = g.node(pid)
+        update_plant(p, time)
+        hw = {'0': 0}
+        for a in p.components_at_scale(2):
+            update_axe(a)
+            numaxe = int(a.index())
+            hwhorl = hw[str(numaxe)]
+            for o in a.components_at_scale(4):
+                update_organ(o,hwhorl)
+                #update whorl
+                if o.label.startswith('internode'):
+                    if o.inclination < 0:
+                        hwhorl = 0 #redressement
+                    else:
+                        hwhorl = max(0,hwhorl - o.length)
+                elif o.label.statswith('sheath'):
+                    hwhorl += o.visible_length
+                    # memorise main stem values
+                    if numaxe == 0:
+                        hw[o.complex().index()] = o.length
+
+
+def mtg_update_from_table(g, cantable): 
     """ Compute plant state at a given time according to dynamical parameters found in mtg
     """ 
-    from alinea.adel.AdelR import RunAdel
-    cantable = RunAdel(time,pars)
+
     df = pd.DataFrame(cantable)
     for pid in g.component_roots_at_scale_iter(g.root, scale=1):
         p = g.node(pid)
-        #update_plant(p, time)
-        # ms_index = p.components_at_scale(2)[0].index()
-        # hw = {str(ms_index): 0}
         for ax in p.components_at_scale(2):
-            #print ax.label
-            #update_axe(ax)
-            # numaxe = int(a.index())
-            # hwhorl = hw[str(numaxe)]
             for m in ax.components_at_scale(3):
                 dm = df[(df['plant'] == int(p.index())) & (df['axe_id'] == ax.label) & (df['numphy'] == int(m.index()))]
-                #if i > 0:
-                #    raise Exception("")
                 if (len(dm) > 0):
-                    #if (ax.label == "T1"):
-                    #    print "T1 is there"
                     dmd = dict([(k,v[0]) for k,v in dm.to_dict('list').iteritems()])
                     met = adel_metamer(**dmd)
                     newmetamer = dict([(mm['label'],mm) for mm in met])
                     for o in m.components_at_scale(4):
                         update_organ_from_table(o,newmetamer)
-                        #if o.label is 'blade':
-                    #    raise Exception("")
-                # update_organ(o,hwhorl)
-                # update whorl
-                # if o.label.startswith('internode'):
-                    # if o.inclination < 0:
-                        # hwhorl = 0 #redressement
-                    # else:
-                        # hwhorl = max(0,hwhorl - o.length)
-                # elif o.label.startswith('sheath'):
-                    # hwhorl += o.visible_length
-                    # memorise main stem values
-                    # if numaxe == ms_index:
-                        # hw[o.complex().index()] = o.length
 
 # to do
 

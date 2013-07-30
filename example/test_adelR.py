@@ -81,7 +81,8 @@ def testdyn(nplants=1,start = 100,step = 50, nstep=30,dec=10,az=0):
         Viewer.display(s)
         #sleep(2)
         time = start + (i + 1) * step
-        mtg_update_at_time(g, time, pars)
+        canopy = RunAdel(time,pars)
+        mtg_update_from_table(g, canopy)
         g=mtg_interpreter(g)
        
     return g,d

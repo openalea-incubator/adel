@@ -47,10 +47,13 @@ def internode_elements(l,lvis, lsen, az, inc, split = False):
     """
     lhide = None
     lgreen = None
+    is_green = None
     try:
         lhide = max(l - lvis, 0.)
         lgreen = lvis - min(lsen,lvis)
         lsen = lvis - lgreen
+        #
+        is_green  = lgreen >= lsen
     except TypeError:
         pass
     if split :
@@ -58,7 +61,7 @@ def internode_elements(l,lvis, lsen, az, inc, split = False):
         sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
         return [green_elt, sen_elt]
     else : 
-        elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen + lsen, 'l_sen' : lsen, 'is_green': lgreen >= lsen, 'azimuth': az, 'inclination': inc}
+        elt = {'label': 'StemElement', 'offset': lhide, 'length': lvis, 'l_sen' : lsen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
         return [elt]
     
 def sheath_elements(l, lvis, lsen, az, inc, split = False):
@@ -87,7 +90,7 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
         snew = [sr_base] + list(se) + [sr_top]
         rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
         S = simps(rnew,snew) * Lshape * Lwshape
-        print "S",S
+        #print "S",S
     #except:
         #S = 0
     return S
@@ -137,31 +140,31 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
         srt_green = None
         srb_sen = None
         srt_sen = None
-        #try:
-        ls_vis = max(0., st - s_limvis)
-        if ls_vis > 0:
-            sb_green = st - min(ds, ls_vis)
-            st_green = min(st, max(sb_green,s_limsen))
-            sb_sen = st_green
-            st_sen= st
-            ls_green = st_green - sb_green
-            ls_sen = st_sen - sb_sen
-            #print(sb_green,st_green,st_sen)
-            if lflat > 0:
-                srb_green = float(sb_green - s_limvis) / lflat
-                srt_green = float(st_green - s_limvis) / lflat
-                srb_sen = float(sb_sen - s_limvis) / lflat
-                srt_sen = float(st_sen - s_limvis) / lflat
-                #print(srb_green,srt_green,srb_sen,srt_sen)
-                if ls_green > 0:
-                    S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_green, srt_green)
-                if ls_sen > 0:
-                    S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_sen, srt_sen)
-                # attention a garder une position constante quand on utlise une feuille stresse
-                position_senescence = 1 - float(ls_sen) / Lshape
-        #except TypeError:
+        try:
+            ls_vis = max(0., st - s_limvis)
+            if ls_vis > 0:
+                sb_green = st - min(ds, ls_vis)
+                st_green = min(st, max(sb_green,s_limsen))
+                sb_sen = st_green
+                st_sen= st
+                ls_green = st_green - sb_green
+                ls_sen = st_sen - sb_sen
+                #print(sb_green,st_green,st_sen)
+                if lflat > 0:
+                    srb_green = float(sb_green - s_limvis) / lflat
+                    srt_green = float(st_green - s_limvis) / lflat
+                    srb_sen = float(sb_sen - s_limvis) / lflat
+                    srt_sen = float(st_sen - s_limvis) / lflat
+                    #print(srb_green,srt_green,srb_sen,srt_sen)
+                    if ls_green > 0:
+                        S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_green, srt_green)
+                    if ls_sen > 0:
+                        S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_sen, srt_sen)
+                    # attention a garder une position constante quand on utlise une feuille stresse
+                    position_senescence = 1 - float(ls_sen) / Lshape
+        except TypeError:# input is None
         #    print "passing"
-        #    pass
+            pass
         green_elt = {'label': 'LeafElement', 'length': ls_green, 'area': S_green, 'is_green': True,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'area': S_sen, 'is_green': False, 

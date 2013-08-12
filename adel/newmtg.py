@@ -86,10 +86,12 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
     if leaf is not None:
         x,y,s,r = leaf
         sre = [sr for sr in zip(s,r) if (sr[0] > sr_base) & (sr[0] < sr_top)]
-        se,re = zip(*sre)
-        snew = [sr_base] + list(se) + [sr_top]
-        rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
-        S = simps(rnew,snew) * Lshape * Lwshape
+        # Temp G.Garin: 02/08/2013
+        if len(sre)>0:
+            se,re = zip(*sre)
+            snew = [sr_base] + list(se) + [sr_top]
+            rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
+            S = simps(rnew,snew) * Lshape * Lwshape
         #print "S",S
     #except:
         #S = 0
@@ -500,6 +502,7 @@ def mtg_update_from_table(g, cantable):
         for ax in p.components_at_scale(2):
             for m in ax.components_at_scale(3):
                 dm = df[(df['plant'] == int(p.index())) & (df['axe_id'] == ax.label) & (df['numphy'] == int(m.index()))]
+                # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict([(k,v[0]) for k,v in dm.to_dict('list').iteritems()])
                     blade = m.components_at_scale(4)[2]

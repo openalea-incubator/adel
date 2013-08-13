@@ -295,9 +295,9 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     if global_postprocessing_path_.exists():
         global_postprocessing_df = pandas.read_csv(global_postprocessing_path_)
     else:
-        columns = ['Filename', 'aire du plot', 'Nbr.plant/plot', 'ThermalTime', 
-                   'LAI totale', 'LAI vert', 'PAI total', 'PAI vert', 
-                   'Nbr.axe.tot/m2', 'Nbr.axe.croissance/m2']
+        columns = ['Filename', 'aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
+                   'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
+                   'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2']
         global_postprocessing_df = pandas.DataFrame(columns=columns)
     
     Filename = intermediate_path.basename()

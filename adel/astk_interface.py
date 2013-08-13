@@ -23,7 +23,9 @@ class AdelWheat(object):
         self.nsect = nsect
     
     def timing(self, delay, steps, weather, start_date):
-        """ compute timing and time_control_sets for a simulation between start and stop. return 0 when there is no rain
+        """ compute timing and time_control_sets for a simulation between start and stop. 
+
+        Return 0 when there is no rain
         """ 
         timestep = delay
         start_date= weather.str_to_datetime(start_date)
@@ -49,7 +51,8 @@ class AdelWheat(object):
         if time_control.dt <= 0:
             pass
         else:
-            self.canopy_age += time_control.dt
+            dday = time_control.Tair.mean()
+            self.canopy_age += dday
             canopy = RunAdel(self.canopy_age, self.pars)
             mtg_update_from_table(g, canopy)
             g = mtg_interpreter(g)

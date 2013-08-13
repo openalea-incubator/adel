@@ -20,10 +20,8 @@ also be used by other packages.
 Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
 '''
 
-
 import random
-import math
-import types
+import warnings
 
 import numpy as np
 import pandas
@@ -67,18 +65,17 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
                                                   cohort_position))
     else:
         # Find the children of the secondary stem.
-        for cohort_number_str, cohort_probability in decide_child_cohort_probabilities.iteritems():
-            cohort_number = int(cohort_number_str)
-            if cohort_number >= first_possible_cohort_number:
+        for cohort_id, cohort_probability in decide_child_cohort_probabilities.iteritems():
+            if cohort_id >= first_possible_cohort_number:
                 if cohort_probability >= random.random():
-                    child_cohort_position = cohort_number - parent_cohort_index - first_child_delay
+                    child_cohort_position = cohort_id - parent_cohort_index - first_child_delay
                     if parent_cohort_position == 'MS':
                         cohort_position = 'T%s' % child_cohort_position
                     else:
                         cohort_position = '%s.%s' % (parent_cohort_position, child_cohort_position)
-                    child_cohorts.append((cohort_number, cohort_position)) 
+                    child_cohorts.append((cohort_id, cohort_position)) 
                     child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
-                                                              cohort_number, 
+                                                              cohort_id, 
                                                               cohort_position))
     return child_cohorts
 
@@ -171,9 +168,20 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
 
     '''
     
-    checkValidity(max_axes_number >= 0 and min_axes_number >=0 and TT_bolting >= 0 and TT_flag_leaf_ligulation >= 0)
-    checkValidity(TT_bolting <= TT_flag_leaf_ligulation)
-    checkValidity(min_axes_number <= max_axes_number)
+    if max_axes_number < 0:
+        raise InputError("max_axes_number negative")
+    if min_axes_number < 0:
+        raise InputError("min_axes_number negative")
+    if TT_bolting < 0:
+        raise InputError("TT_bolting negative")
+    if TT_flag_leaf_ligulation < 0:
+        raise InputError("TT_flag_leaf_ligulation negative")
+    
+    if TT_bolting > TT_flag_leaf_ligulation:
+        raise InputError("TT_bolting greater than TT_flag_leaf_ligulation")
+    
+    if min_axes_number > max_axes_number:
+        raise InputError("min_axes_number greater than max_axes_number")
     
     polynomial_coefficient_array = np.polyfit([TT_flag_leaf_ligulation, TT_bolting], [min_axes_number, max_axes_number], 1)
                 
@@ -245,9 +253,9 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
     return p[0], rmse
 
 
-def calculate_theoretical_cohorts_cardinalities(plant_number, 
-                                                decide_child_cohort_probabilities, 
-                                                first_child_delay):
+def calculate_theoretical_cardinalities(plant_number, 
+                                        decide_child_cohort_probabilities, 
+                                        first_child_delay):
     '''
     Calculate the theoretical cardinality of each cohort. 
     
@@ -261,8 +269,8 @@ def calculate_theoretical_cohorts_cardinalities(plant_number,
           expressed in number of cohorts.
           
     :Returns:
-        a dictionary which contains, for each cohort, the cardinality of the cohort. 
-        Keys are the index of the cohorts (int), values are the cardinalities of 
+        a dictionary which contains the theoretical cardinality of each cohort. 
+        Keys are the index of the cohorts (str), values are the cardinalities of 
         the cohorts (float).
     
     :Returns Type:
@@ -270,62 +278,137 @@ def calculate_theoretical_cohorts_cardinalities(plant_number,
         
     '''
     decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
-    # the cohort '1' always exists, so its probability is 1.0.
-    decide_cohort_probabilities['1'] = 1.0
-    possible_cohorts = np.array(decide_cohort_probabilities.keys()).astype(int)
+    # the cohort 1 always exists, so its probability is 1.0.
+    decide_cohort_probabilities[1] = 1.0
+    possible_cohorts = np.array(decide_cohort_probabilities.keys())
     decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
-    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys()).astype(int)
+    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys())
     possible_parent_cohorts = possible_child_cohorts - first_child_delay
     commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
     possible_parent_cohorts = possible_cohorts[commons]
     decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
     
-    cohort_cardinalities_dataframe = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
-                                         columns=['cohort', 
-                                                  'theoretical_cardinality'])
-    theoretical_probabilities_series = pandas.Series(index=cohort_cardinalities_dataframe.index)
+    cohort_cardinalities = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
+                                            columns=['id_cohort', 'theoretical_cardinality'])
+    theoretical_probabilities_series = pandas.Series(index=cohort_cardinalities.index)
     idx = 0
-    for (cohort_str, decide_probability) in decide_cohort_probabilities.iteritems():
-        cohort_int = int(cohort_str)
-        cohort_cardinalities_dataframe['cohort'][idx] = cohort_int
-        if cohort_str == '1':
-            theoretical_probabilities_series[idx] = decide_cohort_probabilities['1']
+    for (cohort, decide_probability) in decide_cohort_probabilities.iteritems():
+        cohort_cardinalities['id_cohort'][idx] = cohort
+        if cohort == 1:
+            theoretical_probabilities_series[idx] = decide_cohort_probabilities[1]
         else:
-            first_possible_parent = cohort_int - first_child_delay
+            first_possible_parent = cohort - first_child_delay
             curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
             curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
             theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()
         idx += 1
-    cohort_cardinalities_dataframe['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
+    cohort_cardinalities['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
     
-    return dict(zip(cohort_cardinalities_dataframe.values[:, 0], cohort_cardinalities_dataframe.values[:, 1],))
+    return dict(zip(cohort_cardinalities.values[:, 0], cohort_cardinalities.values[:, 1],))
     
-
-def checkValidity(is_valid):
+    
+def calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities):
     '''
-    Raise an InputError exception when an invalid input is detected. 
+    For each primary tiller in *decide_child_axis_probabilities*, calculate the corresponding 
+    cohort number, and return a dictionary which keys are cohort number and values remain 
+    the same.
     
     :Parameters:
     
-        - `is_valid` (bool) - the result of the expression which has been used 
-          to test the validity of an input.
+        - `decide_child_axis_probabilities` (:class:`dict`) - the probability for each 
+          primary tiller to have a child. Keys are the botanical positions (e.g. "T1", "T2",...), 
+          values are the probabilities (float).
+          
+    :Returns:
+        the probability for each cohort to have a child. Keys are the indexes of the cohorts 
+        (e.g. 3, 4,...), values are the probabilities (float).
+          
+    :Returns Type:
+        :class:`dict`
+    
+    :Examples:
+    
+        >>> decide_child_axis_probabilities = {'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}
+        >>> calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)
+        {3: 0.0, 4: 0.900, 5: 0.983, 6: 0.817, 7: 0.117}
+        
+    '''
+    id_axis_array = np.array(decide_child_axis_probabilities.keys())
+    id_cohort_array = np.char.lstrip(id_axis_array, 'T').astype(int) + 3
+    decide_child_cohort_probabilities = dict(zip(id_cohort_array, 
+                                                 decide_child_axis_probabilities.values()))
+    return decide_child_cohort_probabilities
+
+
+def get_primary_axis(id_axis, first_child_delay):
+    '''
+    Calculate the primary axis of *id_axis*.
+    
+    :Parameters:
+    
+        - `id_axis` (:class:`str`) - the botanical position of the axis.
+        - `first_child_delay` (:class:`int`) - the delay between the axis and its 
+          first child.
+          
+    :Returns:
+        the primary axis of *id_axis*. 
+          
+    :Returns Type:
+        :class:`str`
+    
+    :Examples:
+    
+        >>> get_primary_axis('T1.0', 2)
+        'T3'
+        >>> get_primary_axis('T1.0.0', 2)
+        'T5'
+        
+    '''
+    id_axis = id_axis[1:]
+    while '.' in id_axis:
+        id_axis_split = id_axis.rsplit('.', 2)
+        last_pos = int(id_axis_split.pop())
+        last_but_one_pos = int(id_axis_split.pop())
+        new_last_pos = last_but_one_pos + last_pos + first_child_delay
+        id_axis = '.'.join(id_axis_split + [str(new_last_pos)])
+    primary_id_axis = 'T' + id_axis
+    return primary_id_axis
+
+
+def get_real_roots(poly):
+    '''
+    Get the real roots of polynomial *poly*.
+    
+    :Parameters:
+    
+        - `poly` (:class:`numpy.lib.polynomial.poly1d`) - a one-dimensional polynomial.
+          
+    :Returns:
+        the real roots of *poly* 
+          
+    :Returns Type:
+        :class:`numpy.array`
+        
+    :Examples:
+    
+        >>> p = numpy.poly1d([1, 2, 1])
+        array([-1., -1.])
+        >>> p = numpy.poly1d([1, 2, 3])
+        array([], dtype=float64)
     
     '''
-    if not is_valid:
-        raise InputError()
+    roots_array = poly.r
+    real_roots = filter(lambda x: x.imag == 0.0, roots_array)
+    real_roots = map(lambda x: x.real, real_roots)
+    return np.array(real_roots)
+            
 
-
-class Error(Exception):
-    '''Base class for exceptions in :mod:`alinea.adel.plantgen.axeT`.'''
-    pass
-
-
-class InputError(Error):
+class InputError(Exception):
     '''Exception raised when an invalid input is detected.'''
-    def __init__(self):
-        self.message = '''Invalid input detected ! Look at the traceback to find 
-the invalid input.'''
-        
-    def __str__(self):
-        return self.message
+    pass
+    
 
+class InputWarning(UserWarning):
+    '''Warning issued when an input is dubious and may lead to an error.'''
+    pass
+    

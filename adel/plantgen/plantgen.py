@@ -36,9 +36,9 @@ class DataCompleteness:
     
     .. seealso:: :func:`gen_adel_input_data`  
     '''
-    MIN=1
-    SHORT=2
-    FULL=3
+    MIN='MIN'
+    SHORT='SHORT'
+    FULL='FULL'
 
 
 def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8,
@@ -786,3 +786,21 @@ def _gen_adel_input_data_second(axeT_tmp,
     HS_GL_SSI_T = phenT.create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_)
     
     return axeT_, phenT_abs, phenT_, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, dimT_, tilleringT
+
+
+def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompleteness.MIN, dimT_user_completeness=DataCompleteness.MIN):
+    '''   
+    '''
+    import imp
+
+    inputs = imp.load_source('plantgen_inputs', inputs_filepath)
+    #params = imp.load_source('params', 'C:\\Documents and Settings\\abichou\\.openalea\\user_pkg\\params.py')
+    dynT_user = inputs.dynT_user
+   
+    import pandas
+    dimT_user = pandas.read_csv(params.dimT_user)
+   
+    # write the node code here.
+
+    # return outputs
+    return [dynT_user, dimT_user]

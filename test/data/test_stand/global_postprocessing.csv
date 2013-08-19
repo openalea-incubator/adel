@@ -1,2 +1,2 @@
-Filename,aire du plot,Nbr.plant/plot,ThermalTime,LAI totale,LAI vert,PAI total,PAI vert,Nbr.axe.tot/m2,Nbr.axe.croissance/m2
-tmpkZtOu3-1000.csv,0.0046082948999999996,1.0,1000.0,4.1537102481310395,3.9836591358204969,4.7886590162393912,4.5863548395416283,868.00000581560016,868.00000581560016
+Filename,aire du plot,Nbr.plant.perplot,ThermalTime,LAI_tot,LAI_vert,PAI_tot,PAI_vert,Nbr.axe.tot.m2,Nbr.axe.actif.m2
+tmpESgPqh-1000.csv,0.0046082949,1,1000,4.1537102481,3.9836591358,4.7886590162,4.5863548395,868.0000058156,868.0000058156

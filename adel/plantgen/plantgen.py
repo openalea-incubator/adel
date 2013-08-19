@@ -41,8 +41,8 @@ class DataCompleteness:
     FULL=3
 
 
-def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8},
-                                 TT_col_N_phytomer={'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0},
+def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8,
+                                            'TT_col_N_phytomer': {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}},
                                  dimT_user=None,
                                  plant_number=100, 
                                  decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
@@ -64,23 +64,22 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
         - `dynT_user` (:class:`dict`) - the leaf dynamic parameters set by the user. See 
           :ref:`dynT_user_MIN <dynT_user_MIN>`
                       
-          *dynT_user* must be a dict with the following shape:: 
+          *dynT_user* must be a dict with the following content:: 
         
-              {'a_cohort': a_cohort, 'TT_col_0': TT_col_0, 
-               'n0': n0, 'n1': n1, 'n2': n2}
+              {'a_cohort': a_cohort, 
+               'TT_col_0': TT_col_0, 
+               'n0': n0, 
+               'n1': n1, 
+               'n2': n2,
+               'TT_col_N_phytomer': {'MS': TT_col_N_phytomer_MS, 
+                                     'T1': TT_col_N_phytomer_T1, 
+                                     'T2': TT_col_N_phytomer_T2,
+                                     ...}}
         
-          where ``a_cohort``, ``TT_col_0``, ``n0``, ``n1`` and ``n2`` are floats.
+          where ``a_cohort``, ``TT_col_0``, ``n0``, ``n1``, ``n2``, 
+          ``TT_col_N_phytomer_MS``, ``TT_col_N_phytomer_T1`` and ``TT_col_N_phytomer_T2`` 
+          are floats.
                 
-        - `TT_col_N_phytomer` (:class:`dict`) - the thermal time when Haun Stage is equal to 
-          *N_phytomer*, for each primary axis.
-          
-          *TT_col_N_phytomer* must be a dict with the following shape:: 
-        
-              {'MS': value_MS, 'T1': value_T1, 'T2': value_T2, 
-               'T3': value_T3, 'T4': value_T4}
-        
-          where ``value_\*`` are floats. 
-        
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
           the user. See :ref:`dimT_user_MIN <dimT_user_MIN>`.
           
@@ -139,8 +138,8 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                  :mod:`alinea.adel.plantgen.tools`
                  
     '''
-    id_axis_array = np.array(TT_col_N_phytomer.keys())
-    TT_col_N_phytomer_array = np.array(TT_col_N_phytomer.values())
+    id_axis_array = np.array(dynT_user['TT_col_N_phytomer'].keys())
+    TT_col_N_phytomer_array = np.array(dynT_user['TT_col_N_phytomer'].values())
     dynT_user_dataframe = pandas.DataFrame(index=range(id_axis_array.size),
                                            columns=['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2'],
                                            dtype=float)
@@ -148,6 +147,8 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     dynT_user_dataframe['TT_col_N_phytomer'] = TT_col_N_phytomer_array
     MS_index = dynT_user_dataframe[dynT_user_dataframe['id_axis'] == 'MS'].index
     for key, value in dynT_user.iteritems():
+        if key == 'TT_col_N_phytomer':
+            continue
         dynT_user_dataframe[key][MS_index] = value
     
     return gen_adel_input_data(dynT_user_dataframe, dimT_user, plant_number, decide_child_axis_probabilities, MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)

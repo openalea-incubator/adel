@@ -523,7 +523,7 @@ for ``dynT_user``  and ``dimT_user`` for each level of completeness:
       - :ref:`dynT_user_SHORT`
       - :ref:`dimT_user_SHORT`
     * - **MIN** 
-      - :ref:`dynT_user_MIN` and :ref:`TT_col_N_phytomer`
+      - :ref:`dynT_user_MIN`
       - :ref:`dimT_user_MIN`
       
 .. seealso:: the documentation of :class:`DataCompleteness <alinea.adel.plantgen.plantgen.DataCompleteness>`
@@ -560,7 +560,7 @@ The arguments to define are:
   :ref:`dynT_user_completeness <levels_of_completeness>` and :ref:`dimT_user_completeness <levels_of_completeness>` 
   have to be consistent with respectively *dynT_user* and *dimT_user*.
 
-* *plant_number*, *decide_child_axis_probabilities*, *MS_leaves_number_probability_distribution*, ...
+* *plant_number*, *decide_child_axis_probabilities*, *MS_leaves_number_probabilities*, ...
 
   The other arguments of the routine are: 
     
@@ -568,7 +568,7 @@ The arguments to define are:
   * *decide_child_axis_probabilities*, the probability of emergence of an axis 
     when the parent axis is present. *decide_child_axis_probabilities* are set 
     only for axes belonging to primaries tillers. 
-  * *MS_leaves_number_probability_distribution*, the probability distribution 
+  * *MS_leaves_number_probabilities*, the probability distribution 
     of the final number of main stem leaves,
   * *TT_bolting*, the thermal time at which the bolting starts,
   * *final_axes_density*, the final number of axes which have an ear, per square meter,
@@ -631,7 +631,7 @@ from a Python interpreter::
                                         dimT_user, 
                                         plant_number, 
                                         decide_child_axis_probabilities, 
-                                        MS_leaves_number_probability_distribution, 
+                                        MS_leaves_number_probabilities, 
                                         TT_bolting, 
                                         final_axes_density, 
                                         GL_number, 
@@ -657,7 +657,7 @@ Construction of Adel input tables using Visualea
 The following routines allow to construct the inputs of ADEL: 
 
 * :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`: 
-  construct the inputs of ADEL from :ref:`dynT_user_MIN`, :ref:`TT_col_N_phytomer` and :ref:`dimT_user_MIN`,
+  construct the inputs of ADEL from :ref:`dynT_user_MIN` and :ref:`dimT_user_MIN`,
 * :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`: 
   construct the inputs of ADEL from :ref:`dynT_user_SHORT` and :ref:`dimT_user_SHORT`,  
 * and :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`: 
@@ -745,9 +745,8 @@ The appendices contain the description of the following data:
 * :ref:`dynT_user_SHORT <dynT_user_SHORT>`: for each *id_axis*, the dynamic of the 
   Haun stage of **exactly** the most frequent non-regressive axes.
 * :ref:`dynT_user_MIN <dynT_user_MIN>`: the dynamic of the Haun stage of 
-  the most frequent main stem.
-* :ref:`TT_col_N_phytomer`: the thermal time when Haun Stage is equal to 
-  the final number of phytomers, for each primary axis.
+  the most frequent main stem, and, for each primary axis, the thermal time when 
+  Haun Stage is equal to the final number of phytomers. 
 * :ref:`dimT_user_FULL <dimT_user_FULL>`: the dimensions of 
   **at least** the most frequent non-regressive axes.
 * :ref:`dimT_user_SHORT <dimT_user_SHORT>`: the dimensions of 
@@ -814,9 +813,12 @@ dynT_user_MIN
 :ref:`dynT_user_MIN` is a dictionary which describes the dynamic of the Haun stage of 
 the most frequent main stem. The most frequent main stem is the 
 main stem which has the most frequent number of phytomers.
+:ref:`dynT_user_MIN` also contains, for each primary axis, 
+the thermal time when Haun Stage is equal to the final number of phytomers.
 
 The dictionary contains the following keys: *a_cohort*, *TT_col_0*, 
-*n0*, *n1* and *n2*. See :ref:`dynT` for a description of these parameters.
+*n0*, *n1*, *n2* and *TT_col_N_phytomer*. See :ref:`dynT` for a description of 
+these parameters.
 
 Example::
 
@@ -824,23 +826,12 @@ Example::
                      'TT_col_0': -0.771289027, 
                      'n0': 4.871559739, 
                      'n1': 3.24283148, 
-                     'n2': 5.8}
-
-
-.. _TT_col_N_phytomer:
-
-TT_col_N_phytomer
-===============================
-:ref:`TT_col_N_phytomer` is a dictionary which contains, for each primary axis, 
-the thermal time when Haun Stage is equal to the final number of phytomers.
-
-Example::
-
-    TT_col_N_phytomer = {'MS': 1078.0, 
-                         'T1': 1148.0, 
-                         'T2': 1158.0, 
-                         'T3': 1168.0, 
-                         'T4': 1178.0}                
+                     'n2': 5.8,
+                     'TT_col_N_phytomer': {'MS': 1078.0, 
+                                           'T1': 1148.0, 
+                                           'T2': 1158.0, 
+                                           'T3': 1168.0, 
+                                           'T4': 1178.0}}
 
 
 .. _dimT_user_FULL:

@@ -226,10 +226,10 @@ def test_gen_adel_input_data_from_min():
                  'TT_col_0': -0.771289027, 
                  'n0': 4.871559739,
                  'n1': 3.24283148,
-                 'n2': 5.8}
+                 'n2': 5.8,
+                 'TT_col_N_phytomer': TT_col_N_phytomer}
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data_from_min(dynT_user,
-                                                    TT_col_N_phytomer,
                                                     dimT_user, 
                                                     plant_number, 
                                                     decide_child_axis_probabilities, 

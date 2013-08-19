@@ -788,19 +788,48 @@ def _gen_adel_input_data_second(axeT_tmp,
     return axeT_, phenT_abs, phenT_, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, dimT_, tilleringT
 
 
-def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompleteness.MIN, dimT_user_completeness=DataCompleteness.MIN):
-    '''   
+def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompleteness.MIN):
+    '''
+    Import the Python module at *inputs_filepath*, and return the args expected by 
+    either :func:`gen_adel_input_data_from_min`, :func:`gen_adel_input_data_from_short` or 
+    :func:`gen_adel_input_data_from_full`, according to *dynT_user_completeness*.
+    
+    :Parameters:
+    
+        - `inputs_filepath` (:class:`str`) - the Python module which contains the inputs 
+          of one of :func:`gen_adel_input_data_from_min`, :func:`gen_adel_input_data_from_short` or 
+          :func:`gen_adel_input_data_from_full`.
+        - `dynT_user_completeness` (:class:`DataCompleteness`) - the completeness 
+          of the plantgen inputs contained in *inputs_filepath*.  
+          
+    :Returns:
+        Return the arguments of either :func:`gen_adel_input_data_from_min`, 
+        :func:`gen_adel_input_data_from_short` or :func:`gen_adel_input_data_from_full`, 
+        according to *dynT_user_completeness*. 
+    
+    :Returns Type:
+        tuple
+    
     '''
     import imp
 
-    inputs = imp.load_source('plantgen_inputs', inputs_filepath)
-    #params = imp.load_source('params', 'C:\\Documents and Settings\\abichou\\.openalea\\user_pkg\\params.py')
-    dynT_user = inputs.dynT_user
-   
-    import pandas
-    dimT_user = pandas.read_csv(params.dimT_user)
-   
-    # write the node code here.
+    inputs = imp.load_source('inputs', inputs_filepath)
 
-    # return outputs
-    return [dynT_user, dimT_user]
+    dimT_user = pandas.read_csv(inputs.dimT_user)
+    plant_number = inputs.plant_number
+    decide_child_axis_probabilities = inputs.decide_child_axis_probabilities 
+    MS_leaves_number_probabilities = inputs.MS_leaves_number_probabilities
+    TT_bolting = inputs.TT_bolting
+    final_axes_density = inputs.final_axes_density
+    GL_number = inputs.GL_number 
+    delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
+    TT_col_break = inputs.TT_col_break
+
+    if dynT_user_completeness == DataCompleteness.MIN:
+        dynT_user = inputs.dynT_user
+    else:
+        dynT_user = pandas.read_csv(inputs.dynT_user)
+    
+    return (dynT_user, dimT_user, plant_number, decide_child_axis_probabilities, 
+            MS_leaves_number_probabilities, TT_bolting, final_axes_density, GL_number, 
+            delais_TT_stop_del_axis, TT_col_break)

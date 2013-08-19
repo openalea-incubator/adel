@@ -539,7 +539,10 @@ is aimed to be used from Python interpreter.
 First we explain the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
 that the user has to define. Second we present a complete code example to use 
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-from a Python interpreter.          
+from a Python interpreter.
+
+
+.. _user_arguments:          
 
 The arguments to define by the user
 -------------------------------------
@@ -581,7 +584,10 @@ Code example
 -------------
 Now let's see a complete code example to use 
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-from a Python interpreter::
+from a Python interpreter:
+
+.. code-block:: python
+   :linenos:
     
     # define the levels of completeness. In this example, we choose the level "SHORT".
     from alinea.adel.plantgen.plantgen import DataCompleteness
@@ -648,6 +654,29 @@ from a Python interpreter::
     phenT.to_csv('phenT.csv', na_rep='NA', index=False)
     
     # "axeT.csv", "dimT.csv" and "phenT.csv" are now ready to be used by Adel.
+
+Finally, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
+permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
+
+Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
+the module :download:`inputs.py <../../test/data/test_plantgen/MIN_MIN/inputs.py>`, 
+the lines 6 to 32 of the precedent script can be replaced by::
+
+    from alinea.adel.plantgen.plantgen import read_plantgen_inputs
+    # "inputs.py" must be in the working directory 
+    (dynT_user, 
+     dimT_user, 
+     plant_number, 
+     decide_child_axis_probabilities, 
+     MS_leaves_number_probabilities, 
+     TT_bolting, 
+     final_axes_density, 
+     GL_number, 
+     delais_TT_stop_del_axis, 
+     TT_col_break) = read_plantgen_inputs('inputs.py', dynT_user_completeness='SHORT')
+     
+:func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
+permits the user to store the arguments, so he can reuse them later.    
     
     
 .. _construct_inputs_from_visualea:
@@ -710,23 +739,43 @@ of :ref:`dynT <dynT>` and :ref:`dimT <dimT>`:
 The following dataflow demonstrates how to use ``plantgen_MIN``, ``plantgen_SHORT``, 
 and ``plantgen_FULL`` through Visualea:
 
-.. image:: image/plantgen_dataflow.png
+.. figure:: ./image/plantgen_dataflow.png
+   :width: 100%
+   :align: center
+
+   The alinea.adel.Tutorials.plantgen dataflow 
 
 The user must select existing data nodes to set the input and ouput tables.
 
 The following data-flow demonstrates another way to use ``plantgen_MIN`` through 
 Visualea:
 
-.. image:: image/plantgen_MIN_csv_dataflow.png
-    :align: center
-  
+.. figure:: ./image/plantgen_MIN_csv_dataflow.png
+   :width: 100%
+   :align: center
+
+   The alinea.adel.Tutorials.plantgen_MIN_csv dataflow 
+
 In this case the user must give the paths of csv files for inputs and outputs. 
 Attention: the paths set in the example will not work on your computer. You have 
 to adapt them to your needs. This example is more straightful because you don't 
-have to create output data nodes before running, but it is also less portable.     
+have to create output data nodes before running, but it is also less portable.
 
-These dataflows are accessible from the Package explorer of Visualea, in 
-``alinea.adel.tutorials.plangen``.
+Finally, the node ``read_plantgen_inputs`` permits to define the values of the input ports of 
+``plantgen_*`` by importing a Python module.
+    
+Using ``read_plantgen_inputs`` with 
+the module :download:`inputs.py <../../test/data/test_plantgen/MIN_MIN/inputs.py>`, 
+the dataflow becomes:
+    
+    .. figure:: ./image/plantgen_MIN_csv_inputs_dataflow.png
+       :width: 100%
+       :align: center
+        
+       The alinea.adel.Tutorials.plantgen_MIN_csv_inputs dataflow 
+   
+``read_plantgen_inputs`` permits the user to store the values of the input ports, 
+so he can reuse them later.
 
 
 Description of Adel's outputs

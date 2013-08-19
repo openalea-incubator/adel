@@ -17,7 +17,7 @@ __institutes__ = ''
 __icon__ = ''
 
 
-__all__ = ['plantgen_MIN_plantgen_MIN', 'plantgen_SHORT_plantgen_SHORT', 'plantgen_FULL_plantgen_FULL']
+__all__ = ['plantgen_MIN_plantgen_MIN', 'plantgen_SHORT_plantgen_SHORT', 'plantgen_FULL_plantgen_FULL', 'read_plantgen_inputs_read_plantgen_inputs']
 
 
 plantgen_MIN_plantgen_MIN = Factory(name='plantgen_MIN',
@@ -80,5 +80,24 @@ plantgen_FULL_plantgen_FULL = Factory(name='plantgen_FULL',
                 widgetclass=None,
                )
 
-
+read_plantgen_inputs_read_plantgen_inputs = Factory(name='read_plantgen_inputs',
+                authors='C. Chambon, M. Abichou and B. Andrieu',
+                category='data processing',
+                nodemodule='plantgen',
+                nodeclass='read_plantgen_inputs',
+                inputs=({'interface': IFileStr, 'name': 'inputs_filepath', 'desc': 'the Python module which describes the inputs of plantgen'}, 
+                        {'interface': IStr, 'name': 'dynT_user_completeness', 'desc': 'the completeness of the table dynT_user'}),
+                outputs=({'interface': IInterface, 'name': 'dynT_user'},
+                         {'interface': IInterface, 'name': 'dimT_user'},
+                         {'interface': IInt, 'name': 'plant_number'},
+                         {'interface': IDict, 'name': 'decide_child_axis_probabilities'},
+                         {'interface': IDict, 'name': 'MS_leaves_number_probabilities'},
+                         {'interface': IFloat, 'name': 'TT_bolting'},
+                         {'interface': IInt, 'name': 'final_axes_density'},
+                         {'interface': IDict, 'name': 'GL_number'},
+                         {'interface': IFloat, 'name': 'delais_TT_stop_del_axis'},
+                         {'interface': IFloat, 'name': 'TT_col_break'}),
+                widgetmodule=None,
+                widgetclass=None,
+               )
 

@@ -21,8 +21,8 @@ def test_post_processing():
      peraxis_postprocessing_file_path,
      intermediate_results_file_path)= \
         post_processing(adel_output_path, 
-                        1, 
-                        0.0046082949, 
+                        3, 
+                        0.013824884792626729,
                         global_postprocessing_file_path,
                         peraxis_postprocessing_file_path)
         

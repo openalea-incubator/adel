@@ -221,7 +221,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                                               'axe_id', 'Slv', 'SLsen', 
                                               'SGv', 'SGsen', 'SEv', 'SEsen', 
                                               'SLgreen', 'SGgreen', 'SEgreen', 
-                                              'NFF', 'HS', 'SSI', 'GreenLeaf'])
+                                              'NFF', 'HS', 'SSI', 'GreenLeaf', 'has_ear'])
     
     TT = adel_output_df['TT'][0]
     for name, group in grouped:
@@ -242,19 +242,23 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         NFF = indexes_of_all_non_null_Lshape.size
         indexes_of_all_non_null_Lv = group['Lv'][group['Lv'] != 0].index
         Lv_non_null_series = group['Lv'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lv]
-        Lv_equal_L_shape_series = Lv_non_null_series[Lv_non_null_series == L_shape[indexes_of_all_non_null_Lv]]
-        if Lv_equal_L_shape_series.index.size == 0:
+        if len(Lv_non_null_series) == 0:
             HS = 0.0
         else:
-            index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
-            NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
-            index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
-            index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
-            HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
+            Lv_equal_L_shape_series = Lv_non_null_series[Lv_non_null_series == L_shape[indexes_of_all_non_null_Lv]]
+            if Lv_equal_L_shape_series.index.size == 0:
+                HS_indexes = Lv_non_null_series.index
+                NFL = 0.0
+            else:
+                index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
+                index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
+                index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
+                HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
+                NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
             HS = NFL + \
-                (Lv_non_null_series[HS_indexes] / \
-                 L_shape[HS_indexes].astype(float)) \
-                .sum()
+                 (Lv_non_null_series[HS_indexes] / \
+                  L_shape[HS_indexes].astype(float)) \
+                 .sum()
         indexes_of_all_non_null_Lsen = group['Lsen'][group['Lsen'] != 0].index
         Lsen_non_null_series = group['Lsen'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lsen]
         Lsen_equal_L_shape_series = Lsen_non_null_series[Lsen_non_null_series == L_shape[indexes_of_all_non_null_Lsen]]
@@ -274,11 +278,13 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                  (Lsen_non_null_series[SSI_indexes] / \
                   L_shape[SSI_indexes].astype(float)) \
                  .sum()
+        indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
+        has_ear = int(group[['El','Ed']].ix[indexes_of_all_null_Lshape].any().any())
               
         GreenLeaf = HS - SSI
         new_intermediate_data = [[TT, refplant_id, plant, axe_id, Slv,
                                   SLsen, SGv, SGsen, SEv, SEsen, SLgreen, 
-                                  SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf]]
+                                  SGgreen, SEgreen, NFF, HS, SSI, GreenLeaf, has_ear]]
         new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
                                                columns=intermediate_df.columns)
         intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], 
@@ -297,7 +303,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     else:
         columns = ['Filename', 'aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
                    'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
-                   'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2']
+                   'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2.old', 'number_of_active_axes_per_m2']
         global_postprocessing_df = pandas.DataFrame(columns=columns)
     
     Filename = intermediate_path.basename()
@@ -316,10 +322,18 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         growing_axes_density_df[growing_axes_density_df['HS'] < growing_axes_density_df['NFF']]
     growing_axes_density_df = growing_axes_density_df[growing_axes_density_df['SLgreen'] > 0.0]
     growing_axes_density = growing_axes_density_df.index.size / float(domain_area)
+    # calculate the number of active axes without ear
+    has_ear_0 = intermediate_df[intermediate_df['has_ear'] == 0]
+    has_ear_0 = has_ear_0[has_ear_0['HS'] > 0]
+    number_of_active_axes_without_ear = len(has_ear_0[has_ear_0['HS'] < has_ear_0['NFF']])
+    # calculate the number of active axes with ear
+    number_of_active_axes_with_ear = len(intermediate_df[intermediate_df['has_ear'] == 1])
+    # calculate of the number of active axes per square meter
+    number_of_active_axes_per_m2 = (number_of_active_axes_with_ear + number_of_active_axes_without_ear) / float(domain_area)
     
     new_global_postprocessing_data = [[Filename, domain_area, plant_number, TT, 
                                        tot_LAI, green_LAI, tot_PAI, green_PAI, 
-                                       axes_density, growing_axes_density]]
+                                       axes_density, growing_axes_density, number_of_active_axes_per_m2]]
     new_global_postprocessing_df = \
     pandas.DataFrame(new_global_postprocessing_data, 
                      columns=global_postprocessing_df.columns)
@@ -337,11 +351,11 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
     else:
         columns_peraxis = ['Filename', 'ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
-                           'PAI total', 'PAI vert']
+                           'PAI total', 'PAI vert', 'has_ear']
         peraxis_postprocessing_df = pandas.DataFrame(columns=columns_peraxis)
     
-    grouped = intermediate_df.groupby(['axe_id', 'NFF'], as_index=False)
-    for (axe_id, NFF), group in grouped:
+    grouped = intermediate_df.groupby(['axe_id', 'NFF', 'has_ear'], as_index=False)
+    for (axe_id, NFF, has_ear), group in grouped:
         HS = group['HS'].mean()
         SSI = group['SSI'].mean()
         tot_LAI = group['Slv'].sum() / area_in_cm
@@ -350,7 +364,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         green_PAI = (group['SLgreen'] + (group['SGgreen'] + group['SEgreen']) / 2.0 ).sum() / area_in_cm
         
         new_peraxis_postprocessing_data = [[Filename, TT, axe_id, NFF, HS, SSI, tot_LAI, 
-                                            green_LAI, tot_PAI, green_PAI]]
+                                            green_LAI, tot_PAI, green_PAI, has_ear]]
         new_peraxis_postprocessing_df = pandas.DataFrame(new_peraxis_postprocessing_data, 
                                                          columns=peraxis_postprocessing_df.columns)
         peraxis_postprocessing_df = pandas.concat([peraxis_postprocessing_df, 

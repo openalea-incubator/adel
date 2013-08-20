@@ -1,0 +1,5 @@
+les rdata ont été générer avec 3 classes avec :
+
+classe 1: feuille ntop=1 (F3)
+classe 2 : feuille ntop=2 (F2)
+classe 3 : feuile ntop=3 (F1) 

@@ -1,0 +1,12 @@
+5 classes avec:
+
+classe1: F7= ntop1 (F7 non ligulée)
+
+classe2: F6= ntop2
+
+classe3: F5= ntop3
+
+classe4: F4= ntop4
+
+classe5: F3= ntop5
+

@@ -38,10 +38,7 @@ def count_pixels(scene_path='',
         where the pixels have to be counted. MANDATORY.
         - `rgb_colors` : the classes of colors to consider when counting the pixels. 
         Each class is described by 3 values: R, G and B. MANDATORY.
-        - `result_path` : the path of csv file where the result is added. 
-        The first column contains the base name of the bmp file which 
-        represents the scene image (i.e. scene_path). Other 
-        columns are the list of colors to consider. MANDATORY.
+        - `result_path` : the path of csv file where the result is added. MANDATORY.
         - `color_labels` : the labels associated to rgb_colors. If empty 
         (default), auto-generated labels are: ['class 1', 'class 2', ...]. The 
         labels must be given in the same order as rgb_colors, and contains either 
@@ -65,8 +62,11 @@ def count_pixels(scene_path='',
         - `absolute_tolerance` : int
         - `normalized_scene_path` : str
         
-    :return: the path of the csv file where the result is added. See the 
-    documentation of the input arguments for information about the structure.
+    :return: the path of the csv file where the result is added. 
+        The first column contains the base name of the bmp file which 
+        represents the scene image (i.e. scene_path). Other 
+        columns are the list of colors to consider. The last column contains 
+        the number of pixels of the scene box to consider. 
     :rtype: str
     '''
     assert scene_path != '' and scene_box_path != '' and len(rgb_colors) != 0 and \
@@ -105,9 +105,12 @@ def count_pixels(scene_path='',
     pixels_init_number = np.zeros_like(range(len(rgb_colors)))
     pixels_numbers = dict(zip(rgb_colors, pixels_init_number))
     
+    scene_box_pixels_number = 0
+    
     for x in range(width):
         for y in range(height):
             if scene_box_array[x, y] == WHITE:
+                scene_box_pixels_number += 1
                 scene_color = scene_array[x, y]
                 if scene_color == (0,0,0):
                     continue
@@ -138,15 +141,17 @@ def count_pixels(scene_path='',
     if result_path.exists():
         result_df = pandas.read_csv(result_path)
     else:
-        columns = ['Filename'] 
-        class_counter = 1
+        columns = ['Filename']
         if len(color_labels) == 0:
             color_labels = ['class %d' % i for i in range(len(rgb_colors))]
         for (rgb, label) in zip(rgb_colors, color_labels):
-            columns += ['%s - %s' % (rgb, label)]        
+            columns.append('%s - %s' % (rgb, label))
+        columns.append('scene_box')
         result_df = pandas.DataFrame(columns=columns)
     
-    data = [[scene_path.basename()] + [pixels_numbers[color] for color in rgb_colors]]
+    data = [[scene_path.basename()] + 
+            [pixels_numbers[color] for color in rgb_colors] + 
+            [scene_box_pixels_number]]
     new_index = [result_df.index.size]
     new_df = pandas.DataFrame(data, index=new_index, columns=result_df.columns)
     

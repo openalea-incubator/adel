@@ -457,6 +457,9 @@ def gen_adel_input_data(dynT_user,
     if dimT_user_completeness not in DataCompleteness.__dict__.values():
         raise tools.InputError("dimT_user_completeness is not one of: %s" % ', '.join(DataCompleteness.__dict__.values()))
     
+    if sum(MS_leaves_number_probabilities.values()) != 1.0:
+        raise tools.InputError("the sum of the probabilities defined in MS_leaves_number_probabilities is not equal to 1.0")
+    
     possible_axes = \
         set([id_axis for (id_axis, probability) in
              decide_child_axis_probabilities.iteritems() if probability != 0.0])

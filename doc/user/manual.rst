@@ -579,6 +579,16 @@ The arguments to define are:
   * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
   * *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
     If phyllochron is constant, then *TT_col_break* is 0.0.
+    
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` checks 
+the validity of these arguments. 
+    
+.. note::
+
+    The user can also parameterize the construction through inner parameters. However, 
+    no checks is done for the inner parameters and the user should be sure of what is he doing. 
+    See :ref:`inner_parameters_for_construction` for more details.
+
   
 Code example
 -------------
@@ -659,11 +669,11 @@ Finally, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen
 permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
-the module :download:`inputs.py <../../test/data/test_plantgen/MIN_MIN/inputs.py>`, 
+the module :download:`plantgen_inputs_SHORT.py <../../adel/data/plantgen_inputs_SHORT.py>`, 
 the lines 6 to 32 of the precedent script can be replaced by::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
-    # "inputs.py" must be in the working directory 
+    # "plantgen_inputs_SHORT.py" must be in the working directory 
     (dynT_user, 
      dimT_user, 
      plant_number, 
@@ -673,7 +683,7 @@ the lines 6 to 32 of the precedent script can be replaced by::
      final_axes_density, 
      GL_number, 
      delais_TT_stop_del_axis, 
-     TT_col_break) = read_plantgen_inputs('inputs.py', dynT_user_completeness='SHORT')
+     TT_col_break) = read_plantgen_inputs('plantgen_inputs_SHORT.py', dynT_user_completeness='SHORT')
      
 :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
 permits the user to store the arguments, so he can reuse them later.    
@@ -765,7 +775,7 @@ Finally, the node ``read_plantgen_inputs`` permits to define the values of the i
 ``plantgen_*`` by importing a Python module.
     
 Using ``read_plantgen_inputs`` with 
-the module :download:`inputs.py <../../test/data/test_plantgen/MIN_MIN/inputs.py>`, 
+the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
 the dataflow becomes:
     
     .. figure:: ./image/plantgen_MIN_csv_inputs_dataflow.png
@@ -777,6 +787,35 @@ the dataflow becomes:
 ``read_plantgen_inputs`` permits the user to store the values of the input ports, 
 so he can reuse them later.
 
+.. _inner_parameters_for_construction:
+
+Inner parameters for the construction of the input tables 
+==========================================================
+Other parameters can be set by the user through the module :mod:`params <alinea.adel.plantgen.params>`. 
+These parameters are:
+
+* :attr:`SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS <alinea.adel.plantgen.params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS>`: 
+  the coefficients *a_1* and *a_2* to calculate the final number of leaves on tillers from the final number of leaves on main stem.
+* :attr:`EMF_1_MS_STANDARD_DEVIATION <alinea.adel.plantgen.params.EMF_1_MS_STANDARD_DEVIATION>`:
+  the standard deviation in the thermal of emergence of plants in the plot.
+* :attr:`LEAF_NUMBER_DELAY_MS_COHORT <alinea.adel.plantgen.params.LEAF_NUMBER_DELAY_MS_COHORT>`: 
+  the delays between the emergence of the main stem and the emergence of each cohort.
+* :attr:`N2_MS_DIV_N2_COHORT <alinea.adel.plantgen.params.N2_MS_DIV_N2_COHORT>`: 
+  ratio between the maximum number of green leaves on the tillers and the maximum green leaves on the main stem
+* :attr:`DELAIS_PHYLL_COL_TIP <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP>`: 
+  the delay between tip emergence and collar emergence.
+* :attr:`DELAIS_PHYLL_SEN_DISP <alinea.adel.plantgen.params.DELAIS_PHYLL_SEN_DISP>`: 
+  the time during which a fully senesced leaf on a non-elongated internode remains on the plant.
+* :attr:`TT_DEL_FHAUT <alinea.adel.plantgen.params.TT_DEL_FHAUT>`: 
+  the thermal time at which leaves on elongated internode disappear.
+* :attr:`FIRST_CHILD_DELAY <alinea.adel.plantgen.params.FIRST_CHILD_DELAY>`: 
+  the delay between a parent cohort and its first possible child cohort
+* :attr:`REGRESSION_OF_DIMENSIONS <alinea.adel.plantgen.params.REGRESSION_OF_DIMENSIONS>`: 
+  the regression of the dimensions for the last 3 phytomers of each organ.
+
+These parameters permit a finer parameterization of the construction.
+
+See :mod:`documentation of params <alinea.adel.plantgen.params>` for more information.  
 
 Description of Adel's outputs
 *******************************

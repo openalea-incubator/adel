@@ -31,14 +31,14 @@ import pandas
 from adel.plantgen import tools, params
 
 
-def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities):
+def create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities):
     '''
     Create the *axeT_tmp* dataframe. 
     Compute the following columns: *id_plt*, *id_cohort*, *id_axis*, *N_phytomer* and *id_phen*. 
            
     :Parameters:
     
-        - `plant_number` (:class:`int`) - the number of plants. 
+        - `plants_number` (:class:`int`) - the number of plants. 
         - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the 
           child cohorts. 
         - `MS_leaves_number_probabilities` (:class:`dict`) - the probability 
@@ -52,7 +52,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
 
     '''
     
-    plant_ids = range(1, plant_number + 1)
+    plant_ids = range(1, plants_number + 1)
     id_cohort_list, id_axis_list = _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities)
     id_plt_list = _gen_id_plt_list(plant_ids, id_cohort_list)
     N_phytomer_list = _gen_N_phytomer_list(id_cohort_list, 
@@ -72,7 +72,7 @@ def create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_n
     return axeT_tmp
 
 
-def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, final_axes_density):
+def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears):
     '''
     Create the :ref:`axeT <axeT>` dataframe filling the *axeT_tmp* dataframe.
     
@@ -81,14 +81,13 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulatio
         - `axeT_tmp` (:class:`pandas.DataFrame`) - the *axeT_tmp* dataframe.
         - `phenT_first` (:class:`pandas.DataFrame`) - the :ref:`phenT_first <phenT_first>` dataframe.  
         - `dynT_` (:class:`pandas.DataFrame`) - the :ref:`dynT <dynT>` dataframe.
-        - `TT_bolting` (:class:`float`) - date in thermal time at which the bolting starts.
+        - `TT_bolting` (:class:`float`) - thermal time at which the bolting starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation. 
         - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
           thermal time between an axis stop growing and its disappearance (it 
           concerns only the axes that do not regress and which do not produce any 
           cob).
-        - `final_axes_density` (:class:`int`) - the final number of axes which have an ear, 
-          per square meter.
+        - `number_of_ears` (:class:`int`) - the number of ears. 
           
     :Returns:
         the :ref:`axeT <axeT>` dataframe.
@@ -103,7 +102,7 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulatio
      axeT_['TT_col_phytomer1'], 
      axeT_['TT_sen_phytomer1'],
      axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, final_axes_density, axeT_['TT_em_phytomer1'].tolist(), TT_bolting, TT_flag_leaf_ligulation)
+    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_em_phytomer1'].tolist(), TT_bolting, TT_flag_leaf_ligulation)
     axeT_['TT_del_axis'] = _gen_TT_del_axis_list(axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
     axeT_['HS_final'] = _gen_HS_final_list(axeT_, dynT_)
     axeT_['id_dim'] = _gen_id_dim_list(axeT_['id_cohort'], axeT_['HS_final'], axeT_['N_phytomer'])
@@ -132,7 +131,7 @@ def _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities):
     '''Generate the columns *id_axis* and *id_cohort* .'''
     all_child_cohorts = []
     for plant_id in plant_ids:
-        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay=params.FIRST_CHILD_DELAY)
+        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, params.FIRST_CHILD_DELAY)
         child_cohorts.sort()
         all_child_cohorts.extend(child_cohorts)
     all_child_cohorts_array = np.array(all_child_cohorts)
@@ -242,19 +241,20 @@ def _gen_HS_final_list(axeT_, dynT_):
     HS_final_series = HS_final_series.clip_lower(0.0)
     return HS_final_series.tolist()
 
-
-def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_number, axeT_tmp, final_axes_density):
+def create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, number_of_axes, ears_density):
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     
     :Parameters:
     
-        - `initial_date` (:class:`int`) - the initial date.
-        - `TT_bolting` (:class:`float`) - date in thermal time at which the bolting starts.
+        - `TT_start` (:class:`int`) - the thermal time at which the growth starts.
+        - `TT_bolting` (:class:`float`) - the thermal time at which the bolting starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation.
-        - `plant_number` (:class:`int`) - the number of plants. 
-        - `axeT_tmp` (:class:`pandas.Dataframe`) - the *axeT_tmp* dataframe.
-        - `final_axes_density` (:class:`int`) - the final number of axes which have an ear, per square meter.
+        - `plants_number` (:class:`int`) - the number of plants to simulate.
+        - `plants_density` (:class:`int`) - the number of plants that are present 
+          after loss due to bad emergence, early death..., per square meter.
+        - `number_of_axes` (:class:`int`) - the number of simulated axes.
+        - `ears_density` (:class:`int`) - the number of ears per square meter.
           
     :Returns:
         the :ref:`tilleringT <tilleringT>` dataframe.
@@ -263,20 +263,22 @@ def create_tilleringT(initial_date, TT_bolting, TT_flag_leaf_ligulation, plant_n
         :class:`pandas.DataFrame`
 
     '''
-    
-    return pandas.DataFrame({'TT': [initial_date, TT_bolting, TT_flag_leaf_ligulation], 'NbrAxes': [plant_number, axeT_tmp.index.size, final_axes_density]}, columns=['TT', 'NbrAxes'])
+    axes_density = number_of_axes / float(plants_number) * plants_density 
+    return pandas.DataFrame({'TT': [TT_start, TT_bolting, TT_flag_leaf_ligulation], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
 
 
-def create_cardinalityT(theoretical_cohort_cardinalities, id_cohort_column):
+def create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, simulated_cohorts_axes):
     '''
     Create the :ref:`cardinalityT <cardinalityT>` dataframe.
     
     :Parameters:
     
         - `theoretical_cohort_cardinalities` (:class:`dict`) - the theoretical 
+          cardinalities of the cohorts. 
+        - `theoretical_axis_cardinalities` (:class:`dict`) - the theoretical 
           cardinalities of the axes. 
-        - `id_cohort_column` (:class:`pandas.Series`) - the *id_cohort* column of 
-          :ref:`axeT <axeT>`
+        - `simulated_cohorts_axes` (:class:`pandas.DataFrame`) - the *id_cohort* 
+          and *id_axis* columns of :ref:`axeT <axeT>`.
           
     :Returns:
         the :ref:`cardinalityT <cardinalityT>` dataframe.
@@ -285,24 +287,39 @@ def create_cardinalityT(theoretical_cohort_cardinalities, id_cohort_column):
         :class:`pandas.DataFrame`
     
     '''
-    cardinalityT = pandas.DataFrame(index=range(len(theoretical_cohort_cardinalities)), 
+    simulated_cohort_cardinalities = simulated_cohorts_axes['id_cohort'].value_counts().to_dict()
+    simulated_axis_cardinalities = simulated_cohorts_axes.groupby(['id_cohort', 'id_axis']).size().to_dict()
+    cardinalityT = pandas.DataFrame(index=range(len(theoretical_axis_cardinalities)), 
                                     columns=['id_cohort', 
-                                             'theoretical_cardinality', 
-                                             'simulated_cardinality'],
-                                    dtype=float)
-    
-    simulated_cardinalities = id_cohort_column.value_counts()
+                                             'id_axis',
+                                             'theoretical_cohort_cardinality', 
+                                             'simulated_cohort_cardinality',
+                                             'theoretical_axis_cardinality',
+                                             'simulated_axis_cardinality'])
     idx = 0
-    for theoretical_cohort, theoretical_cardinality in theoretical_cohort_cardinalities.iteritems():
-        cardinalityT['id_cohort'][idx] = theoretical_cohort
-        cardinalityT['theoretical_cardinality'][idx] = theoretical_cardinality
-        if theoretical_cohort in simulated_cardinalities:
-            cardinalityT['simulated_cardinality'][idx] = simulated_cardinalities[theoretical_cohort]
+    for (id_cohort, id_axis), theoretical_axis_cardinality in theoretical_axis_cardinalities.iteritems():
+        cardinalityT['id_cohort'][idx] = id_cohort
+        cardinalityT['id_axis'][idx] = id_axis
+        cardinalityT['theoretical_cohort_cardinality'][idx] = theoretical_cohort_cardinalities[id_cohort]
+        cardinalityT['theoretical_axis_cardinality'][idx] = theoretical_axis_cardinality
+        if id_cohort in simulated_cohort_cardinalities:
+            cardinalityT['simulated_cohort_cardinality'][idx] = simulated_cohort_cardinalities[id_cohort]
         else:
-            cardinalityT['simulated_cardinality'][idx] = 0
+            cardinalityT['simulated_cohort_cardinality'][idx] = 0
+        if (id_cohort, id_axis) in simulated_axis_cardinalities:
+            cardinalityT['simulated_axis_cardinality'][idx] = simulated_axis_cardinalities[(id_cohort, id_axis)]
+        else:
+            cardinalityT['simulated_axis_cardinality'][idx] = 0
         idx += 1 
-    cardinalityT.sort('id_cohort', inplace=True)
+    cardinalityT[['theoretical_cohort_cardinality', 
+                  'theoretical_axis_cardinality',
+                  'simulated_cohort_cardinality',
+                  'simulated_axis_cardinality']] = cardinalityT[['theoretical_cohort_cardinality', 
+                                                                 'theoretical_axis_cardinality',
+                                                                 'simulated_cohort_cardinality',
+                                                                 'simulated_axis_cardinality']].astype(float)
+    cardinalityT['id_cohort'] = cardinalityT['id_cohort'].astype(int)                                                              
+    cardinalityT.sort(['id_cohort', 'id_axis'], inplace=True)
     cardinalityT.index = range(len(cardinalityT))
-    cardinalityT['id_cohort'] = cardinalityT['id_cohort'].astype(int)
     return cardinalityT
 

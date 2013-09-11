@@ -27,7 +27,7 @@ import numpy as np
 import pandas
 from scipy.optimize import leastsq
 
-def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=None, parent_cohort_position=None, first_child_delay=2):
+def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, parent_cohort_index=None, parent_cohort_position=None):
     '''
     Decide (recursively) of the child cohorts actually produced by a parent cohort, 
     according to the *decide_child_cohort_probabilities* and the *parent_cohort_index*. 
@@ -37,12 +37,12 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
     
         - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the 
           child cohorts.
+        - `first_child_delay` (:class:`int`) - the delay between the parent cohort and 
+          the first child cohort. This delay is expressed in number of cohorts.
         - `parent_cohort_index` (:class:`int`) - the index of the parent cohort. 
           ``None`` (the default) means that there isn't any parent cohort. 
         - `parent_cohort_position` (:class:`str`) - the position of the parent cohort. 
           ``None`` (the default) means that there isn't any parent cohort.
-        - `first_child_delay` (:class:`int`) - the delay between the parent cohort and 
-          the first child cohort. This delay is expressed in number of cohorts.
 
     :Returns:
         The indices of the child cohorts and their positions in the tree.
@@ -61,6 +61,7 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
         cohort_position = 'MS'
         child_cohorts.append((first_possible_cohort_number, 'MS'))
         child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
+                                                  first_child_delay,
                                                   first_possible_cohort_number, 
                                                   cohort_position))
     else:
@@ -74,7 +75,8 @@ def decide_child_cohorts(decide_child_cohort_probabilities, parent_cohort_index=
                     else:
                         cohort_position = '%s.%s' % (parent_cohort_position, child_cohort_position)
                     child_cohorts.append((cohort_id, cohort_position)) 
-                    child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
+                    child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities,
+                                                              first_child_delay, 
                                                               cohort_id, 
                                                               cohort_position))
     return child_cohorts
@@ -150,7 +152,7 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
         - `min_axes_number` (:class:`int`) - the minimum number of existing axes. 
         - `TT_em_phytomer1` (:class:`list`) - Thermal times (relative to canopy emergence) 
           of tip emergence of the first true leaf (not coleoptile or prophyll)
-        - `TT_bolting` (:class:`float`) - date in thermal time at which the bolting starts.
+        - `TT_bolting` (:class:`float`) - thermal time at which the bolting starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation.
 
     :Returns: 
@@ -253,58 +255,64 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
     return p[0], rmse
 
 
-def calculate_theoretical_cardinalities(plant_number, 
+def calculate_theoretical_cardinalities(plants_number, 
                                         decide_child_cohort_probabilities, 
+                                        decide_child_axis_probabilities,
                                         first_child_delay):
     '''
-    Calculate the theoretical cardinality of each cohort. 
+    Calculate the theoretical cardinality of each simulated cohort and each 
+    simulated axis. 
     
     :Parameters:
     
-        - `plant_number` (:class:`int`) - the number of plants. 
-        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities of the child 
-          cohorts. 
+        - `plants_number` (:class:`int`) - the number of plants.
+        - `decide_child_cohort_probabilities` (:class:`dict`) - the probabilities 
+          of the child cohorts.
+        - `decide_child_axis_probabilities` (:class:`dict`) - the probabilities 
+          of the child axes.
         - `first_child_delay` (:class:`int`) - The delay between 
-          a parent cohort and its first possible child cohort. This delay is 
+          a parent axis and its first possible child axis. This delay is 
           expressed in number of cohorts.
           
     :Returns:
-        a dictionary which contains the theoretical cardinality of each cohort. 
-        Keys are the index of the cohorts (str), values are the cardinalities of 
-        the cohorts (float).
+        a 2-tuple of dictionaries: the first dictionary contains the theoretical 
+        cardinality of each cohort, the second dictionary contains the theoretical 
+        cardinality of each axis.
     
     :Returns Type:
-        :class:`dict`
+        :class:`tuple`
         
     '''
-    decide_cohort_probabilities = decide_child_cohort_probabilities.copy()
-    # the cohort 1 always exists, so its probability is 1.0.
-    decide_cohort_probabilities[1] = 1.0
-    possible_cohorts = np.array(decide_cohort_probabilities.keys())
-    decide_cohort_probability_values = np.array(decide_cohort_probabilities.values())
-    possible_child_cohorts = np.array(decide_child_cohort_probabilities.keys())
-    possible_parent_cohorts = possible_child_cohorts - first_child_delay
-    commons = np.where(np.intersect1d(possible_cohorts, possible_parent_cohorts))
-    possible_parent_cohorts = possible_cohorts[commons]
-    decide_parent_cohort_probability_values = decide_cohort_probability_values[commons]
+    child_cohort_probabilities_ceiled = dict(zip(decide_child_cohort_probabilities.keys(),
+                                                 np.ceil(decide_child_cohort_probabilities.values())))
+    all_child_cohorts = set()
+    for i in range(plants_number):
+        child_cohorts = decide_child_cohorts(child_cohort_probabilities_ceiled, first_child_delay)
+        child_cohorts.sort()
+        all_child_cohorts.update(child_cohorts)
     
-    cohort_cardinalities = pandas.DataFrame(index=range(len(decide_cohort_probabilities)), 
-                                            columns=['id_cohort', 'theoretical_cardinality'])
-    theoretical_probabilities_series = pandas.Series(index=cohort_cardinalities.index)
-    idx = 0
-    for (cohort, decide_probability) in decide_cohort_probabilities.iteritems():
-        cohort_cardinalities['id_cohort'][idx] = cohort
-        if cohort == 1:
-            theoretical_probabilities_series[idx] = decide_cohort_probabilities[1]
+    id_cohort_list = sorted([1] + decide_child_cohort_probabilities.keys())
+    theoretical_cohort_cardinalities = dict.fromkeys(id_cohort_list, 0.0)
+    id_axis_list = sorted(['MS'] + decide_child_axis_probabilities.keys())
+    id_cohort_id_axis_tuples = zip(id_cohort_list, id_axis_list)
+    theoretical_axis_cardinalities = dict.fromkeys(id_cohort_id_axis_tuples, 0.0)
+    for (id_cohort, id_axis) in all_child_cohorts:
+        if id_axis == 'T0':
+            pass
+        if id_cohort == 1:
+            theoretical_probability = 1.0
         else:
-            first_possible_parent = cohort - first_child_delay
-            curr_possible_parent_indexes = np.where(possible_parent_cohorts <= first_possible_parent)
-            curr_decide_parent_cohort_probabilities = decide_parent_cohort_probability_values[curr_possible_parent_indexes]
-            theoretical_probabilities_series[idx] = (curr_decide_parent_cohort_probabilities * decide_probability).sum()
-        idx += 1
-    cohort_cardinalities['theoretical_cardinality'] = theoretical_probabilities_series * plant_number
-    
-    return dict(zip(cohort_cardinalities.values[:, 0], cohort_cardinalities.values[:, 1],))
+            theoretical_probability = decide_child_cohort_probabilities[id_cohort]
+            if '.' in id_axis:
+                id_axis_first_digit = int(id_axis[1:].split('.', 1)[0])
+                id_cohort_from_id_axis_first_digit = id_axis_first_digit + 3
+                theoretical_probability *= decide_child_cohort_probabilities[id_cohort_from_id_axis_first_digit]
+        number_of_axes = theoretical_probability * plants_number
+        theoretical_cohort_cardinalities[id_cohort] += number_of_axes
+        theoretical_axis_cardinalities[(id_cohort, id_axis)] = number_of_axes
+        
+    return (theoretical_cohort_cardinalities, 
+            theoretical_axis_cardinalities)
     
     
 def calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities):

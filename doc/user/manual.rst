@@ -483,7 +483,7 @@ All routines produce the same output tables:
 * :ref:`dimT <dimT>`
 * :ref:`phenT <phenT>`
 * :ref:`phenT_abs <phenT_abs>`: the equivalent of :ref:`phenT <phenT>`, but 
-  with absolute dates and absolute positions.
+  with absolute thermal times and absolute positions.
 * :ref:`dimT_abs <dimT_abs>`: the equivalent of :ref:`dimT <dimT>`, but with 
   absolute positions.
 * :ref:`dynT <dynT>`: the dynamic of the leaves for each type of axis. 
@@ -494,7 +494,7 @@ All routines produce the same output tables:
   senescent leaves when thermal time varies, for each cohort.
 * :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated 
-  cardinalities of each cohort.
+  cardinalities of each cohort and each axis.
 
 .. _levels_of_completeness:
 
@@ -563,18 +563,20 @@ The arguments to define are:
   :ref:`dynT_user_completeness <levels_of_completeness>` and :ref:`dimT_user_completeness <levels_of_completeness>` 
   have to be consistent with respectively *dynT_user* and *dimT_user*.
 
-* *plant_number*, *decide_child_axis_probabilities*, *MS_leaves_number_probabilities*, ...
+* *plants_number*, *plants_density*, *decide_child_axis_probabilities*, *MS_leaves_number_probabilities*, ...
 
   The other arguments of the routine are: 
     
-  * *plant_number*, the number of plants to be generated,
+  * *plants_number*, the number of plants to be generated,
+  * *plants_density*, the number of plants that are present 
+    after loss due to bad emergence, early death..., per square meter.
   * *decide_child_axis_probabilities*, the probability of emergence of an axis 
     when the parent axis is present. *decide_child_axis_probabilities* are set 
     only for axes belonging to primaries tillers. 
   * *MS_leaves_number_probabilities*, the probability distribution 
     of the final number of main stem leaves,
   * *TT_bolting*, the thermal time at which the bolting starts,
-  * *final_axes_density*, the final number of axes which have an ear, per square meter,
+  * *ears_density*, the number of ears per square meter,
   * *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
   * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
   * *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
@@ -615,7 +617,8 @@ from a Python interpreter:
     dimT_user = pandas.read_csv('dimT_user_SHORT.csv')    
     
     # define the other arguments
-    plant_number = 100
+    plants_number = 100
+    plants_density = 250
     decide_child_axis_probabilities = {'T0': 0.0, 'T1': 0.900, 
                                        'T2': 0.983, 'T3': 0.817, 
                                        'T4': 0.117}
@@ -625,7 +628,7 @@ from a Python interpreter:
                                       '13': 0.0, 
                                       '14': 0.0}
     TT_bolting = 500
-    final_axes_density = 250
+    ears_density = 500
     GL_number = {1117.0: 5.6, 1212.1:5.4, 
                  1368.7:4.9, 1686.8:2.4, 
                  1880.0:0.0}
@@ -645,11 +648,12 @@ from a Python interpreter:
     tilleringT,
     cardinalityT) = gen_adel_input_data(dynT_user, 
                                         dimT_user, 
-                                        plant_number, 
+                                        plants_number,
+                                        plants_density,  
                                         decide_child_axis_probabilities, 
                                         MS_leaves_number_probabilities, 
                                         TT_bolting, 
-                                        final_axes_density, 
+                                        ears_density, 
                                         GL_number, 
                                         delais_TT_stop_del_axis, 
                                         TT_col_break, 
@@ -676,11 +680,12 @@ the lines 6 to 32 of the precedent script can be replaced by::
     # "plantgen_inputs_SHORT.py" must be in the working directory 
     (dynT_user, 
      dimT_user, 
-     plant_number, 
+     plants_number, 
+     plants_density,
      decide_child_axis_probabilities, 
      MS_leaves_number_probabilities, 
      TT_bolting, 
-     final_axes_density, 
+     ears_density, 
      GL_number, 
      delais_TT_stop_del_axis, 
      TT_col_break) = read_plantgen_inputs('plantgen_inputs_SHORT.py', dynT_user_completeness='SHORT')
@@ -842,7 +847,7 @@ The appendices contain the description of the following data:
 * :ref:`dimT_user_MIN <dimT_user_MIN>`: the dimensions of the most frequent 
   main stem. 
 * :ref:`phenT_abs <phenT_abs>`: the equivalent of :ref:`phenT <phenT>`, but 
-  with absolute dates and absolute phytomer ranks.
+  with absolute thermal times and absolute phytomer ranks.
 * :ref:`dimT_abs <dimT_abs>`: the equivalent of :ref:`dimT <dimT>`, but with 
   absolute phytomer ranks.
 * :ref:`dynT <dynT>`: the dynamic of the Haun stage for each axis. 
@@ -853,7 +858,7 @@ The appendices contain the description of the following data:
   senescent leaves when thermal time varies, for each cohort. 
 * :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated cardinalities of 
-  each cohort.
+  each cohort and each axis.
   
 These data are used in the construction of Adel inputs.
     
@@ -986,7 +991,7 @@ can be useful for debugging.
 
 :ref:`phenT_abs` is the same as :ref:`phenT <phenT>`, except that:
     * the positions of the phytomers are not normalized,
-    * the dates of developmental events are absolute.
+    * the thermal times of developmental events are absolute.
 
 See :download:`an example of phenT_abs <../../test/data/test_plantgen/MIN_MIN/phenT_abs.csv>`.
         
@@ -1127,9 +1132,9 @@ tilleringT
 ===============================
 :ref:`tilleringT` is constructed for debugging purpose.
 
-:ref:`tilleringT` describes the dynamic of tillering. It stores the number of axes at 
-important dates: the start of growth, the thermal time of the bolting, and the thermal 
-time of the flowering.
+:ref:`tilleringT` describes the dynamic of tillering. It stores the number of axes 
+per square meter at important thermal times: the start of growth, the thermal time 
+of the bolting, and the thermal time of the flowering.
 
 .. list-table::
     :widths: 10 50
@@ -1139,8 +1144,8 @@ time of the flowering.
       - Description
     * - **TT** 
       - the thermal time.
-    * - **NbrAxes** 
-      - the number of axes.
+    * - **axes_density** 
+      - the number of axes per square meter.
 
 See :download:`an example of tilleringT <../../test/data/test_plantgen/MIN_MIN/tilleringT.csv>`.
 
@@ -1152,14 +1157,11 @@ cardinalityT
 :ref:`cardinalityT` is constructed for debugging purpose.
 
 :ref:`cardinalityT` describes the theoretical and the simulated cardinalities of 
-each cohort. It permits the user to validate the simulated cardinalities against 
-the theoretical ones. 
+each cohort and each axis. It permits the user to validate the simulated cardinalities 
+against the theoretical ones. 
 Both cardinalities are calculated from the probabilities of emergence of an axis 
 when the parent axis is present. These probabilities are given by the user. 
-Theoretical cardinalities are calculated globally without randomness, using 
-:func:`alinea.adel.plantgen.tools.calculate_theoretical_cardinalities`. 
-Simulated cardinalities are calculated for each plant with a random factor, using 
-:func:`alinea.adel.plantgen.tools.decide_child_cohorts`.
+Theoretical cardinalities are calculated globally without randomness.
 
 .. list-table::
     :widths: 10 50
@@ -1168,10 +1170,17 @@ Simulated cardinalities are calculated for each plant with a random factor, usin
     * - Column
       - Description
     * - **id_cohort** 
-      - the cohort
-    * - **theoretical_cardinality** 
-      - the theoretical cardinality
-    * - **simulated_cardinality** 
-      - the simulated cardinality
+      - the index of the cohort
+    * - **id_axis** 
+      - the index of the axis
+    * - **theoretical_cohort_cardinality** 
+      - the theoretical cardinality of the cohort
+    * - **simulated_cohort_cardinality** 
+      - the simulated cardinality of the cohort
+    * - **theoretical_axis_cardinality** 
+      - the theoretical cardinality of the axis
+    * - **simulated_axis_cardinality** 
+      - the simulated cardinality of the axis
+      
 
 See :download:`an example of cardinalityT <../../test/data/test_plantgen/MIN_MIN/cardinalityT.csv>`.

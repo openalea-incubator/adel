@@ -12,15 +12,17 @@ random.seed(1234)
 
 initial_random_state = random.getstate()
 
-plant_number = 5
+plants_number = 5
+plants_density = 12
 decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.967, 'T3': 0.817, 'T4': 0.083}
 decide_child_cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)
 MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
 TT_bolting = 500.0
-final_axes_density = 15
+ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_N_phytomer = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
+number_of_ears = plants_number * ears_density / float(plants_density)
 
 expected_results_dir = path('data/test_plantgen')
 default_expected_results_dir = expected_results_dir.joinpath('default')
@@ -44,7 +46,7 @@ def reinit_random_state():
 @with_setup(reinit_random_state)
 def test_create_axeT_tmp():
     expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    axeT_ = axeT.create_axeT_tmp(plant_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
+    axeT_ = axeT.create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
     test_table_filepath = default_results.joinpath('axeT_tmp.csv')
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -155,7 +157,7 @@ def test_create_axeT():
     expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
     dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_col_N_phytomer['MS'], delais_TT_stop_del_axis, final_axes_density)
+    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_col_N_phytomer['MS'], delais_TT_stop_del_axis, number_of_ears)
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -183,7 +185,7 @@ def test_create_dimT_abs():
 def test_create_tilleringT():
     axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
-    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_col_N_phytomer['MS'], plant_number, axeT_, final_axes_density)
+    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_col_N_phytomer['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
@@ -194,13 +196,19 @@ def test_create_tilleringT():
 def test_create_cardinalityT():
     axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_cardinalityT = pandas.read_csv(default_expected_results_dir/'cardinalityT.csv')
-    theoretical_cohort_cardinalities = tools.calculate_theoretical_cardinalities(plant_number, 
-                                                                                 decide_child_cohort_probabilities,
-                                                                                 params.FIRST_CHILD_DELAY)
-    cardinalityT = axeT.create_cardinalityT(theoretical_cohort_cardinalities, axeT_['id_cohort'])
+    (theoretical_cohort_cardinalities, 
+     theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(
+                                            plants_number, 
+                                            decide_child_cohort_probabilities,
+                                            decide_child_axis_probabilities,
+                                            params.FIRST_CHILD_DELAY)
+    cardinalityT = axeT.create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, axeT_[['id_cohort', 'id_axis']])
     test_table_filepath = default_results.joinpath('cardinalityT.csv')
     cardinalityT.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
+    assert (cardinalityT['id_axis'] == expected_cardinalityT['id_axis']).all()
+    del cardinalityT['id_axis']
+    del expected_cardinalityT['id_axis']
     np.testing.assert_allclose(cardinalityT.values.astype(float), expected_cardinalityT.values, relative_tolerance, absolute_tolerance)
     
 
@@ -227,13 +235,15 @@ def test_gen_adel_input_data_from_min():
                  'n2': 5.8,
                  'TT_col_N_phytomer': TT_col_N_phytomer}
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
+    
     results = plantgen.gen_adel_input_data_from_min(dynT_user,
                                                     dimT_user, 
-                                                    plant_number, 
+                                                    plants_number, 
+                                                    plants_density,
                                                     decide_child_axis_probabilities, 
                                                     MS_leaves_number_probabilities, 
                                                     TT_bolting, 
-                                                    final_axes_density, 
+                                                    ears_density, 
                                                     GL_number, 
                                                     delais_TT_stop_del_axis, 
                                                     TT_col_break)
@@ -272,11 +282,12 @@ def test_gen_adel_input_data_from_short():
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data_from_short(dynT_user,
                                                       dimT_user, 
-                                                      plant_number, 
+                                                      plants_number, 
+                                                      plants_density,
                                                       decide_child_axis_probabilities, 
                                                       MS_leaves_number_probabilities, 
                                                       TT_bolting, 
-                                                      final_axes_density, 
+                                                      ears_density, 
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
                                                       TT_col_break)
@@ -314,15 +325,16 @@ def test_gen_adel_input_data_from_full():
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data_from_full(dynT_user,
-                                                 dimT_user,
-                                                 plant_number, 
-                                                 decide_child_axis_probabilities, 
-                                                 MS_leaves_number_probabilities, 
-                                                 TT_bolting, 
-                                                 final_axes_density, 
-                                                 GL_number, 
-                                                 delais_TT_stop_del_axis, 
-                                                 TT_col_break)
+                                                     dimT_user,
+                                                     plants_number, 
+                                                     plants_density,
+                                                     decide_child_axis_probabilities, 
+                                                     MS_leaves_number_probabilities, 
+                                                     TT_bolting, 
+                                                     ears_density, 
+                                                     GL_number, 
+                                                     delais_TT_stop_del_axis, 
+                                                     TT_col_break)
     
     expected_axeT = pandas.read_csv(full_full_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(full_full_expected_results_dir/'phenT_abs.csv')

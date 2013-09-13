@@ -811,7 +811,12 @@ def _gen_adel_input_data_second(axeT_tmp,
     # calculate TT_flag_leaf_ligulation
     TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer'][dynT_.first_valid_index()]
     # create tilleringT
-    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
+    dynT_most_frequent_MS = dynT_.ix[0]
+    id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
+    N_phytomer_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer'])
+    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_most_frequent_MS]))
+    TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
+    tilleringT = axeT.create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
     # create axeT
     axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears)
     # create dimT_abs

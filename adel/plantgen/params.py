@@ -59,14 +59,24 @@ maximum green leaves on the main stem.
 Value is given for the axes with the most frequent leaves number.
 '''
 
+DELAIS_PHYLL_COL_TIP_1ST = 1.2
+'''Delay between tip emergence and collar emergence for the first leaf only.
 
-DELAIS_PHYLL_COL_TIP = 1.6
-'''Delay between tip emergence and collar emergence.
+The delay is given in phyllochron unit. 
 
-The delay is given in phyllochron unit and is taken the same for all leaf 
-positions.
+To parameterize the delay between tip emergence and collar emergence for the other leaves, see 
+:attr:`DELAIS_PHYLL_COL_TIP_NTH <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_NTH>`.
 '''
 
+DELAIS_PHYLL_COL_TIP_NTH = 1.6
+'''Delay between tip emergence and collar emergence for all leaves except the 
+first one. 
+
+The delay is given in phyllochron unit. 
+
+To parameterize the delay between tip emergence and collar emergence for the first leaf, see 
+:attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`.   
+'''
 
 DELAIS_PHYLL_SEN_DISP = 3.0
 '''The time during which a fully senesced leaf on a non-elongated internode 

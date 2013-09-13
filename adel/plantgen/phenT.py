@@ -87,10 +87,18 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
             phenT_abs_group['TT_col_phytomer'] = \
                 phenT_abs_group['index_phytomer'].apply(_calculate_TT_col_phytomer, args=(HS_break, TT_col_0, a_cohort, a2, TT_col_break))
         
-        phenT_abs['TT_em_phytomer'][phenT_abs_group.index] = \
-            phenT_abs_group['TT_em_phytomer'] = \
-                phenT_abs_group['TT_col_phytomer'].apply(_calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2))
+        first_leaf_index = phenT_abs_group.index[1]
+        phenT_abs['TT_em_phytomer'][first_leaf_index] = \
+            phenT_abs_group['TT_em_phytomer'][first_leaf_index] = \
+                _calculate_TT_em_phytomer(phenT_abs_group['TT_col_phytomer'][first_leaf_index], 
+                                          TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, params.DELAIS_PHYLL_COL_TIP_1ST)
         
+        other_leaves_indexes = phenT_abs_group.index - phenT_abs_group.index[1:2]
+        phenT_abs['TT_em_phytomer'][other_leaves_indexes] = \
+            phenT_abs_group['TT_em_phytomer'][other_leaves_indexes] = \
+                phenT_abs_group['TT_col_phytomer'][other_leaves_indexes].apply(
+                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
+             
         id_axis, n0, n1, n2, t0, t1, a, c = \
             dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
         HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer, n0, n1, n2, t0, t1, a, c, a2)
@@ -114,13 +122,13 @@ def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_col_0, a_cohort, a2,
     return TT_col_phytomer
 
 
-def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2):
+def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, delais_phyll_col_tip):
     if TT_col_phytomer < TT_col_break:
-        TT_em_phytomer = TT_col_phytomer - (params.DELAIS_PHYLL_COL_TIP / a_cohort)
+        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
     else:
-        TT_em_phytomer = TT_col_phytomer - (params.DELAIS_PHYLL_COL_TIP / a2)
+        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a2)
         if TT_em_phytomer <= HS_break:
-            TT_em_phytomer = TT_col_break - (params.DELAIS_PHYLL_COL_TIP - a2 * (TT_col_phytomer - TT_col_break)) / a_cohort
+            TT_em_phytomer = TT_col_break - (delais_phyll_col_tip - a2 * (TT_col_phytomer - TT_col_break)) / a_cohort
     return TT_em_phytomer
 
 

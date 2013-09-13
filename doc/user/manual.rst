@@ -813,8 +813,10 @@ These parameters are:
   the delays between the emergence of the main stem and the emergence of each cohort.
 * :attr:`N2_MS_DIV_N2_COHORT <alinea.adel.plantgen.params.N2_MS_DIV_N2_COHORT>`: 
   ratio between the maximum number of green leaves on the tillers and the maximum green leaves on the main stem
-* :attr:`DELAIS_PHYLL_COL_TIP <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP>`: 
-  the delay between tip emergence and collar emergence.
+* :attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`: 
+  delay between tip emergence and collar emergence for the first leaf only.
+* :attr:`DELAIS_PHYLL_COL_TIP_NTH <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_NTH>`: 
+  delay between tip emergence and collar emergence for all leaves except the first one.
 * :attr:`DELAIS_PHYLL_SEN_DISP <alinea.adel.plantgen.params.DELAIS_PHYLL_SEN_DISP>`: 
   the time during which a fully senesced leaf on a non-elongated internode remains on the plant.
 * :attr:`TT_DEL_FHAUT <alinea.adel.plantgen.params.TT_DEL_FHAUT>`: 

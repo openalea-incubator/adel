@@ -5,7 +5,7 @@
 
 .. module:: adel
 
-OpenAlea Adel documentation
+Alinea Adel documentation
 #########################################################################
 
 Module description

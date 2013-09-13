@@ -7,8 +7,8 @@
     :Topic: *Alinea.Adel Documentation*
     :Release: |release|
     :Date: |today|
-    :Authors: Christian FOURNIER, Mariem ABICHOU, Christophe PRADAL, Bruno ANDRIEU and Camille CHAMBON
-    :Target: users, developers and administrators
+    :Authors: Mariem ABICHOU, Bruno ANDRIEU and Camille CHAMBON
+    :Target: users
  
 .. contents:: **Alinea.Adel Documentation**
    
@@ -408,6 +408,10 @@ Positions of plants within the plot are given externally from adel to a planter.
 
 Inner options of ADEL 
 ========================
+
+.. todo:: add reference to C.Fournier's and B.Andrieu's publications which describe 
+          the working hypotheses, and remove the following subsections.
+
 This section documents the inner options of ADEL.
 
 Coordination in organ extension
@@ -459,6 +463,8 @@ Inside this package, the :mod:`plantgen <alinea.adel.plantgen.plantgen>` module
 provides routines to construct :ref:`axeT <axeT>`, :ref:`dimT <dimT>` and :ref:`phenT <phenT>`. 
 :mod:`plantgen <alinea.adel.plantgen.plantgen>` also permits to generate some other tables 
 for debugging purpose.
+
+.. todo:: add reference to M.Abichou's publication which describes the working hypotheses.
 
 We have considered three possible levels of completeness of data, denoted as MIN, 
 SHORT, and FULL. In the next subsections, we: 
@@ -825,13 +831,17 @@ See :mod:`documentation of params <alinea.adel.plantgen.params>` for more inform
 Description of Adel's outputs
 *******************************
 
-.. todo:: document this section.
+.. todo:: to be documented by C.Fournier.
 
 
 Appendices
 ************
 
-The appendices contain the description of the following data:
+The appendices describe the data used by Adel for pre and post-processings. 
+
+Construction of the input tables 
+=================================
+In this section, we describe the data used in the construction of the input tables:
 
 * :ref:`dynT_user_FULL <dynT_user_FULL>`: the dynamic of the Haun stage of 
   **at least** the most frequent non-regressive axes.
@@ -865,7 +875,7 @@ These data are used in the construction of Adel inputs.
 .. _dynT_user_FULL:
 
 dynT_user_FULL
-===============================
+--------------------------------
 :ref:`dynT_user_FULL` is a table which describes the dynamic of the Haun stage of 
 **at least** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers.
@@ -883,7 +893,7 @@ See :download:`an example of dynT_user_FULL <../../test/data/test_plantgen/FULL_
 .. _dynT_user_SHORT:
 
 dynT_user_SHORT
-===============================
+--------------------------------
 :ref:`dynT_user_SHORT` is a table which describes the dynamic of the Haun stage of 
 **exactly** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
@@ -902,7 +912,7 @@ See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/SHOR
 .. _dynT_user_MIN:
 
 dynT_user_MIN
-===============================
+--------------------------------
 :ref:`dynT_user_MIN` is a dictionary which describes the dynamic of the Haun stage of 
 the most frequent main stem. The most frequent main stem is the 
 main stem which has the most frequent number of phytomers.
@@ -930,7 +940,7 @@ Example::
 .. _dimT_user_FULL:
 
 dimT_user_FULL
-===============================
+--------------------------------
 :ref:`dimT_user_FULL` is a table which documents the dimensions of 
 **at least** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
@@ -950,7 +960,7 @@ See :download:`an example of dimT_user_FULL <../../test/data/test_plantgen/FULL_
 .. _dimT_user_SHORT:
 
 dimT_user_SHORT
-===============================
+--------------------------------
 :ref:`dimT_user_SHORT` is a table which documents the dimensions of 
 **exactly** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
@@ -970,7 +980,7 @@ See :download:`an example of dimT_user_SHORT <../../test/data/test_plantgen/SHOR
 .. _dimT_user_MIN:
 
 dimT_user_MIN
-===============================
+--------------------------------
 :ref:`dimT_user_MIN` is a table which documents the dimensions of each phytomer of 
 the most frequent main stem. The most frequent main stem is the 
 main stem which has the most frequent number of phytomers.
@@ -984,7 +994,7 @@ See :download:`an example of dimT_user_MIN <../../test/data/test_plantgen/MIN_MI
 .. _phenT_abs:
 
 phenT_abs
-===============================
+--------------------------------
 :ref:`phenT_abs` is an intermediate table used to construct :ref:`phenT <phenT>`. 
 This table is not an input of Adel. Thus the user normally needn't it. This table 
 can be useful for debugging.
@@ -999,7 +1009,7 @@ See :download:`an example of phenT_abs <../../test/data/test_plantgen/MIN_MIN/ph
 .. _dimT_abs:
 
 dimT_abs
-===============================
+--------------------------------
 :ref:`dimT_abs` is an intermediate table used to construct :ref:`dimT <dimT>`. 
 This table is not an input of Adel. Thus the user normally needn't it. This table 
 can be useful for debugging.
@@ -1013,7 +1023,7 @@ See :download:`an example of dimT_abs <../../test/data/test_plantgen/MIN_MIN/dim
 .. _dynT:
 
 dynT
-===============================
+--------------------------------
 :ref:`dynT` is an intermediate table used to construct the input of Adel. 
 This table is not an input of Adel. Thus the user normally needn't it. This table 
 can be useful for debugging.
@@ -1077,7 +1087,7 @@ See :download:`an example of dynT <../../test/data/test_plantgen/MIN_MIN/dynT.cs
 .. _phenT_first:
 
 phenT_first
-===============================
+--------------------------------
 :ref:`phenT_first` is an intermediate table used to construct :ref:`phenT <phenT>` and 
 :ref:`axeT <axeT>`. This table is not an input of Adel. Thus the user normally 
 needn't it. This table can be useful for debugging.
@@ -1092,7 +1102,7 @@ See :download:`an example of phenT_first <../../test/data/test_plantgen/MIN_MIN/
 .. _HS_GL_SSI_T:
 
 HS_GL_SSI_T
-===============================
+--------------------------------
 :ref:`HS_GL_SSI_T` is constructed for debugging purpose.    
 
 :ref:`HS_GL_SSI_T` describes, for each cohort, the dynamic of Haun stage, Green leaves and 
@@ -1129,7 +1139,7 @@ See :download:`an example of HS_GL_SSI_T <../../test/data/test_plantgen/MIN_MIN/
 .. _tilleringT:
 
 tilleringT
-===============================
+--------------------------------
 :ref:`tilleringT` is constructed for debugging purpose.
 
 :ref:`tilleringT` describes the dynamic of tillering. It stores the number of axes 
@@ -1153,7 +1163,7 @@ See :download:`an example of tilleringT <../../test/data/test_plantgen/MIN_MIN/t
 .. _cardinalityT:
 
 cardinalityT
-===============================
+--------------------------------
 :ref:`cardinalityT` is constructed for debugging purpose.
 
 :ref:`cardinalityT` describes the theoretical and the simulated cardinalities of 

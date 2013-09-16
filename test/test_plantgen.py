@@ -185,7 +185,14 @@ def test_create_dimT_abs():
 def test_create_tilleringT():
     axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
-    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
+    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
+    phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
+    dynT_most_frequent_MS = dynT_.ix[0]
+    id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
+    N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
+    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
+    TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
+    tilleringT = axeT.create_tilleringT(TT_start, TT_bolting, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath

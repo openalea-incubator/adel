@@ -585,7 +585,6 @@ The arguments to define are:
     only for axes belonging to primaries tillers. 
   * *MS_leaves_number_probabilities*, the probability distribution 
     of the final number of main stem leaves,
-  * *TT_bolting*, the thermal time at which the bolting starts,
   * *ears_density*, the number of ears per square meter,
   * *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
   * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
@@ -637,7 +636,6 @@ from a Python interpreter:
                                       '12': 0.036, 
                                       '13': 0.0, 
                                       '14': 0.0}
-    TT_bolting = 500
     ears_density = 500
     GL_number = {1117.0: 5.6, 1212.1:5.4, 
                  1368.7:4.9, 1686.8:2.4, 
@@ -662,7 +660,6 @@ from a Python interpreter:
                                         plants_density,  
                                         decide_child_axis_probabilities, 
                                         MS_leaves_number_probabilities, 
-                                        TT_bolting, 
                                         ears_density, 
                                         GL_number, 
                                         delais_TT_stop_del_axis, 
@@ -694,7 +691,6 @@ the lines 6 to 32 of the precedent script can be replaced by::
      plants_density,
      decide_child_axis_probabilities, 
      MS_leaves_number_probabilities, 
-     TT_bolting, 
      ears_density, 
      GL_number, 
      delais_TT_stop_del_axis, 

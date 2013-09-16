@@ -72,7 +72,7 @@ def create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_
     return axeT_tmp
 
 
-def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears):
+def create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears):
     '''
     Create the :ref:`axeT <axeT>` dataframe filling the *axeT_tmp* dataframe.
     
@@ -81,7 +81,7 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulatio
         - `axeT_tmp` (:class:`pandas.DataFrame`) - the *axeT_tmp* dataframe.
         - `phenT_first` (:class:`pandas.DataFrame`) - the :ref:`phenT_first <phenT_first>` dataframe.  
         - `dynT_` (:class:`pandas.DataFrame`) - the :ref:`dynT <dynT>` dataframe.
-        - `TT_bolting` (:class:`float`) - thermal time at which the bolting starts.
+        - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation. 
         - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
           thermal time between an axis stop growing and its disappearance (it 
@@ -102,7 +102,7 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulatio
      axeT_['TT_col_phytomer1'], 
      axeT_['TT_sen_phytomer1'],
      axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_em_phytomer1'].tolist(), TT_bolting, TT_flag_leaf_ligulation)
+    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_em_phytomer1'].tolist(), TT_regression_start, TT_flag_leaf_ligulation)
     axeT_['id_ear'] = _gen_id_ear_list(axeT_['TT_stop_axis'])
     axeT_['TT_del_axis'] = _gen_TT_del_axis_list(axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
     axeT_['HS_final'] = _gen_HS_final_list(axeT_, dynT_)
@@ -246,14 +246,14 @@ def _gen_HS_final_list(axeT_, dynT_):
     HS_final_series.fillna(axeT_['N_phytomer_potential'], inplace=True)
     return HS_final_series.tolist()
 
-def create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, number_of_axes, ears_density):
+def create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, number_of_axes, ears_density):
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     
     :Parameters:
     
         - `TT_start` (:class:`int`) - the thermal time at which the growth starts.
-        - `TT_bolting` (:class:`float`) - the thermal time at which the bolting starts.
+        - `TT_regression_start` (:class:`float`) - the thermal time at which the regression starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation.
         - `plants_number` (:class:`int`) - the number of plants to simulate.
         - `plants_density` (:class:`int`) - the number of plants that are present 
@@ -269,7 +269,7 @@ def create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_numb
 
     '''
     axes_density = number_of_axes / float(plants_number) * plants_density 
-    return pandas.DataFrame({'TT': [TT_start, TT_bolting, TT_flag_leaf_ligulation], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
+    return pandas.DataFrame({'TT': [TT_start, TT_regression_start, TT_flag_leaf_ligulation], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
 
 
 def create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, simulated_cohorts_axes):

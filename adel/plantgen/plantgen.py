@@ -48,7 +48,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                                  plants_density=250, 
                                  decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
                                  MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                 TT_bolting=500.0,
                                  ears_density=500,
                                  GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                  delais_TT_stop_del_axis=600,
@@ -104,8 +103,6 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
           The keys are the final numbers of main stem leaves, and the values are 
           the probability distribution.
           
-        - `TT_bolting` (:class:`int`) - the thermal time at which the bolting starts.
-        
         - `ears_density` (:class:`int`) - the number of ears per square meter.
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL 
@@ -154,7 +151,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
             continue
         dynT_user_dataframe[key][MS_index] = value
     
-    return gen_adel_input_data(dynT_user_dataframe, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, TT_bolting, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
+    return gen_adel_input_data(dynT_user_dataframe, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
 
 
 def gen_adel_input_data_from_short(dynT_user,
@@ -163,7 +160,6 @@ def gen_adel_input_data_from_short(dynT_user,
                                    plants_density=250,
                                    decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
                                    MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                   TT_bolting=500.0,
                                    ears_density=500,
                                    GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                    delais_TT_stop_del_axis=600,
@@ -208,8 +204,6 @@ def gen_adel_input_data_from_short(dynT_user,
           The keys are the final numbers of main stem leaves, and the values are 
           the probability distribution.
           
-        - `TT_bolting` (:class:`int`) - the thermal time at which the bolting starts.
-        
         - `ears_density` (:class:`int`) - the number of ears per square meter. 
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -244,7 +238,7 @@ def gen_adel_input_data_from_short(dynT_user,
                  :mod:`alinea.adel.plantgen.tools`
                  
     '''    
-    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, TT_bolting, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
+    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
     
 
 def gen_adel_input_data_from_full(dynT_user,
@@ -253,7 +247,6 @@ def gen_adel_input_data_from_full(dynT_user,
                                   plants_density=250,
                                   decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
                                   MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                  TT_bolting=500.0,
                                   ears_density=500,
                                   GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                                   delais_TT_stop_del_axis=600,
@@ -297,8 +290,6 @@ def gen_adel_input_data_from_full(dynT_user,
           The keys are the final numbers of main stem leaves, and the values are 
           the probability distribution.
           
-        - `TT_bolting` (:class:`int`) - the thermal time at which the bolting starts.
-        
         - `ears_density` (:class:`int`) - the number of ears per square meter. 
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -333,7 +324,7 @@ def gen_adel_input_data_from_full(dynT_user,
                  :mod:`alinea.adel.plantgen.tools`
                  
     '''    
-    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, TT_bolting, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
+    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
 
 
 def gen_adel_input_data(dynT_user,
@@ -342,7 +333,6 @@ def gen_adel_input_data(dynT_user,
                         plants_density=250,
                         decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
                         MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                        TT_bolting=500.0,
                         ears_density=500,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
@@ -422,8 +412,6 @@ def gen_adel_input_data(dynT_user,
           The keys are the final numbers of main stem leaves, and the values are 
           the probabilities distribution.
           
-        - `TT_bolting` (:class:`int`) - the thermal time at which the bolting starts.
-        
         - `ears_density` (:class:`int`) - the number of ears per square meter. 
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
@@ -758,7 +746,6 @@ of the MS are documented by the user, then this will lead to an error."
                                                plants_number,
                                                plants_density,
                                                GL_number, 
-                                               TT_bolting, 
                                                delais_TT_stop_del_axis, 
                                                ears_density,
                                                number_of_ears)
@@ -793,7 +780,6 @@ def _gen_adel_input_data_second(axeT_tmp,
                                 plants_number, 
                                 plants_density,
                                 GL_number, 
-                                TT_bolting, 
                                 delais_TT_stop_del_axis,
                                 ears_density,
                                 number_of_ears):
@@ -810,15 +796,17 @@ def _gen_adel_input_data_second(axeT_tmp,
     phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
     # calculate TT_flag_leaf_ligulation
     TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer_potential'][dynT_.first_valid_index()]
+    # create axeT
+    t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
+    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears)
     # create tilleringT
-    dynT_most_frequent_MS = dynT_.ix[0]
+    dynT_most_frequent_MS = dynT_.ix[dynT_.first_valid_index()]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
     id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
     TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
-    tilleringT = axeT.create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
-    # create axeT
-    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_flag_leaf_ligulation, delais_TT_stop_del_axis, number_of_ears)
+    tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
     # create dimT_abs
     dimT_abs = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_)
     # create dimT
@@ -861,7 +849,6 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompletenes
     plants_density = inputs.plants_density
     decide_child_axis_probabilities = inputs.decide_child_axis_probabilities 
     MS_leaves_number_probabilities = inputs.MS_leaves_number_probabilities
-    TT_bolting = inputs.TT_bolting
     ears_density = inputs.ears_density
     GL_number = inputs.GL_number
     delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
@@ -873,5 +860,5 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompletenes
         dynT_user = pandas.read_csv(inputs.dynT_user)
     
     return (dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, 
-            MS_leaves_number_probabilities, TT_bolting, ears_density, GL_number, 
+            MS_leaves_number_probabilities, ears_density, GL_number, 
             delais_TT_stop_del_axis, TT_col_break)

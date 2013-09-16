@@ -15,7 +15,6 @@ MS_leaves_number_probabilities = {'10': 0.145,
                                   '12': 0.036,
                                   '13': 0.0,
                                   '14': 0.0}
-TT_bolting = 500
 ears_density = 500
 GL_number = {1117.0: 5.6, 1212.1:5.4,
              1368.7:4.9, 1686.8:2.4,

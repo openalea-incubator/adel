@@ -141,7 +141,7 @@ def calculate_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, 
     return a_1* MS_final_leaves_number - a_2 * cohort_number
     
 
-def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_bolting, TT_flag_leaf_ligulation):
+def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_regression_start, TT_flag_leaf_ligulation):
     '''
     Decide the thermal times (relative to canopy emergence) when the axes stop 
     growing. Uses a linear function which describes the decay of the global population. 
@@ -152,7 +152,7 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
         - `min_axes_number` (:class:`int`) - the minimum number of existing axes. 
         - `TT_em_phytomer1` (:class:`list`) - Thermal times (relative to canopy emergence) 
           of tip emergence of the first true leaf (not coleoptile or prophyll)
-        - `TT_bolting` (:class:`float`) - thermal time at which the bolting starts.
+        - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation.
 
     :Returns: 
@@ -163,9 +163,9 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
         
     .. warning:: 
     
-        * *min_axes_number*, *max_axes_number*, *TT_bolting* and *TT_flag_leaf_ligulation* 
+        * *min_axes_number*, *max_axes_number*, *TT_regression_start* and *TT_flag_leaf_ligulation* 
           must be positive or null.
-        * *TT_bolting* must be smaller (or equal) than *TT_flag_leaf_ligulation*.
+        * *TT_regression_start* must be smaller (or equal) than *TT_flag_leaf_ligulation*.
         * *min_axes_number* must be smaller (or equal) than *max_axes_number*.
 
     '''
@@ -174,24 +174,24 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_b
         raise InputError("max_axes_number negative")
     if min_axes_number < 0:
         raise InputError("min_axes_number negative")
-    if TT_bolting < 0:
-        raise InputError("TT_bolting negative")
+    if TT_regression_start < 0:
+        raise InputError("TT_regression_start negative")
     if TT_flag_leaf_ligulation < 0:
         raise InputError("TT_flag_leaf_ligulation negative")
     
-    if TT_bolting > TT_flag_leaf_ligulation:
-        raise InputError("TT_bolting greater than TT_flag_leaf_ligulation")
+    if TT_regression_start > TT_flag_leaf_ligulation:
+        raise InputError("TT_regression_start greater than TT_flag_leaf_ligulation")
     
     if min_axes_number > max_axes_number:
         raise InputError("min_axes_number greater than max_axes_number")
     
-    polynomial_coefficient_array = np.polyfit([TT_flag_leaf_ligulation, TT_bolting], [min_axes_number, max_axes_number], 1)
+    polynomial_coefficient_array = np.polyfit([TT_flag_leaf_ligulation, TT_regression_start], [min_axes_number, max_axes_number], 1)
                 
     remaining_axes_number = max_axes_number
     T_em_leaf1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
     T_em_leaf1_tuples.sort()
     T_stop_axis_tuples = []
-    for tt in range(int(TT_bolting), int(TT_flag_leaf_ligulation) + 1):
+    for tt in range(int(TT_regression_start), int(TT_flag_leaf_ligulation) + 1):
         simulated_axes_number = int(np.polyval(polynomial_coefficient_array, tt))
         axes_to_delete_number = remaining_axes_number - simulated_axes_number
         while axes_to_delete_number > 0:

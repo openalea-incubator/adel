@@ -17,7 +17,6 @@ plants_density = 12
 decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.967, 'T3': 0.817, 'T4': 0.083}
 decide_child_cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)
 MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
-TT_bolting = 500.0
 ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
@@ -157,7 +156,9 @@ def test_create_axeT():
     expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
     dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_col_N_phytomer_potential['MS'], delais_TT_stop_del_axis, number_of_ears)
+    t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
+    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_col_N_phytomer_potential['MS'], delais_TT_stop_del_axis, number_of_ears)
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -192,7 +193,9 @@ def test_create_tilleringT():
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
     id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
     TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
-    tilleringT = axeT.create_tilleringT(TT_start, TT_bolting, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
+    t1_most_frequent_MS = dynT_most_frequent_MS['t1']
+    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+    tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
@@ -249,7 +252,6 @@ def test_gen_adel_input_data_from_min():
                                                     plants_density,
                                                     decide_child_axis_probabilities, 
                                                     MS_leaves_number_probabilities, 
-                                                    TT_bolting, 
                                                     ears_density, 
                                                     GL_number, 
                                                     delais_TT_stop_del_axis, 
@@ -293,7 +295,6 @@ def test_gen_adel_input_data_from_short():
                                                       plants_density,
                                                       decide_child_axis_probabilities, 
                                                       MS_leaves_number_probabilities, 
-                                                      TT_bolting, 
                                                       ears_density, 
                                                       GL_number, 
                                                       delais_TT_stop_del_axis, 
@@ -337,7 +338,6 @@ def test_gen_adel_input_data_from_full():
                                                      plants_density,
                                                      decide_child_axis_probabilities, 
                                                      MS_leaves_number_probabilities, 
-                                                     TT_bolting, 
                                                      ears_density, 
                                                      GL_number, 
                                                      delais_TT_stop_del_axis, 

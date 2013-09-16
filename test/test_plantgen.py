@@ -21,7 +21,7 @@ TT_bolting = 500.0
 ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
-TT_col_N_phytomer = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
+TT_col_N_phytomer_potential = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
 number_of_ears = plants_number * ears_density / float(plants_density)
 
 expected_results_dir = path('data/test_plantgen')
@@ -90,7 +90,7 @@ def test_create_dynT():
     dynT_tmp = pandas.read_csv(default_expected_results_dir/'dynT_tmp_merged.csv')
     decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp)
     expected_dynT = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    dynT_ = dynT.create_dynT(dynT_tmp, dimT_tmp, GL_number, decimal_elongated_internode_number)
+    dynT_ = dynT.create_dynT(dynT_tmp, GL_number, decimal_elongated_internode_number)
     test_table_filepath = default_results.joinpath('dynT.csv')
     dynT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -157,7 +157,7 @@ def test_create_axeT():
     expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
     dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_col_N_phytomer['MS'], delais_TT_stop_del_axis, number_of_ears)
+    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_bolting, TT_col_N_phytomer_potential['MS'], delais_TT_stop_del_axis, number_of_ears)
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -185,7 +185,7 @@ def test_create_dimT_abs():
 def test_create_tilleringT():
     axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
     expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
-    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_col_N_phytomer['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
+    tilleringT = axeT.create_tilleringT(0, TT_bolting, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
@@ -233,7 +233,7 @@ def test_gen_adel_input_data_from_min():
                  'n0': 4.871559739,
                  'n1': 3.24283148,
                  'n2': 5.8,
-                 'TT_col_N_phytomer': TT_col_N_phytomer}
+                 'TT_col_N_phytomer_potential': TT_col_N_phytomer_potential}
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     
     results = plantgen.gen_adel_input_data_from_min(dynT_user,

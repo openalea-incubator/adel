@@ -85,7 +85,6 @@ remains on the plant.
 The delay is given in phyllochron unit. 
 '''
 
-
 TT_DEL_FHAUT = 3000
 '''The thermal time at which leaves on elongated internode disappear.
 

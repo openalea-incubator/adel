@@ -1,4 +1,4 @@
-id_axis,id_cohort,cardinality,N_phytomer,a_cohort,TT_col_0,TT_col_break,TT_col_N_phytomer,dTT_MS_cohort,n0,n1,n2,t0,t1,hs_t1,a,c,RMSE_gl
+id_axis,id_cohort,cardinality,N_phytomer_potential,a_cohort,TT_col_0,TT_col_break,TT_col_N_phytomer_potential,dTT_MS_cohort,n0,n1,n2,t0,t1,hs_t1,a,c,RMSE_gl
 MS,1,4,11,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 MS,1,1,10,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 T1,4,2,9,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

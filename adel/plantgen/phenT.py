@@ -57,9 +57,9 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
     
     id_phen_list = []
     index_phytomer_list = []
-    for (id_phen, N_phytomer), axeT_tmp_group in axeT_tmp.groupby(['id_phen', 'N_phytomer']):
-        id_phen_list.extend(np.repeat(id_phen, N_phytomer + 1))
-        index_phytomer_list.extend(range(N_phytomer + 1))
+    for (id_phen, N_phytomer_potential), axeT_tmp_group in axeT_tmp.groupby(['id_phen', 'N_phytomer_potential']):
+        id_phen_list.extend(np.repeat(id_phen, N_phytomer_potential + 1))
+        index_phytomer_list.extend(range(N_phytomer_potential + 1))
         
     phenT_abs = pandas.DataFrame(index=range(len(id_phen_list)), 
                                  columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'],
@@ -69,19 +69,19 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
     phenT_abs['index_phytomer'] = index_phytomer_list
     
     phenT_abs_grouped = phenT_abs.groupby('id_phen')
-    dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer'])
+    dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
     
     Nbr_Fhaut_persistant = round(decimal_elongated_internode_number) + 1
     
-    for (id_cohort, N_phytomer, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer', 'id_phen']):
+    for (id_cohort, N_phytomer_potential, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
         phenT_abs_group = phenT_abs_grouped.get_group(id_phen)
-        dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer))
+        dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer_potential))
         dynT_row = dynT_group.ix[dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()]
-        a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer = \
-            dynT_row[['a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer']]
+        a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer_potential = \
+            dynT_row[['a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer_potential']]
         
         HS_break = a_cohort * (TT_col_break - TT_col_0)
-        a2 = (N_phytomer - HS_break) / (TT_col_N_phytomer - TT_col_break)
+        a2 = (N_phytomer_potential - HS_break) / (TT_col_N_phytomer_potential - TT_col_break)
         
         phenT_abs['TT_col_phytomer'][phenT_abs_group.index] = \
             phenT_abs_group['TT_col_phytomer'] = \
@@ -91,25 +91,25 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
         phenT_abs['TT_em_phytomer'][first_leaf_index] = \
             phenT_abs_group['TT_em_phytomer'][first_leaf_index] = \
                 _calculate_TT_em_phytomer(phenT_abs_group['TT_col_phytomer'][first_leaf_index], 
-                                          TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, params.DELAIS_PHYLL_COL_TIP_1ST)
+                                          TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST)
         
         other_leaves_indexes = phenT_abs_group.index - phenT_abs_group.index[1:2]
         phenT_abs['TT_em_phytomer'][other_leaves_indexes] = \
             phenT_abs_group['TT_em_phytomer'][other_leaves_indexes] = \
                 phenT_abs_group['TT_col_phytomer'][other_leaves_indexes].apply(
-                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
+                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
              
         id_axis, n0, n1, n2, t0, t1, a, c = \
             dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer, n0, n1, n2, t0, t1, a, c, a2)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer_potential, n0, n1, n2, t0, t1, a, c, a2)
         
         phenT_abs['TT_sen_phytomer'][phenT_abs_group.index] = \
             phenT_abs_group['TT_sen_phytomer'] = \
-                phenT_abs_group['index_phytomer'].apply(_calculate_TT_sen_phytomer, args=(HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_col_N_phytomer, N_phytomer))
+                phenT_abs_group['index_phytomer'].apply(_calculate_TT_sen_phytomer, args=(HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_col_N_phytomer_potential, N_phytomer_potential))
         
         phenT_abs['TT_del_phytomer'][phenT_abs_group.index] = \
             phenT_abs_group['TT_del_phytomer'] = \
-                _calculate_TT_del_phytomer(a_cohort, N_phytomer, id_cohort, Nbr_Fhaut_persistant, phenT_abs_group['TT_sen_phytomer'])
+                _calculate_TT_del_phytomer(a_cohort, N_phytomer_potential, id_cohort, Nbr_Fhaut_persistant, phenT_abs_group['TT_sen_phytomer'])
         
     return phenT_abs
 
@@ -122,7 +122,7 @@ def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_col_0, a_cohort, a2,
     return TT_col_phytomer
 
 
-def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer, TT_col_N_phytomer, a2, delais_phyll_col_tip):
+def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, delais_phyll_col_tip):
     if TT_col_phytomer < TT_col_break:
         TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
     else:
@@ -132,7 +132,7 @@ def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break,
     return TT_em_phytomer
 
 
-def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_col_N_phytomer, N_phytomer):  
+def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_col_N_phytomer_potential, N_phytomer_potential):  
     # define HS according to index_phytomer
     if index_phytomer < HS_break: # linear mode
         HS = HS_1
@@ -160,7 +160,7 @@ def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3,
                     and not np.allclose(SSI_root_array[0], t0)) \
                 or (SSI_root_array[0] > t1 \
                     and not np.allclose(SSI_root_array[0], t1)):
-                # Suppose we are in the ]t1,TT_col_N_phytomer] phase.
+                # Suppose we are in the ]t1,TT_col_N_phytomer_potential] phase.
                 GL = GL_3
                 SSI = HS - GL
                 # Find (SSI - index_phytomer) real root.
@@ -168,50 +168,50 @@ def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3,
                 if SSI_root_array.size == 0 \
                     or (SSI_root_array[0] <= t1 \
                         and not np.allclose(SSI_root_array[0], t1)) \
-                    or (SSI_root_array[0] > TT_col_N_phytomer \
-                        and not np.allclose(SSI_root_array[0], TT_col_N_phytomer)):
-                    # We must be in the ]TT_col_N_phytomer,infinity[ phase.
+                    or (SSI_root_array[0] > TT_col_N_phytomer_potential \
+                        and not np.allclose(SSI_root_array[0], TT_col_N_phytomer_potential)):
+                    # We must be in the ]TT_col_N_phytomer_potential,infinity[ phase.
                     GL = GL_4
                     SSI = HS - GL
                     # Find (SSI - index_phytomer) real root.
                     SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
                     if SSI_root_array.size == 0 \
-                        or (SSI_root_array[0] <= TT_col_N_phytomer \
-                            and not np.allclose(SSI_root_array[0], TT_col_N_phytomer)):
+                        or (SSI_root_array[0] <= TT_col_N_phytomer_potential \
+                            and not np.allclose(SSI_root_array[0], TT_col_N_phytomer_potential)):
                         raise Exception('ERROR !!!!! This shouldn\'t occurred')
-                    if HS(SSI_root_array[0]) > N_phytomer:
-                        HS = np.poly1d([N_phytomer])
+                    if HS(SSI_root_array[0]) > N_phytomer_potential:
+                        HS = np.poly1d([N_phytomer_potential])
                     if GL(SSI_root_array[0]) < 0.0:
                         GL = np.poly1d([0.0])
                     SSI = HS - GL
                     # Find (SSI - index_phytomer) real root again.
                     SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
                     if SSI_root_array.size == 0 \
-                        or (SSI_root_array[0] <= TT_col_N_phytomer \
-                            and not np.allclose(SSI_root_array[0], TT_col_N_phytomer)):
+                        or (SSI_root_array[0] <= TT_col_N_phytomer_potential \
+                            and not np.allclose(SSI_root_array[0], TT_col_N_phytomer_potential)):
                         raise Exception('ERROR !!!!! This shouldn\'t occurred')
         TT_sen_phytomer = SSI_root_array[0]
     
     return TT_sen_phytomer
 
 
-def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer, n0, n1, n2, t0, t1, a, c, a2):
+def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer_potential, n0, n1, n2, t0, t1, a, c, a2):
     # define HS(TT)
     HS_1 = np.poly1d([a_cohort, - a_cohort * TT_col_0]) # index_phytomer < HS_break
     HS_2 = np.poly1d([a2, - a2 * TT_col_break + HS_break]) # index_phytomer >= HS_break
     # define GL(TT) for all phases except TT < t0 (because it depends on index_phytomer)
     if id_axis == 'MS':
         GL_2 = np.poly1d([(n1 - n0) / (t1 - t0), n0 - t0 * (n1 - n0) / (t1 - t0)])
-        GL_3 = np.poly1d([(n2 - n1) / (TT_col_N_phytomer - t1), n1 - t1 * (n2 - n1) / (TT_col_N_phytomer - t1)])
+        GL_3 = np.poly1d([(n2 - n1) / (TT_col_N_phytomer_potential - t1), n1 - t1 * (n2 - n1) / (TT_col_N_phytomer_potential - t1)])
     else: # tillers
         GL_2 = np.poly1d([n0])
-        GL_3 = np.poly1d([(n2 - n0) / (TT_col_N_phytomer - t1), n0 - t1 * (n2 - n0) / (TT_col_N_phytomer - t1)])
-    GL_4 = np.poly1d([a, - 3 * a * TT_col_N_phytomer, 3 * a * TT_col_N_phytomer**2 + c, - a * TT_col_N_phytomer**3 - c * TT_col_N_phytomer + n2])
+        GL_3 = np.poly1d([(n2 - n0) / (TT_col_N_phytomer_potential - t1), n0 - t1 * (n2 - n0) / (TT_col_N_phytomer_potential - t1)])
+    GL_4 = np.poly1d([a, - 3 * a * TT_col_N_phytomer_potential, 3 * a * TT_col_N_phytomer_potential**2 + c, - a * TT_col_N_phytomer_potential**3 - c * TT_col_N_phytomer_potential + n2])
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
 
-def _calculate_TT_del_phytomer(a_cohort, N_phytomer, id_cohort, Nbr_Fhaut_persistant, TT_sen_phytomer_series):
-    TT_del_Fhaut_index_phytomer = N_phytomer - Nbr_Fhaut_persistant + id_cohort
+def _calculate_TT_del_phytomer(a_cohort, N_phytomer_potential, id_cohort, Nbr_Fhaut_persistant, TT_sen_phytomer_series):
+    TT_del_Fhaut_index_phytomer = N_phytomer_potential - Nbr_Fhaut_persistant + id_cohort
     TT_del_phytomer_series = pandas.Series(index=TT_sen_phytomer_series.index)
     TT_del_phytomer_series[:TT_del_Fhaut_index_phytomer] = TT_sen_phytomer_series[:TT_del_Fhaut_index_phytomer] + params.DELAIS_PHYLL_SEN_DISP / a_cohort
     TT_del_phytomer_series[TT_del_Fhaut_index_phytomer:] = params.TT_DEL_FHAUT
@@ -314,28 +314,28 @@ def create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_):
     HS_GL_SSI_dynamic = pandas.DataFrame(columns=['id_phen', 'TT', 'HS', 'GL', 'SSI'])
     
     phenT_abs_grouped = phenT_abs.groupby('id_phen')
-    dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer'])
-    for (id_cohort, N_phytomer, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer', 'id_phen']):
+    dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
+    for (id_cohort, N_phytomer_potential, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
         phenT_abs_group = phenT_abs_grouped.get_group(id_phen)
-        dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer))
+        dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer_potential))
         dynT_row = dynT_group.ix[dynT_group['cardinality'].idxmax()]
-        id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer, n0, n1, n2, t0, t1, a, c = \
-            dynT_row[['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
+        id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer_potential, n0, n1, n2, t0, t1, a, c = \
+            dynT_row[['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
             
         HS_break = a_cohort * (TT_col_break - TT_col_0)
-        a2 = (N_phytomer - HS_break) / (TT_col_N_phytomer - TT_col_break)
+        a2 = (N_phytomer_potential - HS_break) / (TT_col_N_phytomer_potential - TT_col_break)
         
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer, n0, n1, n2, t0, t1, a, c, a2)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_break, TT_col_N_phytomer_potential, n0, n1, n2, t0, t1, a, c, a2)
         
-        t0, t1, TT_col_N_phytomer, TT_col_break = np.round([t0, t1, TT_col_N_phytomer, TT_col_break]).astype(int)
+        t0, t1, TT_col_N_phytomer_potential, TT_col_break = np.round([t0, t1, TT_col_N_phytomer_potential, TT_col_break]).astype(int)
         
         TT_1_1 = np.arange(0, t0)
         TT_1_2 = np.arange(t0, t0)
         TT_2_1 = np.arange(t0, t1)
         TT_2_2 = np.arange(t1, t1)
-        TT_3_1 = np.arange(t1, TT_col_N_phytomer)
-        TT_3_2 = np.arange(TT_col_N_phytomer, TT_col_N_phytomer)
-        TT_4_1 = np.arange(TT_col_N_phytomer, params.TT_DEL_FHAUT)
+        TT_3_1 = np.arange(t1, TT_col_N_phytomer_potential)
+        TT_3_2 = np.arange(TT_col_N_phytomer_potential, TT_col_N_phytomer_potential)
+        TT_4_1 = np.arange(TT_col_N_phytomer_potential, params.TT_DEL_FHAUT)
         TT_4_2 = np.arange(params.TT_DEL_FHAUT, params.TT_DEL_FHAUT)
         
         if TT_col_break != 0.0: # bilinear mode
@@ -345,21 +345,21 @@ def create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_):
             elif TT_col_break <= t1:
                 TT_2_1 = np.arange(t0, TT_col_break)
                 TT_2_2 = np.arange(TT_col_break, t1)
-            elif TT_col_break <= TT_col_N_phytomer:
+            elif TT_col_break <= TT_col_N_phytomer_potential:
                 TT_3_1 = np.arange(t1, TT_col_break)
-                TT_3_2 = np.arange(TT_col_break, TT_col_N_phytomer)
+                TT_3_2 = np.arange(TT_col_break, TT_col_N_phytomer_potential)
             else:
-                TT_4_1 = np.arange(TT_col_N_phytomer, TT_col_break)
+                TT_4_1 = np.arange(TT_col_N_phytomer_potential, TT_col_break)
                 TT_4_2 = np.arange(TT_col_break, params.TT_DEL_FHAUT)
             
-        HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer)
-        HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer)
-        HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer)
-        HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer)
-        HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer)
-        HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer)
-        HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer)
-        HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer)
+        HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer_potential)
+        HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
+        HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
+        HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
+        HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer_potential)
+        HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
+        HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
+        HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
         
         GL_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, 1000.0)
         GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)

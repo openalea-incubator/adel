@@ -8,11 +8,11 @@ dynT_user = {'a_cohort': 0.0102,
              'n0': 4.871559739,
              'n1': 3.24283148,
              'n2': 5.8,
-             'TT_col_N_phytomer': {'MS': 1078.0,
-                                   'T1': 1148.0,
-                                   'T2': 1158.0,
-                                   'T3': 1168.0,
-                                   'T4': 1178.0}}
+             'TT_col_N_phytomer_potential': {'MS': 1078.0,
+                                             'T1': 1148.0,
+                                             'T2': 1158.0,
+                                             'T3': 1168.0,
+                                             'T4': 1178.0}}
 dimT_user = '/home/cchambon/workspace/openaleapkg_tr/adel/test/data/test_plantgen/MIN_MIN/dimT_user.csv'
 plants_number = 100
 plants_density = 250

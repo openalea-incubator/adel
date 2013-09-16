@@ -41,19 +41,19 @@ def create_dynT_tmp(axeT_tmp):
         :class:`pandas.DataFrame`
         
     '''
-    groups = axeT_tmp.groupby(['id_axis', 'id_cohort', 'N_phytomer']).groups
+    groups = axeT_tmp.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups
     keys_array = np.array(groups.keys())
     cardinalities = pandas.DataFrame(np.array(groups.values())).applymap(np.size)
     # initialize the values of the other columns to NaN
     dynT_tmp = pandas.DataFrame(index=range(len(groups)), 
-                                columns=['id_axis', 'id_cohort', 'cardinality', 'N_phytomer', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 'hs_t1', 'a', 'c', 'RMSE_gl'],
+                                columns=['id_axis', 'id_cohort', 'cardinality', 'N_phytomer_potential', 'a_cohort', 'TT_col_0', 'TT_col_break', 'TT_col_N_phytomer_potential', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 'hs_t1', 'a', 'c', 'RMSE_gl'],
                                 dtype=float)
     
-    # set the columns 'id_axis', 'id_cohort', 'cardinality' and 'N_phytomer'
+    # set the columns 'id_axis', 'id_cohort', 'cardinality' and 'N_phytomer_potential'
     dynT_tmp['id_axis'] = keys_array[:, 0]
     dynT_tmp['id_cohort'] = keys_array[:, 1].astype(float).astype(int)
     dynT_tmp['cardinality'] = cardinalities
-    dynT_tmp['N_phytomer'] = keys_array[:, 2].astype(float).astype(int)
+    dynT_tmp['N_phytomer_potential'] = keys_array[:, 2].astype(float).astype(int)
     
     # nested sort of dynT_tmp: first by 'id_axis' in ascending order, second 
     # by 'cardinality' in descending order.
@@ -64,7 +64,6 @@ def create_dynT_tmp(axeT_tmp):
 
 
 def create_dynT(dynT_tmp, 
-                dimT_tmp, 
                 GL_number, 
                 decimal_elongated_internode_number,
                 leaf_number_delay_MS_cohort=params.LEAF_NUMBER_DELAY_MS_COHORT):
@@ -73,7 +72,6 @@ def create_dynT(dynT_tmp,
     
     :Parameters:
          - `dynT_tmp` (:class:`pandas.DataFrame`) - the *dynT_tmp* dataframe.
-         - `dimT_tmp` (:class:`pandas.DataFrame`) - the *dimT_tmp* dataframe.
          - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal number measured at 
            several thermal times (including the senescence end).
          - `decimal_elongated_internode_number` (:class:`float`) - the number of 
@@ -90,18 +88,18 @@ def create_dynT(dynT_tmp,
     .. warning:: 
     
         * in *dynT_tmp*, the column *id_axis*, *id_phen*, *cardinality* 
-          and *N_phytomer* must be completely filled, i.e. they must not contain 
+          and *N_phytomer_potential* must be completely filled, i.e. they must not contain 
           any NA value.
     
     ''' 
     # in 'dynT_tmp', check that the columns 'id_axis', 'cardinality' and 
-    # 'N_phytomer' are non-NA.
+    # 'N_phytomer_potential' are non-NA.
     if dynT_tmp['id_axis'].count() != dynT_tmp['id_axis'].size:
         raise tools.InputError("dynT_tmp['id_axis'] contains NA values")
     if dynT_tmp['cardinality'].count() != dynT_tmp['cardinality'].size:
         raise tools.InputError("dynT_tmp['cardinality'] contains NA values")
-    if dynT_tmp['N_phytomer'].count() != dynT_tmp['N_phytomer'].size:
-        raise tools.InputError("dynT_tmp['N_phytomer'] contains NA values")
+    if dynT_tmp['N_phytomer_potential'].count() != dynT_tmp['N_phytomer_potential'].size:
+        raise tools.InputError("dynT_tmp['N_phytomer_potential'] contains NA values")
     # get all main stem rows
     MS = dynT_tmp[dynT_tmp['id_axis'] == 'MS']
     
@@ -158,7 +156,7 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_interno
         most_frequent_MS['t1'] = most_frequent_MS['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS['a_cohort']
     else: # bilinear mode
         HS_break_0 = most_frequent_MS['a_cohort'][0] * (most_frequent_MS['TT_col_break'][0] - most_frequent_MS['TT_col_0'][0])
-        a2_0 = (most_frequent_MS['N_phytomer'][0] - HS_break_0) / (most_frequent_MS['TT_col_N_phytomer'][0] - most_frequent_MS['TT_col_break'][0])
+        a2_0 = (most_frequent_MS['N_phytomer_potential'][0] - HS_break_0) / (most_frequent_MS['TT_col_N_phytomer_potential'][0] - most_frequent_MS['TT_col_break'][0])
         if decimal_elongated_internode_number < HS_break_0:
             most_frequent_MS['t1'] = most_frequent_MS['TT_col_0'] + decimal_elongated_internode_number / most_frequent_MS['a_cohort']
         else:
@@ -170,17 +168,17 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_interno
         most_frequent_MS['t0'] = most_frequent_MS['TT_col_0'] + most_frequent_MS['n0'] / most_frequent_MS['a_cohort']
     else: # bilinear mode
         HS_break = most_frequent_MS['a_cohort'] * (most_frequent_MS['TT_col_break'] - most_frequent_MS['TT_col_0'])
-        a2 = (most_frequent_MS['N_phytomer'] - most_frequent_MS['HS_break']) / (most_frequent_MS['TT_col_N_phytomer'] - most_frequent_MS['TT_col_break'])
+        a2 = (most_frequent_MS['N_phytomer_potential'] - most_frequent_MS['HS_break']) / (most_frequent_MS['TT_col_N_phytomer_potential'] - most_frequent_MS['TT_col_break'])
         n0_smaller_than_HS_break_indexes = most_frequent_MS[most_frequent_MS['n0'] < HS_break].index
         n0_greater_than_HS_break_indexes = most_frequent_MS[most_frequent_MS['n0'] >= HS_break].index
         most_frequent_MS['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_MS['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_MS['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_MS['a_cohort'][n0_smaller_than_HS_break_indexes]
         most_frequent_MS['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_MS['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_MS['TT_col_break'][n0_greater_than_HS_break_indexes]    
     # calculation of c 
-    most_frequent_MS['c'] = -((most_frequent_MS['N_phytomer'] - decimal_elongated_internode_number) - (most_frequent_MS['n2'] - most_frequent_MS['n1'])) / (most_frequent_MS['TT_col_N_phytomer'] - most_frequent_MS['t1'])
+    most_frequent_MS['c'] = -((most_frequent_MS['N_phytomer_potential'] - decimal_elongated_internode_number) - (most_frequent_MS['n2'] - most_frequent_MS['n1'])) / (most_frequent_MS['TT_col_N_phytomer_potential'] - most_frequent_MS['t1'])
     # calculation of a
-    TT_col_N_phytomer_0 = most_frequent_MS['TT_col_N_phytomer'][0]
+    TT_col_N_phytomer_potential_0 = most_frequent_MS['TT_col_N_phytomer_potential'][0]
     n2_0 = most_frequent_MS['n2'][0]
-    TT = np.array([TT_col_N_phytomer_0] + GL_number.keys()) - TT_col_N_phytomer_0
+    TT = np.array([TT_col_N_phytomer_potential_0] + GL_number.keys()) - TT_col_N_phytomer_potential_0
     GL = np.array([n2_0] + GL_number.values())
     fixed_coefs = [0.0, most_frequent_MS['c'][0], n2_0]
     a_starting_estimate = -4.0e-9
@@ -203,11 +201,11 @@ def _gen_other_MS_HS_dynamic(most_frequent_MS, other_MS):
         other_MS['TT_col_break'] = most_frequent_MS['TT_col_break'][0]
         # calculation of dTT_MS_cohort
         other_MS['dTT_MS_cohort'] = most_frequent_MS['dTT_MS_cohort'][0] + (other_MS['id_cohort'] - most_frequent_MS['id_cohort'][0]) / (4 * most_frequent_MS['a_cohort'][0])
-        # calculation of TT_col_N_phytomer
-        other_MS['TT_col_N_phytomer'] = other_MS['dTT_MS_cohort'] + most_frequent_MS['TT_col_N_phytomer'][0]
+        # calculation of TT_col_N_phytomer_potential
+        other_MS['TT_col_N_phytomer_potential'] = other_MS['dTT_MS_cohort'] + most_frequent_MS['TT_col_N_phytomer_potential'][0]
         # calculation of a_cohort
         if most_frequent_MS['TT_col_break'][0] == 0.0: # linear mode
-            other_MS['a_cohort'] = other_MS['N_phytomer'] / (other_MS['TT_col_N_phytomer'] - other_MS['TT_col_0'])
+            other_MS['a_cohort'] = other_MS['N_phytomer_potential'] / (other_MS['TT_col_N_phytomer_potential'] - other_MS['TT_col_0'])
         else: # bilinear mode
             other_MS['a_cohort'] = most_frequent_MS['a_cohort'][0] 
     return other_MS
@@ -222,23 +220,23 @@ def _gen_other_MS_GL_dynamic(most_frequent_MS, other_MS):
     other_MS = other_MS.copy()
     # calculation of n1
     if other_MS['n1'].count() != other_MS['n1'].size:
-        other_MS['n1'] = most_frequent_MS['n1'][0] * other_MS['N_phytomer'] / most_frequent_MS['N_phytomer'][0]
+        other_MS['n1'] = most_frequent_MS['n1'][0] * other_MS['N_phytomer_potential'] / most_frequent_MS['N_phytomer_potential'][0]
     # calculation of t1
     other_MS['t1'] = most_frequent_MS['t1'][0] + other_MS['dTT_MS_cohort']
     # calculation of hs_t1
     other_MS['hs_t1'] = other_MS['a_cohort'] * (other_MS['t1'] - other_MS['TT_col_0'])
     # calculation of n0 
     if other_MS['n0'].count() != other_MS['n0'].size:
-        other_MS['n0'] = most_frequent_MS['n0'][0] * other_MS['N_phytomer'] / most_frequent_MS['N_phytomer'][0]
+        other_MS['n0'] = most_frequent_MS['n0'][0] * other_MS['N_phytomer_potential'] / most_frequent_MS['N_phytomer_potential'][0]
     # calculation of n2
     if other_MS['n2'].count() != other_MS['n2'].size:
-        other_MS['n2'] = most_frequent_MS['n2'][0] * other_MS['N_phytomer'] / most_frequent_MS['N_phytomer'][0]
+        other_MS['n2'] = most_frequent_MS['n2'][0] * other_MS['N_phytomer_potential'] / most_frequent_MS['N_phytomer_potential'][0]
     # calculation of t0
     if most_frequent_MS['TT_col_break'][0] == 0.0: # linear mode
         other_MS['t0'] = other_MS['TT_col_0'] + other_MS['n0'] / other_MS['a_cohort']
     else: # bilinear mode
         HS_break = other_MS['a_cohort'] * (other_MS['TT_col_break'] - other_MS['TT_col_0'])
-        a2 = (other_MS['N_phytomer'] - other_MS['HS_break']) / (other_MS['TT_col_N_phytomer'] - other_MS['TT_col_break'])
+        a2 = (other_MS['N_phytomer_potential'] - other_MS['HS_break']) / (other_MS['TT_col_N_phytomer_potential'] - other_MS['TT_col_break'])
         n0_smaller_than_HS_break_indexes = other_MS[other_MS['n0'] < HS_break].index
         n0_greater_than_HS_break_indexes = other_MS[other_MS['n0'] >= HS_break].index
         other_MS['t0'][n0_smaller_than_HS_break_indexes] = other_MS['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_MS['n0'][n0_smaller_than_HS_break_indexes] / other_MS['a_cohort'][n0_smaller_than_HS_break_indexes]
@@ -268,11 +266,11 @@ def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_ti
     leaf_number_delay_MS_cohorts = np.array([params.LEAF_NUMBER_DELAY_MS_COHORT[cohort] for cohort in cohorts if cohort in params.LEAF_NUMBER_DELAY_MS_COHORT])
     most_frequent_tiller_axes['TT_col_0'][nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS['a_cohort'][0])
     # dTT_MS_cohort is set by the user. Thus there is nothing to do.
-    # calculation of TT_col_N_phytomer
-    most_frequent_tiller_axes['TT_col_N_phytomer'][nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes['dTT_MS_cohort'][nan_most_frequent_tiller_axis_indexes] + most_frequent_MS['TT_col_N_phytomer'][0]
+    # calculation of TT_col_N_phytomer_potential
+    most_frequent_tiller_axes['TT_col_N_phytomer_potential'][nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes['dTT_MS_cohort'][nan_most_frequent_tiller_axis_indexes] + most_frequent_MS['TT_col_N_phytomer_potential'][0]
     # calculation of a_cohort
     if most_frequent_MS['TT_col_break'][0] == 0.0: # linear mode
-        most_frequent_tiller_axes['a_cohort'][nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes['N_phytomer'][nan_most_frequent_tiller_axis_indexes] / (most_frequent_tiller_axes['TT_col_N_phytomer'][nan_most_frequent_tiller_axis_indexes] - most_frequent_tiller_axes['TT_col_0'][nan_most_frequent_tiller_axis_indexes])
+        most_frequent_tiller_axes['a_cohort'][nan_most_frequent_tiller_axis_indexes] = most_frequent_tiller_axes['N_phytomer_potential'][nan_most_frequent_tiller_axis_indexes] / (most_frequent_tiller_axes['TT_col_N_phytomer_potential'][nan_most_frequent_tiller_axis_indexes] - most_frequent_tiller_axes['TT_col_0'][nan_most_frequent_tiller_axis_indexes])
     else: # bilinear mode
         most_frequent_tiller_axes['a_cohort'][nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['a_cohort'][0]
     return most_frequent_tiller_axes
@@ -304,7 +302,7 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
         most_frequent_tiller_axes['t0'] = most_frequent_tiller_axes['TT_col_0'] + most_frequent_tiller_axes['n0'] / most_frequent_tiller_axes['a_cohort']
     else: # bilinear mode
         HS_break = most_frequent_tiller_axes['a_cohort'] * (most_frequent_tiller_axes['TT_col_break'] - most_frequent_tiller_axes['TT_col_0'])
-        a2 = (most_frequent_tiller_axes['N_phytomer'] - most_frequent_tiller_axes['HS_break']) / (most_frequent_tiller_axes['TT_col_N_phytomer'] - most_frequent_tiller_axes['TT_col_break'])
+        a2 = (most_frequent_tiller_axes['N_phytomer_potential'] - most_frequent_tiller_axes['HS_break']) / (most_frequent_tiller_axes['TT_col_N_phytomer_potential'] - most_frequent_tiller_axes['TT_col_break'])
         n0_smaller_than_HS_break_indexes = most_frequent_tiller_axes[most_frequent_tiller_axes['n0'] < HS_break].index
         n0_greater_than_HS_break_indexes = most_frequent_tiller_axes[most_frequent_tiller_axes['n0'] >= HS_break].index
         most_frequent_tiller_axes['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_tiller_axes['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_tiller_axes['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_tiller_axes['a_cohort'][n0_smaller_than_HS_break_indexes]
@@ -341,11 +339,11 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
         if most_frequent_MS['TT_col_break'][0] != 0.0: 
             # calculation of a_cohort in bilinear mode
             other_tiller_axes['a_cohort'][group.index] = most_frequent_tiller_axes['a_cohort'][most_frequent_tiller_axis_idx]
-    # calculation of TT_col_N_phytomer
-    other_tiller_axes['TT_col_N_phytomer'][nan_other_tiller_axis_indexes] = other_tiller_axes['dTT_MS_cohort'][nan_other_tiller_axis_indexes] + most_frequent_MS['TT_col_N_phytomer'][0]
+    # calculation of TT_col_N_phytomer_potential
+    other_tiller_axes['TT_col_N_phytomer_potential'][nan_other_tiller_axis_indexes] = other_tiller_axes['dTT_MS_cohort'][nan_other_tiller_axis_indexes] + most_frequent_MS['TT_col_N_phytomer_potential'][0]
     # calculation of a_cohort in linear mode
     if most_frequent_MS['TT_col_break'][0] == 0.0:
-        other_tiller_axes['a_cohort'][nan_other_tiller_axis_indexes] = other_tiller_axes['N_phytomer'][nan_other_tiller_axis_indexes] / (other_tiller_axes['TT_col_N_phytomer'][nan_other_tiller_axis_indexes] - other_tiller_axes['TT_col_0'][nan_other_tiller_axis_indexes])
+        other_tiller_axes['a_cohort'][nan_other_tiller_axis_indexes] = other_tiller_axes['N_phytomer_potential'][nan_other_tiller_axis_indexes] / (other_tiller_axes['TT_col_N_phytomer_potential'][nan_other_tiller_axis_indexes] - other_tiller_axes['TT_col_0'][nan_other_tiller_axis_indexes])
     return other_tiller_axes
     
 
@@ -377,7 +375,7 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
         other_tiller_axes['t0'] = other_tiller_axes['TT_col_0'] + other_tiller_axes['n0'] / other_tiller_axes['a_cohort']
     else: # bilinear mode
         HS_break = other_tiller_axes['a_cohort'] * (other_tiller_axes['TT_col_break'] - other_tiller_axes['TT_col_0'])
-        a2 = (other_tiller_axes['N_phytomer'] - other_tiller_axes['HS_break']) / (other_tiller_axes['TT_col_N_phytomer'] - other_tiller_axes['TT_col_break'])
+        a2 = (other_tiller_axes['N_phytomer_potential'] - other_tiller_axes['HS_break']) / (other_tiller_axes['TT_col_N_phytomer_potential'] - other_tiller_axes['TT_col_break'])
         n0_smaller_than_HS_break_indexes = other_tiller_axes[other_tiller_axes['n0'] < HS_break].index
         n0_greater_than_HS_break_indexes = other_tiller_axes[other_tiller_axes['n0'] >= HS_break].index
         other_tiller_axes['t0'][n0_smaller_than_HS_break_indexes] = other_tiller_axes['TT_col_0'][n0_smaller_than_HS_break_indexes] + other_tiller_axes['n0'][n0_smaller_than_HS_break_indexes] / other_tiller_axes['a_cohort'][n0_smaller_than_HS_break_indexes]
@@ -408,9 +406,9 @@ def calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp):
     '''
     MS_most_frequent_axis_dynT_tmp = dynT_tmp.ix[dynT_tmp.first_valid_index()]
     id_axis = MS_most_frequent_axis_dynT_tmp['id_axis']
-    N_phytomer = MS_most_frequent_axis_dynT_tmp['N_phytomer']
-    grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer'])
-    MS_most_frequent_axis_indexes = grouped.groups[(id_axis, N_phytomer)]
+    N_phytomer_potential = MS_most_frequent_axis_dynT_tmp['N_phytomer_potential']
+    grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
+    MS_most_frequent_axis_indexes = grouped.groups[(id_axis, N_phytomer_potential)]
     # get the lengths of the internodes which belong to each phytomer of the most 
     # frequent axis of the MS
     MS_most_frequent_axis_L_internode = dimT_tmp['L_internode'][MS_most_frequent_axis_indexes]

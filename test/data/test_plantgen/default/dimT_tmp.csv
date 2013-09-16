@@ -1,4 +1,4 @@
-id_axis,N_phytomer,index_phytomer,L_blade,W_blade,L_sheath,W_sheath,L_internode,W_internode
+id_axis,N_phytomer_potential,index_phytomer,L_blade,W_blade,L_sheath,W_sheath,L_internode,W_internode
 MS,10,1,NA,NA,NA,NA,NA,NA
 MS,10,2,NA,NA,NA,NA,NA,NA
 MS,10,3,NA,NA,NA,NA,NA,NA

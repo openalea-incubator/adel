@@ -42,7 +42,7 @@ class DataCompleteness:
 
 
 def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8,
-                                            'TT_col_N_phytomer': {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}},
+                                            'TT_col_N_phytomer_potential': {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}},
                                  dimT_user=None,
                                  plants_number=100,
                                  plants_density=250, 
@@ -57,7 +57,7 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
     Generate ADEL input data from a *MIN* set of data. This a convenience 
     function to be used from VisuAlea. 
     
-    The *MIN* set of data is represented by *dynT_user*, *TT_col_N_phytomer* and *dimT_user*. 
+    The *MIN* set of data is represented by *dynT_user*, *TT_col_N_phytomer_potential* and *dimT_user*. 
     See :ref:`plantgen` for an example of how to set these parameters properly.
     
     :Parameters:
@@ -72,13 +72,13 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                'n0': n0, 
                'n1': n1, 
                'n2': n2,
-               'TT_col_N_phytomer': {'MS': TT_col_N_phytomer_MS, 
-                                     'T1': TT_col_N_phytomer_T1, 
-                                     'T2': TT_col_N_phytomer_T2,
+               'TT_col_N_phytomer_potential': {'MS': TT_col_N_phytomer_potential_MS, 
+                                     'T1': TT_col_N_phytomer_potential_T1, 
+                                     'T2': TT_col_N_phytomer_potential_T2,
                                      ...}}
         
           where ``a_cohort``, ``TT_col_0``, ``n0``, ``n1``, ``n2``, 
-          ``TT_col_N_phytomer_MS``, ``TT_col_N_phytomer_T1`` and ``TT_col_N_phytomer_T2`` 
+          ``TT_col_N_phytomer_potential_MS``, ``TT_col_N_phytomer_potential_T1`` and ``TT_col_N_phytomer_potential_T2`` 
           are floats.
                 
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
@@ -141,16 +141,16 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
                  :mod:`alinea.adel.plantgen.tools`
                  
     '''
-    id_axis_array = np.array(dynT_user['TT_col_N_phytomer'].keys())
-    TT_col_N_phytomer_array = np.array(dynT_user['TT_col_N_phytomer'].values())
+    id_axis_array = np.array(dynT_user['TT_col_N_phytomer_potential'].keys())
+    TT_col_N_phytomer_potential_array = np.array(dynT_user['TT_col_N_phytomer_potential'].values())
     dynT_user_dataframe = pandas.DataFrame(index=range(id_axis_array.size),
-                                           columns=['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2'],
+                                           columns=['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2'],
                                            dtype=float)
     dynT_user_dataframe['id_axis'] = id_axis_array
-    dynT_user_dataframe['TT_col_N_phytomer'] = TT_col_N_phytomer_array
+    dynT_user_dataframe['TT_col_N_phytomer_potential'] = TT_col_N_phytomer_potential_array
     MS_index = dynT_user_dataframe[dynT_user_dataframe['id_axis'] == 'MS'].index
     for key, value in dynT_user.iteritems():
-        if key == 'TT_col_N_phytomer':
+        if key == 'TT_col_N_phytomer_potential':
             continue
         dynT_user_dataframe[key][MS_index] = value
     
@@ -181,7 +181,7 @@ def gen_adel_input_data_from_short(dynT_user,
           set by the user. See :ref:`dynT_user_SHORT <dynT_user_SHORT>`.
                
           *dynT_user* must be a pandas.Dataframe with the 
-          following columns: *id_axis*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer*, *n0*, *n1*, *n2*.
+          following columns: *id_axis*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1*, *n2*.
           The values can be either integers or floats.
         
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
@@ -271,7 +271,7 @@ def gen_adel_input_data_from_full(dynT_user,
           set by the user. See :ref:`dynT_user_FULL <dynT_user_FULL>`.
                
           *dynT_user* must be a pandas.Dataframe with the 
-          following columns: *id_axis*, *N_phytomer*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer*, *n0*, *n1*, *n2*.
+          following columns: *id_axis*, *N_phytomer_potential*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1*, *n2*.
           The values can be either integers or floats.
         
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
@@ -476,8 +476,8 @@ def gen_adel_input_data(dynT_user,
         set([id_axis for (id_axis, probability) in
              decide_child_axis_probabilities.iteritems() if probability != 0.0])
         
-    possible_MS_N_phytomer = \
-        set([MS_N_phytomer for (MS_N_phytomer, probability) in
+    possible_MS_N_phytomer_potential = \
+        set([MS_N_phytomer_potential for (MS_N_phytomer_potential, probability) in
              MS_leaves_number_probabilities.iteritems() if probability != 0.0])
     
     # check plants_number, decide_child_axis_probabilities, plants_density and ears_density validity
@@ -508,14 +508,14 @@ the axes documented by the user (%s) in %s indicate that some of the possible ax
 are not documented by the user. After the generation of the axes, if not all generated axes are documented by the user, \
 then this will lead to an error."
 
-    available_MS_N_phytomer_warning_message = "the probabilities defined in MS_leaves_number_probabilities (%s) and \
-the N_phytomer of the MS documented by the user (%s) in %s indicate that some of the N_phytomer of the MS (%s) \
+    available_MS_N_phytomer_potential_warning_message = "the probabilities defined in MS_leaves_number_probabilities (%s) and \
+the N_phytomer_potential of the MS documented by the user (%s) in %s indicate that some of the N_phytomer_potential of the MS (%s) \
 are not documented by the user. After the generation of the phytomers of the MS, if not all generated phytomers \
 of the MS are documented by the user, then this will lead to an error."
     
     # check dynT_user validity
     if dynT_user_completeness == DataCompleteness.MIN:
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         available_axes = set(dynT_user['id_axis'].tolist())
@@ -526,7 +526,7 @@ of the MS are documented by the user, then this will lead to an error."
                                                             list(possible_axes)), 
                           tools.InputWarning)
     elif dynT_user_completeness == DataCompleteness.SHORT:
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
@@ -539,12 +539,12 @@ of the MS are documented by the user, then this will lead to an error."
                                                             list(possible_axes)),
                           tools.InputWarning)
     elif dynT_user_completeness == DataCompleteness.FULL:
-        expected_dynT_user_columns = ['id_axis', 'N_phytomer', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
-        grouped = dynT_user.groupby(['id_axis', 'N_phytomer'])
+        grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
         if len(grouped.groups) != dynT_user.index.size:
-            raise tools.InputError("dynT_user contains duplicated (id_axis, N_phytomer) pair(s)")
+            raise tools.InputError("dynT_user contains duplicated (id_axis, N_phytomer_potential) pair(s)")
         available_axes = set(dynT_user['id_axis'].tolist())
         if not possible_axes.issubset(available_axes):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
@@ -552,12 +552,12 @@ of the MS are documented by the user, then this will lead to an error."
                                                             'dynT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
-        available_MS_N_phytomer = set(dynT_user[dynT_user['id_axis'] == 'MS']['N_phytomer'].tolist())
-        if not possible_MS_N_phytomer.issubset(available_MS_N_phytomer):
-            warnings.warn(available_MS_N_phytomer_warning_message % (MS_leaves_number_probabilities,
-                                                                     list(available_MS_N_phytomer),
+        available_MS_N_phytomer_potential = set(dynT_user[dynT_user['id_axis'] == 'MS']['N_phytomer_potential'].tolist())
+        if not possible_MS_N_phytomer_potential.issubset(available_MS_N_phytomer_potential):
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     list(available_MS_N_phytomer_potential),
                                                                      'dynT_user',
-                                                                     list(possible_MS_N_phytomer)),
+                                                                     list(possible_MS_N_phytomer_potential)),
                           tools.InputWarning)
     
     # check dimT_user validity
@@ -567,12 +567,12 @@ of the MS are documented by the user, then this will lead to an error."
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
         if dimT_user['index_phytomer'].unique().size != dimT_user['index_phytomer'].size:
             raise tools.InputError("dimT_user contains duplicated index_phytomer")
-        max_available_MS_N_phytomer = dimT_user['index_phytomer'].max()
-        if max(possible_MS_N_phytomer) > max_available_MS_N_phytomer:
-            warnings.warn(available_MS_N_phytomer_warning_message % (MS_leaves_number_probabilities,
-                                                                     ', '.join([str(max_available_MS_N_phytomer)]),
+        max_available_MS_N_phytomer_potential = dimT_user['index_phytomer'].max()
+        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
                                                                      'dimT_user',
-                                                                     ', '.join([str(max(possible_MS_N_phytomer))])),
+                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
                           tools.InputWarning)
             
     elif dimT_user_completeness == DataCompleteness.SHORT:
@@ -589,20 +589,20 @@ of the MS are documented by the user, then this will lead to an error."
                                                             'dimT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
-        max_available_MS_N_phytomer = dimT_user[dimT_user['id_axis'] == 'MS']['index_phytomer'].max()
-        if max(possible_MS_N_phytomer) > max_available_MS_N_phytomer:
-            warnings.warn(available_MS_N_phytomer_warning_message % (MS_leaves_number_probabilities,
-                                                                     ', '.join([str(max_available_MS_N_phytomer)]),
+        max_available_MS_N_phytomer_potential = dimT_user[dimT_user['id_axis'] == 'MS']['index_phytomer'].max()
+        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
                                                                      'dimT_user',
-                                                                     ', '.join([str(max(possible_MS_N_phytomer))])),
+                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
                           tools.InputWarning)
     elif dimT_user_completeness == DataCompleteness.FULL:
-        expected_dimT_user_columns = ['id_axis', 'N_phytomer', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        expected_dimT_user_columns = ['id_axis', 'N_phytomer_potential', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
         if dimT_user.columns.tolist() != expected_dimT_user_columns:
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
-        grouped = dimT_user.groupby(['id_axis', 'N_phytomer', 'index_phytomer'])
+        grouped = dimT_user.groupby(['id_axis', 'N_phytomer_potential', 'index_phytomer'])
         if len(grouped.groups) != dimT_user.index.size:
-            raise tools.InputError("dimT_user contains duplicated (id_axis, N_phytomer, index_phytomer) triplet(s)")
+            raise tools.InputError("dimT_user contains duplicated (id_axis, N_phytomer_potential, index_phytomer) triplet(s)")
         available_axes = set(dimT_user['id_axis'].tolist())
         if not possible_axes.issubset(available_axes):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
@@ -610,12 +610,12 @@ of the MS are documented by the user, then this will lead to an error."
                                                             'dimT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
-        available_MS_N_phytomer = set(dimT_user[dimT_user['id_axis'] == 'MS']['N_phytomer'].tolist())
-        if not possible_MS_N_phytomer.issubset(available_MS_N_phytomer):
-            warnings.warn(available_MS_N_phytomer_warning_message % (MS_leaves_number_probabilities,
-                                                                     list(available_MS_N_phytomer),
+        available_MS_N_phytomer_potential = set(dimT_user[dimT_user['id_axis'] == 'MS']['N_phytomer_potential'].tolist())
+        if not possible_MS_N_phytomer_potential.issubset(available_MS_N_phytomer_potential):
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     list(available_MS_N_phytomer_potential),
                                                                      'dimT_user',
-                                                                     list(possible_MS_N_phytomer)),
+                                                                     list(possible_MS_N_phytomer_potential)),
                           tools.InputWarning)
     
     # 2. first step of the fit process
@@ -632,13 +632,13 @@ of the MS are documented by the user, then this will lead to an error."
     for id_axis, dynT_tmp_group in dynT_tmp.groupby('id_axis'):
         idxmax = dynT_tmp_group['cardinality'].idxmax()
         most_frequent_dynT_tmp = pandas.concat([most_frequent_dynT_tmp, dynT_tmp_group.ix[idxmax:idxmax]], ignore_index=True)
-    most_frequent_dynT_tmp_grouped = most_frequent_dynT_tmp.groupby(['id_axis', 'N_phytomer'])
+    most_frequent_dynT_tmp_grouped = most_frequent_dynT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
     
     # 3. complete dynT_tmp
     if dynT_user_completeness == DataCompleteness.MIN:
         dynT_user_grouped = dynT_user.groupby('id_axis')
         MS_dynT_user = dynT_user_grouped.get_group('MS')
-        MS_TT_col_N_phytomer = MS_dynT_user['TT_col_N_phytomer'][MS_dynT_user.first_valid_index()]
+        MS_TT_col_N_phytomer_potential = MS_dynT_user['TT_col_N_phytomer_potential'][MS_dynT_user.first_valid_index()]
         for id_axis, dynT_tmp_group in dynT_tmp.groupby('id_axis'):
             if not dynT_user['id_axis'].isin([id_axis]).any():
                 id_axis = tools.get_primary_axis(id_axis, params.FIRST_CHILD_DELAY)
@@ -646,68 +646,68 @@ of the MS are documented by the user, then this will lead to an error."
             index_to_get = dynT_user_group.index[0]
             index_to_set = dynT_tmp_group.index[0]
             if id_axis == 'MS':
-                for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']:
+                for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']:
                     dynT_tmp[column][index_to_set] = dynT_user[column][index_to_get]
             dynT_tmp['TT_col_break'][index_to_set] = TT_col_break
-            current_TT_col_N_phytomer = dynT_user_group['TT_col_N_phytomer'][index_to_get]
-            current_dTT_MS_cohort = current_TT_col_N_phytomer - MS_TT_col_N_phytomer
+            current_TT_col_N_phytomer_potential = dynT_user_group['TT_col_N_phytomer_potential'][index_to_get]
+            current_dTT_MS_cohort = current_TT_col_N_phytomer_potential - MS_TT_col_N_phytomer_potential
             dynT_tmp['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort
     elif dynT_user_completeness == DataCompleteness.SHORT:
         dynT_user_grouped = dynT_user.groupby('id_axis')
         MS_dynT_user = dynT_user_grouped.get_group('MS')
-        MS_TT_col_N_phytomer = MS_dynT_user['TT_col_N_phytomer'][MS_dynT_user.first_valid_index()]
+        MS_TT_col_N_phytomer_potential = MS_dynT_user['TT_col_N_phytomer_potential'][MS_dynT_user.first_valid_index()]
         for id_axis, dynT_tmp_group in dynT_tmp.groupby('id_axis'):
             if not dynT_user['id_axis'].isin([id_axis]).any():
                 id_axis = tools.get_primary_axis(id_axis, params.FIRST_CHILD_DELAY)
             dynT_user_group = dynT_user_grouped.get_group(id_axis)
             index_to_get = dynT_user_group.index[0]
             index_to_set = dynT_tmp_group.index[0]
-            for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']:
+            for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']:
                 dynT_tmp[column][index_to_set] = dynT_user[column][index_to_get]
             dynT_tmp['TT_col_break'][index_to_set] = TT_col_break
-            current_TT_col_N_phytomer = dynT_user_group['TT_col_N_phytomer'][index_to_get]
-            current_dTT_MS_cohort = current_TT_col_N_phytomer - MS_TT_col_N_phytomer
+            current_TT_col_N_phytomer_potential = dynT_user_group['TT_col_N_phytomer_potential'][index_to_get]
+            current_dTT_MS_cohort = current_TT_col_N_phytomer_potential - MS_TT_col_N_phytomer_potential
             dynT_tmp['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort
     elif dynT_user_completeness == DataCompleteness.FULL:
-        dynT_user_grouped = dynT_user.groupby(['id_axis', 'N_phytomer'])
-        MS_N_phytomer = dynT_tmp['N_phytomer'][dynT_tmp[dynT_tmp['id_axis'] == 'MS']['cardinality'].idxmax()]
-        MS_dynT_user = dynT_user_grouped.get_group(('MS', MS_N_phytomer))
-        MS_TT_col_N_phytomer = MS_dynT_user['TT_col_N_phytomer'][MS_dynT_user.first_valid_index()]
-        for (id_axis, N_phytomer), dynT_tmp_group in dynT_tmp.groupby(['id_axis', 'N_phytomer']):
+        dynT_user_grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
+        MS_N_phytomer_potential = dynT_tmp['N_phytomer_potential'][dynT_tmp[dynT_tmp['id_axis'] == 'MS']['cardinality'].idxmax()]
+        MS_dynT_user = dynT_user_grouped.get_group(('MS', MS_N_phytomer_potential))
+        MS_TT_col_N_phytomer_potential = MS_dynT_user['TT_col_N_phytomer_potential'][MS_dynT_user.first_valid_index()]
+        for (id_axis, N_phytomer_potential), dynT_tmp_group in dynT_tmp.groupby(['id_axis', 'N_phytomer_potential']):
             if not dynT_user['id_axis'].isin([id_axis]).any():
-                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer)):
+                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer_potential)):
                     id_axis = tools.get_primary_axis(id_axis, params.FIRST_CHILD_DELAY)
                 else:
                     continue
-            if not dynT_user_grouped.groups.has_key((id_axis, N_phytomer)):
-                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer)):
-                    raise tools.InputError("Dynamic of %s not documented" % ((id_axis, N_phytomer),))
+            if not dynT_user_grouped.groups.has_key((id_axis, N_phytomer_potential)):
+                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer_potential)):
+                    raise tools.InputError("Dynamic of %s not documented" % ((id_axis, N_phytomer_potential),))
                 else:
                     most_frequent_dynT_tmp_id_axis = most_frequent_dynT_tmp[most_frequent_dynT_tmp['id_axis'] == id_axis]
-                    N_phytomer = most_frequent_dynT_tmp_id_axis['N_phytomer'][most_frequent_dynT_tmp_id_axis.first_valid_index()]
-                    if not dynT_user_grouped.groups.has_key((id_axis, N_phytomer)):
-                        raise tools.InputError("Dynamic of %s not documented" % ((id_axis, N_phytomer),))
-            dynT_user_group = dynT_user_grouped.get_group((id_axis, N_phytomer))
+                    N_phytomer_potential = most_frequent_dynT_tmp_id_axis['N_phytomer_potential'][most_frequent_dynT_tmp_id_axis.first_valid_index()]
+                    if not dynT_user_grouped.groups.has_key((id_axis, N_phytomer_potential)):
+                        raise tools.InputError("Dynamic of %s not documented" % ((id_axis, N_phytomer_potential),))
+            dynT_user_group = dynT_user_grouped.get_group((id_axis, N_phytomer_potential))
             index_to_get = dynT_user_group.index[0]
             index_to_set = dynT_tmp_group.index[0]
-            for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer', 'n0', 'n1', 'n2']:
+            for column in ['a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']:
                 dynT_tmp[column][index_to_set] = dynT_user[column][index_to_get]
             dynT_tmp['TT_col_break'][index_to_set] = TT_col_break
-            current_TT_col_N_phytomer = dynT_user_group['TT_col_N_phytomer'][index_to_get]
-            current_dTT_MS_cohort = current_TT_col_N_phytomer - MS_TT_col_N_phytomer
+            current_TT_col_N_phytomer_potential = dynT_user_group['TT_col_N_phytomer_potential'][index_to_get]
+            current_dTT_MS_cohort = current_TT_col_N_phytomer_potential - MS_TT_col_N_phytomer_potential
             dynT_tmp['dTT_MS_cohort'][index_to_set] = current_dTT_MS_cohort
 
     # 4. complete dimT_tmp
     organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
     if dimT_user_completeness == DataCompleteness.MIN:
         MS_dynT_tmp = dynT_tmp[dynT_tmp['id_axis'] == 'MS']
-        MS_most_frequent_N_phytomer = MS_dynT_tmp['N_phytomer'][MS_dynT_tmp['cardinality'].idxmax()]
-        dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer'])
-        dimT_tmp_indexes_to_set = dimT_tmp_grouped.groups[('MS', MS_most_frequent_N_phytomer)]
-        N_phytomer_to_set = len(dimT_tmp_indexes_to_set)
-        max_available_MS_N_phytomer = dimT_user['index_phytomer'].max()
-        if N_phytomer_to_set > max_available_MS_N_phytomer:
-            raise tools.InputError("Dimensions of index_phytomer=%s not documented" % N_phytomer_to_set)
+        MS_most_frequent_N_phytomer_potential = MS_dynT_tmp['N_phytomer_potential'][MS_dynT_tmp['cardinality'].idxmax()]
+        dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
+        dimT_tmp_indexes_to_set = dimT_tmp_grouped.groups[('MS', MS_most_frequent_N_phytomer_potential)]
+        N_phytomer_potential_to_set = len(dimT_tmp_indexes_to_set)
+        max_available_MS_N_phytomer_potential = dimT_user['index_phytomer'].max()
+        if N_phytomer_potential_to_set > max_available_MS_N_phytomer_potential:
+            raise tools.InputError("Dimensions of index_phytomer=%s not documented" % N_phytomer_potential_to_set)
         dimT_user_indexes_to_get = range(len(dimT_tmp_indexes_to_set))
         for organ_dim in organ_dim_list:
             dimT_tmp[organ_dim][dimT_tmp_indexes_to_set] = dimT_user[organ_dim][dimT_user_indexes_to_get]
@@ -716,30 +716,30 @@ of the MS are documented by the user, then this will lead to an error."
         dynT_tmp_grouped = dynT_tmp.groupby('id_axis')
         for id_axis, dimT_tmp_group in dimT_tmp.groupby('id_axis'):
             dynT_tmp_group = dynT_tmp_grouped.get_group(id_axis)
-            N_phytomer = dynT_tmp_group['N_phytomer'][dynT_tmp_group['cardinality'].idxmax()]
-            indexes_to_set = dimT_tmp_group[dimT_tmp_group['N_phytomer'] == N_phytomer].index
+            N_phytomer_potential = dynT_tmp_group['N_phytomer_potential'][dynT_tmp_group['cardinality'].idxmax()]
+            indexes_to_set = dimT_tmp_group[dimT_tmp_group['N_phytomer_potential'] == N_phytomer_potential].index
             if not dimT_user['id_axis'].isin([id_axis]).any():
                 id_axis = tools.get_primary_axis(id_axis, params.FIRST_CHILD_DELAY)
             dimT_user_group = dimT_user_grouped.get_group(id_axis)
-            max_available_N_phytomer = dimT_user_group['index_phytomer'].max()
-            N_phytomer_to_set = len(indexes_to_set)
-            if N_phytomer_to_set > max_available_N_phytomer:
-                raise tools.InputError("Dimensions of %s not documented" % ((id_axis, N_phytomer_to_set),))
-            indexes_to_get = dimT_user_group.index[:N_phytomer_to_set]
+            max_available_N_phytomer_potential = dimT_user_group['index_phytomer'].max()
+            N_phytomer_potential_to_set = len(indexes_to_set)
+            if N_phytomer_potential_to_set > max_available_N_phytomer_potential:
+                raise tools.InputError("Dimensions of %s not documented" % ((id_axis, N_phytomer_potential_to_set),))
+            indexes_to_get = dimT_user_group.index[:N_phytomer_potential_to_set]
             for organ_dim in organ_dim_list:
                 dimT_tmp[organ_dim][indexes_to_set] = dimT_user[organ_dim][indexes_to_get]
     elif dimT_user_completeness == DataCompleteness.FULL:
-        dimT_user_grouped = dimT_user.groupby(['id_axis', 'N_phytomer'])
-        for (id_axis, N_phytomer), dimT_tmp_group in dimT_tmp.groupby(['id_axis', 'N_phytomer']):
+        dimT_user_grouped = dimT_user.groupby(['id_axis', 'N_phytomer_potential'])
+        for (id_axis, N_phytomer_potential), dimT_tmp_group in dimT_tmp.groupby(['id_axis', 'N_phytomer_potential']):
             if not dimT_user['id_axis'].isin([id_axis]).any():
-                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer)):
+                if most_frequent_dynT_tmp_grouped.groups.has_key((id_axis, N_phytomer_potential)):
                     id_axis = tools.get_primary_axis(id_axis, params.FIRST_CHILD_DELAY)
                 else:
                     continue
             indexes_to_set = dimT_tmp_group.index
-            if not dimT_user_grouped.groups.has_key((id_axis, N_phytomer)):
-                raise tools.InputError("Dimensions of %s not documented" % ((id_axis, N_phytomer),))
-            indexes_to_get = dimT_user_grouped.get_group((id_axis, N_phytomer)).index
+            if not dimT_user_grouped.groups.has_key((id_axis, N_phytomer_potential)):
+                raise tools.InputError("Dimensions of %s not documented" % ((id_axis, N_phytomer_potential),))
+            indexes_to_get = dimT_user_grouped.get_group((id_axis, N_phytomer_potential)).index
             for organ_dim in organ_dim_list:
                 dimT_tmp[organ_dim][indexes_to_set] = dimT_user[organ_dim][indexes_to_get]
     
@@ -801,7 +801,7 @@ def _gen_adel_input_data_second(axeT_tmp,
     # calculate decimal_elongated_internode_number
     decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp) 
     # create dynT
-    dynT_ = dynT.create_dynT(dynT_tmp, dimT_tmp, GL_number, decimal_elongated_internode_number)
+    dynT_ = dynT.create_dynT(dynT_tmp, GL_number, decimal_elongated_internode_number)
     # create phenT_abs
     phenT_abs = phenT.create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number)
     # create phenT_first
@@ -809,12 +809,12 @@ def _gen_adel_input_data_second(axeT_tmp,
     # create phenT
     phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
     # calculate TT_flag_leaf_ligulation
-    TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer'][dynT_.first_valid_index()]
+    TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer_potential'][dynT_.first_valid_index()]
     # create tilleringT
     dynT_most_frequent_MS = dynT_.ix[0]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
-    N_phytomer_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer'])
-    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_most_frequent_MS]))
+    N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
+    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
     TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     tilleringT = axeT.create_tilleringT(TT_start, TT_bolting, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
     # create axeT

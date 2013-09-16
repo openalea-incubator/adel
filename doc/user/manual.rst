@@ -109,8 +109,12 @@ There is one line per axis. Columns are :
         "T0.1", "T0.2",..., refers to the secondary tillers of the primary tiller "T0", and 
         "T0.0.0", "T0.0.1", "T0.0.2",..., refers to the tertiary tillers of the secondary 
         tiller "T0.0". See :ref:`botanical_positions`. 
+    * - **N_phytomer_potential**
+      - The *potential* total number of vegetative phytomers formed on the axis. N_phytomer_potential 
+        does NOT take account of the regression of some axes.
     * - **N_phytomer**
-      - The total number of vegetative phytomers formed on the axis.
+      - The *effective* total number of vegetative phytomers formed on the axis. N_phytomer 
+        does take account of the regression of some axes.
     * - **HS_final**
       - The Haun Stage at the end of growth of the axis.
     * - **TT_stop_axis**
@@ -882,11 +886,11 @@ dynT_user_FULL
 **at least** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers.
  
-:ref:`dynT_user_FULL` contains a line of data for **at least** each couple (*id_axis*, most frequent *N_phytomer*), 
-where *id_axis* and *N_phytomer* are defined in :ref:`axeT <axeT>`.
+:ref:`dynT_user_FULL` contains a line of data for **at least** each couple (*id_axis*, most frequent *N_phytomer_potential*), 
+where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`.
     
-Each line contains the following data: *id_axis*, *N_phytomer*, *a_cohort*, 
-*TT_col_0*, *TT_col_N_phytomer*, *n0*, *n1* and *n2*. 
+Each line contains the following data: *id_axis*, *N_phytomer_potential*, *a_cohort*, 
+*TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for the meaning of these parameters.
 
 See :download:`an example of dynT_user_FULL <../../test/data/test_plantgen/FULL_FULL/dynT_user.csv>`.
@@ -900,12 +904,12 @@ dynT_user_SHORT
 **exactly** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
 
-:ref:`dynT_user_SHORT` contains a line of data for **exactly** each couple (*id_axis*, most frequent *N_phytomer*), 
-where *id_axis* and *N_phytomer* are defined in :ref:`axeT <axeT>`. The couples (*id_axis*, **NOT** most frequent *N_phytomer*) 
+:ref:`dynT_user_SHORT` contains a line of data for **exactly** each couple (*id_axis*, most frequent *N_phytomer_potential*), 
+where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`. The couples (*id_axis*, **NOT** most frequent *N_phytomer_potential*) 
 are not documented in :ref:`dynT_user_SHORT`.
 
 Each line contains the following data *id_axis*, *a_cohort*, *TT_col_0*, 
-*TT_col_N_phytomer*, *n0*, *n1* and *n2*. 
+*TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for a description of these parameters.
 
 See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/SHORT_SHORT/dynT_user.csv>`.
@@ -922,7 +926,7 @@ main stem which has the most frequent number of phytomers.
 the thermal time when Haun Stage is equal to the final number of phytomers.
 
 The dictionary contains the following keys: *a_cohort*, *TT_col_0*, 
-*n0*, *n1*, *n2* and *TT_col_N_phytomer*. See :ref:`dynT` for a description of 
+*n0*, *n1*, *n2* and *TT_col_N_phytomer_potential*. See :ref:`dynT` for a description of 
 these parameters.
 
 Example::
@@ -932,7 +936,7 @@ Example::
                      'n0': 4.871559739, 
                      'n1': 3.24283148, 
                      'n2': 5.8,
-                     'TT_col_N_phytomer': {'MS': 1078.0, 
+                     'TT_col_N_phytomer_potential': {'MS': 1078.0, 
                                            'T1': 1148.0, 
                                            'T2': 1158.0, 
                                            'T3': 1168.0, 
@@ -947,13 +951,13 @@ dimT_user_FULL
 **at least** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
 
-:ref:`dimT_user_FULL` contains a line of data for **at least** each couple (*id_axis*, most frequent *N_phytomer*), 
-where *id_axis* and *N_phytomer* are defined in :ref:`axeT <axeT>`.
+:ref:`dimT_user_FULL` contains a line of data for **at least** each couple (*id_axis*, most frequent *N_phytomer_potential*), 
+where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`.
 
 Each line contains the following data: *id_axis*, 
-*N_phytomer*, *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, 
+*N_phytomer_potential*, *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, 
 *L_internode* and *W_internode*. *id_axis* are the botanical positions (see 
-:ref:`botanical_positions`). *N_phytomer* are the final number of phytomers. The 
+:ref:`botanical_positions`). *N_phytomer_potential* are the final number of phytomers. The 
 other data are the same as the ones in :ref:`dimT_abs`.
 
 See :download:`an example of dimT_user_FULL <../../test/data/test_plantgen/FULL_FULL/dimT_user.csv>`.
@@ -967,13 +971,13 @@ dimT_user_SHORT
 **exactly** the most frequent non-regressive axes. The most frequent axes are 
 the axes which have the most frequent number of phytomers. 
 
-:ref:`dimT_user_SHORT` contains a line of data for **exactly** each couple (*id_axis*, most frequent *N_phytomer*), 
-where *id_axis* and *N_phytomer* are defined in :ref:`axeT <axeT>`. The couples (*id_axis*, **NOT** most frequent *N_phytomer*) 
+:ref:`dimT_user_SHORT` contains a line of data for **exactly** each couple (*id_axis*, most frequent *N_phytomer_potential*), 
+where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`. The couples (*id_axis*, **NOT** most frequent *N_phytomer_potential*) 
 are not documented in :ref:`dimT_user_SHORT`.
 
 Each line contains the following data: *id_axis*, *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, *W_sheath*, 
 *L_internode* and *W_internode*. *id_axis* are the botanical positions (see 
-:ref:`botanical_positions`). *N_phytomer* are the final number of phytomers. The 
+:ref:`botanical_positions`). *N_phytomer_potential* are the final number of phytomers. The 
 other data are the same as the ones in :ref:`dimT_abs`.
 
 See :download:`an example of dimT_user_SHORT <../../test/data/test_plantgen/SHORT_SHORT/dimT_user.csv>`.
@@ -1032,7 +1036,7 @@ can be useful for debugging.
 
 :ref:`dynT` is a table which describes the dynamic of the Haun stage of 
 all non-regressive axes.  
-For each couple (*id_axis*, *N_phytomer*) in :ref:`axeT <axeT>`, :ref:`dynT` contains 
+For each couple (*id_axis*, *N_phytomer_potential*) in :ref:`axeT <axeT>`, :ref:`dynT` contains 
 a line with the following data:
 
 .. list-table::
@@ -1046,8 +1050,8 @@ a line with the following data:
     * - **id_cohort** 
       - the cohort to which belongs the axis
     * - **cardinality**
-      - the cardinality of the couple (*id_axis*, *N_phytomer*) in :ref:`axeT <axeT>`
-    * - **N_phytomer**
+      - the cardinality of the couple (*id_axis*, *N_phytomer_potential*) in :ref:`axeT <axeT>`
+    * - **N_phytomer_potential**
       - the final number of phytomers of the axis
     * - **a_cohort** 
       - the rate of Haun Stage vs Thermal time. This is the rate of the 
@@ -1056,14 +1060,14 @@ a line with the following data:
       - the thermal time for Haun Stage equal to 0
     * - **TT_col_break**
       - the thermal time when the rate of phytomers emergence is changing
-    * - **TT_col_N_phytomer** 
-      - the thermal time when Haun Stage is equal to *N_phytomer*
+    * - **TT_col_N_phytomer_potential** 
+      - the thermal time when Haun Stage is equal to *N_phytomer_potential*
     * - **n0** 
       - number of green leaves at *t0*
     * - **n1** 
       - number of green leaves at *t1*
     * - **n2** 
-      - number of green leaves at *TT_col_N_phytomer*
+      - number of green leaves at *TT_col_N_phytomer_potential*
     * - **t0**
       - the thermal time at the start of leaf senescence 
     * - **t1**
@@ -1110,7 +1114,7 @@ HS_GL_SSI_T
 :ref:`HS_GL_SSI_T` describes, for each cohort, the dynamic of Haun stage, Green leaves and 
 leaf senescence index when *TT* varies.
 
-For each couple (*id_cohort*, *N_phytomer*) in :ref:`axeT <axeT>` and for each TT, 
+For each couple (*id_cohort*, *N_phytomer_potential*) in :ref:`axeT <axeT>` and for each TT, 
 :ref:`dynT` contains a line with the following data:
 
 .. list-table::
@@ -1120,8 +1124,8 @@ For each couple (*id_cohort*, *N_phytomer*) in :ref:`axeT <axeT>` and for each T
     * - Column
       - Description
     * - **id_phen** 
-      - the concatenation of *id_cohort* and *N_phytomer*. For example, if 
-        *id_cohort*==4 and *N_phytomer*==8, then *id_phen*==408.
+      - the concatenation of *id_cohort* and *N_phytomer_potential*. For example, if 
+        *id_cohort*==4 and *N_phytomer_potential*==8, then *id_phen*==408.
     * - **TT** 
       - the thermal time.
     * - **HS** 

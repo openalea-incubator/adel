@@ -31,7 +31,7 @@ from adel.plantgen import tools, params
 def create_dimT_tmp(axeT_tmp):
     '''
     Create the *dimT_tmp* dataframe.
-    Compute the following columns: *id_axis*, *N_phytomer*, *index_phytomer*.
+    Compute the following columns: *id_axis*, *N_phytomer_potential*, *index_phytomer*.
     
     :Parameters:
     
@@ -45,18 +45,18 @@ def create_dimT_tmp(axeT_tmp):
     
     '''
     id_axis_list = []
-    N_phytomer_list = []
+    N_phytomer_potential_list = []
     index_phytomer_list = []
-    for (id_axis, N_phytomer), axeT_tmp_group in axeT_tmp.groupby(['id_axis', 'N_phytomer']):
-        id_axis_list.extend(np.repeat(id_axis, N_phytomer))
-        N_phytomer_list.extend(np.repeat(N_phytomer, N_phytomer))
-        index_phytomer_list.extend(range(1, N_phytomer + 1))
+    for (id_axis, N_phytomer_potential), axeT_tmp_group in axeT_tmp.groupby(['id_axis', 'N_phytomer_potential']):
+        id_axis_list.extend(np.repeat(id_axis, N_phytomer_potential))
+        N_phytomer_potential_list.extend(np.repeat(N_phytomer_potential, N_phytomer_potential))
+        index_phytomer_list.extend(range(1, N_phytomer_potential + 1))
     
     dimT_tmp = pandas.DataFrame(index=range(len(id_axis_list)),
-                                columns=['id_axis', 'N_phytomer', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'],
+                                columns=['id_axis', 'N_phytomer_potential', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'],
                                 dtype=float)
     dimT_tmp['id_axis'] = id_axis_list
-    dimT_tmp['N_phytomer'] = N_phytomer_list
+    dimT_tmp['N_phytomer_potential'] = N_phytomer_potential_list
     dimT_tmp['index_phytomer'] = index_phytomer_list
     
     return dimT_tmp
@@ -80,7 +80,7 @@ def create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
         :class:`pandas.DataFrame`
         
     .. warning:: 
-        * in *dimT_tmp*, the columns *id_axis*, *N_phytomer* and *index_phytomer* 
+        * in *dimT_tmp*, the columns *id_axis*, *N_phytomer_potential* and *index_phytomer* 
           must be completely filled, i.e. they must not contain any NA value.
         * in *dimT_tmp*, the rows which describe the most frequent axis of the MS 
           must be completely filled, i.e. there must not contain any NA value.
@@ -88,13 +88,13 @@ def create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
     '''
     if dimT_tmp['id_axis'].count() != dimT_tmp['id_axis'].size:
         raise tools.InputError("dimT_tmp['id_axis'] contains NA values")
-    if dimT_tmp['N_phytomer'].count() != dimT_tmp['N_phytomer'].size:
-        raise tools.InputError("dimT_tmp['N_phytomer'] contains NA values")
+    if dimT_tmp['N_phytomer_potential'].count() != dimT_tmp['N_phytomer_potential'].size:
+        raise tools.InputError("dimT_tmp['N_phytomer_potential'] contains NA values")
     if dimT_tmp['index_phytomer'].count() != dimT_tmp['index_phytomer'].size:
         raise tools.InputError("dimT_tmp['index_phytomer'] contains NA values")
     
-    dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer'])
-    dimT_tmp_group = dimT_tmp_grouped.get_group((dynT_['id_axis'][0], dynT_['N_phytomer'][0]))
+    dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
+    dimT_tmp_group = dimT_tmp_grouped.get_group((dynT_['id_axis'][0], dynT_['N_phytomer_potential'][0]))
     dimT_tmp_group_without_na = dimT_tmp_group.dropna()
     if len(dimT_tmp_group_without_na) != len(dimT_tmp_group):
         raise tools.InputError("dimT_tmp does not contain the dimensions of the most frequent MS")
@@ -107,9 +107,9 @@ def create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
     MS_dynT = dynT_[dynT_['id_axis'] == 'MS']
     idxmax = MS_dynT['cardinality'].idxmax()
     MS_id_cohort = MS_dynT['id_cohort'][idxmax]
-    MS_N_phytomer = MS_dynT['N_phytomer'][idxmax]
-    axeT_grouped = axeT_.groupby(['id_axis', 'id_cohort', 'N_phytomer'])
-    axeT_group = axeT_grouped.get_group(('MS', MS_id_cohort, MS_N_phytomer))
+    MS_N_phytomer_potential = MS_dynT['N_phytomer_potential'][idxmax]
+    axeT_grouped = axeT_.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential'])
+    axeT_group = axeT_grouped.get_group(('MS', MS_id_cohort, MS_N_phytomer_potential))
     MS_id_dim = axeT_group['id_dim'][axeT_group.first_valid_index()]
 
     L_blade_is_null = dimT_abs['L_blade'].isnull()
@@ -140,35 +140,37 @@ def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
     dimT_abs = pandas.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'TT_em_phytomer', 'is_ear'])
     
     phenT_abs_cleaned_grouped = phenT_abs_cleaned.groupby('id_phen')
-    dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer'])
+    dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
     for id_dim, axeT_group in axeT_.groupby('id_dim'):
-        axeT_keys = axeT_group.groupby(['id_axis', 'id_cohort', 'N_phytomer']).groups.keys()
-        dynT_group = dynT_.select(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer'][idx]) in axeT_keys)
+        axeT_keys = axeT_group.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups.keys()
+        dynT_group = dynT_.select(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer_potential'][idx]) in axeT_keys)
         idxmax = dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()
         id_cohort = dynT_group['id_cohort'][idxmax]
-        N_phytomer = dynT_group['N_phytomer'][idxmax]
-        id_phen = int(''.join([str(id_cohort), str(N_phytomer).zfill(2)]))
+        N_phytomer_potential = dynT_group['N_phytomer_potential'][idxmax]
+        id_phen = int(''.join([str(id_cohort), str(N_phytomer_potential).zfill(2)]))
             
         phenT_abs_cleaned_group = phenT_abs_cleaned_grouped.get_group(id_phen)
-            
-        index_phytomer_list = phenT_abs_cleaned_group['index_phytomer'].tolist()
         
-        dimT_abs_group = pandas.DataFrame(index=index_phytomer_list, 
+        dimT_abs_group_idx = np.arange(axeT_group['N_phytomer'][axeT_group.first_valid_index()])
+        
+        dimT_abs_group = pandas.DataFrame(index=dimT_abs_group_idx, 
                                           columns=dimT_abs.columns,
                                           dtype=float)
         dimT_abs_group['id_dim'] = id_dim
-        dimT_abs_group['index_phytomer'] = index_phytomer_list
+        dimT_abs_group['index_phytomer'] = dimT_abs_group_idx + 1
         
         is_ear = int(str(int(id_dim))[-1])
         
         if is_ear == 1:
             id_axis = dynT_group['id_axis'][idxmax]
-            dimT_tmp_group = dimT_tmp_grouped.get_group((id_axis, N_phytomer))
+            dimT_tmp_group = dimT_tmp_grouped.get_group((id_axis, N_phytomer_potential))
             organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
             for organ_dim in organ_dim_list:
-                dimT_abs_group[organ_dim] = dimT_tmp_group[organ_dim].values.astype(float)
+                dim_idx_to_get = dimT_tmp_group.index[dimT_abs_group.index]
+                dimT_abs_group[organ_dim] = dimT_tmp_group[organ_dim][dim_idx_to_get].values.astype(float)
         
-        dimT_abs_group['TT_em_phytomer'] = phenT_abs_cleaned_group['TT_em_phytomer'].values.astype(float)
+        phen_idx_to_get = phenT_abs_cleaned_group.index[dimT_abs_group.index]
+        dimT_abs_group['TT_em_phytomer'] = phenT_abs_cleaned_group['TT_em_phytomer'][phen_idx_to_get].values.astype(float)
         
         dimT_abs_group['is_ear'] = is_ear
         

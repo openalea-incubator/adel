@@ -433,7 +433,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          numphy=1:nbphy,
                                          L_shape=datp$Ll,
                                          Lw_shape=datp$Lw,
-                                         LsenShrink = fshrink,
+                                         LsenShrink = rep(fshrink,nbphy),
                                          LcType=datp$Lindex,
                                          LcIndex=datp$Lseed,
                                          Linc=Linc,

@@ -141,7 +141,8 @@ genGeoLeaf <- function(ntoplim = 4,dazTop = 60,dazBase = 30,topIndex=TRUE) {
 #
 # Compute surfaces from lengths in canopy table
 #
-leafSurface <- function(shape,scL,scW,from=0,to=1) {
+leafSurface <- function(shape_db, shape_index, scL,scW,from=0,to=1) {
+  shape <- shape_db[[shape_index]]
   if (is.na(scL) | is.na(scW) | is.null(shape))
     res <- NA
   else if (to <= from | scL == 0 | scW == 0)
@@ -162,14 +163,32 @@ canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
   }
   else {
     rg <- ifelse(is.na(canS$LcType) | canS$LcType == 0, 1,canS$LcType)
-    canS$SLl <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x]))
-                                        #
-    base <- canS$Ll - canS$Lsen - canS$Lv
-    top <- canS$Ll - canS$Lsen
-    canS$Slv <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x],base[x] / canS$Ll[x],top[x] / canS$Ll[x]))
+    shapes <- sr_db
+    Lref <- canS$L_shape
+    Lwref <- canS$Lw_shape
+    Lwsen <- canS$Lw_shape * canS$LsenShrink
+    # add some info on visibility
+    canS$Lvsen <- pmin(canS$Lv,canS$Lsen)
+    canS$Lvgreen <- canS$Lv - canS$Lvsen
     #
-    base <- canS$Ll - canS$Lsen
-    canS$SLsen <- sapply(seq(nrow(canS)),function(x) leafSurface(sr_db[[rg[x]]],canS$Ll[x],canS$Lw[x]*canS$LsenShrink[x],base[x] / canS$Ll[x],1))
+    canS$S_shape <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwref[x]))
+    #
+    base <- 1 - (canS$Lvsen + canS$Lvgreen) / Lref
+    top <- 1 - canS$Lvsen / Lref
+    canS$Slvgreen <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwref[x], base[x], top[x]))
+    #
+    base <- 1 - canS$Lvsen / Lref
+    canS$Slvsen <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwsen[x], base[x], 1))
+    #
+    canS$Slv <- canS$Slvgreen + canS$Slvsen
+    #
+    top <- 1 - canS$Lsen / Lref
+    Shgreen <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwref[x], 0, top[x]))
+    #
+    base <- 1 - canS$Lsen / Lref
+    canS$Slsen <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwsen[x], base[x], 1))
+    #
+    canS$SLl <- Shgreen + canS$Slsen    
   }
   #names(res)[match(c("Ll","Lsen","Lv"),names(res))] <- c("SLl","SLsen","SLv")
   #

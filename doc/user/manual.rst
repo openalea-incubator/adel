@@ -505,6 +505,12 @@ All routines produce the same output tables:
 * :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated 
   cardinalities of each cohort and each axis.
+  
+All routines also produce a dictionary which stores:
+
+* the values of the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, 
+* and the values of the attributes of :mod:`params <alinea.adel.plantgen.params>`.
+This dictionary is aimed to log the configuration used for the construction. 
 
 .. _levels_of_completeness:
 
@@ -597,7 +603,7 @@ the validity of these arguments.
 .. note::
 
     The user can also parameterize the construction through inner parameters. However, 
-    no checks is done for the inner parameters and the user should be sure of what is he doing. 
+    no checks is done for the inner parameters and the user should be sure of what he is doing. 
     See :ref:`inner_parameters_for_construction` for more details.
 
   
@@ -654,18 +660,19 @@ from a Python interpreter:
     phenT_first,
     HS_GL_SSI_T,
     tilleringT,
-    cardinalityT) = gen_adel_input_data(dynT_user, 
-                                        dimT_user, 
-                                        plants_number,
-                                        plants_density,  
-                                        decide_child_axis_probabilities, 
-                                        MS_leaves_number_probabilities, 
-                                        ears_density, 
-                                        GL_number, 
-                                        delais_TT_stop_del_axis, 
-                                        TT_col_break, 
-                                        dynT_user_completeness, 
-                                        dimT_user_completeness)
+    cardinalityT,
+    config) = gen_adel_input_data(dynT_user, 
+                                  dimT_user, 
+                                  plants_number,
+                                  plants_density,  
+                                  decide_child_axis_probabilities, 
+                                  MS_leaves_number_probabilities, 
+                                  ears_density, 
+                                  GL_number, 
+                                  delais_TT_stop_del_axis, 
+                                  TT_col_break, 
+                                  dynT_user_completeness, 
+                                  dimT_user_completeness)
 
     # write axeT, dimT and phenT to csv files in the working directory, replacing
     # missing values by 'NA' and ignoring the indexes (the indexes are the labels of
@@ -819,6 +826,8 @@ These parameters are:
   delay between tip emergence and collar emergence for all leaves except the first one.
 * :attr:`DELAIS_PHYLL_SEN_DISP <alinea.adel.plantgen.params.DELAIS_PHYLL_SEN_DISP>`: 
   the time during which a fully senesced leaf on a non-elongated internode remains on the plant.
+* :attr:`DELAIS_REG_MONT <alinea.adel.plantgen.params.DELAIS_REG_MONT>`: 
+  the time between the start of the regression and the bolting.   
 * :attr:`TT_DEL_FHAUT <alinea.adel.plantgen.params.TT_DEL_FHAUT>`: 
   the thermal time at which leaves on elongated internode disappear.
 * :attr:`FIRST_CHILD_DELAY <alinea.adel.plantgen.params.FIRST_CHILD_DELAY>`: 
@@ -843,7 +852,7 @@ The appendices describe the data used by Adel for pre and post-processings.
 
 Construction of the input tables 
 =================================
-In this section, we describe the data used in the construction of the input tables:
+In this section, we describe the data used in the construction of the input tables of Adel:
 
 * :ref:`dynT_user_FULL <dynT_user_FULL>`: the dynamic of the Haun stage of 
   **at least** the most frequent non-regressive axes.
@@ -872,8 +881,6 @@ In this section, we describe the data used in the construction of the input tabl
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated cardinalities of 
   each cohort and each axis.
   
-These data are used in the construction of Adel inputs.
-    
 .. _dynT_user_FULL:
 
 dynT_user_FULL

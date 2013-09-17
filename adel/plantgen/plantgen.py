@@ -119,14 +119,15 @@ def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.7
           is changing. If phyllochron is constant, then *TT_col_break* is null.
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
         :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
         :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
         :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`, 
-        :ref:`cardinalityT <cardinalityT>`
+        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
+        configuration used for the construction.  
     
     :Returns Type:
-        tuple of :class:`pandas.DataFrame`
+        tuple
         
     .. seealso:: :ref:`plantgen`
                  :func:`gen_adel_input_data`
@@ -219,14 +220,15 @@ def gen_adel_input_data_from_short(dynT_user,
           is changing. If phyllochron is constant, then *TT_col_break* is null.
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
         :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
         :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
         :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
-        :ref:`cardinalityT <cardinalityT>`
+        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
+        configuration used for the construction.
     
     :Returns Type:
-        tuple of :class:`pandas.DataFrame`
+        tuple
         
     .. seealso:: :ref:`plantgen`
                  :func:`gen_adel_input_data`
@@ -305,14 +307,15 @@ def gen_adel_input_data_from_full(dynT_user,
           is changing. If phyllochron is constant, then *TT_col_break* is null.
           
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
         :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
         :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
         :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
-        :ref:`cardinalityT <cardinalityT>`.
+        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
+        configuration used for the construction.
     
     :Returns Type:
-        tuple of :class:`pandas.DataFrame`
+        tuple
         
     .. seealso:: :ref:`plantgen`
                  :func:`gen_adel_input_data`
@@ -343,6 +346,12 @@ def gen_adel_input_data(dynT_user,
     '''
     Create the dataframes which contain the plant data to be used as input for 
     generating plot with ADEL, and some other dataframes for debugging purpose.
+    Also create a dictionary which stores:
+    
+    * the values of the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, 
+    * and the values of the attributes of :mod:`params <alinea.adel.plantgen.params>`.
+    This dictionary is aimed to log the configuration used for the construction.
+    
     See :ref:`adel_input` for a description of the input tables expected by ADEL, 
     and :ref:`plantgen` for a description of the dataframes created for debug. 
     
@@ -433,13 +442,14 @@ def gen_adel_input_data(dynT_user,
           *dimT_user* set by the user. 
         
     :Returns:
-        Return the following dataframes: :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
+        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
         :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
         :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, 
-        :ref:`tilleringT <tilleringT>`, :ref:`cardinalityT <cardinalityT>`.
+        :ref:`tilleringT <tilleringT>`, :ref:`cardinalityT <cardinalityT>`, and 
+        a dictionary which stores the configuration used for the construction.
     
     :Returns Type:
-        tuple of :class:`pandas.DataFrame`
+        tuple
         
     .. seealso:: :class:`DataCompleteness`
                  :mod:`alinea.adel.plantgen.axeT`
@@ -450,6 +460,8 @@ def gen_adel_input_data(dynT_user,
                  :mod:`alinea.adel.plantgen.tools`
                  
     '''
+    # save the name and the value of each argument
+    config = locals()
     
     if dynT_user_completeness not in DataCompleteness.__dict__.values():
         raise tools.InputError("dynT_user_completeness is not one of: %s" % ', '.join(DataCompleteness.__dict__.values()))
@@ -749,9 +761,14 @@ of the MS are documented by the user, then this will lead to an error."
                                                delais_TT_stop_del_axis, 
                                                ears_density,
                                                number_of_ears)
+     
+    # save the attributes of params
+    for params_attribute in dir(params):
+        if not params_attribute.startswith('__'):
+            config[params_attribute] = params.__getattribute__(params_attribute)
     
     return axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, \
-           HS_GL_SSI_T, tilleringT, cardinalityT
+           HS_GL_SSI_T, tilleringT, cardinalityT, config
 
 
 def _gen_adel_input_data_first(plants_number, 

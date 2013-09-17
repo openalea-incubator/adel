@@ -261,9 +261,12 @@ def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_ti
     most_frequent_tiller_axes['TT_col_break'] = most_frequent_MS['TT_col_break'][0]
     without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.dropna(subset=['TT_col_0']).index
     nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index - without_nan_most_frequent_tiller_axis_indexes
+    if len(nan_most_frequent_tiller_axis_indexes) == 0:
+        return most_frequent_tiller_axes
     # calculation of TT_col_0
     cohorts = most_frequent_tiller_axes['id_axis'][nan_most_frequent_tiller_axis_indexes].values
-    leaf_number_delay_MS_cohorts = np.array([params.LEAF_NUMBER_DELAY_MS_COHORT[cohort] for cohort in cohorts if cohort in params.LEAF_NUMBER_DELAY_MS_COHORT])
+    primary_cohorts = np.apply_along_axis(np.vectorize(tools.get_primary_axis), 0, cohorts, [params.FIRST_CHILD_DELAY])
+    leaf_number_delay_MS_cohorts = np.array([params.LEAF_NUMBER_DELAY_MS_COHORT[cohort] for cohort in primary_cohorts])
     most_frequent_tiller_axes['TT_col_0'][nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS['a_cohort'][0])
     # dTT_MS_cohort is set by the user. Thus there is nothing to do.
     # calculation of TT_col_N_phytomer_potential

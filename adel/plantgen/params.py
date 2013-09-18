@@ -59,7 +59,7 @@ maximum green leaves on the main stem.
 Value is given for the axes with the most frequent leaves number.
 '''
 
-DELAIS_PHYLL_COL_TIP_1ST = 1.2
+DELAIS_PHYLL_COL_TIP_1ST = 1.0
 '''Delay between tip emergence and collar emergence for the first leaf only.
 
 The delay is given in phyllochron unit. 

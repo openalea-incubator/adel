@@ -87,13 +87,13 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
             phenT_abs_group['TT_col_phytomer'] = \
                 phenT_abs_group['index_phytomer'].apply(_calculate_TT_col_phytomer, args=(HS_break, TT_col_0, a_cohort, a2, TT_col_break))
         
-        first_leaf_index = phenT_abs_group.index[1]
-        phenT_abs['TT_em_phytomer'][first_leaf_index] = \
-            phenT_abs_group['TT_em_phytomer'][first_leaf_index] = \
-                _calculate_TT_em_phytomer(phenT_abs_group['TT_col_phytomer'][first_leaf_index], 
-                                          TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST)
+        first_leaf_indexes = phenT_abs_group.index[0:2]
+        phenT_abs['TT_em_phytomer'][first_leaf_indexes] = \
+            phenT_abs_group['TT_em_phytomer'][first_leaf_indexes] = \
+                phenT_abs_group['TT_col_phytomer'][first_leaf_indexes].apply(
+                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
         
-        other_leaves_indexes = phenT_abs_group.index - phenT_abs_group.index[1:2]
+        other_leaves_indexes = phenT_abs_group.index - phenT_abs_group.index[0:2]
         phenT_abs['TT_em_phytomer'][other_leaves_indexes] = \
             phenT_abs_group['TT_em_phytomer'][other_leaves_indexes] = \
                 phenT_abs_group['TT_col_phytomer'][other_leaves_indexes].apply(

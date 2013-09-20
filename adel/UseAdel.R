@@ -170,6 +170,14 @@ canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
     # add some info on visibility
     canS$Lvsen <- pmin(canS$Lv,canS$Lsen)
     canS$Lvgreen <- canS$Lv - canS$Lvsen
+    canS$Gvsen <- pmin(canS$Gv,canS$Gsen)
+    canS$Gvgreen <- canS$Gv - canS$Gvsen
+    canS$Evsen <- pmin(canS$Ev,canS$Esen)
+    canS$Evgreen <- canS$Ev - canS$Evsen
+    #
+    #add info on distances base of axes -> col
+    g <- list(canS$plant,canS$axe_id)
+    canS <- unsplit(lapply(split(canS,g), function(dat) {dat$d_basecol <- cumsum(dat$El) + dat$Gl;dat}),g)
     #
     canS$S_shape <- sapply(seq(nrow(canS)),function(x) leafSurface(shapes, rg[x], Lref[x], Lwref[x]))
     #
@@ -192,9 +200,9 @@ canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
   }
   #names(res)[match(c("Ll","Lsen","Lv"),names(res))] <- c("SLl","SLsen","SLv")
   #
-  for (w in c("Gl","Gv","Gsen"))
+  for (w in c("Gl","Gv","Gsen","Gvsen","Gvgreen"))
     canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Gd
-  for (w in c("El","Ev","Esen"))
+  for (w in c("El","Ev","Esen","Evsen","Evgreen"))
     canS[[paste("S",w,sep="")]] <- canS[[w]] * pi * canS$Ed
   canS
 }

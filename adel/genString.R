@@ -129,6 +129,40 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
   chn <- paste(chn,
                  Internode(dat$Ev,min(dat$Esen,dat$Ev),dat$Ed,dat$Epo,dat$Epos,epsillon))
 
+  if (!is.null(axil))
+    for (i in seq(along=unique(axil$axe_id))) {
+      ax <- axil[axil$axe_id == unique(axil$axe_id)[i],]
+      azaxil <- 0
+      if (i > 1)
+        azaxil = azaxil + 170
+      chn <- paste(chn,
+                 "[",
+                 roll(azm),
+                 "newAxe")
+      nf <- nrow(ax) - ifelse(nrow(ax) > 3, 3,0)
+      for (n in ax$numphy[1:nf]) {
+        chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
+        azaxil = azaxil + ax$Laz[ax$numphy == n]
+      }
+	  if (nrow(ax) > 3) {
+                                        #add Peduncle
+            if (ax$Ev[nf + 1] > epsillon)
+              chn <- paste(chn,
+                 Peduncle(ax$Ev[nf + 1],min(ax$Esen[nf + 1],ax$Ev[nf + 1]),ax$Ed[nf + 1],ax$Epo[nf + 1],ax$Epos[nf + 1],epsillon))
+                                        #add ear
+            if (ax$Ev[nf + 2] > epsillon)
+              chn <- paste(chn,
+                 Ear(ax$Ev[nf + 2],min(ax$Esen[nf + 2],ax$Ev[nf + 2]),ax$Ed[nf + 2],ax$Epo[nf + 2],ax$Epos[nf + 2],epsillon))
+                                        #add awn
+            if (ax$Ev[nf + 3] > epsillon)
+        chn <- paste(chn,
+                 Awn(ax$Ev[nf + 3],min(ax$Esen[nf + 3],ax$Ev[nf + 3]),ax$Ed[nf + 3],ax$Epo[nf + 3],ax$Epos[nf + 3],epsillon))
+          }
+      chn <- paste(chn,
+                 "]")
+    } 
+
+
   if (abs(dat$Ginc) > 0)
     chn <- paste(chn,
                  up(dat$Ginc))
@@ -148,38 +182,6 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  Blade(Lvflat, min(dat$Lsen,Lvflat), dat$Ll,dat$Lw,dat$LsenShrink,dat$LcType,dat$LcIndex,dat$Linc,dat$Lpo,dat$Lpos,epsillon,all(dat$LcIndex <= 1) & !all(dat$LcIndex == 1)),
                  "]")
   
-  if (!is.null(axil))
-    for (i in seq(along=unique(axil$axe_id))) {
-      ax <- axil[axil$axe_id == unique(axil$axe_id)[i],]
-      azaxil <- 0
-      if (i > 1)
-        azaxil = azaxil + 170
-      chn <- paste(chn,
-                 "[",
-                 roll(azm),
-                 "newAxe")
-      nf <- nrow(ax) - ifelse(nrow(ax) > 3, 3,0)
-      for (n in ax$numphy[1:nf]) {
-        chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
-        azaxil = azaxil + ax$Laz[ax$numphy == n]
-      }
-	  if (nrow(ax) > 3) {
-                                        #add Peduncle
-      if (ax$Ev[nf + 1] > epsillon)
-        chn <- paste(chn,
-                 Peduncle(ax$Ev[nf + 1],min(ax$Esen[nf + 1],ax$Ev[nf + 1]),ax$Ed[nf + 1],ax$Epo[nf + 1],ax$Epos[nf + 1],epsillon))
-                                        #add ear
-      if (ax$Ev[nf + 2] > epsillon)
-        chn <- paste(chn,
-                 Ear(ax$Ev[nf + 2],min(ax$Esen[nf + 2],ax$Ev[nf + 2]),ax$Ed[nf + 2],ax$Epo[nf + 2],ax$Epos[nf + 2],epsillon))
-    #add awn
-      if (ax$Ev[nf + 3] > epsillon)
-        chn <- paste(chn,
-                 Awn(ax$Ev[nf + 3],min(ax$Esen[nf + 3],ax$Ev[nf + 3]),ax$Ed[nf + 3],ax$Epo[nf + 3],ax$Epos[nf + 3],epsillon))
-      }
-	  chn <- paste(chn,
-                 "]")
-    } 
   chn
 }
 #

@@ -141,7 +141,7 @@ def calculate_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, 
     return a_1* MS_final_leaves_number - a_2 * cohort_number
     
 
-def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_regression_start, TT_flag_leaf_ligulation):
+def decide_time_of_death(max_axes_number, min_axes_number, TT_app_phytomer1, TT_regression_start, TT_flag_leaf_ligulation):
     '''
     Decide the thermal times (relative to canopy emergence) when the axes stop 
     growing. Uses a linear function which describes the decay of the global population. 
@@ -150,8 +150,8 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_r
     
         - `max_axes_number` (:class:`int`) - the maximum number of existing axes.
         - `min_axes_number` (:class:`int`) - the minimum number of existing axes. 
-        - `TT_em_phytomer1` (:class:`list`) - Thermal times (relative to canopy emergence) 
-          of tip emergence of the first true leaf (not coleoptile or prophyll)
+        - `TT_app_phytomer1` (:class:`list`) - Thermal times (relative to canopy appearance) 
+          of tip appearance of the first true leaf (not coleoptile or prophyll)
         - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts.
         - `TT_flag_leaf_ligulation` (:class:`float`) - the thermal time of the flag leaf ligulation.
 
@@ -188,7 +188,7 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_r
     polynomial_coefficient_array = np.polyfit([TT_flag_leaf_ligulation, TT_regression_start], [min_axes_number, max_axes_number], 1)
                 
     remaining_axes_number = max_axes_number
-    T_em_leaf1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
+    T_em_leaf1_tuples = zip(TT_app_phytomer1[:], range(len(TT_app_phytomer1)))
     T_em_leaf1_tuples.sort()
     T_stop_axis_tuples = []
     for tt in range(int(TT_regression_start), int(TT_flag_leaf_ligulation) + 1):
@@ -204,7 +204,7 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_r
     T_stop_axis_tuples.sort()
     T_stop_axis_row_number_list = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
     TT_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
-    for i in range(len(TT_em_phytomer1)):
+    for i in range(len(TT_app_phytomer1)):
         if i not in T_stop_axis_row_number_list:
             TT_stop_axis_list.insert(i, np.nan)
     return TT_stop_axis_list 

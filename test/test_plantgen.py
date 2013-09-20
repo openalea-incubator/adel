@@ -192,7 +192,7 @@ def test_create_tilleringT():
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
     id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
-    TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
+    TT_start = phenT_first['TT_app_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     t1_most_frequent_MS = dynT_most_frequent_MS['t1']
     TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
     tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)

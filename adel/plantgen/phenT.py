@@ -62,7 +62,7 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
         index_phytomer_list.extend(range(N_phytomer_potential + 1))
         
     phenT_abs = pandas.DataFrame(index=range(len(id_phen_list)), 
-                                 columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'],
+                                 columns=['id_phen', 'index_phytomer', 'TT_app_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'],
                                  dtype=float)
     
     phenT_abs['id_phen'] = id_phen_list
@@ -88,16 +88,16 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
                 phenT_abs_group['index_phytomer'].apply(_calculate_TT_col_phytomer, args=(HS_break, TT_col_0, a_cohort, a2, TT_col_break))
         
         first_leaf_indexes = phenT_abs_group.index[0:2]
-        phenT_abs['TT_em_phytomer'][first_leaf_indexes] = \
-            phenT_abs_group['TT_em_phytomer'][first_leaf_indexes] = \
+        phenT_abs['TT_app_phytomer'][first_leaf_indexes] = \
+            phenT_abs_group['TT_app_phytomer'][first_leaf_indexes] = \
                 phenT_abs_group['TT_col_phytomer'][first_leaf_indexes].apply(
-                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
+                    _calculate_TT_app_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
         
         other_leaves_indexes = phenT_abs_group.index - phenT_abs_group.index[0:2]
-        phenT_abs['TT_em_phytomer'][other_leaves_indexes] = \
-            phenT_abs_group['TT_em_phytomer'][other_leaves_indexes] = \
+        phenT_abs['TT_app_phytomer'][other_leaves_indexes] = \
+            phenT_abs_group['TT_app_phytomer'][other_leaves_indexes] = \
                 phenT_abs_group['TT_col_phytomer'][other_leaves_indexes].apply(
-                    _calculate_TT_em_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
+                    _calculate_TT_app_phytomer, args=(TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
              
         id_axis, n0, n1, n2, t0, t1, a, c = \
             dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
@@ -122,14 +122,14 @@ def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_col_0, a_cohort, a2,
     return TT_col_phytomer
 
 
-def _calculate_TT_em_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, delais_phyll_col_tip):
+def _calculate_TT_app_phytomer(TT_col_phytomer, TT_col_break, a_cohort, HS_break, N_phytomer_potential, TT_col_N_phytomer_potential, a2, delais_phyll_col_tip):
     if TT_col_phytomer < TT_col_break:
-        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
+        TT_app_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
     else:
-        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a2)
-        if TT_em_phytomer <= HS_break:
-            TT_em_phytomer = TT_col_break - (delais_phyll_col_tip - a2 * (TT_col_phytomer - TT_col_break)) / a_cohort
-    return TT_em_phytomer
+        TT_app_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a2)
+        if TT_app_phytomer <= HS_break:
+            TT_app_phytomer = TT_col_break - (delais_phyll_col_tip - a2 * (TT_col_phytomer - TT_col_break)) / a_cohort
+    return TT_app_phytomer
 
 
 def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_col_N_phytomer_potential, N_phytomer_potential):  
@@ -269,7 +269,7 @@ def create_phenT(phenT_abs, phenT_first):
     if not (phenT_abs.count().max() == phenT_abs.count().min() == phenT_abs.index.size):
         raise tools.InputError("phenT_abs contains NA values")
     
-    phenT_ = pandas.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_em_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
+    phenT_ = pandas.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_app_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
     phenT_['id_phen'] = phenT_abs['id_phen']
     tmp_series = pandas.Series(phenT_.index)
     for name, group in phenT_abs.groupby('id_phen'):
@@ -280,9 +280,9 @@ def create_phenT(phenT_abs, phenT_first):
         def get_relative_TT_col_phytomer(i):
             return group['TT_col_phytomer'][i] - current_first_leaf_row['TT_col_phytomer'][current_first_leaf_row.first_valid_index()]
         phenT_['dTT_col_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_col_phytomer)
-        def get_relative_TT_em_phytomer(i):
-            return group['TT_em_phytomer'][i] - current_first_leaf_row['TT_em_phytomer'][current_first_leaf_row.first_valid_index()]
-        phenT_['dTT_em_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_em_phytomer)
+        def get_relative_TT_app_phytomer(i):
+            return group['TT_app_phytomer'][i] - current_first_leaf_row['TT_app_phytomer'][current_first_leaf_row.first_valid_index()]
+        phenT_['dTT_app_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_app_phytomer)
         def get_relative_TT_sen_phytomer(i):
             return group['TT_sen_phytomer'][i] - current_first_leaf_row['TT_sen_phytomer'][current_first_leaf_row.first_valid_index()]
         phenT_['dTT_sen_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_sen_phytomer)

@@ -85,7 +85,7 @@ These tables have dependencies (cross references). However some may be compatibl
 axeT : *Master table allowing to organize the information plant per plant*
 ---------------------------------------------------------------------------
 :ref:`axeT <axeT>` is the master table that organizes how each plant is described.
-For each plant, the table contains a few explicit parameters that describe the phenology and the number of modules (eg time of emergence, number of axes and number of leaves on axes)
+For each plant, the table contains a few explicit parameters that describe the phenology and the number of modules (eg time of appearance, number of axes and number of leaves on axes)
 and identifiers that refer to information given in the other tables (:ref:`dimT <dimT>`, :ref:`phenT <phenT>`, :ref:`earT <earT>`).
 
 All plants to be used for the reconstruction must be listed in :ref:`axeT <axeT>`. If only one plant is given, Adel will clone that plant. 
@@ -128,14 +128,14 @@ There is one line per axis. Columns are :
     * - **id_ear**
       - Key (int) linking to :ref:`earT <earT>`. id_ear allows referring to the data that describe the ear of the axis. 
         For the regressive axes, id_ear=NA. For the non-regressive axes, id_ear=1. 
-    * - **TT_em_phytomer1**
-      - Thermal time (relative to canopy emergence) of tip appearance of the first true leaf (not coleoptile or prophyll)
+    * - **TT_app_phytomer1**
+      - Thermal time (relative to canopy appearance) of tip appearance of the first true leaf (not coleoptile or prophyll)
     * - **TT_col_phytomer1**       
-      - Thermal time (relative to canopy emergence) of collar appearance of the first true leaf                              
+      - Thermal time (relative to canopy appearance) of collar appearance of the first true leaf                              
     * - **TT_sen_phytomer1**
-      - Thermal time (relative to canopy emergence) of full senescence of the first true leaf (this is : thermal time when SSI= 1)
+      - Thermal time (relative to canopy appearance) of full senescence of the first true leaf (this is : thermal time when SSI= 1)
     * - **TT_del_phytomer1**
-      - Thermal time (relative to canopy emergence) of disappearance of the first true leaf
+      - Thermal time (relative to canopy appearance) of disappearance of the first true leaf
        
 
 .. _botanical_positions:
@@ -218,7 +218,7 @@ Timing of developmental events on a leaf is given relative to the timing of the 
 Actual timing is computed from :ref:`phenT <phenT>` and the data concerning leaf 1 in :ref:`axeT <axeT>`. 
 
 For each id_phen, there is one line per value of index_rel_phytomer documented. For a smooth description of the 
-dynamics of SSI from crop emergence to maturity, approximately 40 values of index_rel_phytomer should be documented (for each value of id_phen).
+dynamics of SSI from crop appearance to maturity, approximately 40 values of index_rel_phytomer should be documented (for each value of id_phen).
 More over for each value of id_phen, one line should be documented for index_rel_phytomer = 0, so as to allow interpolation.
 
 Columns are :
@@ -233,8 +233,8 @@ Columns are :
       - the index referred to in :ref:`axeT <axeT>`
     * - **index_rel_phytomer** 
       - normalized phytomer position, starting from index_rel_phytomer = 0
-    * - **dTT_em_phytomer** 
-      - Thermal time of the appearance of the tip of leaf out of the whorl made by the older blade; expressed as thermal time since TT_em_phytomer1
+    * - **dTT_app_phytomer** 
+      - Thermal time of the appearance of the tip of leaf out of the whorl made by the older blade; expressed as thermal time since TT_app_phytomer1
     * - **dTT_col_phytomer**
       - Thermal time of the appearance of collar; expressed as thermal time since TT_col_phytomer1
     * - **dTT_sen_phytomer** 
@@ -821,9 +821,9 @@ These parameters are:
 * :attr:`N2_MS_DIV_N2_COHORT <alinea.adel.plantgen.params.N2_MS_DIV_N2_COHORT>`: 
   ratio between the maximum number of green leaves on the tillers and the maximum green leaves on the main stem
 * :attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`: 
-  delay between tip emergence and collar emergence for the first leaf only.
+  delay between tip appearance and collar appearance for the first leaf only.
 * :attr:`DELAIS_PHYLL_COL_TIP_NTH <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_NTH>`: 
-  delay between tip emergence and collar emergence for all leaves except the first one.
+  delay between tip appearance and collar appearance for all leaves except the first one.
 * :attr:`DELAIS_PHYLL_SEN_DISP <alinea.adel.plantgen.params.DELAIS_PHYLL_SEN_DISP>`: 
   the time during which a fully senesced leaf on a non-elongated internode remains on the plant.
 * :attr:`DELAIS_REG_MONT <alinea.adel.plantgen.params.DELAIS_REG_MONT>`: 

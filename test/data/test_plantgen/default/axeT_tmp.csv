@@ -1,4 +1,4 @@
-id_plt,id_cohort,id_axis,N_phytomer_potential,N_phytomer,HS_final,TT_stop_axis,TT_del_axis,id_dim,id_phen,id_ear,TT_em_phytomer1,TT_col_phytomer1,TT_sen_phytomer1,TT_del_phytomer1
+id_plt,id_cohort,id_axis,N_phytomer_potential,N_phytomer,HS_final,TT_stop_axis,TT_del_axis,id_dim,id_phen,id_ear,TT_app_phytomer1,TT_col_phytomer1,TT_sen_phytomer1,TT_del_phytomer1
 1,1,MS,11,NA,NA,NA,NA,NA,111,NA,NA,NA,NA,NA
 1,4,T1,8,NA,NA,NA,NA,NA,408,NA,NA,NA,NA,NA
 1,5,T2,8,NA,NA,NA,NA,NA,508,NA,NA,NA,NA,NA

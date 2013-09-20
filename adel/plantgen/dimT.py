@@ -124,20 +124,20 @@ def create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
     # reinitialize the index
     dimT_abs.index = range(dimT_abs.index.size)
             
-    return dimT_abs.drop(['TT_em_phytomer', 'is_ear'], axis=1)
+    return dimT_abs.drop(['TT_app_phytomer', 'is_ear'], axis=1)
 
 
 def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
     '''Initialize dimT_abs.'''
     # create a new dataframe from phenT_abs, removing the lines for which index_phytomer==0.0, 
-    # and keeping only the columns 'id_phen', 'index_phytomer' and 'TT_em_phytomer'.
-    TT_em_phytomer_cleaned = phenT_abs.drop(phenT_abs.groupby('index_phytomer').groups[0.0])['TT_em_phytomer']
-    id_phen_cleaned = phenT_abs['id_phen'][TT_em_phytomer_cleaned.index].astype(int)
-    index_phytomer_cleaned = phenT_abs['index_phytomer'][TT_em_phytomer_cleaned.index].astype(int)
-    phenT_abs_cleaned = pandas.DataFrame(np.array([id_phen_cleaned.values, index_phytomer_cleaned.values, TT_em_phytomer_cleaned.values]).transpose(),
-                                         columns=['id_phen', 'index_phytomer', 'TT_em_phytomer'])
+    # and keeping only the columns 'id_phen', 'index_phytomer' and 'TT_app_phytomer'.
+    TT_app_phytomer_cleaned = phenT_abs.drop(phenT_abs.groupby('index_phytomer').groups[0.0])['TT_app_phytomer']
+    id_phen_cleaned = phenT_abs['id_phen'][TT_app_phytomer_cleaned.index].astype(int)
+    index_phytomer_cleaned = phenT_abs['index_phytomer'][TT_app_phytomer_cleaned.index].astype(int)
+    phenT_abs_cleaned = pandas.DataFrame(np.array([id_phen_cleaned.values, index_phytomer_cleaned.values, TT_app_phytomer_cleaned.values]).transpose(),
+                                         columns=['id_phen', 'index_phytomer', 'TT_app_phytomer'])
     
-    dimT_abs = pandas.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'TT_em_phytomer', 'is_ear'])
+    dimT_abs = pandas.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'TT_app_phytomer', 'is_ear'])
     
     phenT_abs_cleaned_grouped = phenT_abs_cleaned.groupby('id_phen')
     dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
@@ -170,7 +170,7 @@ def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
                 dimT_abs_group[organ_dim] = dimT_tmp_group[organ_dim][dim_idx_to_get].values.astype(float)
         
         phen_idx_to_get = phenT_abs_cleaned_group.index[dimT_abs_group.index]
-        dimT_abs_group['TT_em_phytomer'] = phenT_abs_cleaned_group['TT_em_phytomer'][phen_idx_to_get].values.astype(float)
+        dimT_abs_group['TT_app_phytomer'] = phenT_abs_cleaned_group['TT_app_phytomer'][phen_idx_to_get].values.astype(float)
         
         dimT_abs_group['is_ear'] = is_ear
         
@@ -184,22 +184,22 @@ def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
 
 def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_abs):
     '''Fit the lengths in-place.'''
-    TT_em_phytomer_series = dimT_abs['TT_em_phytomer']
+    TT_app_phytomer_series = dimT_abs['TT_app_phytomer']
     MS_rows_indexes = dimT_abs[dimT_abs['id_dim'] == MS_id_dim].index
-    MS_last_TT_em_phytomer = TT_em_phytomer_series[MS_rows_indexes[-1]]
-    indexes_to_ceil = TT_em_phytomer_series[TT_em_phytomer_series > MS_last_TT_em_phytomer].index
+    MS_last_TT_app_phytomer = TT_app_phytomer_series[MS_rows_indexes[-1]]
+    indexes_to_ceil = TT_app_phytomer_series[TT_app_phytomer_series > MS_last_TT_app_phytomer].index
     
     for length in ['L_blade', 'L_sheath', 'L_internode']:
         current_length_series = dimT_abs[length]
         MS_lengths_series = current_length_series[MS_rows_indexes]
         MS_non_null_lengths_rows_indexes = MS_lengths_series[MS_lengths_series != 0.0].index
-        polynomial_coefficients_array = np.polyfit(dimT_abs['TT_em_phytomer'][MS_non_null_lengths_rows_indexes].values, 
+        polynomial_coefficients_array = np.polyfit(dimT_abs['TT_app_phytomer'][MS_non_null_lengths_rows_indexes].values, 
                                                    current_length_series[MS_non_null_lengths_rows_indexes].values, 6)
         MS_last_length = MS_lengths_series[MS_non_null_lengths_rows_indexes[-1]]
         for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
-            TT_em_phytomer_group = dimT_abs_group['TT_em_phytomer']
+            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
             current_length_series[dimT_abs_group.index] = np.polyval(polynomial_coefficients_array, 
-                                                                     TT_em_phytomer_group)
+                                                                     TT_app_phytomer_group)
             # ceiling
             current_length_series[indexes_to_ceil.intersection(dimT_abs_group.index)] = MS_last_length
             if dimT_abs_group['is_ear'][dimT_abs_group.first_valid_index()] == 0:
@@ -211,8 +211,8 @@ def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_abs):
 
         # thresholding
         if length == 'L_internode':
-            MS_first_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_lengths_rows_indexes[0]]
-            indexes_to_threshold = TT_em_phytomer_series[TT_em_phytomer_series <= MS_first_non_null_TT_em_phytomer].index
+            MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_lengths_rows_indexes[0]]
+            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series <= MS_first_non_null_TT_app_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
             current_length_series[indexes_to_threshold] = 0.0
 
@@ -220,42 +220,42 @@ def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_abs):
 def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_abs):
     '''Fit the widths in-place.'''
     MS_rows_indexes = dimT_abs[dimT_abs['id_dim'] == MS_id_dim].index
-    TT_em_phytomer_series = dimT_abs['TT_em_phytomer']
+    TT_app_phytomer_series = dimT_abs['TT_app_phytomer']
     for width in ['W_blade', 'W_sheath', 'W_internode']:
         current_width_series = dimT_abs[width]
         MS_width_series = current_width_series[MS_rows_indexes]
         MS_non_null_widths_rows_indexes = MS_width_series[MS_width_series != 0.0].index
         MS_first_non_null_width = current_width_series[MS_non_null_widths_rows_indexes[0]]
         MS_last_non_null_width = current_width_series[MS_non_null_widths_rows_indexes[-1]]
-        MS_first_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_widths_rows_indexes[0]]
-        MS_last_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_widths_rows_indexes[-1]]
+        MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[0]]
+        MS_last_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[-1]]
         
         for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
-            TT_em_phytomer_group = dimT_abs_group['TT_em_phytomer']
+            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
             if width == 'W_internode':
-                # get TT_em_phytomer of the main stem first phytomer which has a 
-                # TT_em_phytomer greater than the first main stem phytomer with 
+                # get TT_app_phytomer of the main stem first phytomer which has a 
+                # TT_app_phytomer greater than the first main stem phytomer with 
                 # a non null width
-                valid_TT_em_phytomers = TT_em_phytomer_group[TT_em_phytomer_group >= MS_first_non_null_TT_em_phytomer]
-                if len(valid_TT_em_phytomers) == 0:
+                valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer]
+                if len(valid_TT_app_phytomers) == 0:
                     continue # The widths of these phytomers are thresholded to 0 later.
-                x1 = valid_TT_em_phytomers[valid_TT_em_phytomers.index[0]]
-                # get TT_em_phytomer of the main stem last phytomer which has a 
-                # TT_em_phytomer lesser than the last main stem phytomer
-                valid_TT_em_phytomers = TT_em_phytomer_group[TT_em_phytomer_group <= MS_last_non_null_TT_em_phytomer]
-                x2 = valid_TT_em_phytomers[valid_TT_em_phytomers.index[-1]]
+                x1 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[0]]
+                # get TT_app_phytomer of the main stem last phytomer which has a 
+                # TT_app_phytomer lesser than the last main stem phytomer
+                valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group <= MS_last_non_null_TT_app_phytomer]
+                x2 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[-1]]
             else:
-                x1 = TT_em_phytomer_group[TT_em_phytomer_group.first_valid_index()]
-                x2 = TT_em_phytomer_group[TT_em_phytomer_group.last_valid_index()]
+                x1 = TT_app_phytomer_group[TT_app_phytomer_group.first_valid_index()]
+                x2 = TT_app_phytomer_group[TT_app_phytomer_group.last_valid_index()]
                 
             y1 = MS_first_non_null_width
             y2 = MS_last_non_null_width
             polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
-            current_width_series[dimT_abs_group.index] = np.polyval(polynomial_coefficient_array, TT_em_phytomer_group)
+            current_width_series[dimT_abs_group.index] = np.polyval(polynomial_coefficient_array, TT_app_phytomer_group)
             if width == 'W_internode':
-                # ceiling of the width of the phytomers which have a TT_em_phytomer 
-                # greater than the TT_em_phytomer of the last main stem 
-                indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_em_phytomer].index
+                # ceiling of the width of the phytomers which have a TT_app_phytomer 
+                # greater than the TT_app_phytomer of the last main stem 
+                indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_app_phytomer].index
                 current_width_series[indexes_to_ceil.intersection(dimT_abs_group.index)] = MS_last_non_null_width
             
             if dimT_abs_group['is_ear'][dimT_abs_group.first_valid_index()] == 0:
@@ -266,9 +266,9 @@ def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_abs):
                         current_width_series[dimT_abs_group.index[current_phytomer_index]] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[width][i])
         
         if width == 'W_internode':
-            # thresholding of the width of the phytomers which have a TT_em_phytomer 
-            # lesser than the TT_em_phytomer of the first main stem which has a non null width
-            indexes_to_threshold = TT_em_phytomer_series[TT_em_phytomer_series <= MS_first_non_null_TT_em_phytomer].index
+            # thresholding of the width of the phytomers which have a TT_app_phytomer 
+            # lesser than the TT_app_phytomer of the first main stem which has a non null width
+            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series <= MS_first_non_null_TT_app_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
             current_width_series[indexes_to_threshold] = 0.0
             

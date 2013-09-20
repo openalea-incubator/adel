@@ -60,21 +60,21 @@ Value is given for the axes with the most frequent leaves number.
 '''
 
 DELAIS_PHYLL_COL_TIP_1ST = 1.0
-'''Delay between tip emergence and collar emergence for the first leaf only.
+'''Delay between tip appearance and collar appearance for the first leaf only.
 
 The delay is given in phyllochron unit. 
 
-To parameterize the delay between tip emergence and collar emergence for the other leaves, see 
+To parameterize the delay between tip appearance and collar appearance for the other leaves, see 
 :attr:`DELAIS_PHYLL_COL_TIP_NTH <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_NTH>`.
 '''
 
 DELAIS_PHYLL_COL_TIP_NTH = 1.6
-'''Delay between tip emergence and collar emergence for all leaves except the 
+'''Delay between tip appearance and collar appearance for all leaves except the 
 first one. 
 
 The delay is given in phyllochron unit. 
 
-To parameterize the delay between tip emergence and collar emergence for the first leaf, see 
+To parameterize the delay between tip appearance and collar appearance for the first leaf, see 
 :attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`.   
 '''
 

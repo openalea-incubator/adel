@@ -61,7 +61,7 @@ def create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_
     id_phen_list = _gen_id_phen_list(id_cohort_list, N_phytomer_potential_list)
     
     axeT_tmp = pandas.DataFrame(index=range(len(id_plt_list)),
-                                   columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
+                                   columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_app_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
                                    dtype=float)
     axeT_tmp['id_plt'] = id_plt_list
     axeT_tmp['id_cohort'] = id_cohort_list
@@ -98,11 +98,11 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_flag_leaf_
     '''
     
     axeT_ = axeT_tmp.copy()
-    (axeT_['TT_em_phytomer1'], 
+    (axeT_['TT_app_phytomer1'], 
      axeT_['TT_col_phytomer1'], 
      axeT_['TT_sen_phytomer1'],
      axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_em_phytomer1'].tolist(), TT_regression_start, TT_flag_leaf_ligulation)
+    axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_flag_leaf_ligulation)
     axeT_['id_ear'] = _gen_id_ear_list(axeT_['TT_stop_axis'])
     axeT_['TT_del_axis'] = _gen_TT_del_axis_list(axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
     axeT_['HS_final'] = _gen_HS_final_list(axeT_, dynT_)
@@ -175,11 +175,11 @@ def _gen_N_phytomer(HS_final_series):
     
 
 def _gen_all_TT_phytomer1_list(axeT_tmp, emf_1_MS_standard_deviation, phenT_first):
-    '''Generate the *TT_em_phytomer1*, *TT_col_phytomer1*, *TT_sen_phytomer1* and *TT_del_phytomer1* columns.
-    For each plant, define a delay of emergence, and for each axis add this delay to the first leaf development schedule.'''
+    '''Generate the *TT_app_phytomer1*, *TT_col_phytomer1*, *TT_sen_phytomer1* and *TT_del_phytomer1* columns.
+    For each plant, define a delay of appearance, and for each axis add this delay to the first leaf development schedule.'''
     sigma = emf_1_MS_standard_deviation
     sigma_div_2 = sigma / 2.0
-    TT_em_phytomer1_series = pandas.Series(index=axeT_tmp.index)
+    TT_app_phytomer1_series = pandas.Series(index=axeT_tmp.index)
     TT_col_phytomer1_series = pandas.Series(index=axeT_tmp.index)
     TT_sen_phytomer1_series = pandas.Series(index=axeT_tmp.index)
     TT_del_phytomer1_series = pandas.Series(index=axeT_tmp.index)
@@ -191,12 +191,12 @@ def _gen_all_TT_phytomer1_list(axeT_tmp, emf_1_MS_standard_deviation, phenT_firs
         for id_phen, axeT_tmp_grouped_by_id_plt_and_id_phen in axeT_tmp_grouped_by_id_plt.groupby('id_phen'):
             current_row = phenT_first[phenT_first['id_phen']==id_phen]
             first_valid_index = current_row.first_valid_index()
-            TT_em_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_em_phytomer'][first_valid_index]
+            TT_app_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_app_phytomer'][first_valid_index]
             TT_col_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_col_phytomer'][first_valid_index]
             TT_sen_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_sen_phytomer'][first_valid_index]
             TT_del_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_del_phytomer'][first_valid_index]
                 
-    return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
+    return TT_app_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 
 def _gen_id_dim_list(id_cohort_series, N_phytomer_series, id_ear_series):

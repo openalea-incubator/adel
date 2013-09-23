@@ -41,295 +41,6 @@ class DataCompleteness:
     FULL='FULL'
 
 
-def gen_adel_input_data_from_min(dynT_user={'a_cohort': 0.0102, 'TT_col_0': -0.771289027, 'n0': 4.871559739, 'n1': 3.24283148, 'n2': 5.8,
-                                            'TT_col_N_phytomer_potential': {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}},
-                                 dimT_user=None,
-                                 plants_number=100,
-                                 plants_density=250, 
-                                 decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
-                                 MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                 ears_density=500,
-                                 GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
-                                 delais_TT_stop_del_axis=600,
-                                 TT_col_break=0.0):
-    '''
-    Generate ADEL input data from a *MIN* set of data. This a convenience 
-    function to be used from VisuAlea. 
-    
-    The *MIN* set of data is represented by *dynT_user*, *TT_col_N_phytomer_potential* and *dimT_user*. 
-    See :ref:`plantgen` for an example of how to set these parameters properly.
-    
-    :Parameters:
-    
-        - `dynT_user` (:class:`dict`) - the leaf dynamic parameters set by the user. See 
-          :ref:`dynT_user_MIN <dynT_user_MIN>`
-                      
-          *dynT_user* must be a dict with the following content:: 
-        
-              {'a_cohort': a_cohort, 
-               'TT_col_0': TT_col_0, 
-               'n0': n0, 
-               'n1': n1, 
-               'n2': n2,
-               'TT_col_N_phytomer_potential': {'MS': TT_col_N_phytomer_potential_MS, 
-                                     'T1': TT_col_N_phytomer_potential_T1, 
-                                     'T2': TT_col_N_phytomer_potential_T2,
-                                     ...}}
-        
-          where ``a_cohort``, ``TT_col_0``, ``n0``, ``n1``, ``n2``, 
-          ``TT_col_N_phytomer_potential_MS``, ``TT_col_N_phytomer_potential_T1`` and ``TT_col_N_phytomer_potential_T2`` 
-          are floats.
-                
-        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
-          the user. See :ref:`dimT_user_MIN <dimT_user_MIN>`.
-          
-          *dimT_user* must be a pandas.Dataframe with the 
-          following columns: *index_phytomer*, *L_blade*, *W_blade*, *L_sheath*, 
-          *W_sheath*, *L_internode*, *W_internode*.
-          The values can be either integers or floats.
-              
-        - `plants_number` (:class:`int`) - the number of plants to be generated.
-        
-        - `plants_density` (:class:`int`) - the number of plants that are present 
-          after loss due to bad emergence, early death..., per square meter.
-        
-        - `decide_child_axis_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          for each child axis the probability of emergence of an axis when the parent 
-          axis is present. The keys are the identifiers of the child axes ('T0', 'T1', 
-          'T2', ...) and the values are the probabilities.
-        
-        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          the probability distribution of the final number of main stem leaves. 
-          The keys are the final numbers of main stem leaves, and the values are 
-          the probability distribution.
-          
-        - `ears_density` (:class:`int`) - the number of ears per square meter.
-        
-        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL 
-          decimal numbers measured at several thermal times (including the 
-          senescence end). The keys are the thermal times, and the values are 
-          the GL decimal numbers.
-        
-        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
-          thermal time between an axis stop growing and its disappearance (it 
-          concerns only the axes that do not regress and which do not produce any 
-          cob).
-        
-        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing. If phyllochron is constant, then *TT_col_break* is null.
-        
-    :Returns:
-        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
-        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
-        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
-        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`, 
-        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
-        configuration used for the construction.  
-    
-    :Returns Type:
-        tuple
-        
-    .. seealso:: :ref:`plantgen`
-                 :func:`gen_adel_input_data`
-                 :mod:`alinea.adel.plantgen.axeT`
-                 :mod:`alinea.adel.plantgen.dimT`
-                 :mod:`alinea.adel.plantgen.dynT`
-                 :mod:`alinea.adel.plantgen.params`
-                 :mod:`alinea.adel.plantgen.phenT`
-                 :mod:`alinea.adel.plantgen.tools`
-                 
-    '''
-    id_axis_array = np.array(dynT_user['TT_col_N_phytomer_potential'].keys())
-    TT_col_N_phytomer_potential_array = np.array(dynT_user['TT_col_N_phytomer_potential'].values())
-    dynT_user_dataframe = pandas.DataFrame(index=range(id_axis_array.size),
-                                           columns=['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2'],
-                                           dtype=float)
-    dynT_user_dataframe['id_axis'] = id_axis_array
-    dynT_user_dataframe['TT_col_N_phytomer_potential'] = TT_col_N_phytomer_potential_array
-    MS_index = dynT_user_dataframe[dynT_user_dataframe['id_axis'] == 'MS'].index
-    for key, value in dynT_user.iteritems():
-        if key == 'TT_col_N_phytomer_potential':
-            continue
-        dynT_user_dataframe[key][MS_index] = value
-    
-    return gen_adel_input_data(dynT_user_dataframe, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.MIN, DataCompleteness.MIN)
-
-
-def gen_adel_input_data_from_short(dynT_user,
-                                   dimT_user,
-                                   plants_number=100, 
-                                   plants_density=250,
-                                   decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
-                                   MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                   ears_density=500,
-                                   GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
-                                   delais_TT_stop_del_axis=600,
-                                   TT_col_break=0.0):
-    '''
-    Generate ADEL input data from a *SHORT* set of data. This a convenience 
-    function to be used from VisuAlea. 
-    
-    The *SHORT* set of data is represented by *dynT_user* and *dimT_user*.
-    See :ref:`plantgen` for an example of how to set these parameters properly.
-    
-    :Parameters:
-    
-        - `dynT_user` (:class:`pandas.DataFrame`) - the leaf dynamic parameters 
-          set by the user. See :ref:`dynT_user_SHORT <dynT_user_SHORT>`.
-               
-          *dynT_user* must be a pandas.Dataframe with the 
-          following columns: *id_axis*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1*, *n2*.
-          The values can be either integers or floats.
-        
-        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
-          the user. See :ref:`dimT_user_SHORT <dimT_user_SHORT>`
-          
-          *dimT_user* must be a pandas.Dataframe with the 
-          following columns: *id_axis*, *index_phytomer*, *L_blade*, *W_blade*, 
-          *L_sheath*, *W_sheath*, *L_internode*, *W_internode*.
-          The values of *id_axis* are strings like 'MS', 'T0', 'T1.2',... The 
-          values of the other columns can be either integers or floats.
-              
-        - `plants_number` (:class:`int`) - the number of plants to be generated.
-        
-        - `plants_density` (:class:`int`) - the number of plants that are present 
-          after loss due to bad emergence, early death..., per square meter.
-        
-        - `decide_child_axis_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          for each child cohort the probability of emergence of an axis when the parent 
-          axis is present. The keys are the identifiers of the child axes ('T0', 'T1', 
-          'T2', ...) and the values are the probabilities.
-        
-        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          the probability distribution of the final number of main stem leaves. 
-          The keys are the final numbers of main stem leaves, and the values are 
-          the probability distribution.
-          
-        - `ears_density` (:class:`int`) - the number of ears per square meter. 
-        
-        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
-          several thermal times (including the senescence end). The keys are the 
-          thermal times, and the values are the GL decimal numbers.
-        
-        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
-          thermal time between an axis stop growing and its disappearance (it 
-          concerns only the axes that do not regress and which do not produce any 
-          cob).
-        
-        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing. If phyllochron is constant, then *TT_col_break* is null.
-        
-    :Returns:
-        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
-        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
-        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
-        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
-        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
-        configuration used for the construction.
-    
-    :Returns Type:
-        tuple
-        
-    .. seealso:: :ref:`plantgen`
-                 :func:`gen_adel_input_data`
-                 :mod:`alinea.adel.plantgen.axeT`
-                 :mod:`alinea.adel.plantgen.dimT`
-                 :mod:`alinea.adel.plantgen.dynT`
-                 :mod:`alinea.adel.plantgen.params`
-                 :mod:`alinea.adel.plantgen.phenT`
-                 :mod:`alinea.adel.plantgen.tools`
-                 
-    '''    
-    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.SHORT, DataCompleteness.SHORT)
-    
-
-def gen_adel_input_data_from_full(dynT_user,
-                                  dimT_user,
-                                  plants_number=100, 
-                                  plants_density=250,
-                                  decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.983, 'T3': 0.817, 'T4': 0.117}, 
-                                  MS_leaves_number_probabilities={'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0},
-                                  ears_density=500,
-                                  GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
-                                  delais_TT_stop_del_axis=600,
-                                  TT_col_break=0.0):
-    '''
-    Generate ADEL input data from a *FULL* set of data. This a convenience 
-    function to be used from VisuAlea. 
-    
-    *FULL* set of data is represented by *dynT_user* and *dimT_user*.
-    See :ref:`plantgen` for an example of how to set these parameters properly.
-    
-    :Parameters:
-    
-        - `dynT_user` (:class:`pandas.DataFrame`) - the leaf dynamic parameters 
-          set by the user. See :ref:`dynT_user_FULL <dynT_user_FULL>`.
-               
-          *dynT_user* must be a pandas.Dataframe with the 
-          following columns: *id_axis*, *N_phytomer_potential*, *a_cohort*, *TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1*, *n2*.
-          The values can be either integers or floats.
-        
-        - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs set by 
-          the user. See :ref:`dimT_user_FULL <dimT_user_FULL>`.
-          
-          *dimT_user* must be a pandas.Dataframe with the 
-          following columns: *id_dim*, *index_phytomer*, *L_blade*, *W_blade*, 
-          *L_sheath*, *W_sheath*, *L_internode*, *W_internode*.
-          The values can be either integers or floats.
-              
-        - `plants_number` (:class:`int`) - the number of plants to be generated.
-        
-        - `plants_density` (:class:`int`) - the number of plants that are present 
-          after loss due to bad emergence, early death..., per square meter.
-        
-        - `decide_child_axis_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          for each child cohort the probability of emergence of an axis when the parent 
-          axis is present. The keys are the identifiers of the child axes ('T0', 'T1', 
-          'T2', ...) and the values are the probabilities.
-        
-        - `MS_leaves_number_probabilities` (:class:`dict` of :class:`str`::class:`float`) - 
-          the probability distribution of the final number of main stem leaves. 
-          The keys are the final numbers of main stem leaves, and the values are 
-          the probability distribution.
-          
-        - `ears_density` (:class:`int`) - the number of ears per square meter. 
-        
-        - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
-          several thermal times (including the senescence end). The keys are the 
-          thermal times, and the values are the GL decimal numbers.
-        
-        - `delais_TT_stop_del_axis` (:class:`int`) - This variable represents the time in 
-          thermal time between an axis stop growing and its disappearance (it 
-          concerns only the axes that do not regress and which do not produce any 
-          cob).
-        
-        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing. If phyllochron is constant, then *TT_col_break* is null.
-          
-    :Returns:
-        Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
-        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
-        :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, 
-        :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, :ref:`tilleringT <tilleringT>`,
-        :ref:`cardinalityT <cardinalityT>`, and a dictionary which stores the 
-        configuration used for the construction.
-    
-    :Returns Type:
-        tuple
-        
-    .. seealso:: :ref:`plantgen`
-                 :func:`gen_adel_input_data`
-                 :mod:`alinea.adel.plantgen.axeT`
-                 :mod:`alinea.adel.plantgen.dimT`
-                 :mod:`alinea.adel.plantgen.dynT`
-                 :mod:`alinea.adel.plantgen.params`
-                 :mod:`alinea.adel.plantgen.phenT`
-                 :mod:`alinea.adel.plantgen.tools`
-                 
-    '''    
-    return gen_adel_input_data(dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, MS_leaves_number_probabilities, ears_density, GL_number, delais_TT_stop_del_axis, TT_col_break, DataCompleteness.FULL, DataCompleteness.FULL)
-
-
 def gen_adel_input_data(dynT_user,
                         dimT_user,
                         plants_number=100, 
@@ -834,24 +545,18 @@ def _gen_adel_input_data_second(axeT_tmp,
     return axeT_, phenT_abs, phenT_, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, dimT_, tilleringT
 
 
-def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompleteness.MIN):
+def read_plantgen_inputs(inputs_filepath):
     '''
     Import the Python module at *inputs_filepath*, and return the args expected by 
-    either :func:`gen_adel_input_data_from_min`, :func:`gen_adel_input_data_from_short` or 
-    :func:`gen_adel_input_data_from_full`, according to *dynT_user_completeness*.
+    :func:`gen_adel_input_data`.
     
     :Parameters:
     
         - `inputs_filepath` (:class:`str`) - the Python module which contains the inputs 
-          of one of :func:`gen_adel_input_data_from_min`, :func:`gen_adel_input_data_from_short` or 
-          :func:`gen_adel_input_data_from_full`.
-        - `dynT_user_completeness` (:class:`DataCompleteness`) - the completeness 
-          of the plantgen inputs contained in *inputs_filepath*.  
+          of :func:`gen_adel_input_data`.
           
     :Returns:
-        Return the arguments of either :func:`gen_adel_input_data_from_min`, 
-        :func:`gen_adel_input_data_from_short` or :func:`gen_adel_input_data_from_full`, 
-        according to *dynT_user_completeness*. 
+        Return the arguments of :func:`gen_adel_input_data`. 
     
     :Returns Type:
         tuple
@@ -861,6 +566,7 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompletenes
 
     inputs = imp.load_source('inputs', inputs_filepath)
 
+    dynT_user = pandas.read_csv(inputs.dynT_user)
     dimT_user = pandas.read_csv(inputs.dimT_user)
     plants_number = inputs.plants_number
     plants_density = inputs.plants_density
@@ -870,12 +576,10 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_completeness=DataCompletenes
     GL_number = inputs.GL_number
     delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
     TT_col_break = inputs.TT_col_break
-
-    if dynT_user_completeness == DataCompleteness.MIN:
-        dynT_user = inputs.dynT_user
-    else:
-        dynT_user = pandas.read_csv(inputs.dynT_user)
+    dynT_user_completeness = inputs.dynT_user_completeness
+    dimT_user_completeness = inputs.dynT_user_completeness
     
     return (dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, 
             MS_leaves_number_probabilities, ears_density, GL_number, 
-            delais_TT_stop_del_axis, TT_col_break)
+            delais_TT_stop_del_axis, TT_col_break, dynT_user_completeness, 
+            dimT_user_completeness)

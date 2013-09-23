@@ -1,19 +1,11 @@
 # This file stores a set of data which can be used by the function 
 # alinea.adel.plantgen.read_plantgen_inputs to define the inputs of the function 
-# alinea.adel.plantgen.gen_adel_input_data_from_min.
-# ATTENTION: this file is just an example and IS NOT portable. Please adapt it to 
-# your need manually or use the graphic node read_plantgen_inputs instead.
-dynT_user = {'a_cohort': 0.0102,
-             'TT_col_0': -0.771289027,
-             'n0': 4.871559739,
-             'n1': 3.24283148,
-             'n2': 5.8,
-             'TT_col_N_phytomer_potential': {'MS': 1078.0,
-                                             'T1': 1148.0,
-                                             'T2': 1158.0,
-                                             'T3': 1168.0,
-                                             'T4': 1178.0}}
-dimT_user = '/home/cchambon/workspace/openaleapkg_tr/adel/test/data/test_plantgen/MIN_MIN/dimT_user.csv'
+# alinea.adel.plantgen.gen_adel_input_data.
+# dynT_user and dimT_user are absolute file paths.
+# ATTENTION: this file is just an example. Please adapt manually the 
+# value of dynT_user and dimT_user to your need.
+dynT_user = '/home/cchambon/workspace/openaleapkg_tr/adel/adel/data/Mariem_dynT_user_MIN.csv'
+dimT_user = '/home/cchambon/workspace/openaleapkg_tr/adel/adel/data/Mariem_dimT_user_MIN.csv'
 plants_number = 100
 plants_density = 250
 decide_child_axis_probabilities = {'T0': 0.0, 'T1': 0.900,
@@ -30,3 +22,5 @@ GL_number = {1117.0: 5.6, 1212.1:5.4,
              1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_break = 0.0
+dynT_user_completeness = 'MIN'
+dimT_user_completeness = 'MIN'

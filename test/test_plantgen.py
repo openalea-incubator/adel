@@ -238,24 +238,21 @@ def test_gen_adel_input_data_from_min():
     dynT_user_completeness = plantgen.DataCompleteness.MIN
     dimT_user_completeness = plantgen.DataCompleteness.MIN
     TT_col_break = 0.0
-    dynT_user = {'a_cohort': 0.0102, 
-                 'TT_col_0': -0.771289027, 
-                 'n0': 4.871559739,
-                 'n1': 3.24283148,
-                 'n2': 5.8,
-                 'TT_col_N_phytomer_potential': TT_col_N_phytomer_potential}
+    dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     
-    results = plantgen.gen_adel_input_data_from_min(dynT_user,
-                                                    dimT_user, 
-                                                    plants_number, 
-                                                    plants_density,
-                                                    decide_child_axis_probabilities, 
-                                                    MS_leaves_number_probabilities, 
-                                                    ears_density, 
-                                                    GL_number, 
-                                                    delais_TT_stop_del_axis, 
-                                                    TT_col_break)
+    results = plantgen.gen_adel_input_data(dynT_user,
+                                            dimT_user, 
+                                            plants_number, 
+                                            plants_density,
+                                            decide_child_axis_probabilities, 
+                                            MS_leaves_number_probabilities, 
+                                            ears_density, 
+                                            GL_number, 
+                                            delais_TT_stop_del_axis, 
+                                            TT_col_break,
+                                            dynT_user_completeness,
+                                            dimT_user_completeness)
     
     expected_axeT = pandas.read_csv(min_min_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(min_min_expected_results_dir/'phenT_abs.csv')
@@ -289,16 +286,18 @@ def test_gen_adel_input_data_from_short():
     TT_col_break = 0.0
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
-    results = plantgen.gen_adel_input_data_from_short(dynT_user,
-                                                      dimT_user, 
-                                                      plants_number, 
-                                                      plants_density,
-                                                      decide_child_axis_probabilities, 
-                                                      MS_leaves_number_probabilities, 
-                                                      ears_density, 
-                                                      GL_number, 
-                                                      delais_TT_stop_del_axis, 
-                                                      TT_col_break)
+    results = plantgen.gen_adel_input_data(dynT_user,
+                                          dimT_user, 
+                                          plants_number, 
+                                          plants_density,
+                                          decide_child_axis_probabilities, 
+                                          MS_leaves_number_probabilities, 
+                                          ears_density, 
+                                          GL_number, 
+                                          delais_TT_stop_del_axis, 
+                                          TT_col_break,
+                                          dynT_user_completeness,
+                                          dimT_user_completeness)
     
     expected_axeT = pandas.read_csv(short_short_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(short_short_expected_results_dir/'phenT_abs.csv')
@@ -332,16 +331,18 @@ def test_gen_adel_input_data_from_full():
     TT_col_break = 0.0
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
-    results = plantgen.gen_adel_input_data_from_full(dynT_user,
-                                                     dimT_user,
-                                                     plants_number, 
-                                                     plants_density,
-                                                     decide_child_axis_probabilities, 
-                                                     MS_leaves_number_probabilities, 
-                                                     ears_density, 
-                                                     GL_number, 
-                                                     delais_TT_stop_del_axis, 
-                                                     TT_col_break)
+    results = plantgen.gen_adel_input_data(dynT_user,
+                                         dimT_user,
+                                         plants_number, 
+                                         plants_density,
+                                         decide_child_axis_probabilities, 
+                                         MS_leaves_number_probabilities, 
+                                         ears_density, 
+                                         GL_number, 
+                                         delais_TT_stop_del_axis, 
+                                         TT_col_break,
+                                         dynT_user_completeness,
+                                         dimT_user_completeness)
     
     expected_axeT = pandas.read_csv(full_full_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(full_full_expected_results_dir/'phenT_abs.csv')
@@ -386,10 +387,10 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
 
 
-def test_plantgen_MIN():
+def test_plantgen():
     # test the visualea node
     pm = PackageManager()
     pm.init(verbose=False)
-    res = run(('alinea.adel.Tutorials', 'plantgen_MIN'), {}, pm=pm)
+    res = run(('alinea.adel.Tutorials', 'plantgen'), {}, pm=pm)
     assert res == []
     

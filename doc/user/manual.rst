@@ -480,14 +480,12 @@ SHORT, and FULL. In the next subsections, we:
   This routine can be used whatever the level of completeness of the raw inputs, 
   adapting the processing automatically,
 * describe how to construct the inputs of ADEL from the Visualea interface, 
-  using one of the following routines:
-  
-  * :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`
-  * :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`
-  * :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`.
+  using the node ``plantgen``.
         
-All routines belong to :mod:`plantgen <alinea.adel.plantgen.plantgen>`.
-All routines produce the same output tables: 
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+belongs to module :mod:`plantgen <alinea.adel.plantgen.plantgen>`.
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+produces tables: 
 
 * :ref:`axeT <axeT>`
 * :ref:`dimT <dimT>`
@@ -506,10 +504,12 @@ All routines produce the same output tables:
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated 
   cardinalities of each cohort and each axis.
   
-All routines also produce a dictionary which stores:
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+also produce a dictionary which stores:
 
 * the values of the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, 
 * and the values of the attributes of :mod:`params <alinea.adel.plantgen.params>`.
+
 This dictionary is aimed to log the configuration used for the construction. 
 
 .. _levels_of_completeness:
@@ -520,7 +520,7 @@ The information needed to generate Adel input must be provided in two tables:
 ``dynT_user`` and ``dimT_user``. ``dynT_user`` and ``dimT_user`` can  have 
 different  levels  of  completeness:  ``FULL``,  ``SHORT`` and  ``MIN``.  
 According  to  their  level  of completeness, ``dynT_user`` and ``dimT_user`` 
-take different types, shapes and/or contents.
+take different shapes and/or contents.
 
 The table below list the specific designation in :func:`plantgen <alinea.adel.plantgen>`
 for ``dynT_user``  and ``dimT_user`` for each level of completeness:
@@ -550,7 +550,7 @@ for ``dynT_user``  and ``dimT_user`` for each level of completeness:
 Construction of Adel input tables using the Python interpreter
 ================================================================
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-is aimed to be used from Python interpreter.
+can be used from Python interpreter.
 
 First we explain the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
 that the user has to define. Second we present a complete code example to use 
@@ -564,41 +564,40 @@ The arguments to define by the user
 -------------------------------------
 The arguments to define are:
 
-* dynT_user : *the leaf dynamic parameters set by the user*
+* *dynT_user* : the leaf dynamic parameters set by the user
 
   *dynT_user* is a :class:`pandas.DataFrame`, which content depends on 
   :ref:`dynT_user_completeness <levels_of_completeness>`. 
 
-* dimT_user : *the dimensions of the axes set by the user*
+* *dimT_user* : the dimensions of the axes set by the user
 
   *dimT_user* is a :class:`pandas.DataFrame`, which content depends on 
   :ref:`dimT_user_completeness <levels_of_completeness>`.
 
-* dynT_user_completeness and dimT_user_completeness : *the levels of completeness of dynT_user and dimT_user*
+* *plants_number*, the number of plants to be generated,
+* *plants_density*, the number of plants that are present 
+  after loss due to bad emergence, early death..., per square meter.
+* *decide_child_axis_probabilities*, the probability of emergence of an axis 
+  when the parent axis is present. *decide_child_axis_probabilities* are set 
+  only for axes belonging to primaries tillers. 
+* *MS_leaves_number_probabilities*, the probability distribution 
+  of the final number of main stem leaves,
+* *ears_density*, the number of ears per square meter,
+* *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
+* *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
+* *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
+  If phyllochron is constant, then *TT_col_break* is 0.0.
 
-  :ref:`dynT_user_completeness <levels_of_completeness>` and :ref:`dimT_user_completeness <levels_of_completeness>` 
-  have to be consistent with respectively *dynT_user* and *dimT_user*.
+* *dynT_user_completeness* : the level of completeness of dynT_user. 
 
-* *plants_number*, *plants_density*, *decide_child_axis_probabilities*, *MS_leaves_number_probabilities*, ...
+  *dynT_user_completeness* must be consistent with *dynT_user*.
 
-  The other arguments of the routine are: 
-    
-  * *plants_number*, the number of plants to be generated,
-  * *plants_density*, the number of plants that are present 
-    after loss due to bad emergence, early death..., per square meter.
-  * *decide_child_axis_probabilities*, the probability of emergence of an axis 
-    when the parent axis is present. *decide_child_axis_probabilities* are set 
-    only for axes belonging to primaries tillers. 
-  * *MS_leaves_number_probabilities*, the probability distribution 
-    of the final number of main stem leaves,
-  * *ears_density*, the number of ears per square meter,
-  * *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
-  * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
-  * *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
-    If phyllochron is constant, then *TT_col_break* is 0.0.
-    
+* *dimT_user_completeness* : the level of completeness of dimT_user.
+
+  *dimT_user_completeness* must be consistent with *dimT_user*.
+
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` checks 
-the validity of these arguments. 
+automatically the validity of these arguments. 
     
 .. note::
 
@@ -616,20 +615,21 @@ from a Python interpreter:
 .. code-block:: python
    :linenos:
     
-    # define the levels of completeness. In this example, we choose the level "SHORT".
+    # define the levels of completeness. In this example, we choose the level "MIN" 
+    # for both dynT_user and dimT_user.
     from alinea.adel.plantgen.plantgen import DataCompleteness
-    dynT_user_completeness = DataCompleteness.SHORT
-    dimT_user_completeness = DataCompleteness.SHORT
+    dynT_user_completeness = DataCompleteness.MIN
+    dimT_user_completeness = DataCompleteness.MIN
     
     # import the pandas library. In this example, pandas is used to read and 
     # write the tables.
     import pandas
 
-    # read the dynT_user_SHORT table. "dynT_user_SHORT.csv" must be in the working directory. 
-    dynT_user = pandas.read_csv('dynT_user_SHORT.csv')
+    # read the dynT_user_MIN table. "dynT_user_MIN.csv" must be in the working directory. 
+    dynT_user = pandas.read_csv('dynT_user_MIN.csv')
         
-    # read the dimT_user_SHORT table. "dimT_user_SHORT.csv" must be in the working directory.
-    dimT_user = pandas.read_csv('dimT_user_SHORT.csv')    
+    # read the dimT_user_MIN table. "dimT_user_MIN.csv" must be in the working directory.
+    dimT_user = pandas.read_csv('dimT_user_MIN.csv')    
     
     # define the other arguments
     plants_number = 100
@@ -687,11 +687,11 @@ Finally, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen
 permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
-the module :download:`plantgen_inputs_SHORT.py <../../adel/data/plantgen_inputs_SHORT.py>`, 
-the lines 6 to 32 of the precedent script can be replaced by::
+the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
+the lines 1 to 33 of the precedent script can be replaced by::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
-    # "plantgen_inputs_SHORT.py" must be in the working directory 
+    # "plantgen_inputs_MIN.py" must be in the working directory 
     (dynT_user, 
      dimT_user, 
      plants_number, 
@@ -701,71 +701,45 @@ the lines 6 to 32 of the precedent script can be replaced by::
      ears_density, 
      GL_number, 
      delais_TT_stop_del_axis, 
-     TT_col_break) = read_plantgen_inputs('plantgen_inputs_SHORT.py', dynT_user_completeness='SHORT')
+     TT_col_break,
+     dynT_user_completeness,
+     dimT_user_completeness) = read_plantgen_inputs('plantgen_inputs_MIN.py')
      
 :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
-permits the user to store the arguments, so he can reuse them later.    
-    
+permits the user to store the arguments, so he can reuse them later. 
+
+.. warning:: adapt the content of the Python module (e.g. 
+             :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`) before 
+             using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
+             with it.    
     
 .. _construct_inputs_from_visualea:
 
 Construction of Adel input tables using Visualea
 ====================================================
-The following routines allow to construct the inputs of ADEL: 
+The node ``plantgen`` allows to construct the inputs of ADEL. 
 
-* :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`: 
-  construct the inputs of ADEL from :ref:`dynT_user_MIN` and :ref:`dimT_user_MIN`,
-* :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`: 
-  construct the inputs of ADEL from :ref:`dynT_user_SHORT` and :ref:`dimT_user_SHORT`,  
-* and :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`: 
-  construct the inputs of ADEL from :ref:`dynT_user_FULL` and :ref:`dimT_user_FULL`.
-    
-All these routines belong to :mod:`alinea.adel.plantgen.plantgen`.
+.. figure:: image/plantgen_node.png
+   :width: 100%
+   :align: center
 
-These routines are wrapped in the following Visualea nodes:
+   plantgen node
+   
+   
+``plantgen`` is located in ``alinea.adel.plantgen``. 
+You can access to ``plantgen`` through the package explorer of VisuAlea, 
+or just typing "plantgen" in the Search tab of VisuAlea. 
 
-.. list-table::
-    :widths: 10 10 10
-    :header-rows: 1
+The associated widget, which appears when you open ``plantgen``, permits to 
+configure the construction. 
 
-    * - ``plantgen_MIN``
-      - ``plantgen_SHORT``
-      - ``plantgen_FULL``
-    * - .. image:: image/plantgen_MIN_node.png
-            :width: 100%
-      - .. image:: image/plantgen_SHORT_node.png
-            :width: 100%
-      - .. image:: image/plantgen_FULL_node.png
-            :width: 100%
-    * - .. image:: image/plantgen_MIN_widget.png
-            :width: 100%
-      - .. image:: image/plantgen_SHORT_widget.png
-            :width: 100%
-      - .. image:: image/plantgen_FULL_widget.png
-            :width: 100%
+.. figure:: image/plantgen_widget.png
+   :width: 100%
+   :align: center
 
-The following table summarizes the nodes, the routines and the levels of completeness 
-of :ref:`dynT <dynT>` and :ref:`dimT <dimT>`:
+   plantgen widget
 
-.. list-table::
-    :widths: 15 50 20
-    :header-rows: 1
-
-    * - Level of completeness
-      - Convenience routine
-      - Visualea node
-    * - **MIN** 
-      - :func:`gen_adel_input_data_from_min <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_min>`
-      - ``plantgen_MIN``
-    * - **SHORT** 
-      - :func:`gen_adel_input_data_from_short <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_short>`
-      - ``plantgen_SHORT``
-    * - **FULL** 
-      - :func:`gen_adel_input_data_from_full <alinea.adel.plantgen.plantgen.gen_adel_input_data_from_full>`
-      - ``plantgen_FULL``
- 
-The following dataflow demonstrates how to use ``plantgen_MIN``, ``plantgen_SHORT``, 
-and ``plantgen_FULL`` through Visualea:
+The following dataflow demonstrates how to use ``plantgen`` through Visualea:
 
 .. figure:: ./image/plantgen_dataflow.png
    :width: 100%
@@ -775,32 +749,33 @@ and ``plantgen_FULL`` through Visualea:
 
 The user must select existing data nodes to set the input and ouput tables.
 
-The following data-flow demonstrates another way to use ``plantgen_MIN`` through 
+The following data-flow demonstrates another way to use ``plantgen`` through 
 Visualea:
 
-.. figure:: ./image/plantgen_MIN_csv_dataflow.png
+.. figure:: ./image/plantgen_csv_dataflow.png
    :width: 100%
    :align: center
 
-   The alinea.adel.Tutorials.plantgen_MIN_csv dataflow 
+   The alinea.adel.Tutorials.plantgen_csv dataflow 
 
 In this case the user must give the paths of csv files for inputs and outputs. 
-Attention: the paths set in the example will not work on your computer. You have 
-to adapt them to your needs. This example is more straightful because you don't 
-have to create output data nodes before running, but it is also less portable.
+
+.. warning:: the paths set in alinea.adel.Tutorials.plantgen_csv will not work 
+             on your computer. You have to adapt them to your needs.
 
 Finally, the node ``read_plantgen_inputs`` permits to define the values of the input ports of 
-``plantgen_*`` by importing a Python module.
+``plantgen`` by importing a Python module. ``read_plantgen_inputs`` is also located in 
+``alinea.adel.plantgen``. 
     
-Using ``read_plantgen_inputs`` with 
-the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
+For example, using ``read_plantgen_inputs`` with the module 
+:download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
 the dataflow becomes:
     
-    .. figure:: ./image/plantgen_MIN_csv_inputs_dataflow.png
+    .. figure:: ./image/plantgen_csv_inputs_dataflow.png
        :width: 100%
        :align: center
         
-       The alinea.adel.Tutorials.plantgen_MIN_csv_inputs dataflow 
+       The alinea.adel.Tutorials.plantgen_csv_inputs dataflow 
    
 ``read_plantgen_inputs`` permits the user to store the values of the input ports, 
 so he can reuse them later.
@@ -922,28 +897,20 @@ See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/SHOR
 
 dynT_user_MIN
 --------------------------------
-:ref:`dynT_user_MIN` is a dictionary which describes the dynamic of the Haun stage of 
+:ref:`dynT_user_MIN` is a table which describes the dynamic of the Haun stage of 
 the most frequent main stem. The most frequent main stem is the 
 main stem which has the most frequent number of phytomers.
 :ref:`dynT_user_MIN` also contains, for each primary axis, 
 the thermal time when Haun Stage is equal to the final number of phytomers.
 
-The dictionary contains the following keys: *a_cohort*, *TT_col_0*, 
-*n0*, *n1*, *n2* and *TT_col_N_phytomer_potential*. See :ref:`dynT` for a description of 
-these parameters.
+The first line contains the following data: *id_axis*, *a_cohort*, *TT_col_0*, 
+*TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
+In the other lines, only *id_axis* and *TT_col_N_phytomer_potential* are documented: 
+*a_cohort*, *TT_col_0*, *n0*, *n1* and *n2* are NA (i.e. Not Available). 
+ 
+See :ref:`dynT` for a description of these parameters.
 
-Example::
-
-    dynT_user_MIN = {'a_cohort': 0.0102, 
-                     'TT_col_0': -0.771289027, 
-                     'n0': 4.871559739, 
-                     'n1': 3.24283148, 
-                     'n2': 5.8,
-                     'TT_col_N_phytomer_potential': {'MS': 1078.0, 
-                                           'T1': 1148.0, 
-                                           'T2': 1158.0, 
-                                           'T3': 1168.0, 
-                                           'T4': 1178.0}}
+See :download:`an example of dynT_user_MIN <../../test/data/test_plantgen/MIN_MIN/dynT_user.csv>`.
 
 
 .. _dimT_user_FULL:

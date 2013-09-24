@@ -14,8 +14,7 @@
 #
 ###############################################################################
 '''
-This module stores the constant parameters used in the :mod:`alinea.adel.plantgen` package. The user 
-can set their value from here.
+This module stores the default values of plantgen inner parameters. 
 
 Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
 '''

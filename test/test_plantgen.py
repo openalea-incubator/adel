@@ -20,6 +20,7 @@ MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0
 ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
+TT_col_break = 0.0
 TT_col_N_phytomer_potential = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
 number_of_ears = plants_number * ears_density / float(plants_density)
 
@@ -237,7 +238,6 @@ def test_create_dimT():
 def test_gen_adel_input_data_from_min():
     dynT_user_completeness = plantgen.DataCompleteness.MIN
     dimT_user_completeness = plantgen.DataCompleteness.MIN
-    TT_col_break = 0.0
     dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     
@@ -283,7 +283,6 @@ def test_gen_adel_input_data_from_min():
 def test_gen_adel_input_data_from_short():
     dynT_user_completeness = plantgen.DataCompleteness.SHORT
     dimT_user_completeness = plantgen.DataCompleteness.SHORT
-    TT_col_break = 0.0
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data(dynT_user,
@@ -328,7 +327,6 @@ def test_gen_adel_input_data_from_short():
 def test_gen_adel_input_data_from_full():
     dynT_user_completeness = plantgen.DataCompleteness.FULL
     dimT_user_completeness = plantgen.DataCompleteness.FULL
-    TT_col_break = 0.0
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data(dynT_user,

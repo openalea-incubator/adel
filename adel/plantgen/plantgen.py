@@ -52,15 +52,14 @@ def gen_adel_input_data(dynT_user,
                         delais_TT_stop_del_axis=600,
                         TT_col_break=0.0,
                         dynT_user_completeness=DataCompleteness.MIN,
-                        dimT_user_completeness=DataCompleteness.MIN                        
+                        dimT_user_completeness=DataCompleteness.MIN,
+                        inner_params={}                        
                         ):
     '''
     Create the dataframes which contain the plant data to be used as input for 
     generating plot with ADEL, and some other dataframes for debugging purpose.
-    Also create a dictionary which stores:
-    
-    * the values of the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, 
-    * and the values of the attributes of :mod:`params <alinea.adel.plantgen.params>`.
+    Also create a dictionary which stores the values of the arguments of 
+    :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`. 
     This dictionary is aimed to log the configuration used for the construction.
     
     See :ref:`adel_input` for a description of the input tables expected by ADEL, 
@@ -150,7 +149,14 @@ def gen_adel_input_data(dynT_user,
           completeness of the *dynT_user* set by the user. 
         
         - `dimT_user_completeness` (:class:`DataCompleteness`) - the level of completeness of the 
-          *dimT_user* set by the user. 
+          *dimT_user* set by the user.
+          
+        - `inner_params` (:class:`dict`) - the values of the inner parameters used 
+          for the construction of the input tables. These parameters are the same 
+          as the ones defined in the module :mod:`params <alinea.adel.plantgen.params>`. 
+          *inner_params* is NOT mandatory: if not all inner parameters are documented 
+          in *inner_params*, then we use the default values defined in :mod:`params <alinea.adel.plantgen.params>` 
+          for the inner parameters which are missing.   
         
     :Returns:
         Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -182,6 +188,11 @@ def gen_adel_input_data(dynT_user,
     
     if sum(MS_leaves_number_probabilities.values()) != 1.0:
         raise tools.InputError("the sum of the probabilities defined in MS_leaves_number_probabilities is not equal to 1.0")
+    
+    # update values defined in alinea.adel.plantgen.params from values in inner_params
+    attribute_names = set(dir(params))
+    attribute_names.intersection_update(inner_params.keys())
+    params.__dict__.update(dict([(key, value) for key, value in inner_params.items() if key in attribute_names]))
     
     possible_axes = \
         set([id_axis for (id_axis, probability) in
@@ -473,11 +484,6 @@ of the MS are documented by the user, then this will lead to an error."
                                                ears_density,
                                                number_of_ears)
      
-    # save the attributes of params
-    for params_attribute in dir(params):
-        if not params_attribute.startswith('__'):
-            config[params_attribute] = params.__getattribute__(params_attribute)
-    
     return axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, \
            HS_GL_SSI_T, tilleringT, cardinalityT, config
 
@@ -578,8 +584,12 @@ def read_plantgen_inputs(inputs_filepath):
     TT_col_break = inputs.TT_col_break
     dynT_user_completeness = inputs.dynT_user_completeness
     dimT_user_completeness = inputs.dynT_user_completeness
+    try:
+        inner_params = inputs.inner_params
+    except:
+        inner_params = {}
     
     return (dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, 
             MS_leaves_number_probabilities, ears_density, GL_number, 
             delais_TT_stop_del_axis, TT_col_break, dynT_user_completeness, 
-            dimT_user_completeness)
+            dimT_user_completeness, inner_params)

@@ -24,3 +24,5 @@ delais_TT_stop_del_axis = 600
 TT_col_break = 0.0
 dynT_user_completeness = 'SHORT'
 dimT_user_completeness = 'SHORT'
+inner_params = {'DELAIS_PHYLL_COL_TIP_1ST': 1.0,
+                'DELAIS_PHYLL_COL_TIP_NTH': 1.6}

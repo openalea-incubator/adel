@@ -505,11 +505,8 @@ produces tables:
   cardinalities of each cohort and each axis.
   
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-also produce a dictionary which stores:
-
-* the values of the arguments of :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, 
-* and the values of the attributes of :mod:`params <alinea.adel.plantgen.params>`.
-
+also produces a dictionary which stores the values of the arguments of 
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`. 
 This dictionary is aimed to log the configuration used for the construction. 
 
 .. _levels_of_completeness:
@@ -587,7 +584,7 @@ The arguments to define are:
 * *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
 * *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
   If phyllochron is constant, then *TT_col_break* is 0.0.
-
+  
 * *dynT_user_completeness* : the level of completeness of dynT_user. 
 
   *dynT_user_completeness* must be consistent with *dynT_user*.
@@ -596,14 +593,15 @@ The arguments to define are:
 
   *dimT_user_completeness* must be consistent with *dimT_user*.
 
-:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` checks 
-automatically the validity of these arguments. 
-    
-.. note::
+* *inner_params*, the values of the inner parameters use for the construction of 
+  the input tables. 
+  
+  .. warning:: no check is done for the inner parameters and the user should be 
+               sure of what he is doing. See :ref:`inner_parameters_for_construction` 
+               for more details.
 
-    The user can also parameterize the construction through inner parameters. However, 
-    no checks is done for the inner parameters and the user should be sure of what he is doing. 
-    See :ref:`inner_parameters_for_construction` for more details.
+:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` checks 
+automatically the validity of these arguments, except for *inner_params*.
 
   
 Code example
@@ -614,12 +612,6 @@ from a Python interpreter:
 
 .. code-block:: python
    :linenos:
-    
-    # define the levels of completeness. In this example, we choose the level "MIN" 
-    # for both dynT_user and dimT_user.
-    from alinea.adel.plantgen.plantgen import DataCompleteness
-    dynT_user_completeness = DataCompleteness.MIN
-    dimT_user_completeness = DataCompleteness.MIN
     
     # import the pandas library. In this example, pandas is used to read and 
     # write the tables.
@@ -649,6 +641,15 @@ from a Python interpreter:
     delais_TT_stop_del_axis = 600
     TT_col_break = 0.0
     
+    # define the levels of completeness. These levels must be coherent with the 
+    # tables dynT_user and dimT_user.  
+    from alinea.adel.plantgen.plantgen import DataCompleteness
+    dynT_user_completeness = DataCompleteness.MIN
+    dimT_user_completeness = DataCompleteness.MIN
+    
+    inner_params = {'DELAIS_PHYLL_COL_TIP_1ST': 1.0,
+                    'DELAIS_PHYLL_COL_TIP_NTH': 1.6}
+    
     # launch the construction
     from alinea.adel.plantgen.plantgen import gen_adel_input_data
     (axeT, 
@@ -672,7 +673,8 @@ from a Python interpreter:
                                   delais_TT_stop_del_axis, 
                                   TT_col_break, 
                                   dynT_user_completeness, 
-                                  dimT_user_completeness)
+                                  dimT_user_completeness,
+                                  inner_params)
 
     # write axeT, dimT and phenT to csv files in the working directory, replacing
     # missing values by 'NA' and ignoring the indexes (the indexes are the labels of
@@ -683,12 +685,12 @@ from a Python interpreter:
     
     # "axeT.csv", "dimT.csv" and "phenT.csv" are now ready to be used by Adel.
 
-Finally, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
+Otherwise, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
 permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
 the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
-the lines 1 to 33 of the precedent script can be replaced by::
+the lines 1 to 36 of the precedent script can be replaced by::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
     # "plantgen_inputs_MIN.py" must be in the working directory 
@@ -703,7 +705,8 @@ the lines 1 to 33 of the precedent script can be replaced by::
      delais_TT_stop_del_axis, 
      TT_col_break,
      dynT_user_completeness,
-     dimT_user_completeness) = read_plantgen_inputs('plantgen_inputs_MIN.py')
+     dimT_user_completeness,
+     inner_params) = read_plantgen_inputs('plantgen_inputs_MIN.py')
      
 :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
 permits the user to store the arguments, so he can reuse them later. 
@@ -783,8 +786,7 @@ so he can reuse them later.
 .. _inner_parameters_for_construction:
 
 Inner parameters for the construction of the input tables 
-==========================================================
-Other parameters can be set by the user through the module :mod:`params <alinea.adel.plantgen.params>`. 
+========================================================== 
 These parameters are:
 
 * :attr:`SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS <alinea.adel.plantgen.params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS>`: 
@@ -810,7 +812,9 @@ These parameters are:
 * :attr:`REGRESSION_OF_DIMENSIONS <alinea.adel.plantgen.params.REGRESSION_OF_DIMENSIONS>`: 
   the regression of the dimensions for the last 3 phytomers of each organ.
 
-These parameters permit a finer parameterization of the construction.
+These parameters can be set by the user through the module 
+:mod:`params <alinea.adel.plantgen.params>`. They permit a finer parameterization 
+of the construction.
 
 See :mod:`documentation of params <alinea.adel.plantgen.params>` for more information.  
 

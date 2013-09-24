@@ -24,3 +24,4 @@ delais_TT_stop_del_axis = 600
 TT_col_break = 0.0
 dynT_user_completeness = 'FULL'
 dimT_user_completeness = 'FULL'
+inner_params = {}

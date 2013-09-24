@@ -51,8 +51,6 @@ def gen_adel_input_data(dynT_user,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
                         TT_col_break=0.0,
-                        dynT_user_completeness=DataCompleteness.MIN,
-                        dimT_user_completeness=DataCompleteness.MIN,
                         inner_params={}                        
                         ):
     '''
@@ -66,8 +64,7 @@ def gen_adel_input_data(dynT_user,
     and :ref:`plantgen` for a description of the dataframes created for debug. 
     
     Different degrees of completeness of data provided by the user are acceptable. 
-    The user must specify the degree of completeness selecting a value within the 
-    enumerate :class:`DataCompleteness`.
+    See :ref:`levels_of_completeness` for more details.
     
     The dataframes are created as follows:
         * initialization of the following dataframes:
@@ -76,9 +73,7 @@ def gen_adel_input_data(dynT_user,
             * *dimT_tmp*, calling :func:`alinea.adel.plantgen.dimT.create_dimT_tmp`
             * :ref:`tilleringT <tilleringT>`, calling :func:`alinea.adel.plantgen.axeT.create_tilleringT`
             * :ref:`cardinalityT <cardinalityT>`, calling :func:`alinea.adel.plantgen.axeT.create_cardinalityT`
-        * filling of the dataframes set by the user:
-            * *dynT_user*, according to *dynT_user_completeness*
-            * *dimT_user*, according to *dimT_user_completeness*
+        * filling of the dataframes *dynT_user* and *dimT_user* set by the user 
         * calculate the number of elongated internodes
         * construction of the following dataframes:
             * :ref:`dynT <dynT>`, calling :func:`alinea.adel.plantgen.dynT.create_dynT`,
@@ -108,13 +103,9 @@ def gen_adel_input_data(dynT_user,
     
         - `dynT_user` (:class:`pandas.DataFrame`) - the leaf dynamic 
           parameters set by the user.
-          The content depend on the *dynT_user_completeness*.
-          See :ref:`levels_of_completeness`.       
                 
         - `dimT_user` (:class:`pandas.DataFrame`) - the dimensions of the organs 
           set by the user. 
-          The content depends on the *dimT_user_completeness* argument. 
-          See :ref:`levels_of_completeness`.
               
         - `plants_number` (:class:`int`) - the number of plants to be generated.
         
@@ -145,12 +136,6 @@ def gen_adel_input_data(dynT_user,
         - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
           is changing. If phyllochron is constant, then *TT_col_break* is null.
           
-        - `dynT_user_completeness` (:class:`DataCompleteness`) - the level of 
-          completeness of the *dynT_user* set by the user. 
-        
-        - `dimT_user_completeness` (:class:`DataCompleteness`) - the level of completeness of the 
-          *dimT_user* set by the user.
-          
         - `inner_params` (:class:`dict`) - the values of the inner parameters used 
           for the construction of the input tables. These parameters are the same 
           as the ones defined in the module :mod:`params <alinea.adel.plantgen.params>`. 
@@ -179,12 +164,6 @@ def gen_adel_input_data(dynT_user,
     '''
     # save the name and the value of each argument
     config = locals()
-    
-    if dynT_user_completeness not in DataCompleteness.__dict__.values():
-        raise tools.InputError("dynT_user_completeness is not one of: %s" % ', '.join(DataCompleteness.__dict__.values()))
-    
-    if dimT_user_completeness not in DataCompleteness.__dict__.values():
-        raise tools.InputError("dimT_user_completeness is not one of: %s" % ', '.join(DataCompleteness.__dict__.values()))
     
     if sum(MS_leaves_number_probabilities.values()) != 1.0:
         raise tools.InputError("the sum of the probabilities defined in MS_leaves_number_probabilities is not equal to 1.0")
@@ -235,32 +214,9 @@ the N_phytomer_potential of the MS documented by the user (%s) in %s indicate th
 are not documented by the user. After the generation of the phytomers of the MS, if not all generated phytomers \
 of the MS are documented by the user, then this will lead to an error."
     
-    # check dynT_user validity
-    if dynT_user_completeness == DataCompleteness.MIN:
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
-        if dynT_user.columns.tolist() != expected_dynT_user_columns:
-            raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
-        available_axes = set(dynT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
-            warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
-                                                            'dynT_user',
-                                                            list(possible_axes)), 
-                          tools.InputWarning)
-    elif dynT_user_completeness == DataCompleteness.SHORT:
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
-        if dynT_user.columns.tolist() != expected_dynT_user_columns:
-            raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
-        if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
-            raise tools.InputError("dynT_user contains duplicated id_axis")
-        available_axes = set(dynT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
-            warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
-                                                            'dynT_user',
-                                                            list(possible_axes)),
-                          tools.InputWarning)
-    elif dynT_user_completeness == DataCompleteness.FULL:
+    # calculate dynT_user completeness and check its validity
+    if 'N_phytomer_potential' in dynT_user.columns:
+        dynT_user_completeness = DataCompleteness.FULL
         expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
@@ -281,44 +237,38 @@ of the MS are documented by the user, then this will lead to an error."
                                                                      'dynT_user',
                                                                      list(possible_MS_N_phytomer_potential)),
                           tools.InputWarning)
-    
-    # check dimT_user validity
-    if dimT_user_completeness == DataCompleteness.MIN:
-        expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        if dimT_user.columns.tolist() != expected_dimT_user_columns:
-            raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
-        if dimT_user['index_phytomer'].unique().size != dimT_user['index_phytomer'].size:
-            raise tools.InputError("dimT_user contains duplicated index_phytomer")
-        max_available_MS_N_phytomer_potential = dimT_user['index_phytomer'].max()
-        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
-            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
-                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
-                                                                     'dimT_user',
-                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
-                          tools.InputWarning)
             
-    elif dimT_user_completeness == DataCompleteness.SHORT:
-        expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        if dimT_user.columns.tolist() != expected_dimT_user_columns:
-            raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
-        grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
-        if len(grouped.groups) != dimT_user.index.size:
-            raise tools.InputError("dimT_user contains duplicated (id_axis, index_phytomer) pair(s)")
-        available_axes = set(dimT_user['id_axis'].tolist())
+    elif dynT_user.count().max() == dynT_user.count().min() == dynT_user.index.size:
+        dynT_user_completeness = DataCompleteness.SHORT
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
+        if dynT_user.columns.tolist() != expected_dynT_user_columns:
+            raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
+        if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
+            raise tools.InputError("dynT_user contains duplicated id_axis")
+        available_axes = set(dynT_user['id_axis'].tolist())
         if not possible_axes.issubset(available_axes):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
                                                             list(available_axes),
-                                                            'dimT_user',
+                                                            'dynT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
-        max_available_MS_N_phytomer_potential = dimT_user[dimT_user['id_axis'] == 'MS']['index_phytomer'].max()
-        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
-            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
-                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
-                                                                     'dimT_user',
-                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
+        
+    else:
+        dynT_user_completeness = DataCompleteness.MIN
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
+        if dynT_user.columns.tolist() != expected_dynT_user_columns:
+            raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
+        available_axes = set(dynT_user['id_axis'].tolist())
+        if not possible_axes.issubset(available_axes):
+            warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
+                                                            list(available_axes),
+                                                            'dynT_user',
+                                                            list(possible_axes)), 
                           tools.InputWarning)
-    elif dimT_user_completeness == DataCompleteness.FULL:
+        
+    # calculate dimT_user completeness and check its validity
+    if 'N_phytomer_potential' in dimT_user.columns:
+        dimT_user_completeness = DataCompleteness.FULL
         expected_dimT_user_columns = ['id_axis', 'N_phytomer_potential', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
         if dimT_user.columns.tolist() != expected_dimT_user_columns:
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
@@ -339,6 +289,45 @@ of the MS are documented by the user, then this will lead to an error."
                                                                      'dimT_user',
                                                                      list(possible_MS_N_phytomer_potential)),
                           tools.InputWarning)
+        
+    elif 'id_axis' in dimT_user.columns:
+        dimT_user_completeness = DataCompleteness.SHORT
+        expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        if dimT_user.columns.tolist() != expected_dimT_user_columns:
+            raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
+        grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
+        if len(grouped.groups) != dimT_user.index.size:
+            raise tools.InputError("dimT_user contains duplicated (id_axis, index_phytomer) pair(s)")
+        available_axes = set(dimT_user['id_axis'].tolist())
+        if not possible_axes.issubset(available_axes):
+            warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
+                                                            list(available_axes),
+                                                            'dimT_user',
+                                                            list(possible_axes)),
+                          tools.InputWarning)
+        max_available_MS_N_phytomer_potential = dimT_user[dimT_user['id_axis'] == 'MS']['index_phytomer'].max()
+        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
+                                                                     'dimT_user',
+                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
+                          tools.InputWarning)
+        
+    else:
+        dimT_user_completeness = DataCompleteness.MIN
+        expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
+        if dimT_user.columns.tolist() != expected_dimT_user_columns:
+            raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
+        if dimT_user['index_phytomer'].unique().size != dimT_user['index_phytomer'].size:
+            raise tools.InputError("dimT_user contains duplicated index_phytomer")
+        max_available_MS_N_phytomer_potential = dimT_user['index_phytomer'].max()
+        if max(possible_MS_N_phytomer_potential) > max_available_MS_N_phytomer_potential:
+            warnings.warn(available_MS_N_phytomer_potential_warning_message % (MS_leaves_number_probabilities,
+                                                                     ', '.join([str(max_available_MS_N_phytomer_potential)]),
+                                                                     'dimT_user',
+                                                                     ', '.join([str(max(possible_MS_N_phytomer_potential))])),
+                          tools.InputWarning)
+            
     
     # 2. first step of the fit process
     (axeT_tmp, 
@@ -582,8 +571,6 @@ def read_plantgen_inputs(inputs_filepath):
     GL_number = inputs.GL_number
     delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
     TT_col_break = inputs.TT_col_break
-    dynT_user_completeness = inputs.dynT_user_completeness
-    dimT_user_completeness = inputs.dynT_user_completeness
     try:
         inner_params = inputs.inner_params
     except:
@@ -591,5 +578,4 @@ def read_plantgen_inputs(inputs_filepath):
     
     return (dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, 
             MS_leaves_number_probabilities, ears_density, GL_number, 
-            delais_TT_stop_del_axis, TT_col_break, dynT_user_completeness, 
-            dimT_user_completeness, inner_params)
+            delais_TT_stop_del_axis, TT_col_break, inner_params)

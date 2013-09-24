@@ -485,7 +485,7 @@ SHORT, and FULL. In the next subsections, we:
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
 belongs to module :mod:`plantgen <alinea.adel.plantgen.plantgen>`.
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-produces tables: 
+produces the following tables: 
 
 * :ref:`axeT <axeT>`
 * :ref:`dimT <dimT>`
@@ -523,19 +523,28 @@ The table below list the specific designation in :func:`plantgen <alinea.adel.pl
 for ``dynT_user``  and ``dimT_user`` for each level of completeness:
 
 .. list-table::
-    :widths: 10 25 25
+    :widths: 10 40 25 25
     :header-rows: 1
 
     * - Level of completeness
+      - Description
       - dynT_user
       - dimT_user
-    * - **FULL** 
+    * - **FULL**
+      - the table contains data for 
+        *at least* each most frequent 
+        non-regressive axis.  
       - :ref:`dynT_user_FULL`
       - :ref:`dimT_user_FULL`
-    * - **SHORT** 
+    * - **SHORT**
+      - the table contains data for 
+        *exactly* each most frequent 
+        non-regressive axis.
       - :ref:`dynT_user_SHORT`
       - :ref:`dimT_user_SHORT`
-    * - **MIN** 
+    * - **MIN**
+      - the table contains data for 
+        the most frequent main stem only. 
       - :ref:`dynT_user_MIN`
       - :ref:`dimT_user_MIN`
       
@@ -561,57 +570,39 @@ The arguments to define by the user
 -------------------------------------
 The arguments to define are:
 
-* *dynT_user* : the leaf dynamic parameters set by the user
-
-  *dynT_user* is a :class:`pandas.DataFrame`, which content depends on 
-  :ref:`dynT_user_completeness <levels_of_completeness>`. 
-
-* *dimT_user* : the dimensions of the axes set by the user
-
-  *dimT_user* is a :class:`pandas.DataFrame`, which content depends on 
-  :ref:`dimT_user_completeness <levels_of_completeness>`.
-
-* *plants_number*, the number of plants to be generated,
-* *plants_density*, the number of plants that are present 
-  after loss due to bad emergence, early death..., per square meter.
-* *decide_child_axis_probabilities*, the probability of emergence of an axis 
+* *dynT_user*: the leaf dynamic parameters set by the user,
+* *dimT_user*: the dimensions of the axes set by the user,
+* *plants_number*: the number of plants to be generated,
+* *plants_density*: the number of plants that are present 
+  after loss due to bad emergence, early death..., per square meter,
+* *decide_child_axis_probabilities*: the probability of emergence of an axis 
   when the parent axis is present. *decide_child_axis_probabilities* are set 
-  only for axes belonging to primaries tillers. 
-* *MS_leaves_number_probabilities*, the probability distribution 
+  only for axes belonging to primaries tillers.
+* *MS_leaves_number_probabilities*: the probability distribution 
   of the final number of main stem leaves,
-* *ears_density*, the number of ears per square meter,
-* *GL_number*, the thermal times of GL measurements and corresponding values of green leaves number, 
-* *delais_TT_stop_del_axis*, the thermal time between an axis stop growing and its disappearance,
-* *TT_col_break*, the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
+* *ears_density*: the number of ears per square meter,
+* *GL_number*: the thermal times of GL measurements and corresponding values of green leaves number, 
+* *delais_TT_stop_del_axis*: the thermal time between an axis stop growing and its disappearance,
+* *TT_col_break*: the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
   If phyllochron is constant, then *TT_col_break* is 0.0.
+* *inner_params*: the values to overwrite the inner parameters with. See 
+  :ref:`inner_parameters_for_construction` for more details. 
   
-* *dynT_user_completeness* : the level of completeness of dynT_user. 
-
-  *dynT_user_completeness* must be consistent with *dynT_user*.
-
-* *dimT_user_completeness* : the level of completeness of dimT_user.
-
-  *dimT_user_completeness* must be consistent with *dimT_user*.
-
-* *inner_params*, the values of the inner parameters use for the construction of 
-  the input tables. 
+.. important:: 
   
-  .. warning:: no check is done for the inner parameters and the user should be 
-               sure of what he is doing. See :ref:`inner_parameters_for_construction` 
-               for more details.
-
-:func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` checks 
-automatically the validity of these arguments, except for *inner_params*.
-
+    * :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+      checks automatically the validity of these arguments, EXCEPT for *inner_params*. 
+      Thus, the user should be sure of what he is doing when setting the *inner_params*.
+    
+    * only *dynT_user* and *dimT_user* are mandatory. For all other arguments, default 
+      value is used if no value is passed by the user. 
+  
   
 Code example
 -------------
 Now let's see a complete code example to use 
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-from a Python interpreter:
-
-.. code-block:: python
-   :linenos:
+from a Python interpreter::
     
     # import the pandas library. In this example, pandas is used to read and 
     # write the tables.
@@ -631,7 +622,7 @@ from a Python interpreter:
                                        'T4': 0.117}
     MS_leaves_number_probabilities = {'10': 0.145, 
                                       '11': 0.818, 
-                                      '12': 0.036, 
+                                      '12': 0.037, 
                                       '13': 0.0, 
                                       '14': 0.0}
     ears_density = 500
@@ -640,13 +631,6 @@ from a Python interpreter:
                  1880.0:0.0}
     delais_TT_stop_del_axis = 600
     TT_col_break = 0.0
-    
-    # define the levels of completeness. These levels must be coherent with the 
-    # tables dynT_user and dimT_user.  
-    from alinea.adel.plantgen.plantgen import DataCompleteness
-    dynT_user_completeness = DataCompleteness.MIN
-    dimT_user_completeness = DataCompleteness.MIN
-    
     inner_params = {'DELAIS_PHYLL_COL_TIP_1ST': 1.0,
                     'DELAIS_PHYLL_COL_TIP_NTH': 1.6}
     
@@ -672,8 +656,6 @@ from a Python interpreter:
                                   GL_number, 
                                   delais_TT_stop_del_axis, 
                                   TT_col_break, 
-                                  dynT_user_completeness, 
-                                  dimT_user_completeness,
                                   inner_params)
 
     # write axeT, dimT and phenT to csv files in the working directory, replacing
@@ -690,7 +672,8 @@ permits to define the :ref:`arguments <user_arguments>` by importing a Python mo
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
 the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
-the lines 1 to 36 of the precedent script can be replaced by::
+the lines preceding the call to :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
+can be replaced by::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
     # "plantgen_inputs_MIN.py" must be in the working directory 
@@ -704,17 +687,15 @@ the lines 1 to 36 of the precedent script can be replaced by::
      GL_number, 
      delais_TT_stop_del_axis, 
      TT_col_break,
-     dynT_user_completeness,
-     dimT_user_completeness,
      inner_params) = read_plantgen_inputs('plantgen_inputs_MIN.py')
      
 :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
 permits the user to store the arguments, so he can reuse them later. 
 
-.. warning:: adapt the content of the Python module (e.g. 
+.. warning:: you must adapt the content of the Python module (e.g. 
              :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`) before 
              using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
-             with it.    
+             with it.
     
 .. _construct_inputs_from_visualea:
 
@@ -812,9 +793,10 @@ These parameters are:
 * :attr:`REGRESSION_OF_DIMENSIONS <alinea.adel.plantgen.params.REGRESSION_OF_DIMENSIONS>`: 
   the regression of the dimensions for the last 3 phytomers of each organ.
 
-These parameters can be set by the user through the module 
-:mod:`params <alinea.adel.plantgen.params>`. They permit a finer parameterization 
-of the construction.
+These parameters can be set by the user through the input argument *inner_parameters* 
+of the function :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`, or 
+set directly in the module :mod:`params <alinea.adel.plantgen.params>`. 
+They permit a finer parameterization of the construction.
 
 See :mod:`documentation of params <alinea.adel.plantgen.params>` for more information.  
 

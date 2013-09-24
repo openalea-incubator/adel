@@ -236,8 +236,6 @@ def test_create_dimT():
 
 @with_setup(reinit_random_state)
 def test_gen_adel_input_data_from_min():
-    dynT_user_completeness = plantgen.DataCompleteness.MIN
-    dimT_user_completeness = plantgen.DataCompleteness.MIN
     dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     
@@ -250,9 +248,7 @@ def test_gen_adel_input_data_from_min():
                                             ears_density, 
                                             GL_number, 
                                             delais_TT_stop_del_axis, 
-                                            TT_col_break,
-                                            dynT_user_completeness,
-                                            dimT_user_completeness)
+                                            TT_col_break)
     
     expected_axeT = pandas.read_csv(min_min_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(min_min_expected_results_dir/'phenT_abs.csv')
@@ -276,13 +272,11 @@ def test_gen_adel_input_data_from_min():
                  'tilleringT': (expected_tilleringT, results[8]),
                  'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
+    _check_results(to_compare, plantgen.DataCompleteness.MIN, plantgen.DataCompleteness.MIN)
 
          
 @with_setup(reinit_random_state)
 def test_gen_adel_input_data_from_short():
-    dynT_user_completeness = plantgen.DataCompleteness.SHORT
-    dimT_user_completeness = plantgen.DataCompleteness.SHORT
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data(dynT_user,
@@ -294,9 +288,7 @@ def test_gen_adel_input_data_from_short():
                                           ears_density, 
                                           GL_number, 
                                           delais_TT_stop_del_axis, 
-                                          TT_col_break,
-                                          dynT_user_completeness,
-                                          dimT_user_completeness)
+                                          TT_col_break)
     
     expected_axeT = pandas.read_csv(short_short_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(short_short_expected_results_dir/'phenT_abs.csv')
@@ -320,13 +312,11 @@ def test_gen_adel_input_data_from_short():
                   'tilleringT': (expected_tilleringT, results[8]),
                   'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
+    _check_results(to_compare, plantgen.DataCompleteness.SHORT, plantgen.DataCompleteness.SHORT)
 
 
 @with_setup(reinit_random_state)
 def test_gen_adel_input_data_from_full():
-    dynT_user_completeness = plantgen.DataCompleteness.FULL
-    dimT_user_completeness = plantgen.DataCompleteness.FULL
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
     results = plantgen.gen_adel_input_data(dynT_user,
@@ -338,9 +328,7 @@ def test_gen_adel_input_data_from_full():
                                          ears_density, 
                                          GL_number, 
                                          delais_TT_stop_del_axis, 
-                                         TT_col_break,
-                                         dynT_user_completeness,
-                                         dimT_user_completeness)
+                                         TT_col_break)
     
     expected_axeT = pandas.read_csv(full_full_expected_results_dir/'axeT.csv')
     expected_phenT_abs = pandas.read_csv(full_full_expected_results_dir/'phenT_abs.csv')
@@ -364,7 +352,7 @@ def test_gen_adel_input_data_from_full():
                  'tilleringT': (expected_tilleringT, results[8]),
                  'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, dynT_user_completeness, dimT_user_completeness)
+    _check_results(to_compare, plantgen.DataCompleteness.FULL, plantgen.DataCompleteness.FULL)
 
 
 def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):

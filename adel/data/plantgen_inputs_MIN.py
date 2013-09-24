@@ -13,7 +13,7 @@ decide_child_axis_probabilities = {'T0': 0.0, 'T1': 0.900,
                                    'T4': 0.117}
 MS_leaves_number_probabilities = {'10': 0.145,
                                   '11': 0.818,
-                                  '12': 0.036,
+                                  '12': 0.037,
                                   '13': 0.0,
                                   '14': 0.0}
 ears_density = 500
@@ -22,5 +22,3 @@ GL_number = {1117.0: 5.6, 1212.1:5.4,
              1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_col_break = 0.0
-dynT_user_completeness = 'MIN'
-dimT_user_completeness = 'MIN'

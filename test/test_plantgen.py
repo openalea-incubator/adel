@@ -101,25 +101,22 @@ def test_create_dynT():
     
 
 @with_setup(reinit_random_state)
-def test_create_phenT_abs():
+def test_create_phenT_tmp():
     dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
     axeT_tmp = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    dimT_tmp = pandas.read_csv(default_expected_results_dir/'dimT_tmp_merged.csv')
-    dynT_tmp = pandas.read_csv(default_expected_results_dir/'dynT_tmp_merged.csv')
-    decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp)
-    expected_phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
-    phenT_abs = phenT.create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number)
-    test_table_filepath = default_results.joinpath('phenT_abs.csv')
-    phenT_abs.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    expected_phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
+    phenT_tmp = phenT.create_phenT_tmp(axeT_tmp, dynT_)
+    test_table_filepath = default_results.joinpath('phenT_tmp.csv')
+    phenT_tmp.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(phenT_abs.values, expected_phenT_abs.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(phenT_tmp.values, expected_phenT_tmp.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
 def test_create_phenT_first():
-    phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
+    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
     expected_phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    phenT_first = phenT.create_phenT_first(phenT_abs)
+    phenT_first = phenT.create_phenT_first(phenT_tmp)
     test_table_filepath = default_results.joinpath('phenT_first.csv')
     phenT_first.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
@@ -173,14 +170,27 @@ def test_create_axeT():
 def test_create_dimT_abs():
     axeT_ = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     dimT_tmp = pandas.read_csv(default_expected_results_dir/'dimT_tmp_merged.csv')
-    phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
+    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
     dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
     expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    dimT_ = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_)
+    dimT_ = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_)
     test_table_filepath = default_results.joinpath('dimT_abs.csv')
     dimT_.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
+
+
+@with_setup(reinit_random_state)
+def test_create_phenT_abs():
+    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
+    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT.csv')
+    dimT_abs = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
+    expected_phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
+    phenT_abs = phenT.create_phenT_abs(phenT_tmp, axeT_, dimT_abs)
+    test_table_filepath = default_results.joinpath('phenT_abs.csv')
+    phenT_abs.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(phenT_abs.values, expected_phenT_abs.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)

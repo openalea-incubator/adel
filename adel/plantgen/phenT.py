@@ -29,28 +29,28 @@ import pandas
 from adel.plantgen import params, tools
 
 
-def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
+def create_phenT_tmp(axeT_tmp, dynT_):
     '''
-    Create the :ref:`phenT_abs <phenT_abs>` dataframe.
-
+    Create the *phenT_tmp* dataframe. 
+    Compute all the columns, but the column 'TT_del_phytomer' is temporary and will 
+    be recalculated in create_phenT_abs using dimT_abs. 
+           
     :Parameters:
     
         - `axeT_tmp` (:class:`pandas.DataFrame`) - the :ref:`axeT_tmp <axeT_tmp>` dataframe.
         - `dynT_` (:class:`pandas.DataFrame`) - the :ref:`dynT <dynT>` dataframe.
-        - `decimal_elongated_internode_number` (:class:`float`) - the number of elongated 
-          internodes.
-        
+          
     :Returns:
-        The :ref:`phenT_abs <phenT_abs>` dataframe.
+        The *phenT_tmp* dataframe.
     
     :Returns Type:
         :class:`pandas.DataFrame`
-    
+        
     .. warning:: 
     
         * *dynT_* must be completely filled, i.e. must not contain any 
           NA value.
-    
+
     '''
     if not (dynT_.count().max() == dynT_.count().min() == dynT_.index.size):
         raise tools.InputError("dynT contains NA values")
@@ -70,8 +70,6 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
     
     phenT_abs_grouped = phenT_abs.groupby('id_phen')
     dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
-    
-    Nbr_Fhaut_persistant = round(decimal_elongated_internode_number) + 1
     
     for (id_cohort, N_phytomer_potential, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
         phenT_abs_group = phenT_abs_grouped.get_group(id_phen)
@@ -109,8 +107,39 @@ def create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number):
         
         phenT_abs['TT_del_phytomer'][phenT_abs_group.index] = \
             phenT_abs_group['TT_del_phytomer'] = \
-                _calculate_TT_del_phytomer(a_cohort, N_phytomer_potential, id_cohort, Nbr_Fhaut_persistant, phenT_abs_group['TT_sen_phytomer'])
+                _calculate_TT_del_phytomer(a_cohort, phenT_abs_group['TT_sen_phytomer'])
         
+    return phenT_abs
+
+
+def create_phenT_abs(phenT_tmp, axeT_, dimT_abs):
+    '''
+    Create the :ref:`phenT_abs <phenT_abs>` dataframe.
+    
+    :Parameters:
+    
+        - `phenT_tmp` (:class:`pandas.DataFrame`) - the *phenT_tmp* dataframe.
+        - `axeT_` (:class:`pandas.DataFrame`) - the :ref:`axeT <axeT>` dataframe.
+        - `dimT_abs` (:class:`pandas.DataFrame`) - the :ref:`dimT_abs <dimT_abs>` dataframe.
+        
+    :Returns:
+        The :ref:`phenT_abs <phenT_abs>` dataframe.
+    
+    :Returns Type:
+        :class:`pandas.DataFrame`
+    
+    '''
+    phenT_abs = phenT_tmp.copy()
+    axeT_grouped = axeT_.groupby('id_phen')
+    dimT_abs_grouped = dimT_abs.groupby('id_dim')
+    for id_phen, phenT_tmp_group in phenT_tmp.groupby('id_phen'):
+        axeT_group = axeT_grouped.get_group(id_phen)
+        id_dim = axeT_group['id_dim'].max()
+        dimT_abs_group = dimT_abs_grouped.get_group(id_dim)
+        non_zero_L_internode_group = dimT_abs_group[dimT_abs_group['L_internode'] != 0]
+        min_index_phytomer = non_zero_L_internode_group['index_phytomer'].min()
+        indexes_to_ceil = phenT_tmp_group[phenT_tmp_group['index_phytomer'] >= min_index_phytomer].index
+        phenT_abs['TT_del_phytomer'][indexes_to_ceil] = params.TT_DEL_FHAUT
     return phenT_abs
 
 
@@ -210,11 +239,8 @@ def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_col_0, TT_col_br
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
 
-def _calculate_TT_del_phytomer(a_cohort, N_phytomer_potential, id_cohort, Nbr_Fhaut_persistant, TT_sen_phytomer_series):
-    TT_del_Fhaut_index_phytomer = N_phytomer_potential - Nbr_Fhaut_persistant + id_cohort
-    TT_del_phytomer_series = pandas.Series(index=TT_sen_phytomer_series.index)
-    TT_del_phytomer_series[:TT_del_Fhaut_index_phytomer] = TT_sen_phytomer_series[:TT_del_Fhaut_index_phytomer] + params.DELAIS_PHYLL_SEN_DISP / a_cohort
-    TT_del_phytomer_series[TT_del_Fhaut_index_phytomer:] = params.TT_DEL_FHAUT
+def _calculate_TT_del_phytomer(a_cohort, TT_sen_phytomer_series):
+    TT_del_phytomer_series = TT_sen_phytomer_series + params.DELAIS_PHYLL_SEN_DISP / a_cohort
     return TT_del_phytomer_series
 
     

@@ -511,12 +511,10 @@ def _gen_adel_input_data_second(axeT_tmp,
     decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp) 
     # create dynT
     dynT_ = dynT.create_dynT(dynT_tmp, GL_number, decimal_elongated_internode_number)
-    # create phenT_abs
-    phenT_abs = phenT.create_phenT_abs(axeT_tmp, dynT_, decimal_elongated_internode_number)
+    # create phenT_tmp
+    phenT_tmp = phenT.create_phenT_tmp(axeT_tmp, dynT_)
     # create phenT_first
-    phenT_first = phenT.create_phenT_first(phenT_abs)
-    # create phenT
-    phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
+    phenT_first = phenT.create_phenT_first(phenT_tmp)
     # calculate TT_flag_leaf_ligulation
     TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer_potential'][dynT_.first_valid_index()]
     # create axeT
@@ -531,9 +529,13 @@ def _gen_adel_input_data_second(axeT_tmp,
     TT_start = phenT_first['TT_app_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
     # create dimT_abs
-    dimT_abs = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_)
+    dimT_abs = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_)
     # create dimT
     dimT_ = dimT.create_dimT(dimT_abs)
+    # create phenT_abs
+    phenT_abs = phenT.create_phenT_abs(phenT_tmp, axeT_, dimT_abs)
+    # create phenT
+    phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
     # create HS_GL_SSI_T 
     HS_GL_SSI_T = phenT.create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_)
     

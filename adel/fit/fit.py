@@ -1,4 +1,7 @@
-from alinea.adel import fitting
+try:
+    from alinea.adel import fitting
+except:
+    from adel import fitting
 from copy import deepcopy
 
 def fit(x, y, s, r, nb_points):

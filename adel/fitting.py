@@ -339,6 +339,12 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
         l.extend(values)
         return unique(l) 
 
+    def _surf(ind,pts):
+        from openalea.plantgl.all import norm,cross,Vector3
+        A,B,C = [Vector3(pts[i]) for i in ind]
+        return norm(cross(B-A, C-A)) / 2.0
+
+    
     s_base = min(s_base, s_top, 1.)
     s_top = max(s_base, s_top, 0.)
 
@@ -403,7 +409,8 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
         return [], []
 
     pts, ind = leaf_to_mesh(xf, yf, rf)
-
+    
+    ind = [id for id in ind if _surf(id,pts) > 1e-6]
     return pts, ind
 
 

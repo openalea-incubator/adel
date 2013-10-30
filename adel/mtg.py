@@ -876,7 +876,10 @@ def mtg_factory(params, sectors = 1):
 
         #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
         plant = int(dp['plant'][i])
-        axe = int(dp['axe'][i])
+        try:
+            axe = int(dp['axe'][i])
+        except:
+            axe = int(dp['ms_insertion'][i])
         num_metamer = int(dp['numphy'][i])
 
         #plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
@@ -1052,13 +1055,15 @@ def compute_element(n, symbols):
         diameter_top = n.diam
         element = stem( optical_species, length, diameter_base, diameter_top)
 
-    can_label =  element['label']
+    can_label =  element.get('label')
     if can_label:
         can_label.elt_id = leaf_rank
         plant_node = n.complex_at_scale(scale=1)
         can_label.plant_id = plant_node.index()
-
-    return element['geometry'], can_label
+        
+    geom = element.get('geometry')
+    
+    return geom, can_label
 
 def transform(turtle, mesh):
         x = turtle.getUp()
@@ -1184,13 +1189,15 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             diameter_top = n.diam
             element = stem( optical_species, length, diameter_base, diameter_top)
 
-        can_label =  element['label']
+        can_label =  element.get('label')
         if can_label:
             can_label.elt_id = leaf_rank
             plant_node = n.complex_at_scale(scale=1)
             can_label.plant_id = plant_node.index()
-
-        return element['geometry'], can_label
+            
+        geom = element.get('geometry')
+        
+        return geom, can_label
 
     def adel_visitor(g, v, turtle, time):
         # 1. retriev the node

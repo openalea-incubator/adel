@@ -60,8 +60,9 @@ class LeafElement(Symbol):
         opt = optical(tissue_type)
         res = {}
 
-        
-        res['geometry'] = self._mesh(leaf_rank, seed, final_length, length, s_base, s_top, radius_max, *args)
+        geom = self._mesh(leaf_rank, seed, final_length, length, s_base, s_top, radius_max, *args)
+        if geom is not None:
+            res['geometry'] = geom
         #res['geometry'] = self._mesh(leaf_rank, seed, final_length, final_length, s_base, s_top, radius_max)
         res['label'] = self._can_label(leaf_rank, opt)
         res['tissue_type'] = tissue_type
@@ -127,7 +128,11 @@ class LeafElement(Symbol):
 
         return mesh
 
-
+def _surf(ind,pts):
+    A,B,C = [pts[i] for i in ind]
+    return pgl.norm(pgl.cross(B-A, C-A)) / 2.0
+        
+        
 class StemElement(Symbol):
     def __init__(self, database, seed=None):
         #self.database = database
@@ -139,7 +144,12 @@ class StemElement(Symbol):
         leaf_rank = 0
         opt = optical(tissue_type)
         res = {}
-        res['geometry'] = self._mesh(length, diameter_base, diameter_top)
+        mesh = self._mesh(length, diameter_base, diameter_top)
+        #itri = range(mesh.indexListSize())
+        #pts = mesh.pointList
+        #S = sum([_surf(mesh.indexAt(i),pts) for i in itri])
+        if length > 1e-6 :
+            res['geometry'] = mesh 
         res['label'] = self._can_label(leaf_rank, opt)
         res['tissue_type'] = tissue_type
         return res

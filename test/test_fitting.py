@@ -1,7 +1,7 @@
 import alinea.adel.fitting as fitting
 import alinea.adel.mtg as CanMTG
 from alinea.adel.symbol import build_symbols
-from numpy import compress, unique1d, union1d, interp
+from numpy import compress, unique, union1d, interp
 import random
 
 
@@ -14,7 +14,7 @@ def leaves_db():
     leaves = Pickle.load(f)
     f.close()
     leaves = fitting.fit_leaves(leaves, 9)
-    return leaves
+    return leaves[0]
 
 db = leaves_db()
 functions = build_symbols(leaves_db())
@@ -47,7 +47,7 @@ pts, ind = fitting.mesh4(leaf, total_length, length, s_base, s_top, radius_max)
 def insert_values(a, values):
     l= a.tolist()
     l.extend(values)
-    return unique1d(l)
+    return unique(l)
     
 
 length_max = total_length

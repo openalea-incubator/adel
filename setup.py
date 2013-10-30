@@ -21,9 +21,13 @@ else:
     install_requires = ['pandas', 'rpy2']
     setup_requires = []
     
-pkg_name = 'alinea.adel'
-src_rep = 'adel'
-packages =[pkg_name]#+['%s.%s'%(pkg_name,x) for x in find_packages(src_rep)]
+#retrieving packages
+pkg_root_dir = '.'
+pkgs = [ pkg for pkg in find_packages(pkg_root_dir) if namespace not in pkg]
+top_pkgs = [pkg for pkg in pkgs if  len(pkg.split('.')) < 2]
+packages = [ namespace + "." + pkg for pkg in pkgs]
+package_dir = dict( [('',pkg_root_dir)] + [(namespace + "." + pkg, pkg_root_dir + "/" + pkg) for pkg in top_pkgs] )
+wralea_entry_points = ['%s = %s'%(pkg,namespace + '.' + pkg) for pkg in top_pkgs]
 
 # Main setup
 setup(
@@ -43,7 +47,7 @@ setup(
     # pure python  packages
     packages= packages,
     # python packages directory
-    package_dir= {pkg_name : src_rep},
+    package_dir= package_dir,
 
                    
     # Add package platform libraries if any

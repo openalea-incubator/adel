@@ -20,12 +20,8 @@ __all__ = []
 
 
 astk_AdelWheat = Factory(name='AdelWheat',
-                authors='Chrsitain Fournier',
-                description='Instantiate a astl compliant adel model for wheat',
                 nodemodule='alinea.adel.astk_interface',
-                nodeclass='AdelWheat',
-                widgetmodule=None,
-                widgetclass=None,
+                nodeclass='adelwheat_node',
                )
 __all__.append('astk_AdelWheat')
 

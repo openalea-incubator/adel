@@ -53,7 +53,7 @@ class AdelWheat(object):
     
         try: #old interface
             if time_control.dt <= 0:
-                pass
+                dday=0.
             else:
                 dday = time_control.Tair.mean()
         except:
@@ -81,6 +81,7 @@ def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_d
         
 #user friendly macros
 from alinea.adel.stand.stand import agronomicplot
+from alinea.astk.plant_interface import *
 
 def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150, 
                      plant_density=150, inter_row=0.12, seed = None, sample='random'):

@@ -76,15 +76,17 @@ def testdyn(nplants=1,start = 100,step = 50, nstep=30,dec=10,az=0):
     g=mtg_interpreter(g)
     
     time = start
+    oldcanopy = RunAdel(time,pars)
+    
     for i in range(nstep):
         s = plot3d(g)
         Viewer.display(s)
         #sleep(2)
         time = start + (i + 1) * step
         canopy = RunAdel(time,pars)
-        mtg_update_from_table(g, canopy)
+        mtg_update_from_table(g, canopy, oldcanopy)
         g=mtg_interpreter(g)
-       
+        oldcanopy = canopy
     return g,d
     
  # TO DO : senescence leaf shrink

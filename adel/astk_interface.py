@@ -60,10 +60,11 @@ class AdelWheat(object):
             data = time_control
             tt = self.thermal_time(data.index, data)
             dday = tt.sum()
-            
+           
+        old_canopy = RunAdel(self.canopy_age, self.pars)
         self.canopy_age += dday
         canopy = RunAdel(self.canopy_age, self.pars)
-        mtg_update_from_table(g, canopy)
+        mtg_update_from_table(g, canopy, old_canopy)
         g = mtg_interpreter(g)
             
         return g

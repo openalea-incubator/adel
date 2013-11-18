@@ -187,6 +187,7 @@ def adel_visitor(g, v, turtle):
         inclin = float(n.inclination) if n.inclination else 0.
         azim = float(n.azimuth) if n.azimuth else 0.
         if inclin:
+            #print 'node', n._vid, 'inclin', inclin
             # incline along curent azimuth for ramification (tiller bases) or plant base
             if (axis != prev_axis and metamer.edge_type() == '+') or n.parent() is None:
                 #print 'axis',axis, 'prev_axis', prev_axis,' node ', n._vid, 'edge', n.edge_type(),'up before inclin ', turtle.getUp(), 'inclin', inclin

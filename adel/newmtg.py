@@ -454,15 +454,20 @@ def update_organ(organ,h_whorl=0):
     organ.dl = organ.length - length
     organ.dl_visible = organ.visible_length - vlength
 
-def update_organ_from_table(organ,metamer):
+def update_organ_from_table(organ,metamer, oldmetamer):
     neworg = metamer[organ.label]
+    oldorg = oldmetamer[organ.label]
     new_elts = neworg.pop('elements')
+    old_elts = oldorg.pop('elements')
     for k in neworg:
         if k is not 'shape_xysr':
             exec "organ.%s = neworg['%s']"%(k,k)
     for i,e in enumerate(organ.components()):
         for k in new_elts[i]:
-            exec "e.%s = new_elts[i]['%s']"%(k,k)
+            if k in ['area', 'green_area']:
+                exec "e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])"%(k,k,k)
+            else:
+                exec "e.%s = new_elts[i]['%s']"%(k,k)
 
     
 
@@ -492,25 +497,30 @@ def mtg_update_at_time(g, time):
                         hw[o.complex().index()] = o.length
 
 
-def mtg_update_from_table(g, cantable): 
+def mtg_update_from_table(g, cantable, old_cantable): 
     """ Compute plant state at a given time according to dynamical parameters found in mtg
     """ 
 
     df = pd.DataFrame(cantable)
+    old_df = pd.DataFrame(old_cantable)
     for pid in g.component_roots_at_scale_iter(g.root, scale=1):
         p = g.node(pid)
         for ax in p.components_at_scale(2):
             for m in ax.components_at_scale(3):
-                dm = df[(df['plant'] == int(p.index())) & (df['axe_id'] == ax.label) & (df['numphy'] == int(m.index()))]
+                dm = df[(df['plant'] == int(list(p.label)[-1])) & (df['axe_id'] == ax.label) & (df['numphy'] == int(list(m.label)[-1]))]
+                old_dm = old_df[(old_df['plant'] == int(list(p.label)[-1])) & (old_df['axe_id'] == ax.label) & (old_df['numphy'] == int(list(m.label)[-1]))]
                 # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict([(k,v[0]) for k,v in dm.to_dict('list').iteritems()])
+                    old_dmd = dict([(k,v[0]) for k,v in old_dm.to_dict('list').iteritems()])
                     blade = m.components_at_scale(4)[2]
                     dmd['xysr_shape'] = blade.shape_xysr
                     met = adel_metamer(**dmd)
                     newmetamer = dict([(mm['label'],mm) for mm in met])
+                    old_met = adel_metamer(**old_dmd)
+                    oldmetamer = dict([(mm['label'],mm) for mm in old_met])
                     for o in m.components_at_scale(4):
-                        update_organ_from_table(o,newmetamer)
+                        update_organ_from_table(o,newmetamer,oldmetamer)
 
 # to do
 

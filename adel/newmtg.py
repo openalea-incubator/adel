@@ -507,8 +507,10 @@ def mtg_update_from_table(g, cantable, old_cantable):
         p = g.node(pid)
         for ax in p.components_at_scale(2):
             for m in ax.components_at_scale(3):
-                dm = df[(df['plant'] == int(list(p.label)[-1])) & (df['axe_id'] == ax.label) & (df['numphy'] == int(list(m.label)[-1]))]
-                old_dm = old_df[(old_df['plant'] == int(list(p.label)[-1])) & (old_df['axe_id'] == ax.label) & (old_df['numphy'] == int(list(m.label)[-1]))]
+                nump = int(''.join(list(p.label)[5:]))
+                numphy = int(''.join(list(m.label)[7:]))
+                dm = df[(df['plant'] == nump) & (df['axe_id'] == ax.label) & (df['numphy'] == numphy)]
+                old_dm = old_df[(old_df['plant'] == nump) & (old_df['axe_id'] == ax.label) & (old_df['numphy'] == numphy)]
                 # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict([(k,v[0]) for k,v in dm.to_dict('list').iteritems()])

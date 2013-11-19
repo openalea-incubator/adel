@@ -517,6 +517,7 @@ def mtg_update_from_table(g, cantable, old_cantable):
                     old_dmd = dict([(k,v[0]) for k,v in old_dm.to_dict('list').iteritems()])
                     blade = m.components_at_scale(4)[2]
                     dmd['xysr_shape'] = blade.shape_xysr
+                    old_dmd['xysr_shape'] = blade.shape_xysr
                     met = adel_metamer(**dmd)
                     newmetamer = dict([(mm['label'],mm) for mm in met])
                     old_met = adel_metamer(**old_dmd)

@@ -159,9 +159,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                     srt_sen = float(st_sen - s_limvis) / lflat
                     #print(srb_green,srt_green,srb_sen,srt_sen)
                     if ls_green > 0:
-                        S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_green, srt_green)
+                        S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
                     if ls_sen > 0:
-                        S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, srb_sen, srt_sen)
+                        S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
                     # attention a garder une position constante quand on utlise une feuille stresse
                     position_senescence = 1 - float(ls_sen) / Lshape
         except TypeError:# input is None

@@ -120,7 +120,7 @@ def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,
         tuple of coordinates defining the domain
 
     """
-    nplants, positions, domain, domain_area = agronomicplot(length=length, 
+    nplants, positions, domain, domain_area, convUnit = agronomicplot(length=length, 
                                                             width=width, 
                                                             sowing_density=sowing_density, 
                                                             plant_density=plant_density,

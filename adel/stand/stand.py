@@ -14,7 +14,7 @@ def regular(nb_plants, nb_rank, dx, dy):
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
 
 def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,center_scene = True):
-    """ Returns the number of plants, the positions, the domain and the domain area of a micro-plot specified with agronomical variables
+    """ Returns the number of plants, the positions, the domain (scene units), the domain area (square meter) and the conversion coefficient for meter to scene unit (1/convunit) of a micro-plot specified with agronomical variables
     length (m) is plot dimension along row direction
     width (m) is plot dimension perpendicular to row direction
     sowing density is the density of seeds sawn
@@ -47,7 +47,7 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
         positions = [(x - xc, y - yc, z) for x,y,z in positions]
         domain = ((domain[0][0] - xc,domain[0][1] - yc),(domain[1][0] - xc,domain[1][1] - yc))
     
-    return n_emerged, positions, domain, domain_area
+    return n_emerged, positions, domain, domain_area, 1. / convunit
 
 def agronomicplotwithdistributions(length, width, sowing_density, plant_density, inter_row, mu=0.0, kappa=3.0, noise = 0,convunit=100):
     """

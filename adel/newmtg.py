@@ -171,7 +171,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'area': S_sen, 'is_green': False, 
                 'srb': srb_sen, 'srt': srt_sen}
-        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_area' : S_green, 'is_green': (ls_green > ls_sen), 
+        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_area' : S_green, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
                 'srb': srb_green, 'srt': srt_sen, 'position_senescence':position_senescence} 
         if split: 
             elements.extend([green_elt,sen_elt])
@@ -464,7 +464,7 @@ def update_organ_from_table(organ,metamer, oldmetamer):
             exec "organ.%s = neworg['%s']"%(k,k)
     for i,e in enumerate(organ.components()):
         for k in new_elts[i]:
-            if k in ['area', 'green_area']:
+            if k in ['area', 'green_area', 'senesced_area']:
                 exec "e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])"%(k,k,k)
             else:
                 exec "e.%s = new_elts[i]['%s']"%(k,k)

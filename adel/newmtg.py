@@ -463,11 +463,18 @@ def update_organ_from_table(organ,metamer, oldmetamer):
         if k is not 'shape_xysr':
             exec "organ.%s = neworg['%s']"%(k,k)
     for i,e in enumerate(organ.components()):
+        has_area = False
         for k in new_elts[i]:
             if k in ['area', 'green_area', 'senesced_area']:
                 exec "e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])"%(k,k,k)
+                has_area = True
             else:
                 exec "e.%s = new_elts[i]['%s']"%(k,k)
+        #control senescence (in case of acceleration by an other process)
+        if has_area:
+            if (e.green_area + e.senesced_area) > e.area:
+                e.green_area = 0
+                e.senesced_area = e.area
 
     
 

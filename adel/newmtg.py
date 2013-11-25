@@ -128,7 +128,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
     hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'is_green': True}
     elements = [hidden_elt]
     ds = 0
-    if Lshape:
+    if Lshape is not None:
         ds = float(Lshape) / sectors
     st = ds    
     for isect in range(sectors):
@@ -524,7 +524,9 @@ def mtg_update_from_table(g, cantable, old_cantable):
                     old_dmd = dict([(k,v[0]) for k,v in old_dm.to_dict('list').iteritems()])
                     blade = m.components_at_scale(4)[2]
                     dmd['xysr_shape'] = blade.shape_xysr
+                    dmd['Lsect'] = blade.n_sect
                     old_dmd['xysr_shape'] = blade.shape_xysr
+                    old_dmd['Lsect'] = blade.n_sect
                     met = adel_metamer(**dmd)
                     newmetamer = dict([(mm['label'],mm) for mm in met])
                     old_met = adel_metamer(**old_dmd)

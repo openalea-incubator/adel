@@ -553,20 +553,27 @@ def mtg_update(newg, g, refg):
         newg.property(prop).update(newprop)
     growing = set(g.property('area')) & set(newg.property('area')) & set(refg.property('area'))
     for vid in growing:
+    
         dlength = max([0,newg.property('length')[vid] - refg.property('length')[vid]])
         darea = 0
         if dlength > 0:#avoid changing area when length is stabilised
             darea = max([0,newg.property('area')[vid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
-        dlength = max([0,newg.property('senesced_length')[vid] - refg.property('senesced_length')[vid]])
-        dsen = 0
-        if dlength > 0:
-            dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
-        newarea = g.property('area')[vid] + darea
-        newgreen = g.property('green_area')[vid] + (darea - dsen)
-        newsen = g.property('senesced_area')[vid] + dsen
-        if (newgreen + newsen) > newarea: # may append if senescence has been accelerated by an other process
-            newgreen=0
+        newarea = g.property('area')[vid] + darea    
+            
+        # correction if last area estimation of area_sen is different from the one of area
+        if newg.property('senesced_length')[vid] >= newg.property('length')[vid] :
             newsen = newarea
+            newgreen = 0
+        else:
+            dlength = max([0,newg.property('senesced_length')[vid] - refg.property('senesced_length')[vid]])
+            dsen = 0
+            if dlength > 0:
+                dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
+            
+            newsen = min([newarea, g.property('senesced_area')[vid] + dsen])
+            newgreen = max([0, min([newarea - newsen, g.property('green_area')[vid] + (darea - dsen) ]) ])
+        
+
     
         newg.property('area')[vid] = newarea
         newg.property('green_area')[vid] = newgreen

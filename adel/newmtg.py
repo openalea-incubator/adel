@@ -83,6 +83,9 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
     #try:
     #raise Exception("")
     S=0
+    sr_base = min([1,max([0,sr_base])])
+    sr_top = min([1,max([sr_base,sr_top])])
+    
     if leaf is not None:
         x,y,s,r = leaf
         sre = [sr for sr in zip(s,r) if (sr[0] > sr_base) & (sr[0] < sr_top)]
@@ -171,7 +174,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                 'srb': srb_green, 'srt': srt_green}
         sen_elt = {'label': 'LeafElement', 'length': ls_sen,'area': S_sen, 'is_green': False, 
                 'srb': srb_sen, 'srt': srt_sen}
-        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_area' : S_green, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
+        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
                 'srb': srb_green, 'srt': srt_sen, 'position_senescence':position_senescence} 
         if split: 
             elements.extend([green_elt,sen_elt])
@@ -180,7 +183,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
         st += ds
     return elements
     
-def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, **kwargs):
+def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, ntop = None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
        - Ll : length of the blade
@@ -205,6 +208,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
        - Einc : relative inclination of the internode
  
     """
+    
        #to do add diameter and Lrolled to blade
     Eaz = Laz
     Gaz = 0
@@ -226,6 +230,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'inclination' : Ginc,
         'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc)}, 
         {'label': 'blade',
+         'ntop': ntop,
         'length': Ll,
         'rolled_length': Lr,
         'diameter': Gd,
@@ -322,7 +327,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             
         # Add axis
         if axe != prev_axe:
-            label = axe
+            label = ''.join(axe.split('.'))
             timetable = None
             if axis_dynamics:
                 timetable = axis_dynamics[str(plant)][str(axe)]
@@ -357,6 +362,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                 if args['Gl'] > 0:
                     endBlade = args['Ll'] / args['Gl'] * (endleaf - startleaf)
                 elongation = {'startleaf' : startleaf , 'endBlade':endBlade, 'endleaf': endleaf, 'endE': endE}
+            if not 'ntop' in args:
+                args.update({'ntop':None})
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
             args={}
         #
@@ -546,8 +553,14 @@ def mtg_update(newg, g, refg):
         newg.property(prop).update(newprop)
     growing = set(g.property('area')) & set(newg.property('area')) & set(refg.property('area'))
     for vid in growing:
-        darea = max([0,newg.property('area')[vid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
-        dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
+        dlength = max([0,newg.property('length')[vid] - refg.property('length')[vid]])
+        darea = 0
+        if dlength > 0:#avoid changing area when length is stabilised
+            darea = max([0,newg.property('area')[vid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
+        dlength = max([0,newg.property('senesced_length')[vid] - refg.property('senesced_length')[vid]])
+        dsen = 0
+        if dlength > 0:
+            dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
         newarea = g.property('area')[vid] + darea
         newgreen = g.property('green_area')[vid] + (darea - dsen)
         newsen = g.property('senesced_area')[vid] + dsen

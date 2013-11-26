@@ -534,6 +534,33 @@ def mtg_update_from_table(g, cantable, old_cantable):
                     for o in m.components_at_scale(4):
                         update_organ_from_table(o,newmetamer,oldmetamer)
 
+def mtg_update(newg, g, refg):
+    """ update newg with specific properties found in g only and update by increment compared to refg area-like properties
+    """
+    specific = set(g.property_names()) - set(newg.property_names())
+    newvid = set([v for v in g])
+    for prop in specific:
+        newg.add_property(prop)
+        keys = newvid & set(g.property(prop))
+        newprop = {k:g.property(prop)[k] for k in keys}
+        newg.property(prop).update(newprop)
+    growing = set(g.property('area')) & set(newg.property('area')) & set(refg.property('area'))
+    for vid in growing:
+        darea = max([0,newg.property('area')[vid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
+        dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
+        newarea = g.property('area')[vid] + darea
+        newgreen = g.property('green_area')[vid] + (darea - dsen)
+        newsen = g.property('senesced_area')[vid] + dsen
+        if (newgreen + newsen) > newarea: # may append if senescence has been accelerated by an other process
+            newgreen=0
+            newsen = newarea
+    
+        newg.property('area')[vid] = newarea
+        newg.property('green_area')[vid] = newgreen
+        newg.property('senesced_area')[vid] = newsen
+        
+    return newg
+    
 # to do
 
 # varaibles sur element : area, senesced_area, senescenece_position (0,1 sur la feuille)

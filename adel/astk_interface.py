@@ -60,20 +60,32 @@ class AdelWheat(object):
             data = time_control
             tt = self.thermal_time(data.index, data)
             dday = tt[-1]
-           
-        old_canopy = RunAdel(self.canopy_age, self.pars)
-        self.canopy_age += dday
-        canopy = RunAdel(self.canopy_age, self.pars)
-        mtg_update_from_table(g, canopy, old_canopy)
-        g = mtg_interpreter(g)
-            
-        return g
         
+        refg = self.setup_canopy(age = self.canopy_age)
+        self.canopy_age += dday
+        newg = self.setup_canopy(age = self.canopy_age)
+        canopy = RunAdel(self.canopy_age, self.pars)
+        newg = mtg_update(newg, g, refg)
+            
+        return newg
+   
+    def grow_dd(self, g, dday):
+        refg = self.setup_canopy(age = self.canopy_age)
+        self.canopy_age += dday
+        newg = self.setup_canopy(age = self.canopy_age)
+        canopy = RunAdel(self.canopy_age, self.pars)
+        newg = mtg_update(newg, g, refg)
+
+        return newg
+   
     def plot(self, g):
         from openalea.plantgl.all import Viewer
         s = plot3d(g)
         Viewer.display(s)
         return s
+        
+    def scene(self, g):
+        return plot3d(g)
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
     model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)

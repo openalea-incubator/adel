@@ -57,8 +57,8 @@ def internode_elements(l,lvis, lsen, az, inc, split = False):
     except TypeError:
         pass
     if split :
-        green_elt = {'label': 'StemElement', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
-        sen_elt = {'label': 'StemElement', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
+        green_elt = {'label': 'StemElementg', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
+        sen_elt = {'label': 'StemElements', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
         return [green_elt, sen_elt]
     else : 
         elt = {'label': 'StemElement', 'offset': lhide, 'length': lvis, 'l_sen' : lsen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
@@ -170,11 +170,11 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
         except TypeError:# input is None
         #    print "passing"
             pass
-        green_elt = {'label': 'LeafElement', 'length': ls_green, 'area': S_green, 'is_green': True,
+        green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g', 'length': ls_green, 'area': S_green, 'is_green': True,
                 'srb': srb_green, 'srt': srt_green}
-        sen_elt = {'label': 'LeafElement', 'length': ls_sen,'area': S_sen, 'is_green': False, 
+        sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's', 'length': ls_sen,'area': S_sen, 'is_green': False, 
                 'srb': srb_sen, 'srt': srt_sen}
-        elt = {'label': 'LeafElement', 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
+        elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
                 'srb': srb_green, 'srt': srt_sen, 'position_senescence':position_senescence} 
         if split: 
             elements.extend([green_elt,sen_elt])
@@ -541,43 +541,71 @@ def mtg_update_from_table(g, cantable, old_cantable):
                     for o in m.components_at_scale(4):
                         update_organ_from_table(o,newmetamer,oldmetamer)
 
+def adel_label(g,vid):
+    label='undef'
+    n = g.node(vid)
+    if n.scale() == 5:
+        label= '_'.join([n.complex().complex().complex().complex().label,
+                         n.complex().complex().complex().label,
+                         n.complex().complex().label,
+                         n.complex().label,
+                         n.label
+                         ])
+    return label
+                        
+def adel_labels(g, scale = 5):
+    """ return a dict vid:adel_ids
+    """
+    return {vid:adel_label(g,vid) for vid in g.vertices_iter(scale=scale)}
+    
+def adel_ids(g, scale = 5):
+    """ return a dict vid:adel_ids
+    """
+    return {adel_label(g,vid):vid for vid in g.vertices_iter(scale=scale)}
+                        
 def mtg_update(newg, g, refg):
     """ update newg with specific properties found in g only and update by increment compared to refg area-like properties
     """
     specific = set(g.property_names()) - set(newg.property_names())
-    newvid = set([v for v in g])
+    ids = adel_ids(g, scale=5)
+    newids = adel_ids(newg, scale=5)
+    common_labs = set(ids) & set(newids)
+    
     for prop in specific:
         newg.add_property(prop)
-        keys = newvid & set(g.property(prop))
-        newprop = {k:g.property(prop)[k] for k in keys}
+        newprop = {newids[lab]:g.property(prop)[ids[lab]] for lab in common_labs if ids[lab] in g.property(prop)}
         newg.property(prop).update(newprop)
-    growing = set(g.property('area')) & set(newg.property('area')) & set(refg.property('area'))
-    for vid in growing:
+        
+    for lab in common_labs:
     
-        dlength = max([0,newg.property('length')[vid] - refg.property('length')[vid]])
-        darea = 0
-        if dlength > 0:#avoid changing area when length is stabilised
-            darea = max([0,newg.property('area')[vid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
-        newarea = g.property('area')[vid] + darea    
+        vid = ids[lab]
+        newvid = newids[lab]
+        if vid in g.property('area') and newvid in newg.property('area') and vid in refg.property('area'):
             
-        # correction if last area estimation of area_sen is different from the one of area
-        if newg.property('senesced_length')[vid] >= newg.property('length')[vid] :
-            newsen = newarea
-            newgreen = 0
-        else:
-            dlength = max([0,newg.property('senesced_length')[vid] - refg.property('senesced_length')[vid]])
-            dsen = 0
-            if dlength > 0:
-                dsen = max([0, newg.property('senesced_area')[vid] - refg.property('senesced_area')[vid]])
-            
-            newsen = min([newarea, g.property('senesced_area')[vid] + dsen])
-            newgreen = max([0, min([newarea - newsen, g.property('green_area')[vid] + (darea - dsen) ]) ])
+            dlength = max([0,newg.property('length')[newvid] - refg.property('length')[vid]])
+            darea = 0
+            if dlength > 0:#avoid changing area when length is stabilised
+                darea = max([0,newg.property('area')[newvid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
+            newarea = g.property('area')[vid] + darea    
+                
+            # correction if last area estimation of area_sen is different from the one of area
+            if newg.property('senesced_length')[newvid] >= newg.property('length')[newvid] :
+                newsen = newarea
+                newgreen = 0
+            else:
+                dlength = max([0,newg.property('senesced_length')[newvid] - refg.property('senesced_length')[vid]])
+                dsen = 0
+                if dlength > 0:
+                    dsen = max([0, newg.property('senesced_area')[newvid] - refg.property('senesced_area')[vid]])
+                
+                newsen = min([newarea, g.property('senesced_area')[vid] + dsen])
+                newgreen = max([0, min([newarea - newsen, g.property('green_area')[vid] + (darea - dsen) ]) ])
         
 
     
-        newg.property('area')[vid] = newarea
-        newg.property('green_area')[vid] = newgreen
-        newg.property('senesced_area')[vid] = newsen
+            newg.property('area')[newvid] = newarea
+            newg.property('green_area')[newvid] = newgreen
+            newg.property('senesced_area')[newvid] = newsen
         
     return newg
     

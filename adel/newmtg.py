@@ -575,6 +575,7 @@ def mtg_update(newg, g, refg):
         newg.add_property(prop)
         newprop = {newids[lab]:g.property(prop)[ids[lab]] for lab in common_labs if ids[lab] in g.property(prop)}
         newg.property(prop).update(newprop)
+        g.remove_property(prop)#helps beeing compatible with ctypes objects
         
     for lab in common_labs:
     

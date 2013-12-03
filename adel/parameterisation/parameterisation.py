@@ -2,7 +2,7 @@ from alinea.adel import AdelR
 from alinea.adel.AdelR import setAdel,setAdelArv,devCsv,genGeoAxe,genGeoLeaf,freeGeoLeaf, plantSample, checkAxeDyn
 from alinea.adel.fitting import fit2
 
-import numpy as np
+import numpy
 from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
@@ -16,7 +16,7 @@ def dataframe(d):
         return robjects.r('as.null()')
     else:
         for k, v in d.iteritems():
-            df[k] = numpy2ri(np.array(v))
+            df[k] = numpy2ri(numpy.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
 
@@ -26,11 +26,11 @@ def simpleMais(simpleMais_parameter):
 
     d = simpleMais_parameter
     nrow = len(d['plante'])
-    zero = np.zeros(nrow)
+    zero = numpy.zeros(nrow)
     
     if ('longEn' not in d) or ('longGa' not in d):
         d.update({'longEn':zero})
-        d.update({'longGa':(np.array(d['longTige'])).cumsum()})
+        d.update({'longGa':(numpy.array(d['longTige'])).cumsum()})
         
     canT = {'plant' : d['plante'],
             'axe' : zero,
@@ -70,11 +70,11 @@ def simpleMais2dict(simpleMais_parameter):
 
     d = simpleMais_parameter
     nrow = len(d['plante'])
-    zero = np.zeros(nrow)
+    zero = numpy.zeros(nrow)
     
     if ('longEn' not in d) or ('longGa' not in d):
         d.update({'longEn':zero})
-        d.update({'longGa':(np.array(d['longTige'])).cumsum()})
+        d.update({'longGa':(numpy.array(d['longTige'])).cumsum()})
         
     canT = {'plant' : d['plante'],
             'axe' : zero,
@@ -111,9 +111,9 @@ def simpleMais2dict(simpleMais_parameter):
 def bell_shaped_dist(total_area=1, nb_phy=15, rmax=.7, skewness=5):
     """ returns leaf area of individual leaves along bell shaped model """
 
-    r = np.linspace(1./nb_phy, 1, nb_phy)
+    r = numpy.linspace(1./nb_phy, 1, nb_phy)
     k = skewness
-    relative_surface = np.exp(-k / rmax * ( 2 * (r - rmax)**2 + (r - rmax)**3))
+    relative_surface = numpy.exp(-k / rmax * ( 2 * (r - rmax)**2 + (r - rmax)**3))
     leaf_area = relative_surface / relative_surface.sum() * total_area
     return leaf_area.tolist()
 
@@ -135,7 +135,7 @@ def shape_factor(leaf_database,nb_phy):
         return rank
 
     ranks = [choose_rank(n) for n in range(1,nb_phy+1)]
-    norm_surface = np.array([fit2(*db[str(rank)][0])[1] for rank in ranks])
+    norm_surface = numpy.array([fit2(*db[str(rank)][0])[1] for rank in ranks])
 
     return norm_surface
     
@@ -171,9 +171,9 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
     nb_young_phy = int(nb_young_phy)
 
     # compute the leaf surface
-    leaf_area = np.array(bell_shaped_dist(total_area, nb_phy, lad_rmax, lad_skew))
+    leaf_area = numpy.array(bell_shaped_dist(total_area, nb_phy, lad_rmax, lad_skew))
     # derive corresponding length and widths
-    lengths = np.sqrt(leaf_area / np.array(shape_factors) / leaf_width_ratio)
+    lengths = numpy.sqrt(leaf_area / numpy.array(shape_factors) / leaf_width_ratio)
     widths = lengths * leaf_width_ratio
 
     # distances between leaves
@@ -181,16 +181,16 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
     stem = geometric_dist(total_height - pseudostem_height, nb_phy - nb_young_phy,stem_dist)
     distances = pseudostem + stem
     # sheath and internode true length
-    pseudostem_sheath = (np.array(pseudostem)).cumsum()
+    pseudostem_sheath = (numpy.array(pseudostem)).cumsum()
     pseudostem_internode = [0] * nb_young_phy
-    stem_sheath = np.array(stem)
+    stem_sheath = numpy.array(stem)
     stem_internode = [0] + (stem_sheath[1:]).tolist() 
     sheaths = pseudostem_sheath.tolist() + stem_sheath.tolist()
     internodes = pseudostem_internode + stem_internode
     # stem diameters
-    diameters = [diam_base] * nb_young_phy + np.linspace(diam_base, diam_top, nb_phy - nb_young_phy).tolist()
+    diameters = [diam_base] * nb_young_phy + numpy.linspace(diam_base, diam_top, nb_phy - nb_young_phy).tolist()
     # inclinations
-    inclinations = np.linspace(basal_insertion, top_insertion, nb_phy)
+    inclinations = numpy.linspace(basal_insertion, top_insertion, nb_phy)
     # azimuths
     az0 = 0
     azimuths = [az0 + i * phyllotactic_angle for i in range(nb_phy)]
@@ -207,7 +207,7 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
               sheaths,
               internodes
               ]
-    dVals = map(np.array,dVals)
+    dVals = map(numpy.array,dVals)
     dout = dict(zip(dTags,dVals))
 
     return dout
@@ -226,26 +226,26 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
 
     nb_phy = len(axedim['Lamina_length'])
     
-    hfeu = np.array([0] + axedim['Sheath_length']) + np.array([0] + axedim['Internode_length'])
+    hfeu = numpy.array([0] + axedim['Sheath_length']) + numpy.array([0] + axedim['Internode_length'])
 
     
     
     dTags = ["plante","phytomere","longFeu","largFeu","inclinaisonFeu","azimuthFeu","longTige","diamTige"]
     dVals = [ [1] * nb_phy,
 	      range(1, nb_phy + 1),
-	      np.array(axedim['Lamina_length']) * scale_leaf,
-	      np.array(axedim['Lamina_width']) * scale_leaf_width,
+	      numpy.array(axedim['Lamina_length']) * scale_leaf,
+	      numpy.array(axedim['Lamina_width']) * scale_leaf_width,
 	      [inclination] * nb_phy,
 	      [i * 180 for i in range(nb_phy)],
-	      np.diff(hfeu) * scale_stem,
-	      np.array(axedim['Stem_diameter']) * scale_stem_diameter
+	      numpy.diff(hfeu) * scale_stem,
+	      numpy.array(axedim['Stem_diameter']) * scale_stem_diameter
 	      ]
 
-    dVals = map(np.array,dVals)
+    dVals = map(numpy.array,dVals)
     d = dict(zip(dTags,dVals))
 
     nrow = len(d['plante'])
-    zero = np.zeros(nrow)
+    zero = numpy.zeros(nrow)
 
     canT = {'plant' : d['plante'],
             'axe' : zero,
@@ -315,14 +315,14 @@ def plant_parameter(surface,
     nb_phy = int(nb_phy)
     nb_young_phy = int(nb_young_phy)
 
-    relative_phytomer_num = np.linspace(1./nb_phy, 1, nb_phy)
+    relative_phytomer_num = numpy.linspace(1./nb_phy, 1, nb_phy)
 
     # compute the leaf surface
     k = lad_skew
     nm = lad_max
     r = relative_phytomer_num
 
-    relative_surface = np.exp(-k/nm*(2*(r-nm)**2+(r-nm)**3))
+    relative_surface = numpy.exp(-k/nm*(2*(r-nm)**2+(r-nm)**3))
     leaf_area = relative_surface / relative_surface.sum() * surface
 
     # compute normalised surface from database
@@ -341,9 +341,9 @@ def plant_parameter(surface,
         return rank
 
     lindex = ranks = [choose_rank(round(x) * rank_max) for x in relative_phytomer_num]
-    norm_surface= np.array([fit2(*db[str(rank)][0])[1] for rank in ranks])
+    norm_surface= numpy.array([fit2(*db[str(rank)][0])[1] for rank in ranks])
 
-    lengths = np.sqrt(leaf_area/norm_surface/leaf_width_ratio)
+    lengths = numpy.sqrt(leaf_area/norm_surface/leaf_width_ratio)
     widths = lengths * leaf_width_ratio
 
     # internode length
@@ -365,10 +365,10 @@ def plant_parameter(surface,
     else:
         u0 = pseudostem_height * (1-q) / (1-q**(ny+1))
 
-    sheath_length = np.concatenate((np.array([ u0 * q**i for i in range(ny)]).cumsum(), [pseudostem_height] * (nb_phy - ny)))
+    sheath_length = numpy.concatenate((numpy.array([ u0 * q**i for i in range(ny)]).cumsum(), [pseudostem_height] * (nb_phy - ny)))
 
     # internode and sheath diameters
-    diameters = [diam_base] * nb_young_phy + np.linspace(diam_base, diam_top, n).tolist()
+    diameters = [diam_base] * nb_young_phy + numpy.linspace(diam_base, diam_top, n).tolist()
 
     
     #setup of dictionaries to build  setAdel's dataframes
@@ -390,7 +390,7 @@ def plant_parameter(surface,
     axeT = dict(zip(axeTags,axeVals))
 
     #phen table
-    tip = np.array([-phyl, phyl * nb_phy])
+    tip = numpy.array([-phyl, phyl * nb_phy])
     phenTags = ["index","nrel","tip","col","ssi","disp"]
     phenVals = [[1] * 2,
                 [0,1],

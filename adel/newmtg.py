@@ -10,8 +10,8 @@ from alinea.adel.mtg import convert,properties_from_dict
 
 from openalea.mtg import MTG, fat_mtg
 
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 
 
 
@@ -515,8 +515,8 @@ def mtg_update_from_table(g, cantable, old_cantable):
     """ Compute plant state at a given time according to dynamical parameters found in mtg
     """ 
 
-    df = pd.DataFrame(cantable)
-    old_df = pd.DataFrame(old_cantable)
+    df = pandas.DataFrame(cantable)
+    old_df = pandas.DataFrame(old_cantable)
     for pid in g.component_roots_at_scale_iter(g.root, scale=1):
         p = g.node(pid)
         for ax in p.components_at_scale(2):

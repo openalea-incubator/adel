@@ -2,7 +2,7 @@
 
 import cPickle as Pickle
 
-import numpy as np
+import numpy
 from rpy2 import robjects
 from rpy2.robjects.numpy2ri import numpy2ri
 
@@ -20,7 +20,7 @@ def dataframe(d):
         return robjects.r('as.null()')
     else:
         for k, v in d.iteritems():
-            df[k] = numpy2ri(np.array(v))
+            df[k] = numpy2ri(numpy.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
 

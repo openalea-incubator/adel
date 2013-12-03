@@ -2,7 +2,7 @@ import rpy2.robjects as robj
 from rpy2.robjects.numpy2ri import numpy2ri
 r = robj.r
 
-import numpy as np
+import numpy
 from numpy import transpose
 
 def RlistAsDict(Rlist):
@@ -42,14 +42,14 @@ def extract_leaf_info(rdata_xy, rdata_sr):
         xyk = RlistAsDict(xy[k])
         leaves_id = xyk.keys()
         try: 
-            s, radius = transpose(np.array(sr[k]))
+            s, radius = transpose(numpy.array(sr[k]))
         except ValueError:#sr is a dataframe
-            s, radius = np.array(sr[k][0]),np.array(sr[k][1])
+            s, radius = numpy.array(sr[k][0]),numpy.array(sr[k][1])
         for leaf_id in leaves_id:
             try:
-                x, y = transpose(np.array(xyk[leaf_id])) #xy is a matrix
+                x, y = transpose(numpy.array(xyk[leaf_id])) #xy is a matrix
             except ValueError:#xy is a dataframe
-                x, y = np.array(xyk[leaf_id][0]),np.array(xyk[leaf_id][1])
+                x, y = numpy.array(xyk[leaf_id][0]),numpy.array(xyk[leaf_id][1])
             leaves.setdefault(k,[]).append((x,y,s,radius))
 
     return leaves

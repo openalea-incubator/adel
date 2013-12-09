@@ -105,7 +105,9 @@ def create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_flag_leaf_
     axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_flag_leaf_ligulation)
     axeT_['id_ear'] = _gen_id_ear_list(axeT_['TT_stop_axis'])
     axeT_['TT_del_axis'] = _gen_TT_del_axis_list(axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
-    axeT_['HS_final'] = _gen_HS_final_list(axeT_, dynT_)
+    HS_final_series = _gen_HS_final_series(axeT_, dynT_)
+    axeT_ = _remove_axes_without_leaf(axeT_, HS_final_series.index)
+    axeT_['HS_final'] = HS_final_series.values
     axeT_['N_phytomer'] = _gen_N_phytomer(axeT_['HS_final'])
     axeT_['id_dim'] = _gen_id_dim_list(axeT_['id_cohort'], axeT_['N_phytomer'], axeT_['id_ear'])
     
@@ -231,7 +233,7 @@ def _gen_TT_del_axis_list(TT_stop_axis_series, delais_TT_stop_del_axis):
     return TT_stop_axis_series + delais_TT_stop_del_axis
 
 
-def _gen_HS_final_list(axeT_, dynT_):
+def _gen_HS_final_series(axeT_, dynT_):
     '''Generate the *HS_final* column.'''
     HS_final_series = pandas.Series(index=axeT_.index)
     dynT_grouped = dynT_.groupby(['id_axis', 'N_phytomer_potential'])
@@ -242,9 +244,18 @@ def _gen_HS_final_list(axeT_, dynT_):
         HS_final_series[axeT_group.index] = current_a_cohort * (axeT_group['TT_stop_axis'][axeT_group.index] - current_TT_col_0)
     index_to_modify = HS_final_series[HS_final_series > axeT_['N_phytomer_potential']].index
     HS_final_series[index_to_modify] = axeT_['N_phytomer_potential'][index_to_modify]
-    HS_final_series = HS_final_series.clip_lower(0.0)
     HS_final_series.fillna(axeT_['N_phytomer_potential'], inplace=True)
-    return HS_final_series.tolist()
+    HS_final_series = HS_final_series.clip_lower(0.0)
+    HS_final_series = HS_final_series[HS_final_series != 0.0]
+    return HS_final_series
+
+
+def _remove_axes_without_leaf(axeT_, index_to_keep):
+    '''Remove the axes which do not have any leaf.'''
+    axeT_ = axeT_.ix[index_to_keep]
+    axeT_.index = range(len(axeT_))
+    return axeT_
+    
 
 def create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, number_of_axes, ears_density):
     '''

@@ -126,7 +126,7 @@ def create_dynT(dynT_tmp,
     # now a pandas.DataFrame (and is not a list anymore)
     most_frequent_tiller_axes = pandas.concat(most_frequent_tiller_axes)
     # in this new dataframe, fill the columns referring to the dynamic of Haun Stage
-    most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes)
+    most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, leaf_number_delay_MS_cohort)
     # and fill the columns referring to the dynamic of the green leaves
     most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axes)
     # extract the rows corresponding to all tiller axes except the most frequent ones
@@ -250,7 +250,7 @@ def _gen_other_MS_GL_dynamic(most_frequent_MS, other_MS):
     return other_MS
 
 
-def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes):
+def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, leaf_number_delay_MS_cohort):
     '''
     Create a copy of *most_frequent_tiller_axes*, fill this copy by calculating the 
     parameters which describe the dynamic of the Haun Stage, and return this 
@@ -266,7 +266,7 @@ def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_ti
     # calculation of TT_col_0
     cohorts = most_frequent_tiller_axes['id_axis'][nan_most_frequent_tiller_axis_indexes].values
     primary_cohorts = np.apply_along_axis(np.vectorize(tools.get_primary_axis), 0, cohorts, [params.FIRST_CHILD_DELAY])
-    leaf_number_delay_MS_cohorts = np.array([params.LEAF_NUMBER_DELAY_MS_COHORT[cohort] for cohort in primary_cohorts])
+    leaf_number_delay_MS_cohorts = np.array([leaf_number_delay_MS_cohort[cohort] for cohort in primary_cohorts])
     most_frequent_tiller_axes['TT_col_0'][nan_most_frequent_tiller_axis_indexes] = most_frequent_MS['TT_col_0'][0] + (leaf_number_delay_MS_cohorts / most_frequent_MS['a_cohort'][0])
     # dTT_MS_cohort is set by the user. Thus there is nothing to do.
     # calculation of TT_col_N_phytomer_potential

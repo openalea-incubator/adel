@@ -129,16 +129,16 @@ def create_phenT_abs(phenT_tmp, axeT_, dimT_abs):
         :class:`pandas.DataFrame`
     
     '''
-    phenT_abs = phenT_tmp.copy()
+    phenT_abs = phenT_tmp.select(lambda idx: phenT_tmp['id_phen'][idx] in axeT_['id_phen'].values)
     axeT_grouped = axeT_.groupby('id_phen')
     dimT_abs_grouped = dimT_abs.groupby('id_dim')
-    for id_phen, phenT_tmp_group in phenT_tmp.groupby('id_phen'):
+    for id_phen, phenT_abs_group in phenT_abs.groupby('id_phen'):
         axeT_group = axeT_grouped.get_group(id_phen)
         id_dim = axeT_group['id_dim'].max()
         dimT_abs_group = dimT_abs_grouped.get_group(id_dim)
         non_zero_L_internode_group = dimT_abs_group[dimT_abs_group['L_internode'] != 0]
         min_index_phytomer = non_zero_L_internode_group['index_phytomer'].min()
-        indexes_to_ceil = phenT_tmp_group[phenT_tmp_group['index_phytomer'] >= min_index_phytomer].index
+        indexes_to_ceil = phenT_abs_group[phenT_abs_group['index_phytomer'] >= min_index_phytomer].index
         phenT_abs['TT_del_phytomer'][indexes_to_ceil] = params.TT_DEL_FHAUT
     return phenT_abs
 
@@ -319,14 +319,14 @@ def create_phenT(phenT_abs, phenT_first):
     return phenT_
 
 
-def create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_):
+def create_HS_GL_SSI_T(phenT_abs, axeT_, dynT_):
     '''
     Create the :ref:`HS_GL_SSI_T <HS_GL_SSI_T>` dataframe.
 
     :Parameters:
     
         - `phenT_abs` (:class:`pandas.DataFrame`) - the :ref:`phenT_abs <phenT_abs>` dataframe.
-        - `axeT_tmp` (:class:`pandas.DataFrame`) - the *axeT_tmp* dataframe.
+        - `axeT_` (:class:`pandas.DataFrame`) - the *axeT_* dataframe.
         - `dynT_` (:class:`pandas.DataFrame`) - the :ref:`dynT <dynT>` dataframe.
         
     :Returns:
@@ -341,7 +341,7 @@ def create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_):
     
     phenT_abs_grouped = phenT_abs.groupby('id_phen')
     dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
-    for (id_cohort, N_phytomer_potential, id_phen), axeT_tmp_group in axeT_tmp.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
+    for (id_cohort, N_phytomer_potential, id_phen), axeT_group in axeT_.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
         phenT_abs_group = phenT_abs_grouped.get_group(id_phen)
         dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer_potential))
         dynT_row = dynT_group.ix[dynT_group['cardinality'].idxmax()]

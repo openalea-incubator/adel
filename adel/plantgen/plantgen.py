@@ -178,7 +178,7 @@ def gen_adel_input_data(dynT_user,
              decide_child_axis_probabilities.iteritems() if probability != 0.0])
         
     possible_MS_N_phytomer_potential = \
-        set([MS_N_phytomer_potential for (MS_N_phytomer_potential, probability) in
+        set([int(MS_N_phytomer_potential) for (MS_N_phytomer_potential, probability) in
              MS_leaves_number_probabilities.iteritems() if probability != 0.0])
     
     # check plants_number, decide_child_axis_probabilities, plants_density and ears_density validity
@@ -213,6 +213,16 @@ then this will lead to an error."
 the N_phytomer_potential of the MS documented by the user (%s) in %s indicate that some of the N_phytomer_potential of the MS (%s) \
 are not documented by the user. After the generation of the phytomers of the MS, if not all generated phytomers \
 of the MS are documented by the user, then this will lead to an error."
+
+    
+    # check the consistency of decide_child_axis_probabilities and params.LEAF_NUMBER_DELAY_MS_COHORT
+    available_axes = params.LEAF_NUMBER_DELAY_MS_COHORT.keys()
+    if not possible_axes.issubset(set(available_axes)):
+        warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
+                                                        available_axes,
+                                                        'params.LEAF_NUMBER_DELAY_MS_COHORT',
+                                                        list(possible_axes)),
+                      tools.InputWarning)
     
     # calculate dynT_user completeness and check its validity
     if 'N_phytomer_potential' in dynT_user.columns:
@@ -223,10 +233,10 @@ of the MS are documented by the user, then this will lead to an error."
         grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
         if len(grouped.groups) != dynT_user.index.size:
             raise tools.InputError("dynT_user contains duplicated (id_axis, N_phytomer_potential) pair(s)")
-        available_axes = set(dynT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
+        available_axes = dynT_user['id_axis'].tolist()
+        if not possible_axes.issubset(set(available_axes)):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
+                                                            available_axes,
                                                             'dynT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
@@ -245,10 +255,10 @@ of the MS are documented by the user, then this will lead to an error."
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
             raise tools.InputError("dynT_user contains duplicated id_axis")
-        available_axes = set(dynT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
+        available_axes = dynT_user['id_axis'].tolist()
+        if not possible_axes.issubset(set(available_axes)):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
+                                                            available_axes,
                                                             'dynT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
@@ -258,10 +268,10 @@ of the MS are documented by the user, then this will lead to an error."
         expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
-        available_axes = set(dynT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
+        available_axes = dynT_user['id_axis'].tolist()
+        if not possible_axes.issubset(set(available_axes)):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
+                                                            available_axes,
                                                             'dynT_user',
                                                             list(possible_axes)), 
                           tools.InputWarning)
@@ -275,10 +285,10 @@ of the MS are documented by the user, then this will lead to an error."
         grouped = dimT_user.groupby(['id_axis', 'N_phytomer_potential', 'index_phytomer'])
         if len(grouped.groups) != dimT_user.index.size:
             raise tools.InputError("dimT_user contains duplicated (id_axis, N_phytomer_potential, index_phytomer) triplet(s)")
-        available_axes = set(dimT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
+        available_axes = dimT_user['id_axis'].tolist()
+        if not possible_axes.issubset(set(available_axes)):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
+                                                            available_axes,
                                                             'dimT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
@@ -298,10 +308,10 @@ of the MS are documented by the user, then this will lead to an error."
         grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
         if len(grouped.groups) != dimT_user.index.size:
             raise tools.InputError("dimT_user contains duplicated (id_axis, index_phytomer) pair(s)")
-        available_axes = set(dimT_user['id_axis'].tolist())
-        if not possible_axes.issubset(available_axes):
+        available_axes = dimT_user['id_axis'].tolist()
+        if not possible_axes.issubset(set(available_axes)):
             warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
-                                                            list(available_axes),
+                                                            available_axes,
                                                             'dimT_user',
                                                             list(possible_axes)),
                           tools.InputWarning)
@@ -527,7 +537,7 @@ def _gen_adel_input_data_second(axeT_tmp,
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
     id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
     TT_start = phenT_first['TT_app_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
-    tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_tmp.index.size, ears_density)
+    tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_flag_leaf_ligulation, plants_number, plants_density, axeT_.index.size, ears_density)
     # create dimT_abs
     dimT_abs = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_)
     # create dimT
@@ -537,7 +547,7 @@ def _gen_adel_input_data_second(axeT_tmp,
     # create phenT
     phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
     # create HS_GL_SSI_T 
-    HS_GL_SSI_T = phenT.create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_)
+    HS_GL_SSI_T = phenT.create_HS_GL_SSI_T(phenT_abs, axeT_, dynT_)
     
     return axeT_, phenT_abs, phenT_, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, dimT_, tilleringT
 

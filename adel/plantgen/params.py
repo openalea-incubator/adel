@@ -37,7 +37,17 @@ EMF_1_MS_STANDARD_DEVIATION = 30.0
 This parameter is used to calculate main stem emf_1 value.'''
 
 
-LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.6173, 'T1': 2.5181, 'T2': 3.4189, 'T3': 4.5576, 'T4': 5.8097}
+LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.6, 
+                               'T1': 2.5, 
+                               'T2': 3.4, 
+                               'T3': 4.6, 
+                               'T4': 5.8, 
+                               'T5': 6.7, 
+                               'T6': 7.8, 
+                               'T7': 8.8, 
+                               'T8': 9.8, 
+                               'T9': 10.9, 
+                               'T10': 11.9}
 '''Delays between the emergence of the main stem and the emergence of each cohort.
 
 The delays are expressed in main stem phyllochron unit.

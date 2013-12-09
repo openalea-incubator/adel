@@ -20,8 +20,12 @@ df_dim = pandas.DataFrame({ 'id_plt' : [1] * 9,
                     })
         
 #geometry (to be replaced by calling fit_leaves on your data)
-from alinea.adel.data_samples import leaves_db 
-db = leaves_db()
+#from alinea.adel.data_samples import leaves_db 
+#db = leaves_db()
+from alinea.adel.wheat import extract_wheat
+db = extract_wheat.extract_leaf_info('laminaCurv.RData', 'lamina2D.RData')
+from alinea.adel.fit import fit
+db, discard = fit.fit_leaves(db, 7)
        
 # compute insertion height of leaves
 df_dim['h_insertion'] = df_dim['L_internode'].cumsum() + df_dim['L_sheath']
@@ -46,7 +50,7 @@ df['Lv'] = df['Ll']
 df['Lr'] = 0
 df['Lsen'] = 0
 df['L_shape'] = df['Ll']
-df['Linc'] = 0
+df['Linc'] = 1
 df['Gv'] = 0
 df['Gsen'] = 0
 df['Ginc'] = 0

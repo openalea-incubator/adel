@@ -17,7 +17,7 @@ __institutes__ = ''
 __icon__ = ''
 
 
-__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs']
+__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'plantgen2adel_plantgen2adel']
 
 
 plantgen_plantgen = Factory(name='plantgen',
@@ -58,6 +58,21 @@ read_plantgen_inputs_read_plantgen_inputs = Factory(name='read_plantgen_inputs',
                          {'interface': IFloat, 'name': 'delais_TT_stop_del_axis'},
                          {'interface': IFloat, 'name': 'TT_col_break'},
                          {'interface': IDict, 'name': 'inner_params'}),
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+plantgen2adel_plantgen2adel = Factory(name='plantgen2adel',
+                authors='C. Chambon, M. Abichou and B. Andrieu',
+                category='data processing',
+                nodemodule='plantgen',
+                nodeclass='plantgen2adel',
+                inputs=({'interface': None, 'name': 'axeT', 'desc': 'the axeT dataframe'},
+                        {'interface': None, 'name': 'dimT', 'desc': 'the dimT dataframe'},
+                        {'interface': None, 'name': 'phenT', 'desc': 'the phenT dataframe'}),
+                outputs=({'interface': None, 'name': 'axeT_adel', 'desc': 'the axeT dataframe in adel-like format'},
+                         {'interface': None, 'name': 'dimT_adel', 'desc': 'the dimT dataframe in adel-like format'},
+                         {'interface': None, 'name': 'phenT_adel', 'desc': 'the phenT dataframe in adel-like format'}),
                 widgetmodule=None,
                 widgetclass=None,
                )

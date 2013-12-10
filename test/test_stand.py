@@ -13,8 +13,8 @@ def test_post_processing():
     adel_output_path = path('data/test_stand/adel_output.csv')
     
     import tempfile
-    global_postprocessing_file_path = path(tempfile.mktemp(suffix='.csv'))
-    peraxis_postprocessing_file_path = path(tempfile.mktemp(suffix='.csv'))
+    global_postprocessing_file_path = path(tempfile.mktemp(prefix='global_postprocessing', suffix='.csv'))
+    peraxis_postprocessing_file_path = path(tempfile.mktemp(prefix='peraxis_postprocessing', suffix='.csv'))
     
     # launch the postprocessing
     (global_postprocessing_file_path, 
@@ -50,3 +50,5 @@ def test_post_processing():
     expected_peraxis_postprocessing_results_array = np.delete(expected_peraxis_postprocessing_results_array, [0, 2], 1).astype(float)
     np.testing.assert_allclose(peraxis_postprocessing_results_array, expected_peraxis_postprocessing_results_array, relative_tolerance, absolute_tolerance)
     
+if __name__ == '__main__':
+    test_post_processing()

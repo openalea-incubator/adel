@@ -4,6 +4,7 @@ from math import pi, sqrt
 from random import random,sample
 from numpy.random import vonmises
 from openalea.core.path import path
+import numpy as np
 
 
 def regular(nb_plants, nb_rank, dx, dy):
@@ -221,7 +222,8 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                                               'axe_id', 'Slv', 'Slvsen', 
                                               'SGv', 'SGvsen', 'SEv', 'SEvsen', 
                                               'Slvgreen', 'SGvgreen', 'SEvgreen', 
-                                              'NFF', 'HS', 'SSI', 'GreenLeaf', 'has_ear'])
+                                              'NFF', 'HS', 'SSI', 'GreenLeaf', 
+                                              'has_ear', 'd_base-lastcol'])
     
     TT = adel_output_df['TT'][0]
     for name, group in grouped:
@@ -244,17 +246,20 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         Lv_non_null_series = group['Lv'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lv]
         if len(Lv_non_null_series) == 0:
             HS = 0.0
+            d_base_lastcol = np.nan
         else:
             Lv_equal_L_shape_series = Lv_non_null_series[Lv_non_null_series == L_shape[indexes_of_all_non_null_Lv]]
             if Lv_equal_L_shape_series.index.size == 0:
                 HS_indexes = Lv_non_null_series.index
                 NFL = 0.0
+                d_base_lastcol = np.nan
             else:
                 index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
                 index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
                 index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
                 HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
                 NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
+                d_base_lastcol = group['d_basecol'][index_of_last_Lv_equal_L_shape]
             HS = NFL + \
                  (Lv_non_null_series[HS_indexes] / \
                   L_shape[HS_indexes].astype(float)) \
@@ -284,7 +289,8 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         GreenLeaf = HS - SSI
         new_intermediate_data = [[TT, refplant_id, plant, axe_id, Slv,
                                   Slvsen, SGv, SGvsen, SEv, SEvsen, Slvgreen, 
-                                  SGvgreen, SEvgreen, NFF, HS, SSI, GreenLeaf, has_ear]]
+                                  SGvgreen, SEvgreen, NFF, HS, SSI, GreenLeaf, 
+                                  has_ear, d_base_lastcol]]
         new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
                                                columns=intermediate_df.columns)
         intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], 
@@ -351,7 +357,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
     else:
         columns_peraxis = ['Filename', 'ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
-                           'PAI total', 'PAI vert', 'has_ear']
+                           'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol']
         peraxis_postprocessing_df = pandas.DataFrame(columns=columns_peraxis)
     
     grouped = intermediate_df.groupby(['axe_id', 'NFF', 'has_ear'], as_index=False)
@@ -362,9 +368,11 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         green_LAI = group['Slvgreen'].sum() / area_in_cm
         tot_PAI = (group['Slv'] + (group['SGv'] + group['SEv']) / 2.0 ).sum() / area_in_cm
         green_PAI = (group['Slvgreen'] + (group['SGvgreen'] + group['SEvgreen']) / 2.0 ).sum() / area_in_cm
+        d_base_lastcol = group['d_base-lastcol'].mean()
         
         new_peraxis_postprocessing_data = [[Filename, TT, axe_id, NFF, HS, SSI, tot_LAI, 
-                                            green_LAI, tot_PAI, green_PAI, has_ear]]
+                                            green_LAI, tot_PAI, green_PAI, has_ear, 
+                                            d_base_lastcol]]
         new_peraxis_postprocessing_df = pandas.DataFrame(new_peraxis_postprocessing_data, 
                                                          columns=peraxis_postprocessing_df.columns)
         peraxis_postprocessing_df = pandas.concat([peraxis_postprocessing_df, 

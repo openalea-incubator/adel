@@ -329,17 +329,18 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     growing_axes_density_df = growing_axes_density_df[growing_axes_density_df['Slvgreen'] > 0.0]
     growing_axes_density = growing_axes_density_df.index.size / float(domain_area)
     # calculate the number of active axes without ear
-    has_ear_0 = intermediate_df[intermediate_df['has_ear'] == 0]
-    has_ear_0 = has_ear_0[has_ear_0['HS'] > 0]
+    HS_positive = intermediate_df[intermediate_df['HS'] > 0]
+    has_ear_0 = HS_positive[HS_positive['has_ear'] == 0]
     number_of_active_axes_without_ear = len(has_ear_0[has_ear_0['HS'] < has_ear_0['NFF']])
     # calculate the number of active axes with ear
-    number_of_active_axes_with_ear = len(intermediate_df[intermediate_df['has_ear'] == 1])
+    number_of_active_axes_with_ear = len(HS_positive[HS_positive['has_ear'] == 1])
     # calculate of the number of active axes per square meter
     number_of_active_axes_per_m2 = (number_of_active_axes_with_ear + number_of_active_axes_without_ear) / float(domain_area)
     
     new_global_postprocessing_data = [[Filename, domain_area, plant_number, TT, 
                                        tot_LAI, green_LAI, tot_PAI, green_PAI, 
-                                       axes_density, growing_axes_density, number_of_active_axes_per_m2]]
+                                       axes_density, growing_axes_density, 
+                                       number_of_active_axes_per_m2]]
     new_global_postprocessing_df = \
     pandas.DataFrame(new_global_postprocessing_data, 
                      columns=global_postprocessing_df.columns)

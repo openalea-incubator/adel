@@ -1,4 +1,4 @@
-id_axis,nrel,L_blade,W_blade,L_sheath,W_sheath,L_internode,W_internode
+id_dim,index_rel_phytomer,L_blade,W_blade,L_sheath,W_sheath,L_internode,W_internode
 1111,0.090909091,9.266666667,0.381001176,2.94768,0.4,0,0
 1111,0.181818182,9.2,0.372438537,2.69686,0.4,0,0
 1111,0.272727273,7.55,0.452776837,2.94996,0.4,0,0

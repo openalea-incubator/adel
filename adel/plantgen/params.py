@@ -94,7 +94,7 @@ remains on the plant.
 The delay is given in phyllochron unit. 
 '''
 
-DELAIS_REG_MONT = 40.0
+DELAIS_REG_MONT = -40.0
 '''The time between the start of the regression and the bolting. 
 
 The delay is given in Degrees.Day. 

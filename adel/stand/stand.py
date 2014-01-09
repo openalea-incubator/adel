@@ -5,6 +5,7 @@ from random import random,sample
 from numpy.random import vonmises
 from openalea.core.path import path
 import numpy as np
+import alinea.adel.postprocessing as pp
 
 
 def regular(nb_plants, nb_rank, dx, dy):
@@ -163,8 +164,9 @@ def sample_regular_gaps(points, pattern = [0,1]):
     return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
 
 
-def post_processing(adel_output_path='', plant_number=0, domain_area=0.0, 
-                    global_postprocessing_path='', peraxis_postprocessing_path=''):
+def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
+                    global_postprocessing_path='', peraxis_postprocessing_path='', 
+                    convUnit=0.01):
     '''
     Apply post processing on the ADEL output.
     
@@ -195,6 +197,9 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
         - `peraxis_postprocessing_path` (str) -  
           path to the csv file describing the results, for each TT, of the post 
           processing for each axis 
+          
+        - `convUnit` (float) -  
+          Factor to convert the length unit of adel output to meter. Default '0.01'.
     
     :Returns:
         Three paths: 
@@ -210,179 +215,57 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                  plant_number and domain_area must be non-null.
     
     '''
-    import pandas
-    assert adel_output_path != '' and plant_number != 0 and domain_area != 0.0 \
-    and global_postprocessing_path != '' and peraxis_postprocessing_path != '' 
-    
+    import pandas as pd
+    if adel_output_path == '':
+        raise Exception("adel_output_path == ''")
+    if plant_number == 0:
+        raise Exception("plant_number == 0")
+    if domain_area == 0.0:
+        raise Exception("domain_area == 0.0")
+    if global_postprocessing_path == '':
+        raise Exception("global_postprocessing_path == ''")
+    if peraxis_postprocessing_path == '':
+        raise Exception("peraxis_postprocessing_path == ''")
+    if convUnit == 0.0:
+        raise Exception("convUnit == 0.0")
+            
     adel_output_path = path(adel_output_path)
-    adel_output_df = pandas.read_csv(adel_output_path)
-    # Construct the intermediate table
-    grouped = adel_output_df.groupby(['plant', 'axe_id'], as_index=False)
-    intermediate_df = pandas.DataFrame(columns=['TT', 'refplant_id', 'plant', 
-                                              'axe_id', 'Slv', 'Slvsen', 
-                                              'SGv', 'SGvsen', 'SEv', 'SEvsen', 
-                                              'Slvgreen', 'SGvgreen', 'SEvgreen', 
-                                              'NFF', 'HS', 'SSI', 'GreenLeaf', 
-                                              'has_ear', 'd_base-lastcol'])
-    
-    TT = adel_output_df['TT'][0]
-    for name, group in grouped:
-        refplant_id = group['refplant_id'][group.index[0]]
-        plant = name[0]
-        axe_id = name[1]
-        Slv = group['Slv'].sum()
-        Slvgreen = group['Slvgreen'].sum()
-        Slvsen = group['Slvsen'].sum()
-        SGv = group['SGv'].sum()
-        SGvgreen = group['SGvgreen'].sum()
-        SGvsen = group['SGvsen'].sum()
-        SEv = group['SEv'].sum()
-        SEvgreen = group['SEvgreen'].sum()
-        SEvsen = group['SEvsen'].sum()
-        L_shape = group['L_shape']
-        indexes_of_all_non_null_Lshape = L_shape[L_shape != 0.0].index 
-        NFF = indexes_of_all_non_null_Lshape.size
-        indexes_of_all_non_null_Lv = group['Lv'][group['Lv'] != 0].index
-        Lv_non_null_series = group['Lv'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lv]
-        if len(Lv_non_null_series) == 0:
-            HS = 0.0
-            d_base_lastcol = np.nan
-        else:
-            Lv_equal_L_shape_series = Lv_non_null_series[Lv_non_null_series == L_shape[indexes_of_all_non_null_Lv]]
-            if Lv_equal_L_shape_series.index.size == 0:
-                HS_indexes = Lv_non_null_series.index
-                NFL = 0.0
-                d_base_lastcol = np.nan
-            else:
-                index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
-                index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
-                index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
-                HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
-                NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
-                d_base_lastcol = group['d_basecol'][index_of_last_Lv_equal_L_shape]
-            HS = NFL + \
-                 (Lv_non_null_series[HS_indexes] / \
-                  L_shape[HS_indexes].astype(float)) \
-                 .sum()
-        indexes_of_all_non_null_Lsen = group['Lvsen'][group['Lvsen'] != 0].index
-        Lsen_non_null_series = group['Lvsen'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lsen]
-        Lsen_equal_L_shape_series = Lsen_non_null_series[Lsen_non_null_series == L_shape[indexes_of_all_non_null_Lsen]]
-        if indexes_of_all_non_null_Lsen.size == 0:
-            SSI = 0.0
-        elif Lsen_equal_L_shape_series.index.size == 0:
-            SSI = (Lsen_non_null_series[indexes_of_all_non_null_Lsen] / \
-                   L_shape[indexes_of_all_non_null_Lsen].astype(float)) \
-                  .sum()
-        else:
-            index_of_last_Lsen_equal_L_shape = Lsen_equal_L_shape_series.index[-1]
-            NFS = group['numphy'][index_of_last_Lsen_equal_L_shape]
-            index_of_first_Lsen_not_equal_L_shape = index_of_last_Lsen_equal_L_shape + 1
-            index_of_last_Lsen_non_null = indexes_of_all_non_null_Lsen[-1]
-            SSI_indexes = range(index_of_first_Lsen_not_equal_L_shape, index_of_last_Lsen_non_null + 1)
-            SSI = NFS + \
-                 (Lsen_non_null_series[SSI_indexes] / \
-                  L_shape[SSI_indexes].astype(float)) \
-                 .sum()
-        indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
-        has_ear = int(group[['El','Ed']].ix[indexes_of_all_null_Lshape].any().any())
-              
-        GreenLeaf = HS - SSI
-        new_intermediate_data = [[TT, refplant_id, plant, axe_id, Slv,
-                                  Slvsen, SGv, SGvsen, SEv, SEvsen, Slvgreen, 
-                                  SGvgreen, SEvgreen, NFF, HS, SSI, GreenLeaf, 
-                                  has_ear, d_base_lastcol]]
-        new_intermediate_df = pandas.DataFrame(new_intermediate_data, 
-                                               columns=intermediate_df.columns)
-        intermediate_df = pandas.concat([intermediate_df, new_intermediate_df], 
-                                        ignore_index=True)
-    
+    adel_output_df = pd.read_csv(adel_output_path)
+      
+    aggregated_adel_output_df = pp.aggregate_adel_output(adel_output_df, by=['plant', 'axe_id'])
+    phenology_df = pp.phenology(adel_output_df)
+    axis_statistics_df = pp.axis_statistics(adel_output_df, domain_area, convUnit)
+    intermediate_df = pd.merge(aggregated_adel_output_df, phenology_df, on=['TT', 'plant', 'axe_id'])    
+    plot_statistics_df = pp.plot_statistics(axis_statistics_df, plant_number, domain_area)
+            
     import tempfile
+    TT = adel_output_df['TT'][0] # there is only one TT
     intermediate_file_suffix = '-%d.csv' % int(TT)
     intermediate_path = path(tempfile.mktemp(intermediate_file_suffix))
     intermediate_df.to_csv(intermediate_path, na_rep='NA', index=False)
     
-    # Construct the global post processing results
-    global_postprocessing_path_ = path(global_postprocessing_path)
-    
-    if global_postprocessing_path_.exists():
-        global_postprocessing_df = pandas.read_csv(global_postprocessing_path_)
-    else:
-        columns = ['Filename', 'aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
-                   'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
-                   'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2.old', 'number_of_active_axes_per_m2']
-        global_postprocessing_df = pandas.DataFrame(columns=columns)
-    
-    Filename = intermediate_path.basename()
-    area_in_cm = domain_area * 10000.0
-    tot_LAI = intermediate_df['Slv'].sum() / area_in_cm 
-    green_LAI = intermediate_df['Slvgreen'].sum() / area_in_cm 
-    tot_PAI = (intermediate_df['Slv'].sum() \
-               + intermediate_df[['SGv', 'SEv']].sum().sum() / 2.0) \
-               / area_in_cm
-    green_PAI = (intermediate_df['Slvgreen'].sum() \
-                 + intermediate_df[['SGvgreen', 'SEvgreen']].sum().sum() / 2.0) \
-                 / area_in_cm
-    axes_density = intermediate_df.index.size / float(domain_area)                
-    growing_axes_density_df = intermediate_df[intermediate_df['HS'] > 0.5]
-    growing_axes_density_df = \
-        growing_axes_density_df[growing_axes_density_df['HS'] <= growing_axes_density_df['NFF']]
-    growing_axes_density_df = growing_axes_density_df[growing_axes_density_df['Slvgreen'] > 0.0]
-    growing_axes_density = growing_axes_density_df.index.size / float(domain_area)
-    # calculate the number of active axes without ear
-    HS_positive = intermediate_df[intermediate_df['HS'] > 0]
-    has_ear_0 = HS_positive[HS_positive['has_ear'] == 0]
-    number_of_active_axes_without_ear = len(has_ear_0[has_ear_0['HS'] < has_ear_0['NFF']])
-    # calculate the number of active axes with ear
-    number_of_active_axes_with_ear = len(HS_positive[HS_positive['has_ear'] == 1])
-    # calculate of the number of active axes per square meter
-    number_of_active_axes_per_m2 = (number_of_active_axes_with_ear + number_of_active_axes_without_ear) / float(domain_area)
-    
-    new_global_postprocessing_data = [[Filename, domain_area, plant_number, TT, 
-                                       tot_LAI, green_LAI, tot_PAI, green_PAI, 
-                                       axes_density, growing_axes_density, 
-                                       number_of_active_axes_per_m2]]
-    new_global_postprocessing_df = \
-    pandas.DataFrame(new_global_postprocessing_data, 
-                     columns=global_postprocessing_df.columns)
-    global_postprocessing_df = \
-        pandas.concat([global_postprocessing_df, new_global_postprocessing_df], 
-                      ignore_index=True)
-    global_postprocessing_df.to_csv(global_postprocessing_path_, 
-                                     na_rep='NA', 
-                                     index=False)
-    
-    # Construct the per axis post processing results
+    axis_statistics_df.insert(0, 'Filename', intermediate_path.basename())
     peraxis_postprocessing_path_ = path(peraxis_postprocessing_path)
-    
     if peraxis_postprocessing_path_.exists():
-        peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
-    else:
-        columns_peraxis = ['Filename', 'ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
-                           'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol']
-        peraxis_postprocessing_df = pandas.DataFrame(columns=columns_peraxis)
-    
-    grouped = intermediate_df.groupby(['axe_id', 'NFF', 'has_ear'], as_index=False)
-    for (axe_id, NFF, has_ear), group in grouped:
-        HS = group['HS'].mean()
-        SSI = group['SSI'].mean()
-        tot_LAI = group['Slv'].sum() / area_in_cm
-        green_LAI = group['Slvgreen'].sum() / area_in_cm
-        tot_PAI = (group['Slv'] + (group['SGv'] + group['SEv']) / 2.0 ).sum() / area_in_cm
-        green_PAI = (group['Slvgreen'] + (group['SGvgreen'] + group['SEvgreen']) / 2.0 ).sum() / area_in_cm
-        d_base_lastcol = group['d_base-lastcol'].mean()
-        
-        new_peraxis_postprocessing_data = [[Filename, TT, axe_id, NFF, HS, SSI, tot_LAI, 
-                                            green_LAI, tot_PAI, green_PAI, has_ear, 
-                                            d_base_lastcol]]
-        new_peraxis_postprocessing_df = pandas.DataFrame(new_peraxis_postprocessing_data, 
-                                                         columns=peraxis_postprocessing_df.columns)
-        peraxis_postprocessing_df = pandas.concat([peraxis_postprocessing_df, 
-                                                   new_peraxis_postprocessing_df], 
-                                                  ignore_index=True)
-    peraxis_postprocessing_df.to_csv(peraxis_postprocessing_path_, 
-                                     na_rep='NA', 
-                                     index=False)
-    
+        old_peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
+        axis_statistics_df = pandas.concat([old_peraxis_postprocessing_df, 
+                                            axis_statistics_df], 
+                                           ignore_index=True)
+    axis_statistics_df.to_csv(peraxis_postprocessing_path_, 
+                              na_rep='NA', 
+                              index=False)
+
+    plot_statistics_df.insert(0, 'Filename', intermediate_path.basename())
+    global_postprocessing_path_ = path(global_postprocessing_path)
+    if global_postprocessing_path_.exists():
+        old_global_postprocessing_df = pandas.read_csv(global_postprocessing_path_)
+        plot_statistics_df = pandas.concat([old_global_postprocessing_df, 
+                                            plot_statistics_df], 
+                                           ignore_index=True)
+    plot_statistics_df.to_csv(global_postprocessing_path_, 
+                              na_rep='NA', 
+                              index=False)
+     
     return (global_postprocessing_path, 
             peraxis_postprocessing_path, 
             str(intermediate_path))

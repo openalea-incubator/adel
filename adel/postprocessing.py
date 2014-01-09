@@ -118,8 +118,9 @@ def phenology(adel_output_df):
                   L_shape[SSI_indexes].astype(float)) \
                  .sum()
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
-        # when the column 'organ' will be in the output of adel, has_ear = True if 'ear' 
+        # TODO: when the column 'organ' will be in the output of adel, has_ear = True if 'ear' 
         # is in group['organ']
+        # has_ear = group[group['HS_final'] < group['NFF']] ; rename has_ear to survivors
         has_ear = int(group[['El','Ed']].ix[indexes_of_all_null_Lshape].any().any())
               
         GreenLeaf = HS - SSI
@@ -178,7 +179,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         d_base_lastcol = group['d_base-lastcol'].mean()
         axes_cardinality = len(group)
         # TODO: when the column 'growing' will be added in the output of adel, an axis is growing if any of its metamers (except a metamer which is a ear -> cf. column 'organ') is growing.
-        # And rename growing_axes_cardinality to vegetative_axes_cardinality.
+        # growing_axes_cardinality_df = group['HS'] > 0.5 and (group['HS'] < group['HS_final'])
         growing_axes_cardinality_df = group[group['HS'] > 0.5]
         growing_axes_cardinality_df = \
         growing_axes_cardinality_df[growing_axes_cardinality_df['HS'] <= growing_axes_cardinality_df['NFF']]
@@ -188,6 +189,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         # TODO: when the column 'growing' will be added in the output of adel, an axis is active if :
         # - (any of its metamers) is growing
         # - OR one of its is a ear.
+        # active_axes = growing_axes_cardinality_df or (not growing_axes_cardinality_df and group['HS_final'] == group['NFF'])
         HS_positive = group[group['HS'] > 0]
         has_ear_0 = HS_positive[HS_positive['has_ear'] == 0]
         active_axes_without_ear_df = has_ear_0[has_ear_0['HS'] < has_ear_0['NFF']]

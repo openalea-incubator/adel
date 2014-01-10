@@ -86,6 +86,9 @@ class AdelWheat(object):
         
     def scene(self, g):
         return plot3d(g)
+        
+    def get_exposed_areas(self, g):
+        return exposed_areas(g)
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
     model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)

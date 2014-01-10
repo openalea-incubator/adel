@@ -35,7 +35,7 @@ import pandas
 # import random
 # from math import pi
 
-def internode_elements(l,lvis, lsen, az, inc, split = False):
+def internode_elements(l,lvis, lsen, az, inc, d, split = False):
     """ returns parameters of internode elements (visible parts of the internode).
     l is the length of the internode
     lv is the visible length (senesced + green)
@@ -53,6 +53,10 @@ def internode_elements(l,lvis, lsen, az, inc, split = False):
         lgreen = lvis - min(lsen,lvis)
         lsen = lvis - lgreen
         #
+        Svis = numpy.pi * lvis * d
+        Sgreen = numpy.pi * lgreen * d    
+        Ssen = numpy.pi * lsen * d         
+        #
         is_green  = lgreen >= lsen
     except TypeError:
         pass
@@ -61,10 +65,10 @@ def internode_elements(l,lvis, lsen, az, inc, split = False):
         sen_elt = {'label': 'StemElements', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
         return [green_elt, sen_elt]
     else : 
-        elt = {'label': 'StemElement', 'offset': lhide, 'length': lvis, 'l_sen' : lsen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
+        elt = {'label': 'StemElement', 'offset': lhide, 'length': lvis, 'area': Svis, 'green_length': lgreen, 'green_area': Sgreen, 'senesced_length' : lsen, 'senesced_area': Ssen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
         return [elt]
     
-def sheath_elements(l, lvis, lsen, az, inc, split = False):
+def sheath_elements(l, lvis, lsen, az, inc, d, split = False):
     """ returns parameters of sheath elements (visible parts of the sheath).
     l is the length of the sheath
     lv is the visible length (senesced + green)
@@ -100,7 +104,7 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
         #S = 0
     return S
     
-def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, split = False):
+def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, d, split = False):
     """ return parameters of blade elements (visible parts of the blade).
     sectors is the number of sectors dividing pattern blade shape
     l is the length of the blade
@@ -127,8 +131,8 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
     except TypeError:
         pass
 
-    # hidden part + rolled
-    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'is_green': True}
+    # hidden part + rolled : TO DO : make a cylinder with area corresponding to blade forming the rolled part
+    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': lrolled * numpy.pi * d, 'green_length': lrolled, 'green_area': lrolled * numpy.pi * d, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0 }
     elements = [hidden_elt]
     ds = 0
     if Lshape is not None:
@@ -182,7 +186,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
             elements.extend([elt])
         st += ds
     return elements
-    
+
+        
+        
 def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, ntop = None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
@@ -214,21 +220,23 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
     Gaz = 0
     modules = [
         {'label': 'internode',
+        'ntop': ntop,
         'length': El,
         'visible_length': Ev,
         'senesced_length': Esen,
         'diameter' : Ed,
         'azimuth': Eaz,
         'inclination' : Einc,
-        'elements' : internode_elements(El, Ev, Esen, Eaz, Einc)}, 
+        'elements' : internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}, 
         {'label': 'sheath',
+        'ntop': ntop,
         'length': Gl,
         'visible_length': Gv,
         'senesced_length': Gsen,
         'diameter' : Gd,
         'azimuth' : Gaz,   
         'inclination' : Ginc,
-        'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc)}, 
+        'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc, Gd)}, 
         {'label': 'blade',
          'ntop': ntop,
         'length': Ll,
@@ -241,7 +249,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'shape_max_width' : Lw_shape,
         'shape_xysr': xysr_shape,
         'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape, Gd)} 
     ]
     
     if elongation:
@@ -575,7 +583,7 @@ def mtg_update(newg, g, refg):
         newg.add_property(prop)
         newprop = {newids[lab]:g.property(prop)[ids[lab]] for lab in common_labs if ids[lab] in g.property(prop)}
         newg.property(prop).update(newprop)
-        g.remove_property(prop)#helps beeing compatible with ctypes objects
+        #g.remove_property(prop)#helps beeing compatible with ctypes objects
         
     for lab in common_labs:
     
@@ -609,7 +617,28 @@ def mtg_update(newg, g, refg):
             newg.property('senesced_area')[newvid] = newsen
         
     return newg
-    
+   
+
+def exposed_areas(g):
+    """ returns a Dataframe with all exposed (visible) areas of elements in g """
+    data = {}
+    what = ('length', 'area', 'green_length', 'green_area', 'senesced_length', 'senesced_area')
+    for vid in g.vertices_iter(scale=g.max_scale()):
+        n = g.node(vid)
+        if n.length > 0:
+            node_data = {
+                      'plant' : n.complex().complex().complex().complex().label,
+                      'axe' : n.complex().complex().complex().label,
+                      'metamer' : int(''.join(list(n.complex().complex().label)[7:])),
+                      'organ' : n.complex().label,
+                      'ntop' : n.complex().ntop,
+                      'element' : n.label,
+                         }
+            properties = n.properties()
+            node_data.update({k:properties[k]  for k in what})
+            data[vid] = node_data
+    df =  pandas.DataFrame(data).T
+    return df
 # to do
 
 # varaibles sur element : area, senesced_area, senescenece_position (0,1 sur la feuille)

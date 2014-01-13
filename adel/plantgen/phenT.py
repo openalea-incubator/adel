@@ -137,9 +137,10 @@ def create_phenT_abs(phenT_tmp, axeT_, dimT_abs):
         id_dim = axeT_group['id_dim'].max()
         dimT_abs_group = dimT_abs_grouped.get_group(id_dim)
         non_zero_L_internode_group = dimT_abs_group[dimT_abs_group['L_internode'] != 0]
-        min_index_phytomer = non_zero_L_internode_group['index_phytomer'].min()
-        indexes_to_ceil = phenT_abs_group[phenT_abs_group['index_phytomer'] >= min_index_phytomer].index
-        phenT_abs['TT_del_phytomer'][indexes_to_ceil] = params.TT_DEL_FHAUT
+        if len(non_zero_L_internode_group) > 0:
+            min_index_phytomer = non_zero_L_internode_group['index_phytomer'].min()
+            indexes_to_ceil = phenT_abs_group[phenT_abs_group['index_phytomer'] >= min_index_phytomer].index
+            phenT_abs['TT_del_phytomer'][indexes_to_ceil] = params.TT_DEL_FHAUT
     return phenT_abs
 
 

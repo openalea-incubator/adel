@@ -147,6 +147,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     useAzim <- TRUE
     dimT <- cbind(dimT,pAngle = -999,dpAngle = 0)
   }
+
+  if (!"HS_final"%in%colnames(axeT))
+    axeT <- cbind(axeT, HS_final = NA)
   
   plantdb <- by(axeT,list(axeT$plant),function(x) {
     if (! "MS" %in% x$axe)
@@ -171,7 +174,8 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
                            azT = sapply(pT$axe,geoAxe$azT),
                            incT = sapply(pT$axe,geoAxe$incT),
                            dredT = sapply(pT$axe,geoAxe$dredT),
-                           hasEar = !is.na(pT$earIndex)
+                           hasEar = !is.na(pT$earIndex),
+                           HS_final = pT$HS_final
                            )
     #phytoT from dimT and geoleaf
     nomsdim <- c("Ll","Lw","Gl","Gd","El","Ed","pAngle","dpAngle","incB","dincB")

@@ -78,6 +78,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
   #setting output
   naxe <- nrow(plant$axeT)
   nf <- plant$axeT$nf
+  hsf <- plant$axe$HS_final
   nx <- length(x)
   res <- vector("list",naxe)
   names(res) <- plant$axeT$axe
@@ -146,7 +147,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
     #rang depuis flag leaf
     for (d in seq(along=x))
-    kin[d,,"ntop"] <- -(seq(nrow(kin[d,,])) - nfa)
+      kin[d,,"ntop"] <- -(seq(nrow(kin[d,,])) - nfa)
     res[[a]] <- kin
   }
   res
@@ -433,6 +434,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
                                          axe_id = rep(axename,nbphy),
                                          ms_insertion=rep(ms_pos(axename),nbphy),
+                                         nff = dataxe$nf,
+                                         HS_final= dataxe$HS_final,
                                          numphy=1:nbphy,
                                          ntop= nbphy + 1 - (1:nbphy),
                                          L_shape=datp$Ll,

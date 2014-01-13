@@ -637,29 +637,3 @@ def plantgen2adel(axeT_, dimT_, phenT_):
         
     return axeT_, dimT_, phenT_
 
-
-class Config(object):
-    
-    def __init__(self, dynT_user):
-        self.dynT_user = dynT_user
-#        self.dimT_user = ...
-        
-#        self.dimT_user = '/home/cchambon/workspace/openaleapkg_tr/adel/adel/data/Mariem_dimT_user_MIN.csv'
-#        self.plants_number = 100
-#        self.plants_density = 250
-#        self.decide_child_axis_probabilities = {'T0': 0.0, 'T1': 0.900,
-#                                               'T2': 0.983, 'T3': 0.817,
-#                                               'T4': 0.117}
-#        self.MS_leaves_number_probabilities = {'10': 0.145,
-#                                              '11': 0.818,
-#                                              '12': 0.037,
-#                                              '13': 0.0,
-#                                              '14': 0.0}
-#        self.ears_density = 500
-#        self.GL_number = {1117.0: 5.6, 1212.1:5.4,
-#                         1368.7:4.9, 1686.8:2.4,
-#                         1880.0:0.0}
-#        self.delais_TT_stop_del_axis = 600
-#        self.TT_col_break = 0.0
-        
-    

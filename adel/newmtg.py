@@ -48,6 +48,9 @@ def internode_elements(l,lvis, lsen, az, inc, d, split = False):
     lhide = None
     lgreen = None
     is_green = None
+    Svis = None
+    Sgreen = None
+    Ssen = None
     try:
         lhide = max(l - lvis, 0.)
         lgreen = lvis - min(lsen,lvis)

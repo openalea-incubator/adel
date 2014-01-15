@@ -139,12 +139,12 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  "[",
                  roll(azm),
                  "newAxe")
-      nf <- nrow(ax) - ifelse(nrow(ax) > 3, 3,0)
+      nf <- ax$nff[1]
       for (n in ax$numphy[1:nf]) {
         chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
         azaxil = azaxil + ax$Laz[ax$numphy == n]
       }
-	  if (nrow(ax) > 3) {
+	  if (nrow(ax) > nf) {
                                         #add Peduncle
             if (ax$Ev[nf + 1] > epsillon)
               chn <- paste(chn,
@@ -211,7 +211,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
         chn <- paste(chn,
                  "[ newPlant newAxe")
                                         # stringify main stem and delegates to Metamer axilary branches, if any
-        nf <- nrow(axe) - ifelse(nrow(axe) > 3, 3, 0)
+        nf <- axe$nff[1]
         for (m in axe$numphy[1:nf]) {
           if (m %in% axepos)
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
@@ -219,7 +219,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum))
           azcum <- azcum + axe$Laz[axe$numphy == m]
         }
-		if (nrow(axe) > 3) {
+		if (nrow(axe) > nf) {
                                         #add Peduncle
         if (axe$Ev[nf + 1] > epsillon)
           chn <- paste(chn,

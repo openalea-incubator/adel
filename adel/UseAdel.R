@@ -158,6 +158,7 @@ leafSurface <- function(shape_db, shape_index, scL,scW,from=0,to=1) {
 #
 canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
   canS <- canL
+  canS$ntop <- canL$nff - canL$numphy + 1
   if (all(canS$LcIndex <= 1)) {#leaf shape has not been set by setAdel
     print("canL2canS : can't compute Blade surfaces : SR data not connected to setAdel!!!")
   }

@@ -69,7 +69,7 @@ def phenology(adel_output_df):
     for name, group in adel_output_df.groupby(['TT', 'plant', 'axe_id'], as_index=False):
         TT, plant, axe_id = name
         L_shape = group['L_shape']
-        # TODO quand Christian aura rajouter ntop dans adel_output : remplacer 2 lignes suivantes par : NFF = group['ntop'] + group['numphy'] - 1
+        # Utiliser nff (dispo dans adel output)  et remplacer 'indexes_of_all_non_null_Lshape' par 'indexes_of_vegetative_phytomers' = phytomer avec numphy <= nff
         indexes_of_all_non_null_Lshape = L_shape[L_shape != 0.0].index 
         NFF = indexes_of_all_non_null_Lshape.size
         # HS
@@ -118,9 +118,9 @@ def phenology(adel_output_df):
                   L_shape[SSI_indexes].astype(float)) \
                  .sum()
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
-        # TODO: when the column 'organ' will be in the output of adel, has_ear = True if 'ear' 
-        # is in group['organ']
-        # has_ear = group[group['HS_final'] < group['NFF']] ; rename has_ear to survivors
+        # 15/01 (christian): a mon avis enlever 'has_ear' et garder juste  la colone 'HS_final', disponible dans nouveau adel output . 
+        # si tu veux garder la definition est :
+        # has_ear = group[group['HS_final'] >= group['NFF']] ; rename has_ear to survivors
         has_ear = int(group[['El','Ed']].ix[indexes_of_all_null_Lshape].any().any())
               
         GreenLeaf = HS - SSI
@@ -178,7 +178,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         green_PAI = (group['Slvgreen'] + (group['SGvgreen'] + group['SEvgreen']) / 2.0 ).sum() / area_in_cm
         d_base_lastcol = group['d_base-lastcol'].mean()
         axes_cardinality = len(group)
-        # TODO: when the column 'growing' will be added in the output of adel, an axis is growing if any of its metamers (except a metamer which is a ear -> cf. column 'organ') is growing.
+        # TODO: use HS and HS_final
         # growing_axes_cardinality_df = group['HS'] > 0.5 and (group['HS'] < group['HS_final'])
         growing_axes_cardinality_df = group[group['HS'] > 0.5]
         growing_axes_cardinality_df = \
@@ -186,7 +186,8 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         growing_axes_cardinality_df = growing_axes_cardinality_df[growing_axes_cardinality_df['Slvgreen'] > 0.0]
         growing_axes_cardinality = len(growing_axes_cardinality_df)
         # calculate the number of active axes without ear
-        # TODO: when the column 'growing' will be added in the output of adel, an axis is active if :
+        # TODO: use HS_final and nff to make selection :
+        # active = axes with nff <= HS_final OR (axes with nff > HSfinal AND HS < HS_final)
         # - (any of its metamers) is growing
         # - OR one of its is a ear.
         # active_axes = growing_axes_cardinality_df or (not growing_axes_cardinality_df and group['HS_final'] == group['NFF'])

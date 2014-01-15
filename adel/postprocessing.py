@@ -64,18 +64,18 @@ def phenology(adel_output_df):
     
     phenology_df = pd.DataFrame(columns=['TT', 'plant', 'axe_id', 'NFF',
                                          'HS', 'SSI', 'GreenLeaf', 'NFL',
-                                         'NFV', 'has_ear', 'd_base-lastcol'])
+                                         'NFV', 'has_ear', 'd_base-lastcol', 
+                                         'HS_final'])
     
     for name, group in adel_output_df.groupby(['TT', 'plant', 'axe_id'], as_index=False):
         TT, plant, axe_id = name
         L_shape = group['L_shape']
-        # Utiliser nff (dispo dans adel output)  et remplacer 'indexes_of_all_non_null_Lshape' par 'indexes_of_vegetative_phytomers' = phytomer avec numphy <= nff
-        indexes_of_all_non_null_Lshape = L_shape[L_shape != 0.0].index 
-        NFF = indexes_of_all_non_null_Lshape.size
+        indexes_of_vegetative_phytomers = group[group['numphy'] <= group['nff']].index
+        NFF = indexes_of_vegetative_phytomers.size
         # HS
         indexes_of_all_non_null_Lv = group['Lv'][group['Lv'] != 0].index
         NFV = len(indexes_of_all_non_null_Lv)
-        Lv_non_null_series = group['Lv'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lv]
+        Lv_non_null_series = group['Lv'][indexes_of_vegetative_phytomers][indexes_of_all_non_null_Lv]
         if len(Lv_non_null_series) == 0:
             HS = 0.0
             NFL = 0.0
@@ -98,7 +98,7 @@ def phenology(adel_output_df):
                   L_shape[HS_indexes].astype(float)) \
                  .sum()
         indexes_of_all_non_null_Lsen = group['Lvsen'][group['Lvsen'] != 0].index
-        Lsen_non_null_series = group['Lvsen'][indexes_of_all_non_null_Lshape][indexes_of_all_non_null_Lsen]
+        Lsen_non_null_series = group['Lvsen'][indexes_of_vegetative_phytomers][indexes_of_all_non_null_Lsen]
         Lsen_equal_L_shape_series = Lsen_non_null_series[Lsen_non_null_series == L_shape[indexes_of_all_non_null_Lsen]]
         # SSI
         if indexes_of_all_non_null_Lsen.size == 0:
@@ -118,17 +118,15 @@ def phenology(adel_output_df):
                   L_shape[SSI_indexes].astype(float)) \
                  .sum()
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
-        # 15/01 (christian): a mon avis enlever 'has_ear' et garder juste  la colone 'HS_final', disponible dans nouveau adel output . 
-        # si tu veux garder la definition est :
-        # has_ear = group[group['HS_final'] >= group['NFF']] ; rename has_ear to survivors
-        has_ear = int(group[['El','Ed']].ix[indexes_of_all_null_Lshape].any().any())
+        HS_final = group['HS_final'][group.first_valid_index()]
+        has_ear = int(group[group['HS_final'] >= group['NFF']].any().any())
               
         GreenLeaf = HS - SSI
         new_phenology_data = [[TT, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,
-                              NFV, has_ear, d_base_lastcol]]
+                              NFV, has_ear, d_base_lastcol, HS_final]]
        
         new_phenology_df = pd.DataFrame(new_phenology_data, 
-                                            columns=phenology_df.columns)
+                                        columns=phenology_df.columns)
         phenology_df = pd.concat([phenology_df, new_phenology_df], 
                                  ignore_index=True)
     
@@ -178,28 +176,18 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         green_PAI = (group['Slvgreen'] + (group['SGvgreen'] + group['SEvgreen']) / 2.0 ).sum() / area_in_cm
         d_base_lastcol = group['d_base-lastcol'].mean()
         axes_cardinality = len(group)
-        # TODO: use HS and HS_final
-        # growing_axes_cardinality_df = group['HS'] > 0.5 and (group['HS'] < group['HS_final'])
-        growing_axes_cardinality_df = group[group['HS'] > 0.5]
-        growing_axes_cardinality_df = \
-        growing_axes_cardinality_df[growing_axes_cardinality_df['HS'] <= growing_axes_cardinality_df['NFF']]
-        growing_axes_cardinality_df = growing_axes_cardinality_df[growing_axes_cardinality_df['Slvgreen'] > 0.0]
+        growing_axes_cardinality_df = group[group['HS'] < group['HS_final']]
+        growing_axes_cardinality_df = growing_axes_cardinality_df[growing_axes_cardinality_df['HS'] > 0.5]
         growing_axes_cardinality = len(growing_axes_cardinality_df)
-        # calculate the number of active axes without ear
-        # TODO: use HS_final and nff to make selection :
-        # active = axes with nff <= HS_final OR (axes with nff > HSfinal AND HS < HS_final)
-        # - (any of its metamers) is growing
-        # - OR one of its is a ear.
-        # active_axes = growing_axes_cardinality_df or (not growing_axes_cardinality_df and group['HS_final'] == group['NFF'])
-        HS_positive = group[group['HS'] > 0]
-        has_ear_0 = HS_positive[HS_positive['has_ear'] == 0]
-        active_axes_without_ear_df = has_ear_0[has_ear_0['HS'] < has_ear_0['NFF']]
-        number_of_active_axes_without_ear = len(active_axes_without_ear_df)
-        # calculate the number of active axes with ear
-        active_axes_with_ear_df = HS_positive[HS_positive['has_ear'] == 1]
-        number_of_active_axes_with_ear = len(active_axes_with_ear_df)
-        # calculate of the number of active axes per square meter
-        active_axes_cardinality = number_of_active_axes_with_ear + number_of_active_axes_without_ear
+        
+        # Calculate the number of active axes. An axis is active if:
+        # - any of its metamers is growing,
+        # - XOR one of its phytomers is a ear (i.e. HS_final == NFF)
+        growing_indexes = growing_axes_cardinality_df.index
+        not_growing_indexes = group.index - growing_indexes
+        is_ear_indexes = not_growing_indexes.intersection(group[group['HS_final'] == group['NFF']].index)
+        active_axes_indexes = growing_indexes + is_ear_indexes
+        active_axes_cardinality = len(active_axes_indexes)
         
         new_axis_statistics_data = [[ThermalTime, axe_id, NFF, HS, SSI, tot_LAI, 
                                      green_LAI, tot_PAI, green_PAI, has_ear, 

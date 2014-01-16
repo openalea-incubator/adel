@@ -194,7 +194,7 @@ def checkAxeDyn(setAdelPars, dates, plotArea = 1):
     naxes = RcheckAxeDyn(d, setAdelPars)
     return _rvect_asarray(naxes) * plotArea
     
-def canL2canS(RcanT,srdb,shrink):
+def canL2canS(RcanT,srdb,shrink=1):
     sr = r.load(srdb)[0]
     sr=r(sr)
     res = RcanL2canS(RcanT,sr,shrink)

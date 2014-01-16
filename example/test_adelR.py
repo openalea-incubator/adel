@@ -2,14 +2,15 @@
 #
 #
 from openalea.plantgl.all import Viewer
-from pandas import DataFrame
+from pandas import DataFrame, concat
 import alinea.adel.data_samples as adel_data
 import numpy as np
 
 
 from alinea.adel.newmtg import *
 from alinea.adel.mtg_interpreter import mtg_interpreter, plot3d
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, canL2canS, dataframe
+from alinea.adel import postprocessing
 
 leafdb = adel_data.wheat_leaf_db()
 
@@ -22,6 +23,28 @@ def adelR(nplants,dd):
     pars = setAdel(devT,geoLeaf,geoAxe,nplants,xydb=adel_data.xydb(),srdb=adel_data.srdb())
     cantable = RunAdel(dd,pars)
     return pars,cantable
+
+def test_adelR_postprocessing(nplants, dd):
+    import alinea.adel.data_samples as adel_data
+    devT = adel_data.devT()
+    geoLeaf = genGeoLeaf()
+    geoAxe = genGeoAxe()
+    xydb = adel_data.xydb()
+    srdb = adel_data.srdb()
+    pars = setAdel(devT,geoLeaf,geoAxe,nplants,xydb=xydb, srdb=srdb)
+    
+    def run_adel(dd):
+        cantable = RunAdel(dd, pars)
+        RcanT = dataframe(cantable)
+        out = canL2canS(RcanT,srdb)
+        out_df = DataFrame(out)
+        return out_df
+    out_dfs = map(run_adel, [dd, dd + 100])
+    concat_df = concat(out_dfs, ignore_index=True)
+    domain_area = 1
+    axis_df = postprocessing.axis_statistics(concat_df, domain_area)
+    plot_df = postprocessing.plot_statistics(axis_df, nplants, domain_area)
+    return concat_df, axis_df, plot_df
    
 def getString(d):
     from alinea.adel.AdelR import dataframe, genString

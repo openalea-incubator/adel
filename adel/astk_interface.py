@@ -64,7 +64,6 @@ class AdelWheat(object):
         refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
         newg = self.setup_canopy(age = self.canopy_age)
-        canopy = RunAdel(self.canopy_age, self.pars)
         newg = mtg_update(newg, g, refg)
             
         return newg
@@ -73,7 +72,6 @@ class AdelWheat(object):
         refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
         newg = self.setup_canopy(age = self.canopy_age)
-        canopy = RunAdel(self.canopy_age, self.pars)
         newg = mtg_update(newg, g, refg)
 
         return newg
@@ -87,8 +85,11 @@ class AdelWheat(object):
     def scene(self, g):
         return plot3d(g)
         
-    def get_exposed_areas(self, g):
-        return exposed_areas(g)
+    def get_exposed_areas(self, g, convert=False):
+        areas = exposed_areas(g)
+        if convert:
+            areas = exposed_areas2canS(areas)
+        return areas
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
     model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)

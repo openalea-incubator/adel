@@ -105,7 +105,7 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
         #print "S",S
     #except:
         #S = 0
-    return S
+    return max(0,S)
     
 def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, d, split = False):
     """ return parameters of blade elements (visible parts of the blade).
@@ -315,14 +315,15 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         plant, num_metamer = [int(convert(dp.get(x)[i],undef=None)) for x in [topology[e] for e in [0,2]]]        
         axe = dp.get(topology[1])[i]
         mspos = int(convert(dp.get('ms_insertion')[i],undef=None))
+        args = properties_from_dict(dp,i,exclude=topology)
         # Add plant if new
         if plant != prev_plant:
             label = 'plant' + str(plant)
             position = (0,0,0)
             azimuth = 0
             if stand and len(stand) >= plant:
-                position,azimuth = stand[plant-1]                
-            vid_plant = g.add_component(g.root, label=label, edge_type='/', position = position, azimuth = azimuth)
+                position,azimuth = stand[plant-1]
+            vid_plant = g.add_component(g.root, label=label, edge_type='/', position = position, azimuth = azimuth, refplant_id = args.get('refplant_id'))
             #reset buffers
             prev_axe = -1            
             vid_axe = -1
@@ -343,15 +344,14 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             if axis_dynamics:
                 timetable = axis_dynamics[str(plant)][str(axe)]
             if axe == 'MS':
-                vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable)
+                vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'))
                 vid_main_stem = vid_axe
             else:
-                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label, timetable=timetable)
+                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'))
 
         # Add metamer
         assert num_metamer > 0
         # args are added to metamers only if metamer_factory is none, otherwise compute metamer components
-        args = properties_from_dict(dp,i,exclude=topology)
         components = []
         if metamer_factory:
             if leaf_db is not None:
@@ -376,7 +376,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             if not 'ntop' in args:
                 args.update({'ntop':None})
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
-            args={}
+            args={'L_shape':args.get('L_shape')}
         #
         label = 'metamer'+str(num_metamer)
         new_metamer = g.add_component(vid_axe, edge_type='/', label = label, **args)
@@ -629,19 +629,62 @@ def exposed_areas(g):
     for vid in g.vertices_iter(scale=g.max_scale()):
         n = g.node(vid)
         if n.length > 0:
+            numphy = int(''.join(list(n.complex().complex().label)[7:]))
+            nf = n.complex().complex().complex().nff
             node_data = {
                       'plant' : n.complex().complex().complex().complex().label,
                       'axe' : n.complex().complex().complex().label,
-                      'metamer' : int(''.join(list(n.complex().complex().label)[7:])),
+                      'metamer' : numphy,
                       'organ' : n.complex().label,
-                      'ntop' : n.complex().ntop,
+                      'ntop' : nf - numphy + 1,
                       'element' : n.label,
+                      'refplant_id': n.complex().complex().complex().complex().refplant_id,
+                      'nff': nf,
+                      'HS_final':n.complex().complex().complex().HS_final,
+                      'L_shape':n.complex().complex().L_shape
                          }
             properties = n.properties()
             node_data.update({k:properties[k]  for k in what})
             data[vid] = node_data
     df =  pandas.DataFrame(data).T
     return df
+    
+def exposed_areas2canS(exposed_areas):
+    """ adaptor to convert new adel output to old adel output (canS-like) dataframe """
+    d = exposed_areas
+    if len(d) > 0:
+        grouped = d.groupby(['plant', 'axe', 'metamer'], group_keys=False)
+        def _metamer(sub):
+            met = {'plant': sub.plant.values[0],
+                   'refplant_id': sub.refplant_id.values[0],
+                   'axe_id' : sub.axe.values[0],
+                   'nff' : sub.nff.values[0],
+                   'HS_final': sub.HS_final.values[0],
+                   'numphy' : sub.metamer.values[0],
+                   'ntop' : sub.ntop.values[0],
+                   'L_shape' : sub.L_shape.values[0],
+                   'Lv' : sub[sub.organ == 'blade'].length.sum(),
+                   'Lvgreen' : sub[sub.organ == 'blade'].green_length.sum(),
+                   'Lvsen' : sub[sub.organ == 'blade'].senesced_length.sum(),              
+                   'Slv' : sub[sub.organ == 'blade'].area.sum(),
+                   'Slvgreen' : sub[sub.organ == 'blade'].green_area.sum(),
+                   'Slvsen' : sub[sub.organ == 'blade'].senesced_area.sum(),
+                   'Gv' : sub[sub.organ == 'sheath'].length.sum(),
+                   'Gvgreen' : sub[sub.organ == 'sheath'].green_length.sum(),
+                   'Gvsen' : sub[sub.organ == 'sheath'].senesced_length.sum(),              
+                   'SGv' : sub[sub.organ == 'sheath'].area.sum(),
+                   'SGvgreen' : sub[sub.organ == 'sheath'].green_area.sum(),
+                   'SGvsen' : sub[sub.organ == 'sheath'].senesced_area.sum(),
+                   'Ev' : sub[sub.organ == 'internode'].length.sum(),
+                   'Evgreen' : sub[sub.organ == 'internode'].green_length.sum(),
+                   'Evsen' : sub[sub.organ == 'internode'].senesced_length.sum(),              
+                   'SEv' : sub[sub.organ == 'internode'].area.sum(),
+                   'SEvgreen' : sub[sub.organ == 'internode'].green_area.sum(),
+                   'SEvsen' : sub[sub.organ == 'internode'].senesced_area.sum()
+                  }
+            return pandas.DataFrame(met,index = [sub.index[0]])
+        d = grouped.apply(_metamer)
+    return d
 # to do
 
 # varaibles sur element : area, senesced_area, senescenece_position (0,1 sur la feuille)

@@ -166,7 +166,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
     axis_statistics_df = \
         pd.DataFrame(columns=['ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
                                   'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol', 'axes_cardinality', 
-                                  'growing_axes_cardinality', 'active_axes_cardinality'])
+                                  'growing_axes_cardinality', 'active_axes_cardinality', 'axis_order'])
     for (ThermalTime, axe_id, NFF, has_ear), group in intermediate_df.groupby(['TT', 'axe_id', 'NFF', 'has_ear'], as_index=False):
         HS = group['HS'].mean()
         SSI = group['SSI'].mean()
@@ -188,11 +188,16 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         is_ear_indexes = not_growing_indexes.intersection(group[group['HS_final'] == group['NFF']].index)
         active_axes_indexes = growing_indexes + is_ear_indexes
         active_axes_cardinality = len(active_axes_indexes)
+        if axe_id == 'MS':
+            axis_order = 0
+        else:
+            axis_order = axe_id.count('.') + 1
         
         new_axis_statistics_data = [[ThermalTime, axe_id, NFF, HS, SSI, tot_LAI, 
                                      green_LAI, tot_PAI, green_PAI, has_ear, 
                                      d_base_lastcol, axes_cardinality, 
-                                     growing_axes_cardinality, active_axes_cardinality]]
+                                     growing_axes_cardinality, 
+                                     active_axes_cardinality, axis_order]]
         new_axis_statistics_df = pd.DataFrame(new_axis_statistics_data, 
                                                   columns=axis_statistics_df.columns)
         axis_statistics_df = pd.concat([axis_statistics_df, 

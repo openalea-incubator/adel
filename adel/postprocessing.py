@@ -119,7 +119,7 @@ def phenology(adel_output_df):
                  .sum()
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
         HS_final = group['HS_final'][group.first_valid_index()]
-        has_ear = int(group[group['HS_final'] >= group['NFF']].any().any())
+        has_ear = int(group[group['HS_final'] >= group['nff']].any().any())
               
         GreenLeaf = HS - SSI
         new_phenology_data = [[TT, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,

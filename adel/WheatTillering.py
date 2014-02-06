@@ -91,7 +91,8 @@ class WheatTillering(object):
             d = {'cohort': cohort, 
                  'delay': self.cohort_delays[cohort],
                  'primary_axis':x[x['primary']]['probability'].sum() * plant_density,
-                 'other_axis' : x[~x['primary']]['probability'].sum() * plant_density   #'other_axis' : x[~x['primary']]['probability'].sum() * plant_density * self.secondary_tiller_probabilities[cohort],
+                 'other_axis' : x[~x['primary']]['probability'].sum() * plant_density   
+                 #'other_axis' : x[~x['primary']]['probability'].sum() * plant_density * self.secondary_tiller_probabilities[cohort],
                  }
             out = pandas.DataFrame(d,index = [x.index[0]])
             out['total_axis'] = out['primary_axis'] + out['other_axis']

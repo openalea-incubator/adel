@@ -143,5 +143,5 @@ def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,
                                                             inter_row=inter_row)
     wheat = AdelWheat(nplants=nplants, positions = positions, seed= seed, sample=sample)
     g,_ = new_canopy(wheat,age=age)
-    return g, wheat, domain_area, domain
+    return g, wheat, domain_area, domain, convUnit
         

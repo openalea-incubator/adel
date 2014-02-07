@@ -2,7 +2,7 @@
 per metamer"""
 
 import pandas
-import numpy as np
+import numpy
 from os.path import join as pj
 import time
 import imp
@@ -69,7 +69,7 @@ for Linc in (0, 0.5, 1):
         # keep only upper elements: metamers (4, 3, 2, 1) and ears (0, -1, -2) 
         metamers_parameters_group = metamers_parameters_group[metamers_parameters_group.index_phytomer_ntop <= 4]
         # create pseudo-stem elements (spacer between leaves)
-        metamers_parameters_group['pstem'] = np.diff([0] + metamers_parameters_group['h_insertion'].tolist())
+        metamers_parameters_group['pstem'] = numpy.diff([0] + metamers_parameters_group['h_insertion'].tolist())
         
         # keep only the useful columns
         metamers_parameters_group = metamers_parameters_group[['id_plt', 'index_phytomer_ntop', 'L_blade', 'W_blade', 'pstem', 'W_sheath']]
@@ -92,6 +92,7 @@ for Linc in (0, 0.5, 1):
         metamers_parameters_group['L_shape'] = metamers_parameters_group['Ll']
         metamers_parameters_group['Linc'] = Linc
         metamers_parameters_group['Gv'] = 0
+        metamers_parameters_group['Gd'] = 0
         metamers_parameters_group['Gsen'] = 0
         metamers_parameters_group['Ginc'] = 0
         metamers_parameters_group['Ev'] = metamers_parameters_group['El']
@@ -107,7 +108,7 @@ for Linc in (0, 0.5, 1):
     if number_of_available_plants < FINAL_NUMBER_OF_PLANTS:
         # sample the available plants to have FINAL_NUMBER_OF_PLANTS in the constructed canopy
         number_of_plants_to_sample  = FINAL_NUMBER_OF_PLANTS - number_of_available_plants
-        metamers_parameters_sample = np.random.choice(metamers_parameters, number_of_plants_to_sample)
+        metamers_parameters_sample = numpy.random.choice(metamers_parameters, number_of_plants_to_sample)
         metamers_parameters.extend(metamers_parameters_sample)
     
     metamers_parameters = pandas.concat(metamers_parameters, ignore_index=True)
@@ -209,8 +210,8 @@ for Linc in (0, 0.5, 1):
     # Star is "ratio viewed area / area". It takes into consideration the angles of 
     # incidence ('directions') and the hidden fractions of the leaves 
     # Extract the phytomer number for each element in res['adel_label']:
-    last_part_of_adel_label = np.char.partition(caribu_out['adel_label'].values.astype(str), 'metamer')[:, 2]
-    metamers = np.char.partition(last_part_of_adel_label, '_')[:, 0]
+    last_part_of_adel_label = numpy.char.partition(caribu_out['adel_label'].values.astype(str), 'metamer')[:, 2]
+    metamers = numpy.char.partition(last_part_of_adel_label, '_')[:, 0]
     # create a column 'numphy' in the dataframe caribu_out
     caribu_out['numphy'] = metamers
     caribu_out['angle_of_incidence'] = angle_of_incidence

@@ -247,8 +247,8 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     axis_statistics_df.insert(0, 'Filename', intermediate_path.basename())
     peraxis_postprocessing_path_ = path(peraxis_postprocessing_path)
     if peraxis_postprocessing_path_.exists():
-        old_peraxis_postprocessing_df = pandas.read_csv(peraxis_postprocessing_path_)
-        axis_statistics_df = pandas.concat([old_peraxis_postprocessing_df, 
+        old_peraxis_postprocessing_df = pd.read_csv(peraxis_postprocessing_path_)
+        axis_statistics_df = pd.concat([old_peraxis_postprocessing_df, 
                                             axis_statistics_df], 
                                            ignore_index=True)
     axis_statistics_df.to_csv(peraxis_postprocessing_path_, 
@@ -258,8 +258,8 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     plot_statistics_df.insert(0, 'Filename', intermediate_path.basename())
     global_postprocessing_path_ = path(global_postprocessing_path)
     if global_postprocessing_path_.exists():
-        old_global_postprocessing_df = pandas.read_csv(global_postprocessing_path_)
-        plot_statistics_df = pandas.concat([old_global_postprocessing_df, 
+        old_global_postprocessing_df = pd.read_csv(global_postprocessing_path_)
+        plot_statistics_df = pd.concat([old_global_postprocessing_df, 
                                             plot_statistics_df], 
                                            ignore_index=True)
     plot_statistics_df.to_csv(global_postprocessing_path_, 

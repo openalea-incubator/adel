@@ -3,7 +3,7 @@ try:
     from scipy import stats
 except:
     from scipy import stats
-import numpy as np as np
+import numpy as np
 import pandas
 from math import *
 from os import chdir

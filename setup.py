@@ -53,6 +53,7 @@ setup(
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},
+    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('adel', 'data'))},
 
     # Add package platform libraries if any
     zip_safe = False,

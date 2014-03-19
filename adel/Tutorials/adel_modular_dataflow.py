@@ -114,7 +114,7 @@ repeated_thermal_times = np.repeat(thermal_times, 1)
 # loop on repeated thermal times
 for thermal_time in repeated_thermal_times:
     # RunAdel
-    global_parameters = {'endLeaf': 1.6, 'stemLeaf': 1.2, 'epsillon': 1e-06, 'startLeaf': -0.4, 'senescence_leaf_shrink': 0.5}
+    global_parameters = {'endLeaf': 1.6, 'endLeaf1': 1.6, 'epsillon': 1e-06, 'startLeaf': -0.4, 'senescence_leaf_shrink': 0.5, 'stemLeaf': 1.2}
     Lstrings = AdelR.RunAdel(thermal_time, simulation_parameters, global_parameters)
     # Rdataframe
     from alinea.adel.io import io

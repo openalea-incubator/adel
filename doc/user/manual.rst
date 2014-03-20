@@ -266,7 +266,7 @@ There is one line per ear type (referred by id_ear in :ref:`axeT <axeT>`)
     * - **TT_z92** 
       - Thermal time (relative to canopy emergence) of the end of grain filling (corresponding on z92 on Zadoks scale)
     * - **L_peduncle** 
-      - length of the ear peduncle (cm)
+      - length of the ear peduncle: from the last node to the base of the ear (cm)
     * - **W_peduncle** 
       - diameter of the ear peduncle (cm)
     * - **L_ear** 

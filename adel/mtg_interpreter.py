@@ -147,105 +147,108 @@ class AdelTurtle(pgl.PglTurtle):
         self.move(frame['Position'])
         self.setHead(frame['Head'], frame['Up'])
     
-        
-def adel_visitor(g, v, turtle):
+
+class AdelVisitor():
     """ Performs geometric interpretation of mtg nodes
     """
+    def __init__(self, classic):
+        self.classic = classic
     
-    # 1. retrieve the node
-    n = g.node(v)
-    axis = n.complex_at_scale(scale=2).label
-    prev_axis = turtle.context.get("axis",axis)
-    metamer = n.complex_at_scale(scale=3)
-    
-    # Go to plant position if first plant element
-    if n.parent() is None:#this is a new plant base
-        p = n.complex_at_scale(scale=1)
-        if 'position' in p.properties():
-            #print p.label, 'moving to ', p.position
-            turtle.move(p.position)
-        else:
-            turtle.move(0,0,0)
-        #initial position to be compatible with canMTG positioning
-        turtle.setHead(0,0,1,-1,0,0)
-        if 'azimuth' in p.properties():
-            turtle.rollR(p.azimuth)
-        #print prev_axis, 'stop'
-        #print 'new MS start'
-        turtle.context.update({'MS_top':turtle.getFrame(),'tiller_base':turtle.getFrame(),  'top':turtle.getFrame()})
+    def __call__(self, g, v, turtle):
+        # 1. retrieve the node
+        n = g.node(v)
+        axis = n.complex_at_scale(scale=2).label
+        prev_axis = turtle.context.get("axis",axis)
+        metamer = n.complex_at_scale(scale=3)
         
-    if axis != prev_axis:
-        if metamer.edge_type() == '+':
-            if prev_axis == 'MS':
-                #this is the begining of the first tiller
-                #print axis, 'start'
-                #top of mainstem saved 
-                turtle.context['MS_top'] = turtle.context['top']
-                turtle.context['tiller_base'] = turtle.context['top']
+        # Go to plant position if first plant element
+        if n.parent() is None:#this is a new plant base
+            p = n.complex_at_scale(scale=1)
+            if 'position' in p.properties():
+                #print p.label, 'moving to ', p.position
+                turtle.move(p.position)
             else:
-                # this is a new tiller attached to the same point thatn the previous tiller
-                #print prev_axis, 'stop'
-                #print axis, 'start'
-                # return to tilller base
-                turtle.context['top'] = turtle.context['tiller_base']
-        else:#this is the continuation of MS
+                turtle.move(0,0,0)
+            #initial position to be compatible with canMTG positioning
+            turtle.setHead(0,0,1,-1,0,0)
+            if 'azimuth' in p.properties():
+                turtle.rollR(p.azimuth)
             #print prev_axis, 'stop'
-            #print axis, 'continue'
-            turtle.context['top'] = turtle.context['MS_top']
-
-    #hypothesis that inclin is to be applied at the base of the visible elements
-    #if n.offset > 0:
-    #    turtle.f(n.offset)
-    turtle.setFrame(turtle.context['top'])
-    #incline turtle at the base of stems,
-    if n.label.startswith('Stem'):
-        inclin = float(n.inclination) if n.inclination else 0.
-        azim = float(n.azimuth) if n.azimuth else 0.
-        if inclin:
-            #print 'node', n._vid, 'inclin', inclin
-            # incline along curent azimuth for ramification (tiller bases) or plant base
-            if (axis != prev_axis and metamer.edge_type() == '+') or n.parent() is None:
-                #print 'axis',axis, 'prev_axis', prev_axis,' node ', n._vid, 'edge', n.edge_type(),'up before inclin ', turtle.getUp(), 'inclin', inclin
-                if prev_axis != 'MS': #new tiller attached to the same position than the firt
-                    turtle.rollR(azim)
-                    turtle.context['tiller_base'] = turtle.getFrame()
-                turtle.down(inclin)
-                #print 'up after inclin', turtle.getUp()
-            # if not incline towardss vertical
-            else:
-                up = turtle.getUp()
-                zleft = turtle.getLeft()[2]
-                turtle.rollToVert()
-                #print 'up after rollToVert', turtle.getUp()
-                angle = degrees(pgl.angle(up,turtle.getUp()))
-                dzl = zleft - turtle.getLeft()[2]
-                turtle.down(inclin)
-                #replace turtle in original azimuth plane
-                #print 'angle ', angle, 'dzl', dzl
-                if dzl < 0:
-                    angle = -angle
-                turtle.rollR(-angle)
-        if azim:
-            #print 'node', n._vid, 'azim ', azim
-            turtle.rollR(azim)
-
-       
-    #if n.label.startswith('Leaf'):    
+            #print 'new MS start'
+            turtle.context.update({'MS_top':turtle.getFrame(),'tiller_base':turtle.getFrame(),  'top':turtle.getFrame()})
+            
+        if axis != prev_axis:
+            if metamer.edge_type() == '+':
+                if prev_axis == 'MS':
+                    #this is the begining of the first tiller
+                    #print axis, 'start'
+                    #top of mainstem saved 
+                    turtle.context['MS_top'] = turtle.context['top']
+                    turtle.context['tiller_base'] = turtle.context['top']
+                else:
+                    # this is a new tiller attached to the same point thatn the previous tiller
+                    #print prev_axis, 'stop'
+                    #print axis, 'start'
+                    # return to tilller base
+                    turtle.context['top'] = turtle.context['tiller_base']
+            else:#this is the continuation of MS
+                #print prev_axis, 'stop'
+                #print axis, 'continue'
+                turtle.context['top'] = turtle.context['MS_top']
     
-    # update geometry of elements
-    if n.length > 0:
-        mesh = compute_element(n)
-        if mesh:#To DO : reset to None if calculated so ?
-            n.geometry = turtle.transform(mesh)
-    # 3. Update the turtle and context
-    turtle.setId(v)
-    if n.label.startswith('Stem'):
-        if n.length > 0:
-            turtle.f(n.length)
-        turtle.context.update({'top': turtle.getFrame()})       
-    turtle.context.update({'axis':axis})
+        #hypothesis that inclin is to be applied at the base of the visible elements
+        #if n.offset > 0:
+        #    turtle.f(n.offset)
+        turtle.setFrame(turtle.context['top'])
+        #incline turtle at the base of stems,
+        if n.label.startswith('Stem'):
+            inclin = float(n.inclination) if n.inclination else 0.
+            azim = float(n.azimuth) if n.azimuth else 0.
+            if inclin:
+                #print 'node', n._vid, 'inclin', inclin
+                # incline along curent azimuth for ramification (tiller bases) or plant base
+                if (axis != prev_axis and metamer.edge_type() == '+') or n.parent() is None:
+                    #print 'axis',axis, 'prev_axis', prev_axis,' node ', n._vid, 'edge', n.edge_type(),'up before inclin ', turtle.getUp(), 'inclin', inclin
+                    if prev_axis != 'MS': #new tiller attached to the same position than the firt
+                        turtle.rollR(azim)
+                        turtle.context['tiller_base'] = turtle.getFrame()
+                    turtle.down(inclin)
+                    #print 'up after inclin', turtle.getUp()
+                # if not incline towardss vertical
+                else:
+                    up = turtle.getUp()
+                    zleft = turtle.getLeft()[2]
+                    turtle.rollToVert()
+                    #print 'up after rollToVert', turtle.getUp()
+                    angle = degrees(pgl.angle(up,turtle.getUp()))
+                    dzl = zleft - turtle.getLeft()[2]
+                    turtle.down(inclin)
+                    #replace turtle in original azimuth plane
+                    #print 'angle ', angle, 'dzl', dzl
+                    if dzl < 0:
+                        angle = -angle
+                    turtle.rollR(-angle)
+            if azim:
+                #print 'node', n._vid, 'azim ', azim
+                turtle.rollR(azim)
+    
+           
+        #if n.label.startswith('Leaf'):    
         
-def mtg_interpreter(g, visitor = adel_visitor):
+        # update geometry of elements
+        if n.length > 0:
+            mesh = compute_element(n, self.classic)
+            if mesh:#To DO : reset to None if calculated so ?
+                n.geometry = turtle.transform(mesh)
+        # 3. Update the turtle and context
+        turtle.setId(v)
+        if n.label.startswith('Stem'):
+            if n.length > 0:
+                turtle.f(n.length)
+            turtle.context.update({'top': turtle.getFrame()})       
+        turtle.context.update({'axis':axis})
+        
+def mtg_interpreter(g, classic=False):
     ''' Compute/update the geometry on each node of the MTG using Turtle geometry. '''
 #BUG : sub_mtg mange le vertex plant => on perd la plante !
     #plants = g.component_roots_at_scale(g.root, scale=1)
@@ -255,6 +258,7 @@ def mtg_interpreter(g, visitor = adel_visitor):
     #for plant in plants:
     #   gplant = g.sub_mtg(plant)
     turtle = AdelTurtle()
+    visitor = AdelVisitor(classic)
     scene = TurtleFrame(g, visitor=visitor, turtle=turtle, gc=False, all_roots=True)
     #   gt = union(gplant,gt)
        

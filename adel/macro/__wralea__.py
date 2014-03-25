@@ -17,7 +17,7 @@ __institutes__ = 'CIRAD'
 __icon__ = ''
 
 
-__all__ = ['CanT2MTG', 'write_LAI_PAI_Write_LAI_PAI', 'calculateTCViaPovray_calculateTCViaPovray', '_250501904', 'ThermalTimeInterval', '_251809872', 'plot', '_250502416', 'genMTG', 'RunLpy', 'genFilepath', 'calculate_LAI_TC_ViaCaribu_calculate_LAI_TC_ViaCaribu', '_250502800', 'visualization3D_visualization3D', 'getFieldPlotDescription', 'getGeometricData', 'LAIg', 'getBotanicData', 'addsoil_2_addsoil_2', '_250502608', 'calculateLAIViaAdel_calculateLAIViaAdel', '_250501584', 'CaribuZenithParStr', 'colors', 'AND_AND', 'setColors', 'animator']
+__all__ = ['CanT2MTG', 'write_LAI_PAI_Write_LAI_PAI', 'calculateTCViaPovray_calculateTCViaPovray', '_250501904', 'ThermalTimeInterval', '_251809872', 'plot', '_250502416', 'genMTG', 'RunLpy', 'genFilepath', 'calculate_LAI_TC_ViaCaribu_calculate_LAI_TC_ViaCaribu', '_250502800', 'constructPlantGLScene_constructPlantGLScene', 'getFieldPlotDescription', 'getGeometricData', 'LAIg', 'getBotanicData', 'addsoil_2_addsoil_2', '_250502608', 'calculateLAIViaAdel_calculateLAIViaAdel', '_250501584', 'CaribuZenithParStr', 'colors', 'AND_AND', 'setColors', 'animator']
 
 
 
@@ -1845,12 +1845,12 @@ _250502800 = CompositeNodeFactory(name='select_variable',
 
 
 
-visualization3D_visualization3D = Factory(name='visualization3D',
+constructPlantGLScene_constructPlantGLScene = Factory(name='constructPlantGLScene',
                 authors='C. Chambon',
                 description='',
                 category='Unclassified',
-                nodemodule='visualization3D',
-                nodeclass='visualization3D',
+                nodemodule='constructPlantGLScene',
+                nodeclass='constructPlantGLScene',
                 inputs=[{'interface': None, 'name': 'stand_MTG', 'value': None, 'desc': ''}, {'interface': IStr, 'name': 'property_name', 'value': 'tissue_type', 'desc': ''}, {'interface': None, 'name': 'colors', 'value': [[0, 255, 0], [255, 0, 0], [0, 255, 0], [255, 0, 0], [0, 255, 0], [255, 0, 0], [0, 255, 0], [255, 0, 0], [0, 255, 0], [255, 0, 0], [0, 255, 0], [255, 0, 0]], 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'plantgl_scene', 'desc': ''}],
                 widgetmodule=None,

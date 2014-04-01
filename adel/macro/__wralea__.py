@@ -17,7 +17,7 @@ __institutes__ = 'CIRAD'
 __icon__ = ''
 
 
-__all__ = ['CanT2MTG', 'write_LAI_PAI_Write_LAI_PAI', 'calculateTCViaPovray_calculateTCViaPovray', '_250501904', 'ThermalTimeInterval', '_251809872', 'plot', '_250502416', 'genMTG', 'RunLpy', 'genFilepath', 'calculate_LAI_TC_ViaCaribu_calculate_LAI_TC_ViaCaribu', '_250502800', 'constructPlantGLScene_constructPlantGLScene', 'getFieldPlotDescription', 'getGeometricData', 'LAIg', 'getBotanicData', 'addsoil_2_addsoil_2', '_250502608', 'calculateLAIViaAdel_calculateLAIViaAdel', '_250501584', 'CaribuZenithParStr', 'colors', 'AND_AND', 'setColors', 'animator']
+__all__ = ['CanT2MTG', 'write_LAI_PAI_Write_LAI_PAI', 'calculateTCViaPovray_calculateTCViaPovray', '_250501904', 'ThermalTimeInterval', '_251809872', 'plot', '_250502416', 'genMTG', 'RunLpy', 'genFilepath', 'calculate_LAI_TC_ViaCaribu_calculate_LAI_TC_ViaCaribu', '_250502800', 'constructPlantGLScene_constructPlantGLScene', 'getFieldPlotDescription', 'getGeometricData', 'LAIg', 'getBotanicData', 'addsoil_2_addsoil_2', '_250502608', 'calculateLAIViaAdel_calculateLAIViaAdel', 'energy_per_organ_energy_per_organ', 'energy_per_organ_macro_energy_per_organ_macro', '_250501584', 'CaribuZenithParStr', 'colors', 'AND_AND', 'setColors', 'animator']
 
 
 
@@ -3414,6 +3414,39 @@ calculateLAIViaAdel_calculateLAIViaAdel = Factory(name='calculateLAIViaAdel',
                )
 
 
+energy_per_organ_energy_per_organ = Factory(name='energy_per_organ',
+                authors='C. Chambon',
+                nodemodule='energy_per_organ',
+                nodeclass='energy_per_organ',
+                inputs=[{'interface': None, 'name': 'nplants', 'value': None}, 
+                        {'interface': None, 'name': 'positions', 'value': None}, 
+                        {'interface': None, 'name': 'adel_output', 'value': None}, 
+                        {'interface': None, 'name': 'leaves_db', 'value': None}, 
+                        {'interface': None, 'name': 'domain', 'value': None},
+                        {'interface': IBool, 'name': 'classic', 'value': True}, 
+                        {'interface': IInt, 'name': 'number_of_directions', 'value': 46}, 
+                        {'interface': IFloat, 'name': 'convUnit', 'value': 0.01}, 
+                        {'interface': IEnumStr(enum=['Eabs', 'Einc', 'Ei', 'EincSup', 'EincInf', 'Area', 'Eabsm2', 'EiInf', 'EiSup', 'Opt', 'Opak', 'Plt', 'Elt', 'label']), 'name': 'caribu_output', 'value': 'Ei', 'desc': 'Eabs is absorbed radiation, Einc is incident radiation on objects'}],
+               )
+
+
+energy_per_organ_macro_energy_per_organ_macro = Factory(name='energy_per_organ_macro',
+                authors='C. Chambon',
+                nodemodule='energy_per_organ',
+                nodeclass='energy_per_organ_macro',
+                inputs=[{'interface': None, 'name': 'nplants', 'value': None}, 
+                        {'interface': None, 'name': 'positions', 'value': None}, 
+                        {'interface': None, 'name': 'adel_output', 'value': None}, 
+                        {'interface': None, 'name': 'leaves_db', 'value': None}, 
+                        {'interface': None, 'name': 'domain', 'value': None},
+                        {'interface': None, 'name': 'output_directory', 'value': None},
+                        {'interface': None, 'name': 'thermal_time', 'value': None},
+                        {'interface': IBool, 'name': 'classic', 'value': True}, 
+                        {'interface': IInt, 'name': 'number_of_directions', 'value': 46}, 
+                        {'interface': IFloat, 'name': 'convUnit', 'value': 0.01}, 
+                        {'interface': IEnumStr(enum=['Eabs', 'Einc', 'Ei', 'EincSup', 'EincInf', 'Area', 'Eabsm2', 'EiInf', 'EiSup', 'Opt', 'Opak', 'Plt', 'Elt', 'label']), 'name': 'caribu_output', 'value': 'Ei', 'desc': 'Eabs is absorbed radiation, Einc is incident radiation on objects'}],
+                outputs=[{'interface': IStr, 'name': 'energy_path', 'desc': ''}],                                                
+               )
 
 
 _250501584 = CompositeNodeFactory(name='texture plot',

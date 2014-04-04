@@ -671,7 +671,7 @@ Otherwise, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantg
 permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
-the module :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
+the module :download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`, 
 the lines preceding the call to :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
 can be replaced by::
 
@@ -693,7 +693,7 @@ can be replaced by::
 permits the user to store the arguments, so he can reuse them later. 
 
 .. warning:: you must adapt the content of the Python module (e.g. 
-             :download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`) before 
+             :download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`) before 
              using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
              with it.
     
@@ -752,7 +752,7 @@ Finally, the node ``read_plantgen_inputs`` permits to define the values of the i
 ``alinea.adel.plantgen``. 
     
 For example, using ``read_plantgen_inputs`` with the module 
-:download:`plantgen_inputs_MIN.py <../../adel/data/plantgen_inputs_MIN.py>`, 
+:download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`, 
 the dataflow becomes:
     
     .. figure:: ./image/plantgen_csv_inputs_dataflow.png

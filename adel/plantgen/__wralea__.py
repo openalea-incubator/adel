@@ -12,7 +12,7 @@ __license__ = ''
 __url__ = ''
 __alias__ = ['plantgen']
 __version__ = ''
-__authors__ = 'C. Chambon, M. Abichou and B. Andrieu'
+__authors__ = 'M. Abichou, B. Andrieu, C. Chambon'
 __institutes__ = ''
 __icon__ = ''
 
@@ -21,7 +21,7 @@ __all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'pl
 
 
 plantgen_plantgen = Factory(name='plantgen',
-                authors='C. Chambon, M. Abichou and B. Andrieu',
+                authors='M. Abichou, B. Andrieu, C. Chambon',
                 category='data processing',
                 nodemodule='plantgen',
                 nodeclass='gen_adel_input_data',
@@ -42,7 +42,7 @@ plantgen_plantgen = Factory(name='plantgen',
                )
 
 read_plantgen_inputs_read_plantgen_inputs = Factory(name='read_plantgen_inputs',
-                authors='C. Chambon, M. Abichou and B. Andrieu',
+                authors='M. Abichou, B. Andrieu, C. Chambon',
                 category='data processing',
                 nodemodule='plantgen',
                 nodeclass='read_plantgen_inputs',
@@ -65,7 +65,7 @@ read_plantgen_inputs_read_plantgen_inputs = Factory(name='read_plantgen_inputs',
                )
 
 plantgen2adel_plantgen2adel = Factory(name='plantgen2adel',
-                authors='C. Chambon, M. Abichou and B. Andrieu',
+                authors='M. Abichou, B. Andrieu, C. Chambon',
                 category='data processing',
                 nodemodule='plantgen',
                 nodeclass='plantgen2adel',

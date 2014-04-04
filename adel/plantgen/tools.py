@@ -2,7 +2,7 @@
 #
 #       Adel.PlantGen
 #
-#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#       Copyright 2012-2014 INRIA - CIRAD - INRA
 #
 #       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
 #
@@ -17,14 +17,12 @@
 Generic tools used in the :mod:`alinea.adel.plantgen` package. These routines can 
 also be used by other packages. 
 
-Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
+Authors: M. Abichou, B. Andrieu, C. Chambon
 '''
 
 import random
-import warnings
 
 import numpy as np
-import pandas
 from scipy.optimize import leastsq
 
 def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, parent_cohort_index=None, parent_cohort_position=None):

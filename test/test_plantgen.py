@@ -1,7 +1,6 @@
 import random
 
-from adel.plantgen import axeT, dimT, phenT, \
-    plantgen, dynT, params, tools
+from adel.plantgen import params, tools, plantgen_interface, plantgen_core
 import numpy as np
 import pandas
 from openalea.core.path import path
@@ -38,210 +37,128 @@ if not default_results.exists():
 relative_tolerance = 10e-3
 absolute_tolerance = 10e-3
 
-
 def reinit_random_state():
     random.setstate(initial_random_state)
 
-
 @with_setup(reinit_random_state)
-def test_create_axeT_tmp():
-    expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    axeT_ = axeT.create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
-    test_table_filepath = default_results.joinpath('axeT_tmp.csv')
-    axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
+def test_init_axes():
+    (theoretical_cohort_cardinalities, 
+     theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(plants_number, 
+                                                                                 decide_child_cohort_probabilities,
+                                                                                 decide_child_axis_probabilities,
+                                                                                 params.FIRST_CHILD_DELAY)
+    cardinalityT = plantgen_core.init_axes(plants_number, 
+                                           decide_child_cohort_probabilities, 
+                                           MS_leaves_number_probabilities, 
+                                           theoretical_cohort_cardinalities,
+                                           theoretical_axis_cardinalities)
+    expected_cardinalityT = pandas.read_csv(default_expected_results_dir/'cardinalityT.csv')
+    test_table_filepath = default_results.joinpath('cardinalityT.csv')
+    cardinalityT.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
-    assert (axeT_['id_axis'] == expected_axeT['id_axis']).all() 
-    del axeT_['id_axis']
-    del expected_axeT['id_axis']
-    np.testing.assert_allclose(axeT_.values, expected_axeT.values, relative_tolerance, absolute_tolerance)
+    assert (cardinalityT['id_axis'] == expected_cardinalityT['id_axis']).all()
+    cardinalityT = cardinalityT.drop('id_axis', axis=1)
+    expected_cardinalityT = expected_cardinalityT.drop('id_axis', axis=1)
+    np.testing.assert_allclose(cardinalityT.values, expected_cardinalityT.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
-def test_create_dynT_tmp():
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_dynT = pandas.read_csv(default_expected_results_dir/'dynT_tmp.csv')
-    dynT_ = dynT.create_dynT_tmp(axeT_)
-    test_table_filepath = default_results.joinpath('dynT_tmp.csv')
-    dynT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    assert (dynT_['id_axis'] == expected_dynT['id_axis']).all()
-    del dynT_['id_axis']
-    del expected_dynT['id_axis']
-    np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_dimT_tmp():
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT_tmp.csv')
-    dimT_ = dimT.create_dimT_tmp(axeT_)
-    test_table_filepath = default_results.joinpath('dimT_tmp.csv')
-    dimT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    assert (dimT_['id_axis'] == expected_dimT['id_axis']).all()
-    del dimT_['id_axis']
-    del expected_dimT['id_axis']
-    np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
-
-        
-@with_setup(reinit_random_state)
-def test_create_dynT():
-    dimT_tmp = pandas.read_csv(default_expected_results_dir/'dimT_tmp_merged.csv')
-    dynT_tmp = pandas.read_csv(default_expected_results_dir/'dynT_tmp_merged.csv')
-    decimal_elongated_internode_number = dynT.calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp)
+def test_phenology_functions():
+    dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
+    dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
+    dynT_ = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
+                                              MS_leaves_number_probabilities, 
+                                              dynT_user, dimT_user, GL_number, plantgen_core.DataCompleteness.SHORT, 
+                                              plantgen_core.DataCompleteness.SHORT, TT_col_break)
     expected_dynT = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    dynT_ = dynT.create_dynT(dynT_tmp, GL_number, decimal_elongated_internode_number)
     test_table_filepath = default_results.joinpath('dynT.csv')
     dynT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
     print 'The results have been saved to %s' % test_table_filepath
     assert (dynT_['id_axis'] == expected_dynT['id_axis']).all()
-    del dynT_['id_axis']
-    del expected_dynT['id_axis']
+    dynT_ = dynT_.drop('id_axis', axis=1)
+    expected_dynT = expected_dynT.drop('id_axis', axis=1)
     np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)
     
 
 @with_setup(reinit_random_state)
-def test_create_phenT_tmp():
-    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    axeT_tmp = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
-    phenT_tmp = phenT.create_phenT_tmp(axeT_tmp, dynT_)
-    test_table_filepath = default_results.joinpath('phenT_tmp.csv')
-    phenT_tmp.to_csv(test_table_filepath, na_rep='NA', index=False)  
+def test_plants_structure():
+    dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
+    dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
+    axeT_, tilleringT, phenT_first = plantgen_core.plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
+                                                                    dynT_user, dimT_user, GL_number, plantgen_core.DataCompleteness.SHORT, 
+                                                                    plantgen_core.DataCompleteness.SHORT, TT_col_break, delais_TT_stop_del_axis, 
+                                                                    number_of_ears, plants_density, ears_density)
+    expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
+    test_table_filepath = default_results.joinpath('axeT.csv')
+    axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(phenT_tmp.values, expected_phenT_tmp.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_phenT_first():
-    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
+    assert (axeT_['id_axis'] == expected_axeT['id_axis']).all()
+    axeT_ = axeT_.drop('id_axis', axis=1)
+    expected_axeT = expected_axeT.drop('id_axis', axis=1)
+    np.testing.assert_allclose(axeT_.values, expected_axeT.values, relative_tolerance, absolute_tolerance)
+    
+    expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
+    test_table_filepath = default_results.joinpath('tilleringT.csv')
+    tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(tilleringT.values, expected_tilleringT.values, relative_tolerance, absolute_tolerance)
+    
     expected_phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    phenT_first = phenT.create_phenT_first(phenT_tmp)
     test_table_filepath = default_results.joinpath('phenT_first.csv')
-    phenT_first.to_csv(test_table_filepath, na_rep='NA', index=False)  
+    phenT_first.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(phenT_first.values, expected_phenT_first.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
-def test_create_phenT():
-    phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
-    expected_phenT = pandas.read_csv(default_expected_results_dir/'phenT.csv')
-    phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    phenT_ = phenT.create_phenT(phenT_abs, phenT_first)
-    test_table_filepath = default_results.joinpath('phenT.csv')
-    phenT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(phenT_.values, expected_phenT.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_HS_GL_SSI_T():
-    phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
-    axeT_tmp = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    expected_HS_GL_SSI_T = pandas.read_csv(default_expected_results_dir/'HS_GL_SSI_T.csv')
-    HS_GL_SSI_T = phenT.create_HS_GL_SSI_T(phenT_abs, axeT_tmp, dynT_)
-    test_table_filepath = default_results.joinpath('HS_GL_SSI_T.csv')
-    HS_GL_SSI_T.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(HS_GL_SSI_T.values, expected_HS_GL_SSI_T.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_axeT():
-    axeT_tmp = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
-    phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
-    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
-    axeT_ = axeT.create_axeT(axeT_tmp, phenT_first, dynT_, TT_regression_start, TT_col_N_phytomer_potential['MS'], delais_TT_stop_del_axis, number_of_ears)
-    test_table_filepath = default_results.joinpath('axeT.csv')
-    axeT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    assert (axeT_['id_axis'] == expected_axeT['id_axis']).all()
-    del axeT_['id_axis']
-    del expected_axeT['id_axis']
-    np.testing.assert_allclose(axeT_.values, expected_axeT.values, relative_tolerance, absolute_tolerance)
- 
-
-@with_setup(reinit_random_state)
-def test_create_dimT_abs():
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT.csv')
-    dimT_tmp = pandas.read_csv(default_expected_results_dir/'dimT_tmp_merged.csv')
-    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
-    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    dimT_ = dimT.create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_)
+def test_organs_dimensions():
+    dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
+    dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
+    
+    dimT_, dimT_abs = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
+                                                      dynT_user, dimT_user, GL_number, plantgen_core.DataCompleteness.SHORT, 
+                                                      plantgen_core.DataCompleteness.SHORT, TT_col_break, delais_TT_stop_del_axis, 
+                                                      number_of_ears)
+    
+    expected_dimT_abs = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
     test_table_filepath = default_results.joinpath('dimT_abs.csv')
+    dimT_abs.to_csv(test_table_filepath, na_rep='NA', index=False)
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(dimT_abs.values, expected_dimT_abs.values, relative_tolerance, absolute_tolerance)
+    
+    expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT.csv')
+    test_table_filepath = default_results.joinpath('dimT.csv')
     dimT_.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_phenT_abs():
-    phenT_tmp = pandas.read_csv(default_expected_results_dir/'phenT_tmp.csv')
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT.csv')
-    dimT_abs = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    expected_phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
-    phenT_abs = phenT.create_phenT_abs(phenT_tmp, axeT_, dimT_abs)
-    test_table_filepath = default_results.joinpath('phenT_abs.csv')
-    phenT_abs.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(phenT_abs.values, expected_phenT_abs.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_tilleringT():
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
-    dynT_ = pandas.read_csv(default_expected_results_dir/'dynT.csv')
-    phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
-    dynT_most_frequent_MS = dynT_.ix[0]
-    id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
-    N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential'])
-    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
-    TT_start = phenT_first['TT_app_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
-    t1_most_frequent_MS = dynT_most_frequent_MS['t1']
-    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
-    tilleringT = axeT.create_tilleringT(TT_start, TT_regression_start, TT_col_N_phytomer_potential['MS'], plants_number, plants_density, axeT_.index.size, ears_density)
-    test_table_filepath = default_results.joinpath('tilleringT.csv')
-    tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False)
-    print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(tilleringT.values, expected_tilleringT.values, relative_tolerance, absolute_tolerance)
-
-
-@with_setup(reinit_random_state)
-def test_create_cardinalityT():
-    axeT_ = pandas.read_csv(default_expected_results_dir/'axeT_tmp.csv')
-    expected_cardinalityT = pandas.read_csv(default_expected_results_dir/'cardinalityT.csv')
-    (theoretical_cohort_cardinalities, 
-     theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(
-                                            plants_number, 
-                                            decide_child_cohort_probabilities,
-                                            decide_child_axis_probabilities,
-                                            params.FIRST_CHILD_DELAY)
-    cardinalityT = axeT.create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, axeT_[['id_cohort', 'id_axis']])
-    test_table_filepath = default_results.joinpath('cardinalityT.csv')
-    cardinalityT.to_csv(test_table_filepath, na_rep='NA', index=False)  
-    print 'The results have been saved to %s' % test_table_filepath
-    assert (cardinalityT['id_axis'] == expected_cardinalityT['id_axis']).all()
-    del cardinalityT['id_axis']
-    del expected_cardinalityT['id_axis']
-    np.testing.assert_allclose(cardinalityT.values.astype(float), expected_cardinalityT.values, relative_tolerance, absolute_tolerance)
     
 
 @with_setup(reinit_random_state)
-def test_create_dimT():
-    dimT_abs = pandas.read_csv(default_expected_results_dir/'dimT_abs.csv')
-    expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT.csv')
-    dimT_ = dimT.create_dimT(dimT_abs)
-    test_table_filepath = default_results.joinpath('dimT.csv')
-    dimT_.to_csv(test_table_filepath, na_rep='NA', index=False)  
+def test_axes_phenology():
+    dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
+    dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
+    phenT_, phenT_abs, HS_GL_SSI_T = plantgen_core.axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
+                                                                  dynT_user, dimT_user, GL_number, plantgen_core.DataCompleteness.SHORT, 
+                                                                  plantgen_core.DataCompleteness.SHORT, TT_col_break, delais_TT_stop_del_axis, 
+                                                                  number_of_ears)
+    
+    expected_phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
+    test_table_filepath = default_results.joinpath('phenT_abs.csv')
+    phenT_abs.to_csv(test_table_filepath, na_rep='NA', index=False)
     print 'The results have been saved to %s' % test_table_filepath
-    np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(phenT_abs.values, expected_phenT_abs.values, relative_tolerance, absolute_tolerance)
+    
+    expected_phenT = pandas.read_csv(default_expected_results_dir/'phenT.csv')
+    test_table_filepath = default_results.joinpath('phenT.csv')
+    phenT_.to_csv(test_table_filepath, na_rep='NA', index=False)
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(phenT_.values, expected_phenT.values, relative_tolerance, absolute_tolerance)
+    
+    expected_HS_GL_SSI_T = pandas.read_csv(default_expected_results_dir/'HS_GL_SSI_T.csv')
+    test_table_filepath = default_results.joinpath('HS_GL_SSI_T.csv')
+    HS_GL_SSI_T.to_csv(test_table_filepath, na_rep='NA', index=False)
+    print 'The results have been saved to %s' % test_table_filepath
+    np.testing.assert_allclose(HS_GL_SSI_T.values, expected_HS_GL_SSI_T.values, relative_tolerance, absolute_tolerance)
 
 
 @with_setup(reinit_random_state)
@@ -249,7 +166,7 @@ def test_gen_adel_input_data_from_min():
     dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
     
-    results = plantgen.gen_adel_input_data(dynT_user,
+    results = plantgen_interface.gen_adel_input_data(dynT_user,
                                             dimT_user, 
                                             plants_number, 
                                             plants_density,
@@ -282,14 +199,14 @@ def test_gen_adel_input_data_from_min():
                  'tilleringT': (expected_tilleringT, results[8]),
                  'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, plantgen.DataCompleteness.MIN, plantgen.DataCompleteness.MIN)
+    _check_results(to_compare, plantgen_core.DataCompleteness.MIN, plantgen_core.DataCompleteness.MIN)
 
          
 @with_setup(reinit_random_state)
 def test_gen_adel_input_data_from_short():
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
-    results = plantgen.gen_adel_input_data(dynT_user,
+    results = plantgen_interface.gen_adel_input_data(dynT_user,
                                           dimT_user, 
                                           plants_number, 
                                           plants_density,
@@ -322,14 +239,14 @@ def test_gen_adel_input_data_from_short():
                   'tilleringT': (expected_tilleringT, results[8]),
                   'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, plantgen.DataCompleteness.SHORT, plantgen.DataCompleteness.SHORT)
+    _check_results(to_compare, plantgen_core.DataCompleteness.SHORT, plantgen_core.DataCompleteness.SHORT)
 
 
 @with_setup(reinit_random_state)
 def test_gen_adel_input_data_from_full():
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
-    results = plantgen.gen_adel_input_data(dynT_user,
+    results = plantgen_interface.gen_adel_input_data(dynT_user,
                                          dimT_user,
                                          plants_number, 
                                          plants_density,
@@ -362,7 +279,7 @@ def test_gen_adel_input_data_from_full():
                  'tilleringT': (expected_tilleringT, results[8]),
                  'cardinalityT': (expected_cardinalityT, results[9])}
     
-    _check_results(to_compare, plantgen.DataCompleteness.FULL, plantgen.DataCompleteness.FULL)
+    _check_results(to_compare, plantgen_core.DataCompleteness.FULL, plantgen_core.DataCompleteness.FULL)
 
 
 def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
@@ -378,8 +295,8 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
         print 'The results have been saved to %s' % result_table_filepath
         if 'id_axis' in expected_table:
             assert (result_table['id_axis'] == expected_table['id_axis']).all()
-            del result_table['id_axis']
-            del expected_table['id_axis']
+            result_table = result_table.drop('id_axis', axis=1)
+            expected_table = expected_table.drop('id_axis', axis=1)
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
 
 

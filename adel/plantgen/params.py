@@ -2,7 +2,7 @@
 #
 #       Adel.PlantGen
 #
-#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#       Copyright 2012-2014 INRIA - CIRAD - INRA
 #
 #       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
 #
@@ -14,9 +14,10 @@
 #
 ###############################################################################
 '''
-This module stores the default values of plantgen inner parameters. 
+This module stores the default values of :mod:`plantgen <alinea.adel.plantgen>` 
+inner parameters. 
 
-Authors: Mariem Abichou, Camille Chambon, Bruno Andrieu
+Authors: M. Abichou, B. Andrieu, C. Chambon
 '''
 
 SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS = {'a_1': 0.9423, 'a_2': 0.555}

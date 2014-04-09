@@ -7,7 +7,8 @@ Available submodules are:
 * :mod:`plantgen_interface <alinea.adel.plantgen.plantgen_interface>`:
     Front-end for the generation of the :class:`pandas.DataFrame` which contain the plant data 
     expected by ADEL. Uses the routines of the modules :mod:`plantgen_core <alinea.adel.plantgen.plantgen_core>` 
-    and :mod:`tools <alinea.adel.plantgen.tools>`.
+    and :mod:`tools <alinea.adel.plantgen.tools>`, and uses the parameters of the 
+    module :mod:`params <alinea.adel.plantgen.params>`.
 * :mod:`plantgen_core <alinea.adel.plantgen.plantgen_core>`: 
     Routines defining the main steps of the process: :func:`init_axes <alinea.adel.plantgen.plantgen_core.init_axes>`, 
     :func:`phenology_functions <alinea.adel.plantgen.plantgen_core.phenology_functions>`, 

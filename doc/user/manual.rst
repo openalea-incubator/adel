@@ -463,10 +463,16 @@ in :ref:`development_input`.
 
 The :mod:`plantgen <alinea.adel.plantgen>` package allows the user who does not have 
 a complete set of data to estimate the missing inputs. 
-Inside this package, the :mod:`plantgen <alinea.adel.plantgen.plantgen>` module 
-provides routines to construct :ref:`axeT <axeT>`, :ref:`dimT <dimT>` and :ref:`phenT <phenT>`. 
-:mod:`plantgen <alinea.adel.plantgen.plantgen>` also permits to generate some other tables 
-for debugging purpose.
+Inside this package, the module :mod:`plantgen_interface <alinea.adel.plantgen.plantgen_interface>` is 
+the front-end for the generation of the tables :ref:`axeT <axeT>`, :ref:`dimT <dimT>` 
+and :ref:`phenT <phenT>`. :mod:`plantgen_interface <alinea.adel.plantgen.plantgen_interface>` 
+also permits to generate some other tables for debugging purpose. 
+To construct :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, :ref:`phenT <phenT>` and the debugging 
+tables, the module :mod:`plantgen_interface <alinea.adel.plantgen.plantgen_interface>` 
+uses the modules :mod:`plantgen_core <alinea.adel.plantgen.plantgen_core>`, 
+:mod:`tools <alinea.adel.plantgen.tools>` and module :mod:`params <alinea.adel.plantgen.params>`. 
+The diagram :ref:`static view <plantgen_static>` describes the dependencies 
+between the different modules of the package :mod:`plantgen <alinea.adel.plantgen>`. 
 
 .. todo:: add reference to M.Abichou's publication which describes the working hypotheses.
 
@@ -483,7 +489,7 @@ SHORT, and FULL. In the next subsections, we:
   using the node ``plantgen``.
         
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-belongs to module :mod:`plantgen <alinea.adel.plantgen.plantgen>`.
+belongs to module :mod:`plantgen_interface <alinea.adel.plantgen.plantgen_interface>`. 
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
 produces the following tables: 
 
@@ -508,6 +514,12 @@ produces the following tables:
 also produces a dictionary which stores the values of the arguments of 
 :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`. 
 This dictionary is aimed to log the configuration used for the construction. 
+
+The diagram :ref:`dynamic view <plantgen_dynamic>` describes 
+the data flow when the user calls :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`. 
+
+
+in plantgen.  To help the user understanding the dataflow in plantgen, 
 
 .. _levels_of_completeness:
 
@@ -672,8 +684,7 @@ permits to define the :ref:`arguments <user_arguments>` by importing a Python mo
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
 the module :download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`, 
-the lines preceding the call to :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>` 
-can be replaced by::
+the preceding example becomes::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
     # "plantgen_inputs_MIN.py" must be in the working directory 
@@ -688,14 +699,43 @@ can be replaced by::
      delais_TT_stop_del_axis, 
      TT_col_break,
      inner_params) = read_plantgen_inputs('plantgen_inputs_MIN.py')
+    
+    # launch the construction
+    from alinea.adel.plantgen.plantgen import gen_adel_input_data
+    (axeT, 
+    dimT, 
+    phenT, 
+    phenT_abs, 
+    dimT_abs, 
+    dynT, 
+    phenT_first,
+    HS_GL_SSI_T,
+    tilleringT,
+    cardinalityT,
+    config) = gen_adel_input_data(dynT_user, 
+                                  dimT_user, 
+                                  plants_number,
+                                  plants_density,  
+                                  decide_child_axis_probabilities, 
+                                  MS_leaves_number_probabilities, 
+                                  ears_density, 
+                                  GL_number, 
+                                  delais_TT_stop_del_axis, 
+                                  TT_col_break, 
+                                  inner_params)
+
+    # write axeT, dimT and phenT to csv files in the working directory, replacing
+    # missing values by 'NA' and ignoring the indexes (the indexes are the labels of
+    # the lines). 
+    axeT.to_csv('axeT.csv', na_rep='NA', index=False)
+    dimT.to_csv('dimT.csv', na_rep='NA', index=False)
+    phenT.to_csv('phenT.csv', na_rep='NA', index=False)
+    
+    # "axeT.csv", "dimT.csv" and "phenT.csv" are now ready to be used by Adel.
      
 :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
 permits the user to store the arguments, so he can reuse them later. 
 
-.. warning:: you must adapt the content of the Python module (e.g. 
-             :download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`) before 
-             using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` 
-             with it.
     
 .. _construct_inputs_from_visualea:
 
@@ -810,10 +850,17 @@ Appendices
 ************
 
 The appendices describe the data used by Adel for pre and post-processings. 
+The appendices also contains static and dynamic view of the system, to 
+help the user understanding hwo it works. 
 
 Construction of the input tables 
 =================================
-In this section, we describe the data used in the construction of the input tables of Adel:
+In this section we first present internal views of the package :mod:`plantgen <alinea.adel.plantgen>`:
+
+* a :ref:`static view <plantgen_static>` to describe the dependencies between the different modules of :mod:`plantgen <alinea.adel.plantgen>`,
+* a :ref:`dynamic view <plantgen_dynamic>` to describe the data flow when the user calls :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`.
+
+Then, we describe the data used in the construction of the input tables of Adel:
 
 * :ref:`dynT_user_FULL <dynT_user_FULL>`: the dynamic of the Haun stage of 
   **at least** the most frequent non-regressive axes.
@@ -841,6 +888,29 @@ In this section, we describe the data used in the construction of the input tabl
 * :ref:`tilleringT <tilleringT>`: the dynamic of tillering.
 * :ref:`cardinalityT <cardinalityT>`: the theoretical and the simulated cardinalities of 
   each cohort and each axis.
+  
+  
+.. _plantgen_static:
+
+Static view of plantgen
+--------------------------------
+This diagram describes the dependencies between the different modules of :mod:`plantgen <alinea.adel.plantgen>`.
+
+.. image:: ./image/plantgen_static.png
+  :width: 75%
+  :align: center
+
+
+.. _plantgen_dynamic:
+
+Dynamic view of plantgen
+--------------------------------
+This diagram describes the data flow when the user calls :func:`gen_adel_input_data <alinea.adel.plantgen.plantgen.gen_adel_input_data>`.
+
+.. image:: ./image/plantgen_dynamic.png
+  :width: 75%
+  :align: center
+
   
 .. _dynT_user_FULL:
 

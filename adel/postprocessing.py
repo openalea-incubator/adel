@@ -72,6 +72,7 @@ def phenology(adel_output_df):
         L_shape = group['L_shape']
         indexes_of_vegetative_phytomers = group[group['numphy'] <= group['nff']].index
         NFF = indexes_of_vegetative_phytomers.size
+        NFF = group['nff'].values[0]
         # HS
         indexes_of_all_non_null_Lv = group['Lv'][group['Lv'] != 0].index
         NFV = len(indexes_of_all_non_null_Lv)
@@ -234,13 +235,13 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
                                   
     for ThermalTime, group in axis_statistics_df.groupby('ThermalTime', as_index=False):
                                   
-        tot_LAI = axis_statistics_df['LAI totale'].sum() 
-        green_LAI = axis_statistics_df['LAI vert'].sum()
-        tot_PAI = axis_statistics_df['PAI total'].sum()
-        green_PAI = axis_statistics_df['PAI vert'].sum()
-        axes_density = axis_statistics_df['axes_cardinality'].sum() / float(domain_area) 
-        growing_axes_density = axis_statistics_df['growing_axes_cardinality'].sum() / float(domain_area)
-        active_axes_density = axis_statistics_df['active_axes_cardinality'].sum() / float(domain_area)
+        tot_LAI = group['LAI totale'].sum() 
+        green_LAI = group['LAI vert'].sum()
+        tot_PAI = group['PAI total'].sum()
+        green_PAI = group['PAI vert'].sum()
+        axes_density = group['axes_cardinality'].sum() / float(domain_area) 
+        growing_axes_density = group['growing_axes_cardinality'].sum() / float(domain_area)
+        active_axes_density = group['active_axes_cardinality'].sum() / float(domain_area)
                                       
         new_plot_statistics_data = [[domain_area, plant_number, ThermalTime, 
                                      tot_LAI, green_LAI, tot_PAI, green_PAI, 

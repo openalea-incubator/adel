@@ -444,7 +444,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
 def update_elements(organ):
     if organ.label.startswith('blade'):
         rolled_length = 0
-        elements =  blade_elements(organ.n_sect, organ.length, rolled_length, organ.visible_length, organ.senesced_length, organ.shape_mature_length)
+        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_xysr, organ.diameter)
         for i,e in enumerate(organ.components()):
             for k in elements[i]:
                 exec "e.%s = elements[i]['%s']"%(k,k)
@@ -647,6 +647,8 @@ def exposed_areas(g):
             node_data.update({k:properties[k]  for k in what})
             data[vid] = node_data
     df =  pandas.DataFrame(data).T
+    #hack
+    df['d_basecol'] = 0
     return df
     
 def exposed_areas2canS(exposed_areas):
@@ -684,6 +686,8 @@ def exposed_areas2canS(exposed_areas):
                   }
             return pandas.DataFrame(met,index = [sub.index[0]])
         d = grouped.apply(_metamer)
+        #hack
+        d['d_basecol'] = 0
     return d
 # to do
 

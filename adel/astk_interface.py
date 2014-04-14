@@ -89,6 +89,7 @@ class AdelWheat(object):
         areas = exposed_areas(g)
         if convert:
             areas = exposed_areas2canS(areas)
+        areas['TT'] = self.canopy_age
         return areas
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):

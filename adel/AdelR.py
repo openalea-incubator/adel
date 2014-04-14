@@ -12,6 +12,7 @@
 #import openalea.adel as my_package
 #my_path = os.path.dirname(my_package.__file__) 
 
+import pandas
 #
 #create AdelR functions into rpy2 environment
 from math import sqrt
@@ -232,15 +233,29 @@ def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'s
         d = dataframeAsdict(res[0])
     return d
 
-def devCsv(axeTfn,dimTfn,phenTfn,earTfn,ssi2senTfn):
-    """ Import development parameters for adel from csv files """
-    args = (axeTfn, dimTfn, phenTfn)
+def devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None):
+    """ Import development parameters for adel from csv files and/or pandas dataframes """
+    args = [axeTfn, dimTfn, phenTfn]
     if earTfn is not None:
-        args += (earTfn,)
+        args += [earTfn,]
     if ssi2senTfn is not None:
-        args += (ssi2senTfn,)
-    Rdat = RdevCsv(*args)
+        args += [ssi2senTfn,]
+    # use tempdir + csv to pass correctly NA from pandas to R, and to let RdevCsv make the columns renaming, if any
+    if any([isinstance(f,pandas.DataFrame) for f in args]) :
+        import tempfile, shutil
+        tmp_dir = tempfile.mkdtemp()
+        for i in range(len(args)):
+            df = args[i]
+            if isinstance(df, pandas.DataFrame):
+                f = tmp_dir + '/args%d.csv'%(i)
+                df.to_csv(f, na_rep='NA', index=False)
+                args[i] = f
+        Rdat = RdevCsv(*args)
+        shutil.rmtree(tmp_dir)
+    else :        
+        Rdat = RdevCsv(*args)
     return RdflistAsdicts(Rdat)
+    
 
 def genString(RcanopyT):
     """ Generate an Lsystem string from a R dataframe representing the canopy """

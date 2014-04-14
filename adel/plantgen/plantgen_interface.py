@@ -424,7 +424,7 @@ def plantgen2adel(axeT_, dimT_, phenT_):
         dimT_ = pd.concat([dimT_[:idx], new_line, dimT_[idx:]], ignore_index=True)
         
     # In axeT_, remove N_phytomer and rename N_phytomer_potential to N_phytomer
-    del axeT_['N_phytomer']
+    axeT_= axeT_.drop('N_phytomer',axis=1)
     axeT_ = axeT_.rename(columns={'N_phytomer_potential' : 'N_phytomer'})
         
     return axeT_, dimT_, phenT_

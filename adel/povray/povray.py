@@ -117,12 +117,15 @@ camera {{
     old_dir = os.path.abspath(os.getcwd())
     os.chdir(dirname)
 
-    if windows:
-        image_name = dirname / namebase + '.bmp'
-        image_name_box = dirname / namebase + '_box' + '.bmp'
-    else:
-        image_name = dirname / namebase + '.png'
-        image_name_box = dirname / namebase + '_box' + '.png'
+    #if windows:
+    #        image_name = dirname / namebase + '.bmp'
+    #        image_name_box = dirname / namebase + '_box' + '.bmp'
+    #else:
+    #    image_name = dirname / namebase + '.png'
+    #    image_name_box = dirname / namebase + '_box' + '.png'
+    
+    image_name = dirname / namebase + '.png'
+    image_name_box = dirname / namebase + '_box' + '.png'
 
     image_name_box = path(image_name_box)
     image_name = path(image_name)
@@ -141,6 +144,11 @@ camera {{
     
     os.system(cmdline)
     os.system(cmdline_box)
+
+    if not image_name.exists():
+        image_name = dirname / namebase + '.bmp'
+        image_name_box = dirname / namebase + '_box' + '.bmp'
+
     if not os.path.isfile(image_name):
         print 'Error: Image not created. Check that povray is installed and set in the path.'
     if not os.path.isfile(image_name_box):
@@ -250,19 +258,19 @@ def stand_box(domain):
     
     
 color_list=[(0,0,0),
-            (255,0,0),
-            (0,255,0),
-            (0,0,255),
-            (255,255,0),
-            (0,255,255),
-            (255,0,255),
-            (128,255,0),
-            (0,128,255),
-            (255,0,128),
-            (0,255,128),
-            (128,0,255),
-            (255,128,0),
-            (128,128,255),
+            (255,0,0),# 1 = Green lamina
+            (0,255,0),# 2 = Senescent Lamina
+            (0,0,255),# 3 = Green sheath
+            (255,255,0),# 4 = Senescent sheath
+            (0,255,255),# 5 = Green internode
+            (255,0,255),# 6 = senescent Internode
+            (128,255,0),# 7 = green peduncule
+            (0,128,255),# 8 = senescent peduncule
+            (255,0,128),# 9 = green ear
+            (0,255,128),# 10 = senescent ear
+            (128,0,255),# 11 = green awn
+            (255,128,0),# 12 = senescent awn
+            (128,128,255),#???
             (255,128,128),
             (128,255,128),
             (255,255,255)

@@ -199,71 +199,12 @@ box {{ <{x1}, {y1},  -0.1>,
             im = reader(self.rendered_image_path, **args)
         return im
  
-# functions to be moved in postprocessing/TC
 
-def domain3D(domain2D, scene):
-    t=pgl.Tesselator()
-    bbc = pgl.BBoxComputer(t)
-    bbc.process(scene)
-    bbox = bbc.result
 
-    z_base = bbox.getZMin()
-    z_top = bbox.getZMax()
-    domain3D = (domain2D[0] + (z_base,), domain2D[1] + (z_top,))
-    return domain3D
-        
-        
-def stand_box(domain):
-    '''
-    
-    domain: 3D bounding box of the stand
-    '''
-    # list of points
-    z_base = domain[0][2]
-    z_top = domain[1][2]
-    sides_points = [domain[0], # coordinates of bottom right corner
-                  (domain[1][0], domain[0][1], z_base),
-                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
-                  (domain[0][0], domain[1][1], z_base),
-                  (domain[0][0], domain[0][1], z_top), # coordinates of top right corner
-                  (domain[1][0], domain[0][1], z_top),
-                  (domain[1][0], domain[1][1], z_top),    # coordinates of top left corner
-                  (domain[0][0], domain[1][1], z_top)]
-                  
-    bottom_points = [domain[0], # coordinates of bottom right corner
-                  (domain[1][0], domain[0][1], z_base),
-                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
-                  (domain[0][0], domain[1][1], z_base)]
+# deprecated functions (here for backward compatibility)
 
-    # list of indices to make the quads of the sides from the points
-    side_indices = [(0, 1, 5, 4), #
-               (1, 2, 6, 5), # indices for 
-               (2, 3, 7, 6), # side faces
-               (3, 0, 4, 7)] #         
-     
-    # list of indices to make the quads of the bottom from the points
-    bottom_indices = [(0, 1, 2, 3)] # indices for bottom face
+from alinea.adel.postprocessing import domain3D, stand_box
 
-    # list of colors
-    side_color = pgl.Color3(0, 0, 0)
-    bottom_color = pgl.Color3(255, 255, 255)
-
-    # construction of the geometry for the sides
-    side_box = pgl.QuadSet(sides_points, side_indices)
-    # construction of the geometry for the bottom
-    bottom_box = pgl.QuadSet(bottom_points, bottom_indices)
-                           
-    # create 2 shapes: 1 with side_color, 1 with bottom_color 
-    sides_shape = pgl.Shape(side_box, pgl.Material(side_color))
-    bottom_shape = pgl.Shape(bottom_box, pgl.Material(bottom_color))
-    
-    scene = pgl.Scene()
-    scene.add(sides_shape)
-    scene.add(bottom_shape)
-    
-    return scene
-    
-    
 color_list=[(0,0,0),
             (255,0,0),# 1 = Green lamina
             (0,255,0),# 2 = Senescent Lamina
@@ -290,8 +231,6 @@ def col_item (ind, color_list=color_list) :
         return color_list[(ind-1) % len(color_list)],
 
  
-# deprecated functions (here for backward compatibility)
-
 def povray(scene, 
            pov_file = './scene.pov', 
            camera_distance=1., fov=45., width=320, height=280, 

@@ -1,5 +1,141 @@
+# -*- python -*-
+#
+#       adel.povray
+#
+#       Copyright 2006-2012 INRIA - CIRAD - INRA
+#
+#       File author(s): Camille Chambon <camille.chambon@grignon.inra.fr>
+#                       Christian.Fournier <christian.fournier@supagro.inra.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
 import numpy as np
 import pandas as pd
+import openalea.plantgl.all as pgl
+
+#analysis of Ground cover
+
+def domain3D(domain2D, scene):
+    t=pgl.Tesselator()
+    bbc = pgl.BBoxComputer(t)
+    bbc.process(scene)
+    bbox = bbc.result
+
+    z_base = bbox.getZMin()
+    z_top = bbox.getZMax()
+    domain3D = (domain2D[0] + (z_base,), domain2D[1] + (z_top,))
+    return domain3D
+        
+        
+def stand_box(domain):
+    '''
+    
+    domain: 3D bounding box of the stand
+    '''
+    # list of points
+    z_base = domain[0][2]
+    z_top = domain[1][2]
+    sides_points = [domain[0], # coordinates of bottom right corner
+                  (domain[1][0], domain[0][1], z_base),
+                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
+                  (domain[0][0], domain[1][1], z_base),
+                  (domain[0][0], domain[0][1], z_top), # coordinates of top right corner
+                  (domain[1][0], domain[0][1], z_top),
+                  (domain[1][0], domain[1][1], z_top),    # coordinates of top left corner
+                  (domain[0][0], domain[1][1], z_top)]
+                  
+    bottom_points = [domain[0], # coordinates of bottom right corner
+                  (domain[1][0], domain[0][1], z_base),
+                  (domain[1][0], domain[1][1], z_base), # coordinates of bottom left corner
+                  (domain[0][0], domain[1][1], z_base)]
+
+    # list of indices to make the quads of the sides from the points
+    side_indices = [(0, 1, 5, 4), #
+               (1, 2, 6, 5), # indices for 
+               (2, 3, 7, 6), # side faces
+               (3, 0, 4, 7)] #         
+     
+    # list of indices to make the quads of the bottom from the points
+    bottom_indices = [(0, 1, 2, 3)] # indices for bottom face
+
+    # list of colors
+    side_color = pgl.Color3(0, 0, 0)
+    bottom_color = pgl.Color3(255, 255, 255)
+
+    # construction of the geometry for the sides
+    side_box = pgl.QuadSet(sides_points, side_indices)
+    # construction of the geometry for the bottom
+    bottom_box = pgl.QuadSet(bottom_points, bottom_indices)
+                           
+    # create 2 shapes: 1 with side_color, 1 with bottom_color 
+    sides_shape = pgl.Shape(side_box, pgl.Material(side_color))
+    bottom_shape = pgl.Shape(bottom_box, pgl.Material(bottom_color))
+    
+    scene = pgl.Scene()
+    scene.add(sides_shape)
+    scene.add(bottom_shape)
+    
+    return scene
+
+def color_count(image,RGBcolor = (0,255,0)):
+    import cv2
+    BGRcolor = np.array(RGBcolor[::-1])
+    res = cv2.inRange(image, BGRcolor, BGRcolor)
+    return res.sum() / 255.
+    
+    
+def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848):
+    """
+    Compute ground_cover fraction over domain for each color declared in colors
+    
+    depends on cv2 and povray
+    
+    """
+    import cv2
+    from alinea.adel.povray.povray import PovRay
+    
+    camera['xc'] = 0.5 * (domain[0][0] + domain[1][0])
+    camera['yc'] = 0.5 * (domain[0][1] + domain[1][1])
+    pov = PovRay(camera=camera, image_width=image_width, image_height=image_height)
+    pov.render(scene)
+    im = pov.get_image(cv2.imread)
+    
+    d3D = domain3D(domain, scene)
+    scene_box = pgl.Scene()
+    scene_box.add(stand_box(d3D))
+    pov.render(scene_box)
+    box = pov.get_image(cv2.imread)
+    
+    mask = np.uint8(box[:,:,0] / box.max() * 255)
+    total_domain = mask.sum() / 255.
+    masked = cv2.bitwise_and(im,im,mask=mask)
+    
+    return {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
+
+def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848):
+    """
+    compute ground cover based on is_green/not_green property of g
+    """
+    from alinea.adel.mtg_interpreter import plot3d
+    
+    colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}
+    greeness = g.property('is_green')
+    colors = {k:colors_def['green'] if greeness[k] else colors_def['senescent'] for k in greeness}
+    
+    scene = plot3d(g, colors=colors)
+    
+    gc = color_ground_cover(scene, domain, colors_def = colors_def, camera = camera, image_width = image_width, image_height = image_height)
+    return gc
+
+
+# Analysis of axis and LAI dynamics
+
+
 
 def aggregate_adel_output(adel_output_df, by=['TT', 'plant', 'axe_id']):
     '''

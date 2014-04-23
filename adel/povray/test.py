@@ -1,27 +1,20 @@
-"""
-from povray import *
+from povray import PovRay, povray
+import openalea.plantgl.all as pgl
+import cv2
 
-scene = Scene()
-scene.add(Sphere(radius=0.1))
 
-povray(scene)
+#pov = PovRay(working_dir='./test')
 
-"""
+def test_class_interface():
+    scene = pgl.Scene()
+    scene.add(pgl.Sphere(radius=0.1))
+    pov = PovRay()
+    pov.render(scene)
+    reader = cv2.imread
+    im = pov.get_image(reader)
+    return im
 
-pov_camera = """
-camera {{
-    perspective
-    location <0,0,{0:f}>
-    direction <0,0,-1>
-    right <36/24,0,0>
-    look_at <0,0,0 >
-    angle {1:f}
-
-    rotate <0,0,{2:f}>
-    rotate <{3:f},0,0>
-    translate <{4:f},{5:f},0>
-}}
-"""
-
-#pov_camera = pov_camera.format(tz=1., fov=1., azimuth=1.,  zenith=1., tx=1., ty=1.)
-pov_camera = pov_camera.format(1., 1., 1.,  1., 1., 1.)
+def test_old_interface():
+    scene = pgl.Scene()
+    scene.add(pgl.Sphere(radius=0.1))
+    return povray(scene)

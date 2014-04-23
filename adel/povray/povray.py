@@ -1,176 +1,125 @@
+# -*- python -*-
+#
+#       adel.povray
+#
+#       Copyright 2006-2014 INRIA - CIRAD - INRA
+#
+#       File author(s): Christian Fournier <christian.fournier@supagro.inra.fr>
+#                       Christophe Pradal <christophe.pradal@inria.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+###############################################################################
 import os
+import tempfile
 import platform
 from openalea.core.path import path
-from openalea.plantgl.all import *
+import openalea.plantgl.all as pgl
 
-windows = platform.system() is 'Windows'
 
-def povray2(pov_file, height=320, width=280, image_name=''):
-    '''    
-    '''
-    image = None; 
-    # write the node code here.
+class PovRayError(Exception): pass
 
-    f = path(pov_file)
-    namebase = f.namebase
-    ext = f.ext
-    dirname = f.dirname()
-
-    old_dir = os.path.abspath(os.getcwd())
-    os.chdir(dirname)
-
-    if not image_name:
-        image_name = dirname / namebase +'.png'
-
-    image_name = path(image_name)
-    if image_name.exists():
-        image_name.remove()
-
-    cmdline = 'povray +I%s +H%d +W%d'%(pov_file, height, width)
-    os.system(cmdline)
-    # return outputs
-    os.chdir(old_dir)
-
-    return image_name,
-
-def povray(scene, 
-           pov_file = './scene.pov', 
-           camera_distance=1., fov=45., width=320, height=280, 
-           domain = ((0.,0.),(1.,1.)), 
-           azimuth=0., zenith= 0., camera_type = 'perspective', 
-           soil=False, 
-           povray_cmd='povray'):
-    """    
-    Compute povray files based both on a scene and its stand box.
-
-    :Parameters:
-        - scene: a plantgl scene
-        - camera distance: distance from the position of the camera to the look_at point
-        - angle : angle corresponding to the width of the image
-        - width: width of the final image in pixel
-        - height: height of the final image in pixel
-        - domain: scene pattern used by caribu
-        - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
-        - zenith: angle between the view direction and the vertical
-        - camera type: perspective, orthographic or fisheye
-        - soil: add a soil to the scene
-        - povray cmd : the path of the povray exe
+class PovRay(object):
+    """ A class interface to povray Raytracer
     """
 
-    # color elements based on the optical properties
+    def __init__(self, camera = {'type':'perspective', 'distance':1., 'fov':45.,  'xc':0., 'yc':0., 'azimuth':0, 'zenith':0.}, image_width = 320, image_height = 280, background = (0,0,0), light_position = (10,0,10), light_color=(1,1,1), working_dir = None):
+        """ Setup a Povray instance
+        
+        :Parameters:
+            - camera: a dict of parameters for positioning the camera
+                - distance: distance from the position of the camera to the look_at point
+                - fov : angle corresponding to the width of the image
+                - xc, yc : coordinates of the center of the scene
+                - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
+                - zenith: angle between the view direction and the vertical
+            - image_width: width of the final image in pixel
+            - image_height: height of the final image in pixel
+            - working_dir: A directory for storing povary files. If None, (default),  a temporary directory will be created and removed onece the instance is deleted
+            
+        """
     
-    t=Tesselator()
-    mesh_fn = pov_file[0:-4]+'_mesh.pov'
-    pov = PovFilePrinter(mesh_fn, t)
-    scene.apply(pov)
-    
-    d3D = domain3D(domain, scene)
-    
-    scene_box = Scene()
-    scene_box.add(stand_box(d3D))
-    
-    mesh_fn_box = pov_file[0:-4]+'_mesh_box.pov'
-    pov_box = PovFilePrinter(mesh_fn_box, t)
-    scene_box.apply(pov_box)
-    
-    # Write the camera in the main pov file
-    #pov_camera = pov_header(...)
-    pov_camera = """
+        try: 
+            if working_dir is not None:
+                self.wdir=path(path(working_dir).abspath())
+                if not self.wdir.exists():
+                    self.wdir.mkdir() 
+                self.cleanup_wdir = False
+            else:
+                # build a temporary directory
+                self.wdir = path(tempfile.mkdtemp())
+                self.cleanup_wdir = True
+        except:
+            raise PovRayError("PovRay can't create its working directory : check for read/write permission or security level")
+        
+        if platform.system() is 'Windows':
+            self.cmdline = 'pvengine +FN +I%s +H%d +W%d -d /exit'
+        else:
+            self.cmdline = 'povray +FN +I%s +H%d +W%d'
+            
+        
+        self.image_width = image_width
+        self.image_height = image_height
+        self.camera = camera
+        self.light_position = light_position
+        self.light_color = light_color
+        self.background = background
+        
+        self.soil = False
+        self.rendered_image_path = None
+        self.tesselator = pgl.Tesselator()
+        
+        #to be removed once cv_camera has been properly integrated
+        self.user_camera = None
+        
+      
+    def __del__(self):
+        if self.cleanup_wdir:
+            if self.wdir.exists():
+                #print 'Remove tempfile %s'%self.wdir
+                self.wdir.rmtree()
+        else:
+            print "Povray.__del__ called, but working directory kept: %s"%self.wdir
+
+    def add_soil(self, domain):
+        self.domain = domain
+        self.soil = True
+      
+    def camera_string(self, type = 'perspective', distance=1., fov=45.,  xc=0., yc=0., azimuth=0, zenith=0.):
+        """String representation of the camera
+        """
+            
+        pov_camera = """
 camera {{
     {camera}
-    location <0,0,{tz:.2f}>
+    location <{tx:.2f},{ty:.2f},{tz:.2f}>
     direction <0,0,-1>
     right <{width:d}/{height:d},0,0>
-    look_at <0,0,0 >
     angle {fov:n}
 
     rotate <{zenith:.2f},0,0>
     rotate <0,0,{azimuth:.2f}>
-    translate <{tx:.2f},{ty:.2f},0>
 }}
 
-    """
+    """.format(camera=type, tz=distance, fov=fov, azimuth=azimuth, 
+                      zenith=zenith, tx=xc, ty=yc, width=self.image_width, height=self.image_height)
+                      
+        #hack
+        if self.user_camera is not None:
+            pov_camera = self.user_camera
 
-    x=0.5*(domain[0][0]+domain[1][0])
-    y=0.5*(domain[0][1]+domain[1][1])
-    pov_camera = pov_camera.format(camera=camera_type, tz=camera_distance, fov=fov, azimuth=azimuth, 
-                      zenith=zenith, tx=x, ty=y, width=width, height=height)
-    
-    #print pov_camera
-
-    f = path(pov_file)
-    namebase = f.namebase
-    ext = f.ext
-    dirname = f.dirname()
-    f_box = dirname / namebase + '_box' + ext  
-
-    povf = f.open(mode='w')
-    pov_header(povf, pov_camera, domain=domain, soil=soil)
-    povf.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn))
-    povf.close()
-    
-    povf_box = f_box.open(mode='w')
-    pov_header(povf_box, pov_camera, domain=domain,light = (x,y,camera_distance))
-    povf_box.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn_box))
-    povf_box.close()
-
-    old_dir = os.path.abspath(os.getcwd())
-    os.chdir(dirname)
-
-    #if windows:
-    #        image_name = dirname / namebase + '.bmp'
-    #        image_name_box = dirname / namebase + '_box' + '.bmp'
-    #else:
-    #    image_name = dirname / namebase + '.png'
-    #    image_name_box = dirname / namebase + '_box' + '.png'
-    
-    image_name = dirname / namebase + '.png'
-    image_name_box = dirname / namebase + '_box' + '.png'
-
-    image_name_box = path(image_name_box)
-    image_name = path(image_name)
-    if image_name.exists():
-        image_name.remove()
-    if image_name_box.exists():
-        image_name_box.remove()
-    
-    pov_file_box = pov_file[0:-4] +'_box.pov'
-    if windows:
-        cmdline = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file, height, width)
-        cmdline_box = 'pvengine +I%s +H%d +W%d -d /exit'%(pov_file_box, height, width)
-    else:
-        cmdline = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file, height, width)
-        cmdline_box = '%s +I%s +H%d +W%d'%(povray_cmd, pov_file_box, height, width)
-    
-    os.system(cmdline)
-    os.system(cmdline_box)
-
-    if not image_name.exists():
-        image_name = dirname / namebase + '.bmp'
-        image_name_box = dirname / namebase + '_box' + '.bmp'
-
-    if not os.path.isfile(image_name):
-        print 'Error: Image not created. Check that povray is installed and set in the path.'
-    if not os.path.isfile(image_name_box):
-        print 'Error: Image box not created. Check that povray is installed and set in the path.'
-    # return outputs
-    os.chdir(old_dir)
-
-    return image_name, image_name_box
-
-    
-def pov_header(f, pov_camera, background = (0,0,0), light = (10,0,10), domain = ((0.,0.),(1.,1.)), soil=False,light_color=(1,1,1)):
-    """ Write the header of  povray file. """
-    f.write("/"*80+"\n")
-    f.write("#include \"colors.inc\""+"\n\n")
-    f.write(pov_camera+"\n")
-    x,y,z=light
-    f.write("light_source {{  <{tx},{ty},{tz}> color rgb <{r},{g},{b}>}}\n\n".format(tx=x,ty=y,tz=z,r=light_color[0],g=light_color[1],b=light_color[2]))
-    r,g,b = background
-    f.write("background {{ color rgb < {cr},{cg},{cb}> }}\n\n".format(cr=r,cg=g,cb=b))
-    
-    if soil:
-        (x1,y1),(x2,y2) = domain
+        return pov_camera
+     
+    def set_user_camera(pov_camera):
+        self.user_camera = pov_camera
+        
+     
+    def soil_string(self):
+        (x1,y1),(x2,y2) = self.domain
         s = """
 #declare T1=
     texture {{
@@ -189,14 +138,72 @@ box {{ <{x1}, {y1},  -0.1>,
     < {x2}, {y2}, 0>   
     texture {{T2}} }}
 """
-        text = s.format(x1=x1,y1=y1,x2=x2,y2=y2)
-        print text
-        f.write(text)
+        return s.format(x1=x1,y1=y1,x2=x2,y2=y2)
         
 
+    def render(self,scene, name = 'scene.pov'):
+        """ Render the scene
+        """
+    
+        old_dir = os.path.abspath(os.getcwd())
+        self.rendered_image_path = None
+        
+        try: # catch error to return to original directory
+            os.chdir(self.wdir)
+            f = self.wdir / name
+            namebase = f.namebase
+            ext = f.ext
+            
+
+            mesh_fn = self.wdir /  (namebase + '_mesh.pov')
+            pov = pgl.PovFilePrinter(str(mesh_fn), self.tesselator)
+            scene.apply(pov)
+            
+            
+            image_name = self.wdir / (namebase + '.png')
+            if image_name.exists():
+                image_name.remove()
+                
+            povf = f.open(mode='w')
+            povf.write("/"*80+"\n")
+            povf.write("#include \"colors.inc\""+"\n\n")
+            povf.write(self.camera_string(**self.camera) + "\n")
+            x,y,z = self.light_position
+            r,g,b = self.light_color
+            povf.write("light_source {{  <{tx},{ty},{tz}> color rgb <{r},{g},{b}>}}\n\n".format(tx=x,ty=y,tz=z,r=r,g=g,b=b))
+            r,g,b = self.background
+            povf.write("background {{ color rgb < {cr},{cg},{cb}> }}\n\n".format(cr=r,cg=g,cb=b))
+            if self.soil:
+                povf.write(self.soil_string())
+            povf.write('#include "{mesh_fn}"\n'.format(mesh_fn=mesh_fn))
+            povf.close()
+       
+            cmd = self.cmdline%(str(f), self.image_height, self.image_width)
+            os.system(cmd)
+            
+            if image_name.exists():
+                self.rendered_image_path = str(self.wdir / namebase + '.png')
+            else:
+                raise PovRayError('Image not created. Check that povray is installed and set in the path.')
+        finally:        
+            os.chdir(old_dir)
+            
+    def get_image(self,reader, **args):
+        """ return the last rendered image object
+        
+            call reader(image_path, **args) to read the image
+        """
+        
+        im = None
+        if self.rendered_image_path is not None:
+            im = reader(self.rendered_image_path, **args)
+        return im
+ 
+# functions to be moved in postprocessing/TC
+
 def domain3D(domain2D, scene):
-    t=Tesselator()
-    bbc = BBoxComputer(t)
+    t=pgl.Tesselator()
+    bbc = pgl.BBoxComputer(t)
     bbc.process(scene)
     bbox = bbc.result
 
@@ -238,19 +245,19 @@ def stand_box(domain):
     bottom_indices = [(0, 1, 2, 3)] # indices for bottom face
 
     # list of colors
-    side_color = Color3(0, 0, 0)
-    bottom_color = Color3(255, 255, 255)
+    side_color = pgl.Color3(0, 0, 0)
+    bottom_color = pgl.Color3(255, 255, 255)
 
     # construction of the geometry for the sides
-    side_box = QuadSet(sides_points, side_indices)
+    side_box = pgl.QuadSet(sides_points, side_indices)
     # construction of the geometry for the bottom
-    bottom_box = QuadSet(bottom_points, bottom_indices)
+    bottom_box = pgl.QuadSet(bottom_points, bottom_indices)
                            
     # create 2 shapes: 1 with side_color, 1 with bottom_color 
-    sides_shape = Shape(side_box, Material(side_color))
-    bottom_shape = Shape(bottom_box, Material(bottom_color))
+    sides_shape = pgl.Shape(side_box, pgl.Material(side_color))
+    bottom_shape = pgl.Shape(bottom_box, pgl.Material(bottom_color))
     
-    scene = Scene()
+    scene = pgl.Scene()
     scene.add(sides_shape)
     scene.add(bottom_shape)
     
@@ -282,4 +289,56 @@ def col_item (ind, color_list=color_list) :
     else:
         return color_list[(ind-1) % len(color_list)],
 
+ 
+# deprecated functions (here for backward compatibility)
+
+def povray(scene, 
+           pov_file = './scene.pov', 
+           camera_distance=1., fov=45., width=320, height=280, 
+           domain = ((-.5,-.5),(.5,.5)), 
+           azimuth=0., zenith= 0., camera_type = 'perspective', 
+           soil=False, 
+           povray_cmd='povray'):
+    """    
+    Compute povray files based both on a scene and its stand box.
+
+    :Parameters:
+        - scene: a plantgl scene
+        - camera distance: distance from the position of the camera to the look_at point
+        - angle : angle corresponding to the width of the image
+        - width: width of the final image in pixel
+        - height: height of the final image in pixel
+        - domain: scene pattern used by caribu
+        - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
+        - zenith: angle between the view direction and the vertical
+        - camera type: perspective, orthographic or fisheye
+        - soil: add a soil to the scene
+        - povray cmd : the path of the povray exe
+    """
+    
+    f = path(pov_file)
+    namebase = f.namebase
+    ext = f.ext
+    dirname = f.dirname()
+    
+    xc=0.5*(domain[0][0]+domain[1][0])
+    yc=0.5*(domain[0][1]+domain[1][1])
+
+    camera = {'type':camera_type, 'distance':camera_distance, 'fov':fov,  'xc':xc, 'yc':yc, 'azimuth':azimuth, 'zenith':zenith}
+    
+    pov = PovRay(camera=camera, image_width=width, image_height=height, working_dir=str(dirname))
+    
+    pov.render(scene, namebase + ext)
+    image_name = pov.rendered_image_path
+    
+    d3D = domain3D(domain, scene)
+    scene_box = pgl.Scene()
+    scene_box.add(stand_box(d3D))
+    f_box = namebase + '_box' + ext
+    pov.render(scene_box, f_box)
+    image_name_box = pov.rendered_image_path
+
+    return image_name, image_name_box
+
+        
         

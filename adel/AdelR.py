@@ -61,6 +61,7 @@ RsetAdelArv = robj.globalEnv['setAdelArv']
 RgenString = robj.globalEnv['genString']
 RcanL2canS = robj.globalEnv['canL2canS']
 RcheckAxeDyn = robj.globalEnv['checkAxeDyn']
+RgetAxeT = robj.globalEnv['getAxeT']
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
 
 
@@ -187,14 +188,19 @@ def plantSample(setAdelPars):
     p = r['as.numeric'](p)
     return _rvect_asarray(p)
     
-def checkAxeDyn(setAdelPars, dates, plotArea = 1):
+def checkAxeDyn(setAdelPars, dates, plant_density = 1):
     """ Compute the number of axes present in the canopy at given dates"""
     if (type(dates) is not list):
         dates = [dates]
     d = robj.FloatVector(dates)
-    naxes = RcheckAxeDyn(d, setAdelPars)
-    return _rvect_asarray(naxes) * plotArea
-    
+    df = RcheckAxeDyn(d, setAdelPars, plant_density)
+    return pandas.DataFrame(dataframeAsdict(df))
+   
+def getAxeT(setAdelPars):
+    """ return axeT table"""
+    df = RgetAxeT(setAdelPars)
+    return pandas.DataFrame(dataframeAsdict(df))
+   
 def canL2canS(RcanT,srdb,shrink=1):
     sr = r.load(srdb)[0]
     sr=r(sr)

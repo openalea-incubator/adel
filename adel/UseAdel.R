@@ -50,6 +50,10 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
     colnames(axeT)[colnames(axeT) %in% conv] <- names(conv)[na.omit(match(colnames(axeT),conv))]
   else if (!all(names(conv) %in% colnames(axeT)))
     stop(paste("axeT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(axeT)],collapse=" ")))
+  # force numeric conversion
+  numcols <- names(conv)[-grep('id_axis',names(conv))]
+  for (w in numcols)
+    axeT[,w] <- as.numeric(as.character(axeT[,w]))
   #dimT
   dimT <- reader(dimTfile)
   conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")

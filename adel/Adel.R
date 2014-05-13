@@ -144,7 +144,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     }
     ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allonges sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
-      kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
+        kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
+        #kin[x > plant$axeT$disp[a],,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
     #rang depuis flag leaf
     for (d in seq(along=x))
       kin[d,,"ntop"] <- -(seq(nrow(kin[d,,])) - nfa)
@@ -467,13 +468,23 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
 #
 # Checker for axe dynamics of the plants sampled at dates
 #
-checkAxeDyn <- function(dates,plants) {
+checkAxeDyn <- function(dates,plants, density=1) {
   em <- unlist(sapply(plants,function(p) p$axeT$emf1))
+  end <- unlist(sapply(plants,function(p) p$axeT$end))
   disp <- unlist(sapply(plants,function(p) p$axeT$disp))
   disp[is.na(disp)] <- max(dates) + 1
-  nbaxes <- sapply(dates,function(d) length(em[em <=d]) - length(disp[disp <= d]))
-  nbaxes
+  end[is.na(end)] <- max(dates) + 1
+  emited <- sapply(dates,function(d) length(em[em <=d]))
+  stoped <- sapply(dates,function(d) length(end[end <=d]))
+  disped <- sapply(dates,function(d) length(disp[disp <=d]))
+  nbaxes <- emited
+  nbaxes_growing <- emited - stoped
+  nbaxes_present <- emited - disped
+  nbpl <- length(plants)
+  data.frame(TT=dates, nbaxes=nbaxes/nbpl*density, nbaxes_growing=nbaxes_growing/nbpl*density, nbaxes_present=nbaxes_present/nbpl*density)
 }
+#
+getAxeT <- function(plants) do.call('rbind', mapply(function(idpl,pl) {df=pl$axeT;df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))
     
     
 

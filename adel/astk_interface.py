@@ -1,7 +1,7 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
@@ -49,6 +49,12 @@ class AdelWheat(object):
         g = mtg_interpreter(g)
         return g
 
+    def checkAxeDyn(self, dates, density=1):
+        return checkAxeDyn(self.pars, dates, density)
+        
+    def axeT(self):
+        return getAxeT(self.pars)
+        
     def grow(self, g, time_control):
     
         try: #old interface
@@ -85,11 +91,13 @@ class AdelWheat(object):
     def scene(self, g):
         return plot3d(g)
         
-    def get_exposed_areas(self, g, convert=False):
+    def get_exposed_areas(self, g, convert=False, TT=None):
         areas = exposed_areas(g)
         if convert:
             areas = exposed_areas2canS(areas)
-        areas['TT'] = self.canopy_age
+        if TT is None:
+            TT = self.canopy_age
+        areas['TT'] = TT
         return areas
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):

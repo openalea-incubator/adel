@@ -89,7 +89,7 @@ def color_count(image,RGBcolor = (0,255,0)):
     return res.sum() / 255.
     
     
-def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848):
+def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False):
     """
     Compute ground_cover fraction over domain for each color declared in colors
     
@@ -115,9 +115,14 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     total_domain = mask.sum() / 255.
     masked = cv2.bitwise_and(im,im,mask=mask)
     
-    return {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
-
-def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848):
+    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
+    
+    if not getImages:
+        im = None
+        box = None
+    return res, im, box
+        
+def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False):
     """
     compute ground cover based on is_green/not_green property of g
     """
@@ -129,8 +134,9 @@ def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fo
     
     scene = plot3d(g, colors=colors)
     
-    gc = color_ground_cover(scene, domain, colors_def = colors_def, camera = camera, image_width = image_width, image_height = image_height)
-    return gc
+    gc, im, box = color_ground_cover(scene, domain, colors_def = colors_def, camera = camera, image_width = image_width, image_height = image_height, getImages=getImages)
+    
+    return gc, im, box
 
 
 # Analysis of axis and LAI dynamics

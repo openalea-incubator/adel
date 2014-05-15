@@ -88,8 +88,23 @@ def color_count(image,RGBcolor = (0,255,0)):
     res = cv2.inRange(image, BGRcolor, BGRcolor)
     return res.sum() / 255.
     
+def replicate_scene(scene, domain):
+    """ replicate the scene around the domain
+    """
+    dx = abs(domain[0][0] - domain[1][0])
+    dy = abs(domain[0][1] - domain[1][1])
     
-def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False):
+    newscene = pgl.Scene()
+    for tx in (-dx,0,dx):
+        for ty in (-dy,0,dy): 
+            rep = scene.deepcopy()
+            for sh in rep:
+                sh.geometry = pgl.Translated(tx,ty,0,sh.geometry)
+            newscene += rep
+    newdomain = ( (domain[0][0] - dx, domain[0][1] - dy),(domain[1][0] + dx, domain[1][1] + dy) )
+    return newscene, newdomain
+    
+def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=False):
     """
     Compute ground_cover fraction over domain for each color declared in colors
     
@@ -99,13 +114,18 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     import cv2
     from alinea.adel.povray.povray import PovRay
     
+    if replicate:
+        newscene, domain = replicate_scene(scene, domain)
+    else:
+        newscene = scene
+    
     camera['xc'] = 0.5 * (domain[0][0] + domain[1][0])
     camera['yc'] = 0.5 * (domain[0][1] + domain[1][1])
     pov = PovRay(camera=camera, image_width=image_width, image_height=image_height)
-    pov.render(scene)
+    pov.render(newscene)
     im = pov.get_image(cv2.imread)
     
-    d3D = domain3D(domain, scene)
+    d3D = domain3D(domain, newscene)
     scene_box = pgl.Scene()
     scene_box.add(stand_box(d3D))
     pov.render(scene_box)
@@ -122,7 +142,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
         box = None
     return res, im, box
         
-def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False):
+def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=False):
     """
     compute ground cover based on is_green/not_green property of g
     """
@@ -134,7 +154,7 @@ def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fo
     
     scene = plot3d(g, colors=colors)
     
-    gc, im, box = color_ground_cover(scene, domain, colors_def = colors_def, camera = camera, image_width = image_width, image_height = image_height, getImages=getImages)
+    gc, im, box = color_ground_cover(scene, domain, colors_def = colors_def, camera = camera, image_width = image_width, image_height = image_height, getImages=getImages, replicate=replicate)
     
     return gc, im, box
 
@@ -319,8 +339,8 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         green_PAI = (group['Slvgreen'] + (group['SGvgreen'] + group['SEvgreen']) / 2.0 ).sum() / area_in_cm
         d_base_lastcol = group['d_base-lastcol'].mean()
         axes_cardinality = len(group)
-        growing_axes_cardinality_df = group[group['HS'] < group['HS_final']]
-        growing_axes_cardinality_df = growing_axes_cardinality_df[growing_axes_cardinality_df['HS'] > 0.5]
+        growing_axes_cardinality_df = group[(group['HS'] < group['HS_final']) & (group['HS'] > 0.5) & (group['Slv'] > 0)]
+        #growing_axes_cardinality_df = growing_axes_cardinality_df[growing_axes_cardinality_df['HS'] > 0.5]
         growing_axes_cardinality = len(growing_axes_cardinality_df)
         
         # Calculate the number of active axes. An axis is active if:

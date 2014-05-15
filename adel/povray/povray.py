@@ -239,6 +239,8 @@ def povray(scene,
            soil=False, 
            povray_cmd='povray'):
     """    
+     !!!! Deprecated function, use alinea.povray.Povray class instead !!!! 
+    
     Compute povray files based both on a scene and its stand box.
 
     :Parameters:

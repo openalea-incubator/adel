@@ -32,9 +32,8 @@ def StemElement_mesh(length, diameter_base, diameter_top, classic = False):
     """
     if classic:
         solid = True
-        slices = 3
         diameter = diameter_base
-        stem = pgl.Tapered(diameter_base/2., diameter_top/2., pgl.Cylinder(1., length , solid, slices))
+        stem = pgl.Tapered(diameter_base/2., diameter_top/2., pgl.Cylinder(1., length , solid))
         tessel = pgl.Tesselator()
         stem.apply(tessel)
         mesh = tessel.triangulation

@@ -4,7 +4,7 @@ def energy_per_organ(nplants, positions, adel_output, leaves_db, domain, classic
     import pandas as pd
     from alinea.adel.newmtg import mtg_factory, adel_metamer, adel_label
     from alinea.adel.mtg_interpreter import mtg_interpreter
-    from alinea.caribu.caribu_star import caribu_star
+    from alinea.caribu.caribu_star import run_caribu
     
     # rotation angle of the plant on itself. 
     azimuths = np.random.random(nplants) * 360 # TODO: use input
@@ -14,11 +14,17 @@ def energy_per_organ(nplants, positions, adel_output, leaves_db, domain, classic
     g = mtg_interpreter(g, classic=classic)
     # call caribu
     geom = g.property('geometry')
-    star, exposed_area = caribu_star(geom, directions=number_of_directions, 
-                                     domain=domain, convUnit=convUnit, 
-                                     var=caribu_output)
+    
+    sources = diffuse_source(number_of_directions)
+    out = run_caribu(sources, geom, domain=domain, convUnit=convUnit)
+    selected_out = out[caribu_output]
+    areas = out['Area']
+    if output_by_triangle:
+        exposed_area = {vid: [selected_out[vid][i] * areas[vid][i] * convUnit**2 for i in range(len(areas[vid]))] for vid in areas}
+    else:
+        exposed_area = {vid: selected_out[vid] * areas[vid] * convUnit**2 for vid in areas}
 
-    energy = np.array([(adel_label(g,vid), star[vid], exposed_area[vid]) for vid in star])
+    energy = np.array([(adel_label(g,vid), selected_out[vid], exposed_area[vid]) for vid in selected_out])
     adel_labels_array = np.array(energy[:, 0])
     adel_labels_split = np.array(np.char.split(adel_labels_array, '_').tolist())
     plant_labels = np.char.strip(adel_labels_split[:,0], 'plant')
@@ -35,7 +41,7 @@ def energy_per_organ(nplants, positions, adel_output, leaves_db, domain, classic
     
     energy_df = pd.DataFrame(energy_enlarged.transpose(), 
                              columns=['plant', 'axis', 'metamer', 'organ', 'element', 
-                                      'star', 'exposed_area'])
+                                      caribu_output, 'exposed_area'])
     energy_df[['plant', 'metamer']] = energy_df[['plant', 'metamer']].astype(int) 
     energy_df.sort(['plant', 'axis', 'metamer', 'organ', 'element'], inplace=True)
     

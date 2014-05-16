@@ -88,23 +88,32 @@ def color_count(image,RGBcolor = (0,255,0)):
     res = cv2.inRange(image, BGRcolor, BGRcolor)
     return res.sum() / 255.
     
-def replicate_scene(scene, domain):
+def replicate_scene(scene, domain, replicate=None):
     """ replicate the scene around the domain
     """
-    dx = abs(domain[0][0] - domain[1][0])
-    dy = abs(domain[0][1] - domain[1][1])
-    
-    newscene = pgl.Scene()
-    for tx in (-dx,0,dx):
-        for ty in (-dy,0,dy): 
-            rep = scene.deepcopy()
-            for sh in rep:
-                sh.geometry = pgl.Translated(tx,ty,0,sh.geometry)
-            newscene += rep
-    newdomain = ( (domain[0][0] - dx, domain[0][1] - dy),(domain[1][0] + dx, domain[1][1] + dy) )
+    if replicate is None:
+        newscene = scene
+        newdomain = domain
+    else:
+        dx = abs(domain[0][0] - domain[1][0])
+        dy = abs(domain[0][1] - domain[1][1])
+        
+        newscene = pgl.Scene()
+        for tx in (-dx,0,dx):
+            for ty in (-dy,0,dy): 
+                rep = scene.deepcopy()
+                for sh in rep:
+                    sh.geometry = pgl.Translated(tx,ty,0,sh.geometry)
+                newscene += rep
+        newdomain = ( (domain[0][0] - dx, domain[0][1] - dy),(domain[1][0] + dx, domain[1][1] + dy) )
+        if replicate == 1:
+            replicate = None
+        else:
+            replicate -= 1
+        newscene, newdomain = replicate_scene(newscene, newdomain, replicate)
     return newscene, newdomain
     
-def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=False):
+def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senescent' : [255, 0, 0]}, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=None):
     """
     Compute ground_cover fraction over domain for each color declared in colors
     
@@ -114,10 +123,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     import cv2
     from alinea.adel.povray.povray import PovRay
     
-    if replicate:
-        newscene, domain = replicate_scene(scene, domain)
-    else:
-        newscene = scene
+    newscene, domain = replicate_scene(scene, domain, replicate=replicate)
     
     camera['xc'] = 0.5 * (domain[0][0] + domain[1][0])
     camera['yc'] = 0.5 * (domain[0][1] + domain[1][1])
@@ -142,7 +148,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
         box = None
     return res, im, box
         
-def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=False):
+def ground_cover(g, domain, camera = {'type':'perspective', 'distance':200., 'fov':50., 'azimuth':0, 'zenith':0.}, image_width = 4288, image_height = 2848, getImages=False, replicate=None):
     """
     compute ground cover based on is_green/not_green property of g
     """

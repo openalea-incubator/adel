@@ -33,7 +33,8 @@ def StemElement_mesh(length, diameter_base, diameter_top, classic = False):
     if classic:
         solid = True
         diameter = diameter_base
-        stem = pgl.Tapered(diameter_base/2., diameter_top/2., pgl.Cylinder(1., length , solid))
+        slices = 6  # 6 is the minimal number of slices for a correct computation of star (percentage error lower than 5)  
+        stem = pgl.Tapered(diameter_base/2., diameter_top/2., pgl.Cylinder(1., length , solid, slices)) 
         tessel = pgl.Tesselator()
         stem.apply(tessel)
         mesh = tessel.triangulation

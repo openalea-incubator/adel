@@ -14,7 +14,7 @@ class AdelWheat(object):
         if devT is None: 
             devT = adel_data.devT()
         if leaf_db is None: 
-            leaf_db = adel_data.leaves_db()
+            leaf_db = adel_data.wheat_leaf_db()
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
         geoLeaf = genGeoLeaf()

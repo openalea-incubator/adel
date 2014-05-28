@@ -93,7 +93,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,17),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop")))
+    kin <- array(NA,c(nx,nf[a]+3,19),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi")))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
       kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
@@ -101,6 +101,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       #print(i)
       rph <- ph - i
       rssi <- ssi - i
+      kin[,i,"rph"] <- rph
+      kin[,i,"rssi"] <- rssi
      #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
@@ -270,7 +272,7 @@ kinLvis <- function(kinlist,pars=NULL) {
   for (d in seq(dim(kinlist[[1]])[1])) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
-      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh")])
+      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh","rph","rssi")])
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == "MS") {
         ht0 = max(kin$Lhem[1],kin$Gl[1])
@@ -430,6 +432,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         Epos <- c(rep(2,nbleaf),4,4,4)
         pogreen <- rep(1,nbphy)
         posen <- rep(2,nbphy)
+        rph <- kin[[a]][t,,"rph"]
+        rssi <- kin[[a]][t,,"rssi"]
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
@@ -455,7 +459,9 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Ed=datp$Ed,
                                          Einc=dat$Einc,
                                          Epo=Epo,
-                                         Epos=Epos),
+                                         Epos=Epos,
+                                         rph=rph,
+                                         rssi=rssi),
                               dat))
       }
     }

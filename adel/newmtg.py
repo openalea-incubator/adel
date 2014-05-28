@@ -271,7 +271,7 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy']):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
@@ -355,10 +355,21 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         components = []
         if metamer_factory:
             if leaf_db is not None:
-                try:
-                    xysr = leaf_db[str(int(args['LcType']))][int(args['LcIndex']) - 1]#R index starts at 1
-                except KeyError:
-                    xysr=leaf_db[leaf_db.keys()[0]][0]
+                if not dynamic_leaf_db:
+                    try:
+                        xysr = leaf_db[str(int(args['LcType']))][int(args['LcIndex']) - 1]#R index starts at 1
+                    except KeyError:
+                        xysr=leaf_db[leaf_db.keys()[0]][0]
+                else:
+                    try:
+                        leaf_class = str(int(args['LcType']))
+                        index = max(0,int(args['rph']))
+                        indices = numpy.arange(len(leaf_db[leaf_class].keys()))
+                        age_index = str(int(numpy.argmin(abs(indices-index))))
+                        shape_index = int(args['LcIndex'] * len(leaf_db[leaf_class][age_index]))
+                        xysr = leaf_db[leaf_class][age_index][shape_index]
+                    except KeyError:
+                        xysr=leaf_db[leaf_db.keys()[0]][leaf_db[leaf_db.keys()[0]].keys()[0]][0]
             else:
                 xysr = None
             

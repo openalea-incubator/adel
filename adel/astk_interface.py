@@ -9,7 +9,7 @@ from alinea.astk.TimeControl import *
 
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, dep = 7):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, dep = 7, dynamic_leaf_db = False):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -22,6 +22,7 @@ class AdelWheat(object):
         self.pars = setAdel(devT,geoLeaf,geoAxe,nplants, seed = seed, sample=sample)
         self.positions = positions
         self.leafdb = leaf_db
+        self.dynamic_leaf_db = dynamic_leaf_db
         self.nsect = nsect
         self.thermal_time = thermal_time_model
     
@@ -45,7 +46,7 @@ class AdelWheat(object):
             stand = [(pos,0) for pos in self.positions]
         else:
             stand = None
-        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand)
+        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand, dynamic_leaf_db=self.dynamic_leaf_db)
         g = mtg_interpreter(g)
         return g
 

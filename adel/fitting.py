@@ -553,7 +553,10 @@ def fit_leaves( leaves, nb_points):
     for key in db:
         l = db[key]
         for i,el in enumerate(l):
-            x, y, s, r = el
+            if isinstance(el,dict):
+                x,y,s,r = el['x'],el['y'],el['s'],el['r']
+            else:
+                x, y, s, r = el
             try:
                 leaf = fit3(x, y, s, r, nb_points)
                 new_db.setdefault(key,[]).append(leaf)

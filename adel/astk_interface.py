@@ -111,7 +111,7 @@ from alinea.adel.stand.stand import agronomicplot
 from alinea.astk.plant_interface import *
 
 def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150, 
-                     plant_density=150, inter_row=0.12, seed = None, sample='random'):
+                     plant_density=150, inter_row=0.12, nsect=1, seed = None, sample='random'):
     """ Initialize a wheat canopy.
     
     Parameters
@@ -151,7 +151,7 @@ def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,
                                                             sowing_density=sowing_density, 
                                                             plant_density=plant_density,
                                                             inter_row=inter_row)
-    wheat = AdelWheat(nplants=nplants, positions = positions, seed= seed, sample=sample)
+    wheat = AdelWheat(nplants=nplants, positions = positions, nsect=nsect, seed= seed, sample=sample)
     g,_ = new_canopy(wheat,age=age)
     return g, wheat, domain_area, domain, convUnit
         

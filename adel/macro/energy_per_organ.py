@@ -16,7 +16,7 @@ def energy_per_organ(nplants, positions, adel_output, leaves_db, domain, classic
     geom = g.property('geometry')
     
     sources = diffuse_source(number_of_directions)
-    out = run_caribu(sources, geom, domain=domain, convUnit=convUnit)
+    out = run_caribu(sources, geom, domain=domain)
     selected_out = out[caribu_output]
     areas = out['Area']
     exposed_area = {vid: selected_out[vid] * areas[vid] * convUnit**2 for vid in areas}

@@ -362,12 +362,14 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                         xysr=leaf_db[leaf_db.keys()[0]][0]
                 else:
                     try:
-                        leaf_class = str(int(args['LcType']))
-                        index = max(0,int(args['rph']))
-                        indices = numpy.arange(len(leaf_db[leaf_class].keys()))
-                        age_index = str(int(numpy.argmin(abs(indices-index))))
-                        shape_index = int(args['LcIndex'] * len(leaf_db[leaf_class][age_index]))
-                        xysr = leaf_db[leaf_class][age_index][shape_index]
+                        leaf_class = int(args['LcType'])
+                        index = args['rph']
+                        if index != 'NA':
+                            index = max(0,int(float(index)))
+                        #indices = numpy.arange(len(leaf_db[leaf_class].keys()))
+                        #age_index = str(int(numpy.argmin(abs(indices-index))))
+                        shape_index = int(args['LcIndex'] * len(leaf_db[leaf_class][index]))
+                        xysr = leaf_db[leaf_class][index][shape_index]
                     except KeyError:
                         xysr=leaf_db[leaf_db.keys()[0]][leaf_db[leaf_db.keys()[0]].keys()[0]][0]
             else:

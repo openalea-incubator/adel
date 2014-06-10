@@ -9,7 +9,7 @@ from alinea.astk.TimeControl import *
 
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, dep = 7, dynamic_leaf_db = False, geoLeaf=None):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60,dinT=5,dep = 7, dynamic_leaf_db = False, geoLeaf=None):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -19,7 +19,7 @@ class AdelWheat(object):
             thermal_time_model = DegreeDayModel(Tbase=0)
         if geoLeaf is None:
             geoLeaf = genGeoLeaf()
-        geoAxe = genGeoAxe(dep=dep)
+        geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
         self.pars = setAdel(devT,geoLeaf,geoAxe,nplants, seed = seed, sample=sample)
         self.positions = positions
         self.leafdb = leaf_db

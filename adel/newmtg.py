@@ -219,7 +219,6 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
        - Einc : relative inclination of the internode
  
     """
-    
        #to do add diameter and Lrolled to blade
     Eaz = Laz
     Gaz = 0
@@ -256,7 +255,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'inclination' : Linc,
         'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape, Gd)} 
     ]
-    
+
     if elongation:
         
         modules[0]['elongation_curve'] = {'x': [elongation['endleaf'], elongation['endE']], 'y' : [0,El]}
@@ -390,6 +389,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                 elongation = {'startleaf' : startleaf , 'endBlade':endBlade, 'endleaf': endleaf, 'endE': endE}
             if not 'ntop' in args:
                 args.update({'ntop':None})
+            if not 'Gd' in args:
+                args.update({'Gd':0.19}) 
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
             args={'L_shape':args.get('L_shape')}
         #

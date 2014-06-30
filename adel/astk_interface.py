@@ -9,12 +9,15 @@ from alinea.astk.TimeControl import *
 
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60,dinT=5,dep = 7, dynamic_leaf_db = False, geoLeaf=None):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None):
     
         if devT is None: 
             devT = adel_data.devT()
         if leaf_db is None: 
+            # MODELE BLE
             leaf_db = adel_data.wheat_leaf_db()
+            # MODELE MAIS
+            #leaf_db = adel_data.leaves_db()
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
         if geoLeaf is None:
@@ -39,10 +42,10 @@ class AdelWheat(object):
         return (TimeControlSet(Tair = temp[i / int(delay)], dt = delay) if not i % delay  else TimeControlSet(dt=0) for i in range(steps))
 
     
-    def setup_canopy(self, age = 10):
+    def setup_canopy(self, age = 10, adelpars={'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
     
         self.canopy_age = age
-        canopy = RunAdel(age, self.pars)
+        canopy = RunAdel(age, self.pars, adelpars=adelpars)
         if self.positions is not None:
             stand = [(pos,0) for pos in self.positions]
         else:
@@ -76,10 +79,10 @@ class AdelWheat(object):
             
         return newg
    
-    def grow_dd(self, g, dday):
-        refg = self.setup_canopy(age = self.canopy_age)
+    def grow_dd(self, g, dday, adelpars={'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
+        refg = self.setup_canopy(age = self.canopy_age, adelpars = adelpars)
         self.canopy_age += dday
-        newg = self.setup_canopy(age = self.canopy_age)
+        newg = self.setup_canopy(age = self.canopy_age, adelpars = adelpars)
         newg = mtg_update(newg, g, refg)
 
         return newg

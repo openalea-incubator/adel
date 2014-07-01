@@ -9,7 +9,7 @@ from alinea.astk.TimeControl import *
 
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -29,6 +29,7 @@ class AdelWheat(object):
         self.dynamic_leaf_db = dynamic_leaf_db
         self.nsect = nsect
         self.thermal_time = thermal_time_model
+        self.run_adel_pars = run_adel_pars
     
     def timing(self, delay, steps, weather, start_date):
         """ compute timing and time_control_sets for a simulation between start and stop. 
@@ -42,10 +43,10 @@ class AdelWheat(object):
         return (TimeControlSet(Tair = temp[i / int(delay)], dt = delay) if not i % delay  else TimeControlSet(dt=0) for i in range(steps))
 
     
-    def setup_canopy(self, age = 10, adelpars={'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
+    def setup_canopy(self, age = 10):
     
         self.canopy_age = age
-        canopy = RunAdel(age, self.pars, adelpars=adelpars)
+        canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
         if self.positions is not None:
             stand = [(pos,0) for pos in self.positions]
         else:
@@ -79,10 +80,10 @@ class AdelWheat(object):
             
         return newg
    
-    def grow_dd(self, g, dday, adelpars={'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6}):
-        refg = self.setup_canopy(age = self.canopy_age, adelpars = adelpars)
+    def grow_dd(self, g, dday):
+        refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
-        newg = self.setup_canopy(age = self.canopy_age, adelpars = adelpars)
+        newg = self.setup_canopy(age = self.canopy_age)
         newg = mtg_update(newg, g, refg)
 
         return newg

@@ -80,7 +80,7 @@ def sheath_elements(l, lvis, lsen, az, inc, d, split = False):
     Second elements is for senesced visible part of the sheath
     """
     # same logic as internodes
-    return internode_elements(l,lvis,lsen, az, inc, split)
+    return internode_elements(l,lvis,lsen, az, inc, d, split)
 
 
 def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
@@ -609,32 +609,35 @@ def mtg_update(newg, g, refg):
         vid = ids[lab]
         newvid = newids[lab]
         if vid in g.property('area') and newvid in newg.property('area') and vid in refg.property('area'):
+            if newg.property('length')[newvid] > 0:
+                dlength = max([0,newg.property('length')[newvid] - refg.property('length')[vid]])
+                darea = 0
+                if dlength > 0:#avoid changing area when length is stabilised
+                    darea = max([0,newg.property('area')[newvid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
+                newarea = g.property('area')[vid] + darea    
+                    
+                # correction if last area estimation of area_sen is different from the one of area
+                if newg.property('senesced_length')[newvid] >= newg.property('length')[newvid] :
+                    newsen = newarea
+                    newgreen = 0
+                else:
+                    dlength = max([0,newg.property('senesced_length')[newvid] - refg.property('senesced_length')[vid]])
+                    dsen = 0
+                    if dlength > 0:
+                        dsen = max([0, newg.property('senesced_area')[newvid] - refg.property('senesced_area')[vid]])
+                    
+                    newsen = min([newarea, g.property('senesced_area')[vid] + dsen])
+                    newgreen = max([0, min([newarea - newsen, g.property('green_area')[vid] + (darea - dsen) ]) ])
             
-            dlength = max([0,newg.property('length')[newvid] - refg.property('length')[vid]])
-            darea = 0
-            if dlength > 0:#avoid changing area when length is stabilised
-                darea = max([0,newg.property('area')[newvid] - refg.property('area')[vid]])#do not take into account negative variations du to rolling
-            newarea = g.property('area')[vid] + darea    
-                
-            # correction if last area estimation of area_sen is different from the one of area
-            if newg.property('senesced_length')[newvid] >= newg.property('length')[newvid] :
-                newsen = newarea
-                newgreen = 0
-            else:
-                dlength = max([0,newg.property('senesced_length')[newvid] - refg.property('senesced_length')[vid]])
-                dsen = 0
-                if dlength > 0:
-                    dsen = max([0, newg.property('senesced_area')[newvid] - refg.property('senesced_area')[vid]])
-                
-                newsen = min([newarea, g.property('senesced_area')[vid] + dsen])
-                newgreen = max([0, min([newarea - newsen, g.property('green_area')[vid] + (darea - dsen) ]) ])
-        
 
-    
-            newg.property('area')[newvid] = newarea
-            newg.property('green_area')[newvid] = newgreen
-            newg.property('senesced_area')[newvid] = newsen
         
+                newg.property('area')[newvid] = newarea
+                newg.property('green_area')[newvid] = newgreen
+                newg.property('senesced_area')[newvid] = newsen
+            else: # node is no longer there, specific property are removed
+                for prop in specific:
+                    if newvid in newg.property(prop):
+                        newg.property(prop).pop(newvid)
     return newg
    
 
@@ -652,6 +655,7 @@ def exposed_areas(g):
                       'axe' : n.complex().complex().complex().label,
                       'metamer' : numphy,
                       'organ' : n.complex().label,
+                      'vid' : vid,
                       'ntop' : nf - numphy + 1,
                       'element' : n.label,
                       'refplant_id': n.complex().complex().complex().complex().refplant_id,

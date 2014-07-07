@@ -114,6 +114,7 @@ class AdelWheat(object):
         if not os.path.exists(dir):
             os.mkdir(dir)
         s = self.scene(g)
+        geom = {sh.id:sh.geometry for sh in s}
         g.remove_property('geometry')
         fgeom = dir + '/scene%04d.bgeom'%(index)
         fg = dir+'/adel%04d.pckl'%(index)
@@ -121,6 +122,9 @@ class AdelWheat(object):
         f = open(fg, 'w')
         pickle.dump([g,self.canopy_age], f)
         f.close()
+        #restore geometry
+        g.add_property('geometry')
+        g.property('geometry').update(geom)
         return fgeom,fg
         
     def load(self, index=0, dir = './adel_saved'):
@@ -136,6 +140,8 @@ class AdelWheat(object):
         f = open(fg)
         g, TT = pickle.load(f)
         f.close()
+        
+        self.canopy_age = TT
         
         g.add_property('geometry')
         g.property('geometry').update(geom)

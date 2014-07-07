@@ -1,6 +1,9 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
+import pickle
+import os
+
 from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
@@ -106,6 +109,39 @@ class AdelWheat(object):
             TT = self.canopy_age
         areas['TT'] = TT
         return areas
+        
+    def save(self, g, index = 0, dir = './adel_saved'):
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        s = self.scene(g)
+        g.remove_property('geometry')
+        fgeom = dir + '/scene%04d.bgeom'%(index)
+        fg = dir+'/adel%04d.pckl'%(index)
+        s.save(fgeom, 'BGEOM')
+        f = open(fg, 'w')
+        pickle.dump([g,self.canopy_age], f)
+        f.close()
+        return fgeom,fg
+        
+    def load(self, index=0, dir = './adel_saved'):
+        from openalea.plantgl.all import Scene
+        
+        fgeom = dir + '/scene%04d.bgeom'%(index)
+        fg = dir + '/adel%04d.pckl'%(index)
+        
+        s = Scene()
+        s.read(fgeom, 'BGEOM')
+        geom = {sh.id:sh.geometry for sh in s}
+    
+        f = open(fg)
+        g, TT = pickle.load(f)
+        f.close()
+        
+        g.add_property('geometry')
+        g.property('geometry').update(geom)
+        
+        return g, TT
+        
 
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
     model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)

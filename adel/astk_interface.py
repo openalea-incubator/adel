@@ -73,19 +73,20 @@ class AdelWheat(object):
             tt = self.thermal_time(data.index, data)
             dday = tt[-1]
         
-        refg = self.setup_canopy(age = self.canopy_age)
+        #refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
         newg = self.setup_canopy(age = self.canopy_age)
-        newg = mtg_update(newg, g, refg)
-            
+        #newg = mtg_update(newg, g, refg)
+        move_properties(g, newg)
+        
         return newg
    
     def grow_dd(self, g, dday):
-        refg = self.setup_canopy(age = self.canopy_age)
+        #refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
         newg = self.setup_canopy(age = self.canopy_age)
-        newg = mtg_update(newg, g, refg)
-
+        #newg = mtg_update(newg, g, refg)
+        move_properties(g, newg)
         return newg
    
     def plot(self, g):

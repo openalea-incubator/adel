@@ -639,7 +639,28 @@ def mtg_update(newg, g, refg):
                     if newvid in newg.property(prop):
                         newg.property(prop).pop(newvid)
     return newg
-   
+
+
+def move_properties(g_source, g_dest, filter_length = True, cleanup_source = True):
+    """ Move properties present in g_source and not in g_dest into g_dest.
+        if filter_length is True (default), properties attached to node whose length is zero are not transfered
+    """
+    specific = set(g_source.property_names()) - set(g_dest.property_names())
+    ids = adel_ids(g_source, scale=5)
+    newids = adel_ids(g_dest, scale=5)
+    if filter_length:
+        length = g_dest.property('length')
+        newids = {lab:vid for lab,vid in newids.iteritems() if length[vid] > 0}
+    common_labs = set(ids) & set(newids)
+        
+    for prop in specific:
+        g_dest.add_property(prop)
+        newprop = {newids[lab]:g_source.property(prop)[ids[lab]] for lab in common_labs if ids[lab] in g_source.property(prop)}
+        g_dest.property(prop).update(newprop)
+        if cleanup_source:
+            g_source.remove_property(prop)
+        
+
 
 def exposed_areas(g):
     """ returns a Dataframe with all exposed (visible) areas of elements in g """

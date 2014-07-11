@@ -76,10 +76,10 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
     
     return g, domain_area, domain, 1. / convunit
     
-def adel_one_leaf(leaf_sectors=1):
+def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     """ create a very simple adel mtg """
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
-         'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[3], 'Lw_shape':[.3], 'Linc':[0],
+         'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}
     g=mtg_factory(d,adel_metamer,leaf_db=leaves_db(),leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g)

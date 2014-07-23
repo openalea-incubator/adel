@@ -78,7 +78,7 @@ for plant in recorders:
         recorder.create_dataframe_only_leaf_data()
         
 leaves = ['F%d' % lf for lf in range(13)]
-fig, axs = plt.subplots(2, 3)
+fig, axs = plt.subplots(3, 3)
 for plant in recorders:
     for recorder in recorders[plant].itervalues():
         data = recorder.data
@@ -94,3 +94,12 @@ for plant in recorders:
         axs[1][1].set_ylabel('leaf green length (cm)', fontsize = 18)
         axs[1][2].plot(data.degree_days, data.leaf_senesced_length)
         axs[1][2].set_ylabel('leaf senesced length (cm2)', fontsize = 18)
+        axs[2][0].plot(data.degree_days, data.leaf_min_height)
+        axs[2][0].set_ylabel('leaf bottom height (cm)', fontsize = 18)
+        axs[2][1].plot(data.degree_days, data.leaf_mean_height)
+        axs[2][1].set_ylabel('leaf mean height (cm)', fontsize = 18)
+        axs[2][2].plot(data.degree_days, data.leaf_max_height)
+        axs[2][2].set_ylabel('leaf top height (cm)', fontsize = 18)
+        ylims = [min([ax.get_ylim()[0] for ax in axs[2]]), max([ax.get_ylim()[1] for ax in axs[2]])]
+        for ax in axs[2]:
+            ax.set_ylim(ylims)

@@ -14,6 +14,10 @@ from alinea.astk.TimeControl import *
 from alinea.echap.weather_data import *
 from alinea.alep.alep_weather import basic_degree_days
 
+# Temporary
+from alinea.adel.mtg_interpreter import plot3d
+from openalea.plantgl.all import Viewer
+
 def get_leaf_ids(g):
     labels = g.property('label')
     stems = [id for id,lb in labels.iteritems() if lb.startswith('MS')]
@@ -28,13 +32,14 @@ def get_leaf_ids(g):
         ind_lf = nff+1
         for lf in leaves:
             ind_lf -= 1
-            stem_elt = g.node(lf).components()[0].index()
-            leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(stem_elt+1, stem_elt+nsect+1)
+            # stem_elt = int(g.node(lf).components()[0].index())
+            # leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(stem_elt+1, stem_elt+nsect+1)
+            leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(lf+2, lf+nsect+2)
     return leaf_sectors
 
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
-nsect = 5
+nsect = 2
 pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect)
 g = adel.setup_canopy(age=600.)
 
@@ -65,6 +70,10 @@ for canopy_iter in canopy_timing:
         
         # Grow wheat
         g = adel.grow(g, canopy_iter.value)
+        
+        # Temporary : 3D display
+        scene = plot3d(g)
+        Viewer.display(scene)
         
         # Save variables
         leaf_sectors = get_leaf_ids(g)

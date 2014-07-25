@@ -174,7 +174,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                         S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
                     # attention a garder une position constante quand on utlise une feuille stresse
                     #position_senescence = 1 - float(ls_sen) / Lshape
-                    # a priori ici pour alep. systeme pour alep = longueurs absolues depuis le haut du secteur
+                    # a priori ici pour alep. systeme pour alep = longueurs absolues depuis le haut du secteur. position _senescence n'est plus utilise par guillaume
                     position_senescence = ls_sen
         except TypeError:# input is None
         #    print "passing"

@@ -5,9 +5,9 @@ plt.ion()
 
 # Imports for wheat
 import pickle
-from alinea.adel.newmtg import move_properties
+from alinea.adel.newmtg import move_properties, adel_ids
 from alinea.echap.architectural_reconstructions import reconst_db
-from alinea.alep.disease_outputs import SeptoRecorder
+from alinea.alep.disease_outputs import initiate_all_adel_septo_recorders
 
 # Imports for weather
 from alinea.astk.TimeControl import *
@@ -18,33 +18,12 @@ from alinea.alep.alep_weather import basic_degree_days
 from alinea.adel.mtg_interpreter import plot3d
 from openalea.plantgl.all import Viewer
 
-def get_leaf_ids(g):
-    labels = g.property('label')
-    stems = [id for id,lb in labels.iteritems() if lb.startswith('MS')]
-    blades = [id for id,lb in labels.iteritems() if lb.startswith('blade')]
-    leaf_sectors = {}
-    ind_plant = 0
-    for st in stems:
-        ind_plant += 1
-        leaf_sectors['P%d' % ind_plant] = {}
-        nff = int(g.node(st).properties()['nff'])
-        leaves = [bl for bl in blades if bl>st][:nff]
-        ind_lf = nff+1
-        for lf in leaves:
-            ind_lf -= 1
-            stem_elt = int(g.node(lf).components()[0].index())
-            leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(stem_elt+1, stem_elt+nsect+1)
-            #leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(lf+1, lf+nsect+1)
-    return leaf_sectors
-
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
 nsect = 5
-pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=20)
-g = adel.setup_canopy(age=600.)
+pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=20)g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control
-# start_date="2010-10-15 12:00:00"
 start_date="2011-03-01 12:00:00"
 end_date="2011-06-20 01:00:00"
 weather = Boigneville_2010_2011()
@@ -55,31 +34,25 @@ every_dd = thermal_time_filter(seq, weather, TTmodel, delay = 20)
 canopy_timing = IterWithDelays(*time_control(seq, every_dd, weather.data))
     
 # Prepare saving of outputs
-recorders = {}
-leaf_sectors = get_leaf_ids(g)
-for plant in leaf_sectors:
-    recorders[plant] = {}
-    for leaf, lf_sectors in leaf_sectors[plant].iteritems():
-        recorders[plant][leaf] = SeptoRecorder(vids=lf_sectors, group_dus=True)
-        
+recorders = initiate_all_adel_septo_recorders(g, nsect)
+
 # Reconstruction
 for canopy_iter in canopy_timing:
     if canopy_iter:
-        date = canopy_iter.value.index[0]
+        date = canopy_iter.value.index[-1]
         print date
         
         # Grow wheat
         g = adel.grow(g, canopy_iter.value)
         
         # Temporary : 3D display
-        scene = plot3d(g)
-        Viewer.display(scene)
+        # scene = plot3d(g)
+        # Viewer.display(scene)
         
         # Save variables
-        leaf_sectors = get_leaf_ids(g)
         for plant in recorders:
             for lf, recorder in recorders[plant].iteritems():
-                recorder.update_vids(vids=leaf_sectors[plant][lf])
+                recorder.update_vids_with_labels(adel_ids = adel_ids(g))
                 recorder.record_only_leaf_data(g, date, degree_days = canopy_iter.value.degree_days[-1])
 
 for plant in recorders:

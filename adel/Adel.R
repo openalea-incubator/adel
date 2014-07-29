@@ -89,11 +89,12 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     if (!is.na(xend))
       xa[xa>=xend] <- xend
     ph <- openapprox(plant$pheno[[a]]$tip,plant$pheno[[a]]$n,xa)
+    hs <- openapprox(plant$pheno[[a]]$col,plant$pheno[[a]]$n,xa)
     ssi <- openapprox(plant$pheno[[a]]$ssi,plant$pheno[[a]]$n,x)
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,19),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi")))
+    kin <- array(NA,c(nx,nf[a]+3,20),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs")))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
       kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
@@ -103,6 +104,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       rssi <- ssi - i
       kin[,i,"rph"] <- rph
       kin[,i,"rssi"] <- rssi
+      kin[,i,"rhs"] <- hs - i
      #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
@@ -272,7 +274,7 @@ kinLvis <- function(kinlist,pars=NULL) {
   for (d in seq(dim(kinlist[[1]])[1])) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
-      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh","rph","rssi")])
+      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh","rph","rssi", "rhs")])
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == "MS") {
         ht0 = max(kin$Lhem[1],kin$Gl[1])
@@ -327,7 +329,7 @@ stemElements <- function(desc) {
 #
 # Compute inclinations of stem elements
 #
-axe_inclination <- function(dat, matureEl, axename, incBase, dredT,epsillon=1e-6) {
+axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6) {
   nbphy <- nrow(dat)#inclus ear,ped et awn
       # Calcul des inclinaisons de tiges
       # 1er phyto = entrenoeud a incT
@@ -336,15 +338,19 @@ axe_inclination <- function(dat, matureEl, axename, incBase, dredT,epsillon=1e-6
   if (axename == "MS") {
     incT <- incBase
   } else {
-    en <- which(matureEl > epsillon)
-    if (length(en) > 0) {
-      firstEn <- min(en)
-      incT <- max(3,incBase * dat$El[firstEn] / matureEl[firstEn])
+    if (HS > 1) {
+      incT <- max(3,min(incBase, 30 * (HS - 1)))
     } else {
       incT <- 3
     }
   }
   Einc[1] <- incT
+  if (axename != "MS" && incT <= 3) { #Do not represent basal part of first metamer for non inclining tillers
+    dat$Lv[1] =  min(dat$Ll[1],max(0, dat$Ll[1] + dat$Gl[1] + dat$El[1] -  ht))
+    dat$Lr[1] = min(dat$Lv[1],dat$Lr[1])
+    dat$Gv[1] =  min(dat$Gl[1],max(0, dat$Gl[1] + dat$El[1] -  ht))
+    dat$Ev[1] =  min(dat$El[1],max(0, dat$El[1] -  ht))
+  }
                                         # redressement (if any)
   if (dredT > 0 & sum(dat$Ev+dat$Gv) > epsillon) {
           #distance inserton talle -> extremite stemElements
@@ -416,7 +422,14 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         nbphy <- nrow(dat)#inclus ear,ped et awn
         datp <- datp[1:nbphy,]
       # Calcul des inclinaisons de tiges
-        dat <- axe_inclination(dat, datp$El, axename, dataxe$incT, dataxe$dredT)
+        HS_axe <- kin[[a]][t,1,"rhs"] + 1
+        if (axename =="MS") {
+          ht <- 0
+        } else {
+          axilrank <- ms_pos(axename)
+          ht <- kin$MS[t,axilrank+1,"ht"] # length of the tube the axe emerge from
+        }
+        dat <- axe_inclination(dat, HS_axe, ht, axename, dataxe$incT, dataxe$dredT)
 
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim
@@ -434,6 +447,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         posen <- rep(2,nbphy)
         rph <- kin[[a]][t,,"rph"]
         rssi <- kin[[a]][t,,"rssi"]
+        rhs <- kin[[a]][t,,"rhs"]
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
@@ -461,7 +475,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Epo=Epo,
                                          Epos=Epos,
                                          rph=rph,
-                                         rssi=rssi),
+                                         rssi=rssi,
+                                         rhs=rhs),
                               dat))
       }
     }

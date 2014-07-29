@@ -1,4 +1,4 @@
-from povray import PovRay, povray
+from alinea.adel.povray.povray import PovRay, povray
 import openalea.plantgl.all as pgl
 import cv2
 

@@ -329,7 +329,7 @@ stemElements <- function(desc) {
 #
 # Compute inclinations of stem elements
 #
-axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6) {
+axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6, start_incT=1, incT_rate=30) {
   nbphy <- nrow(dat)#inclus ear,ped et awn
       # Calcul des inclinaisons de tiges
       # 1er phyto = entrenoeud a incT
@@ -338,8 +338,8 @@ axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6) 
   if (axename == "MS") {
     incT <- incBase
   } else {
-    if (HS > 1) {
-      incT <- max(3,min(incBase, 30 * (HS - 1)))
+    if (HS > start_incT) {
+      incT <- max(3,min(incBase, incT_rate* (HS - start_incT)))
     } else {
       incT <- 3
     }
@@ -397,9 +397,11 @@ axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6) 
   dat
 }
 #
-getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE),t=1) {
+getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE, 'HSstart_inclination_tiller' = 1, 'rate_inclination_tiller' = 30),t=1) {
   epsillon = pars$epsillon
   fshrink = pars$senescence_leaf_shrink
+  start_incT = pars$HSstart_inclination_tiller
+  incT_rate = pars$rate_inclination_tiller
   res <- NULL
   for (p in seq(kinlist)) {
     #print(p)
@@ -429,7 +431,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
           axilrank <- ms_pos(axename)
           ht <- kin$MS[t,axilrank+1,"ht"] # length of the tube the axe emerge from
         }
-        dat <- axe_inclination(dat, HS_axe, ht, axename, dataxe$incT, dataxe$dredT)
+        dat <- axe_inclination(dat, HS_axe, ht, axename, dataxe$incT, dataxe$dredT, start_incT, incT_rate)
 
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim

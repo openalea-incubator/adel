@@ -5,6 +5,7 @@ import openalea.plantgl.all as pgl
 from openalea.mtg import MTG
 from openalea.mtg.turtle import TurtleFrame
 from openalea.mtg.algo import union
+from alinea.astk.plantgl_utils import addSets
 
 
 # Meshing function for StemElements
@@ -103,12 +104,18 @@ def compute_element(element_node, classic=False):
     
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
-        if blade.shape_xysr is not None:
+        if blade.shape_xysr is not None and n.srb is not None:
             shape = incline_leaf(blade.shape_xysr, blade.inclination)
             # x-> -x to place the shape along with the tiller positioned with turtle.down()
             leaf = (-shape[0],)+shape[1:]
             geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
-                                blade.visible_length - blade.rolled_length, n.srb, n.srt)   
+                                blade.visible_length, n.srb, n.srt) 
+        if n.lrolled > 0:
+            rolled = StemElement_mesh(n.lrolled, n.d_rolled, n.d_rolled, classic)
+            if geom is None:
+                geom = rolled
+            else:
+                geom = addSets(rolled,geom,translate = (0,0,n.lrolled))
     elif n.label.startswith('Stem'): #stem element
         stem = n.complex()
         #diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter
@@ -245,7 +252,11 @@ class AdelVisitor():
         if n.label.startswith('Stem'):
             if n.length > 0:
                 turtle.f(n.length)
-            turtle.context.update({'top': turtle.getFrame()})       
+            turtle.context.update({'top': turtle.getFrame()})
+        if n.label.startswith('Leaf'):
+            if n.lrolled > 0:
+                turtle.f(n.lrolled)
+                turtle.context.update({'top': turtle.getFrame()})        
         turtle.context.update({'axis':axis})
         
 def mtg_interpreter(g, classic=False):

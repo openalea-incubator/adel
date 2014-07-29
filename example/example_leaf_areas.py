@@ -32,15 +32,15 @@ def get_leaf_ids(g):
         ind_lf = nff+1
         for lf in leaves:
             ind_lf -= 1
-            # stem_elt = int(g.node(lf).components()[0].index())
-            # leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(stem_elt+1, stem_elt+nsect+1)
-            leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(lf+2, lf+nsect+2)
+            stem_elt = int(g.node(lf).components()[0].index())
+            leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(stem_elt+1, stem_elt+nsect+1)
+            #leaf_sectors['P%d' % ind_plant]['F%d' % ind_lf] = range(lf+1, lf+nsect+1)
     return leaf_sectors
 
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
-nsect = 2
-pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect)
+nsect = 5
+pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=20)
 g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control

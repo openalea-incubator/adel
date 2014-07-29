@@ -86,7 +86,7 @@ def sheath_elements(l, lvis, lsen, az, inc, d, split = False):
 def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
     """ surface of a blade element, positioned with two relative curvilinear absisca"""
     from scipy.integrate import simps
-    from numpy import interp
+    from numpy import interp, arange
     #try:
     #raise Exception("")
     S=0
@@ -107,7 +107,7 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
         #S = 0
     return max(0,S)
     
-def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, d, split = False):
+def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, split = False):
     """ return parameters of blade elements (visible parts of the blade).
     sectors is the number of sectors dividing pattern blade shape
     l is the length of the blade
@@ -116,80 +116,112 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
     lsen is the senescent apical length
     Lshape is length of the blade used as a pattern shape
 """
+    lrolled=max(0, min(lrolled,lvis))
+    if lrolled < 1e6:
+        lrolled = 0
     lhide = None
     lgreen = None
     lflat = None
     # s (on mature shape) at which leaf becomes flat and visible
-    s_limvis = 1.
+    s_limvis = Lshape
     #s (on mature shape) at which leaf becomes senescent
-    s_limsen = 1.
+    s_limsen = Lshape
+    # s(on mature shape) at which leaf becomes rolled
+    s_limrolled = Lshape
+    # compute partitioning of visible length
     try:
         lhide = max(l - lvis, 0.)
         lflat = lvis - min(lrolled,lvis)
-        lgreen = lflat - min(lsen,lflat)
-        lsen = lflat - lgreen        
-        s_limvis = Lshape - lflat
+        lrolled = lvis - lflat
+        lgreen = lvis - min(lsen,lvis)
+        lsen = lvis - lgreen
+        s_limvis = Lshape - lvis
         s_limsen = Lshape - lsen
+        s_limrolled = Lshape - lflat
         #print(lgreen,lsen,s_limvis,s_limsen)
     except TypeError:
         pass
 
-    # hidden part + rolled : TO DO : make a cylinder with area corresponding to blade forming the rolled part
-    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': lrolled * numpy.pi * d, 'green_length': lrolled, 'green_area': lrolled * numpy.pi * d, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0 }
+    # hidden part + rolled : area are set to zero as leaf rolled area is already counted in leaf element 
+    #hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': 0, 'green_length': lrolled, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
+    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': 0, 'area': 0, 'green_length': 0, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
     elements = [hidden_elt]
+    #elements=[]
     ds = 0
     if Lshape is not None:
         ds = float(Lshape) / sectors
-    st = ds    
+    # compute sectors from leafshape bes to leaf shape top
     for isect in range(sectors):
         ls_vis= 0
+        ls_rolled = 0
+        ls_rolled_green = 0
+        ls_rolled_sen = 0
+        d_rolled = 0
         ls_green = 0
         ls_sen = 0
         S_green = 0
         S_sen = 0
-        position_senescence = 1
+        S_tot = 0
         srb_green = None
         srt_green = None
         srb_sen = None
         srt_sen = None
+        
         try:
-            ls_vis = max(0., st - s_limvis)
+            st = (isect + 1) * ds
+            ls_vis = min(ds, max(0., st - s_limvis))
             if ls_vis > 0:
-                sb_green = st - min(ds, ls_vis)
+                sb = st - ls_vis
+                sb_green = sb
                 st_green = min(st, max(sb_green,s_limsen))
                 sb_sen = st_green
                 st_sen= st
                 ls_green = st_green - sb_green
                 ls_sen = st_sen - sb_sen
                 #print(sb_green,st_green,st_sen)
-                if lflat > 0:
-                    srb_green = float(sb_green - s_limvis) / lflat
-                    srt_green = float(st_green - s_limvis) / lflat
-                    srb_sen = float(sb_sen - s_limvis) / lflat
-                    srt_sen = float(st_sen - s_limvis) / lflat
-                    #print(srb_green,srt_green,srb_sen,srt_sen)
-                    if ls_green > 0:
-                        S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
-                    if ls_sen > 0:
-                        S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
-                    # attention a garder une position constante quand on utlise une feuille stresse
-                    #position_senescence = 1 - float(ls_sen) / Lshape
-                    # a priori ici pour alep. systeme pour alep = longueurs absolues depuis le haut du secteur. position _senescence n'est plus utilise par guillaume
-                    position_senescence = ls_sen
+                #
+                # Compute area of elements
+                if ls_green > 0:
+                    S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
+                if ls_sen > 0:
+                    S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
+                # made intergration again for avoiding fluctuations
+                S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
+                #S_tot = S_green + S_sen
+                #
+                # compute position of flat parts of the element
+                ls_flat = min(ls_vis, max(0., st - s_limrolled))
+                if ls_flat > 0:
+                    sb = st - ls_flat
+                    sb_green = sb
+                    st_green = min(st, max(sb_green,s_limsen))
+                    sb_sen = st_green
+                    st_sen= st
+                    srb_green = (float(sb_green) - s_limvis) / lvis
+                    srt_green = (float(st_green) - s_limvis) / lvis
+                    srb_sen = (float(sb_sen) - s_limvis) / lvis
+                    srt_sen = (float(st_sen) - s_limvis) / lvis
+                #print(srb_green,srt_green,srb_sen,srt_sen)
+                if ls_flat < ls_vis:
+                    ls_rolled = ls_vis - ls_flat
+                    ls_rolled_green = min(ls_rolled, ls_green)
+                    ls_rolled_sen = ls_rolled - ls_rolled_green
+                    S_rolled = S_tot * ls_rolled / ls_vis
+                    d_rolled = float(S_rolled) / numpy.pi / ls_rolled
+
         except TypeError:# input is None
         #    print "passing"
             pass
         green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g', 'length': ls_green, 'area': S_green, 'is_green': True,
-                'srb': srb_green, 'srt': srt_green}
+                'srb': srb_green, 'srt': srt_green,'lrolled':ls_rolled_green, 'd_rolled':d_rolled}
         sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's', 'length': ls_sen,'area': S_sen, 'is_green': False, 
-                'srb': srb_sen, 'srt': srt_sen}
-        elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_green + S_sen, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
-                'srb': srb_green, 'srt': srt_sen, 'position_senescence':position_senescence} 
+                'srb': srb_sen, 'srt': srt_sen,'lrolled':ls_rolled_sen, 'd_rolled':d_rolled}
+        elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_tot, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
+                'srb': srb_green, 'srt': srt_sen, 'lrolled':ls_rolled, 'd_rolled':d_rolled} 
         if split: 
             elements.extend([green_elt,sen_elt])
         else:
             elements.extend([elt])
-        st += ds
     return elements
 
         
@@ -245,7 +277,6 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
          'ntop': ntop,
         'length': Ll,
         'rolled_length': Lr,
-        'diameter': Gd,
         'visible_length': Lv,
         'senesced_length': Lsen,
         'n_sect': Lsect,
@@ -253,7 +284,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'shape_max_width' : Lw_shape,
         'shape_xysr': xysr_shape,
         'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape, Gd)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape)} 
     ]
 
     if elongation:
@@ -460,7 +491,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
 def update_elements(organ):
     if organ.label.startswith('blade'):
         rolled_length = 0
-        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_xysr, organ.diameter)
+        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_xysr)
         for i,e in enumerate(organ.components()):
             for k in elements[i]:
                 exec "e.%s = elements[i]['%s']"%(k,k)

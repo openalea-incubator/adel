@@ -603,10 +603,14 @@ def adel_label(g,vid):
     label='undef'
     n = g.node(vid)
     if n.scale() == 5:
-        label= '_'.join([n.complex().complex().complex().complex().label,
-                         n.complex().complex().complex().label,
-                         n.complex().complex().label,
-                         n.complex().label,
+        organ = n.complex()
+        metamer = organ.complex()
+        axe = metamer.complex()
+        plant = axe.complex()
+        label= '_'.join([plant.label,
+                         axe.label,
+                         metamer.label,
+                         organ.label,
                          n.label
                          ])
     return label

@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 # Imports for wheat
-import pickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 from alinea.adel.newmtg import move_properties, adel_ids
 from alinea.echap.architectural_reconstructions import reconst_db
 from alinea.alep.disease_outputs import initiate_all_adel_septo_recorders

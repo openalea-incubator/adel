@@ -285,10 +285,11 @@ def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
 
     return points, indices
 
-def leaf_to_mesh(x, y, r, **kwds):
+def leaf_to_mesh(x, y, r, twist_start=0, twist_end=0, **kwds):
     n = len(x)
-    points = zip(x, -r/2., y)
-    points.extend(zip(x, r/2., y))
+    theta = linspace(radians(twist_start),radians(twist_end),n)
+    points = zip(x, -r/2. * abs(cos(theta)), y + abs(sin(theta)) * r / 2.)
+    points.extend(zip(x, r/2.* abs(cos(theta)), y - abs(sin(theta)) * r / 2.))
 
     ind = array(xrange(n-2))
     indices = zip(ind, ind+n, ind+(n+1))
@@ -333,7 +334,7 @@ def _mesh(leaf, length_max, length, radius_max, antisens = True, functor=leaf_to
 def mesh2(leaf, length_max, length, radius_max):
     return mesh4(leaf, length_max, length, 0., 1., radius_max)
 
-def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
+def mesh4(leaf, length_max, length, s_base, s_top, radius_max, twist=0):
     def insert_values(a, values):
         l= a.tolist()
         l.extend(values)
@@ -408,7 +409,7 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max ):
         # Degenarated element.
         return [], []
 
-    pts, ind = leaf_to_mesh(xf, yf, rf)
+    pts, ind = leaf_to_mesh(xf, yf, rf, twist_start=twist * min(s_val), twist_end=twist * max(s_val))
     
     ind = [id for id in ind if _surf(id,pts) > 1e-6]
     return pts, ind

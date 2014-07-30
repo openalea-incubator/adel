@@ -47,8 +47,8 @@ for canopy_iter in canopy_timing:
         g = adel.grow(g, canopy_iter.value)
         
         # Temporary : 3D display
-        # scene = plot3d(g)
-        # Viewer.display(scene)
+        scene = plot3d(g)
+        Viewer.display(scene)
         
         # Save variables
         for plant in recorders:

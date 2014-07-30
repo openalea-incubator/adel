@@ -1,7 +1,11 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
-import pickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
+# import pickle
 import os
 
 from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT

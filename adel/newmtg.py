@@ -601,17 +601,16 @@ def mtg_update_from_table(g, cantable, old_cantable):
 
 def adel_label(g,vid):
     label='undef'
-    n = g.node(vid)
-    if n.scale() == 5:
-        organ = n.complex()
-        metamer = organ.complex()
-        axe = metamer.complex()
-        plant = axe.complex()
-        label= '_'.join([plant.label,
-                         axe.label,
-                         metamer.label,
-                         organ.label,
-                         n.label
+    if g.scale(vid) == 5:
+        organ = g.complex(vid)
+        metamer = g.complex(organ)
+        axe = g.complex(metamer)
+        plant = g.complex(axe)
+        label= '_'.join([g.label(plant),
+                         g.label(axe),
+                         g.label(metamer),
+                         g.label(organ),
+                         g.label(vid)
                          ])
     return label
                         

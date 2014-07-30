@@ -5,7 +5,6 @@ try:
     import cPickle as pickle
 except:
     import pickle
-# import pickle
 import os
 
 from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT

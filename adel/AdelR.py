@@ -202,6 +202,29 @@ def getAxeT(setAdelPars):
     return pandas.DataFrame(dataframeAsdict(df))
    
 def canL2canS(RcanT,srdb,shrink=1):
+    """outputs are : 
+       - Ll : length of the blade
+       - Lv : visible (emerged) length of blade (green + senesced, rolled + unrolled)
+       - Lr : rolled part of the blade
+       - Lsen : length of the senescent part of the blade (hidden + visible)       
+       - L_shape : Mature length of the blade used to compute blade shape
+       - Lw_shape : Maximal width of the blade used to compute blade shape
+       - Linc : relative inclination of the base of leaf blade at the top of leaf sheath (deg) 
+       - Laz : relative azimuth of the leaf
+       - Lsect : the number of sectors per leaf blade
+       - Gl : length of the sheath (hidden + visible)
+       - Gv : emerged length of the sheath
+       - Gsen : senescent length of the sheath (hidden + visible)
+       - Gd : apparent diameter of the sheath
+       - Ginc : relative inclination of the sheath
+       - El: length of the internode (hidden + visible)
+       - Ev: emerged length of the internode 
+       - Esen: senescent length of the internode (hidden + visible)
+       - Ed: diameter of the internode
+       - Einc : relative inclination of the internode
+ 
+    """
+
     sr = r.load(srdb)[0]
     sr=r(sr)
     res = RcanL2canS(RcanT,sr,shrink)

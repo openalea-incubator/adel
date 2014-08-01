@@ -254,6 +254,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
        #to do add diameter and Lrolled to blade
     Eaz = Laz
     Gaz = 0
+    split=kwargs.get('split', False)
     modules = [
         {'label': 'internode',
         'ntop': ntop,
@@ -284,7 +285,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'shape_max_width' : Lw_shape,
         'shape_xysr': xysr_shape,
         'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape, split = split)} 
     ]
 
     if elongation:
@@ -303,7 +304,7 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False, split=False):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
@@ -422,6 +423,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                 args.update({'ntop':None})
             if not 'Gd' in args:
                 args.update({'Gd':0.19}) 
+            args.update({'split':split})
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
             args={'L_shape':args.get('L_shape')}
         #

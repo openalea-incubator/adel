@@ -11,7 +11,28 @@ from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn,
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
-from alinea.astk.TimeControl import * 
+from alinea.astk.TimeControl import *
+import numpy
+
+def get_normal_dist(nb_plants=10, sigma=30.):
+    """ Calculate the distribution of emergence dates for a given number of plants 
+    as a function of the standard deviation sigma in degree days. """
+    N = 1000
+    norm_list = numpy.random.normal(scale=sigma, size=N)
+    h = numpy.histogram(norm_list, bins=nb_plants)
+    classes = h[1]
+    distri_plants = h[0]*nb_plants/float(N)
+    round_distri = [numpy.round(d) for d in distri_plants]
+    missing_pl = nb_plants - sum(round_distri)
+    while missing_pl > 0:
+        gap = round_distri - distri_plants
+        round_distri[np.argmin(gap)] += 1
+        missing_pl = nb_plants - sum(round_distri)
+    while missing_pl < 0:
+        gap = distri_plants - round_distri
+        round_distri[np.argmin(gap)] -= 1
+        missing_pl = nb_plants - sum(round_distri)
+    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], d+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
 class AdelWheat(object):
     

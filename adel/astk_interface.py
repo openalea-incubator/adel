@@ -15,7 +15,7 @@ from alinea.astk.TimeControl import *
 import numpy
 
 def get_normal_dist(nb_plants=10, sigma=30.):
-    """ Calculate the distribution of emergence dates for a given number of plants 
+    """ Calculate the "best possible" distribution of emergence dates for a given number of plants 
     as a function of the standard deviation sigma in degree days. """
     N = 1000
     norm_list = numpy.random.normal(scale=sigma, size=N)

@@ -304,7 +304,7 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False, split=False):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False, split=False, aborting_tiller_reduction = 1.0):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
@@ -314,6 +314,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
     stand is a list of tuple (xy_position_tuple, azimuth) of plant positions
     axis_dynamics is a 3 levels dict describing axis dynamic. 1st key level is plant number, 2nd key level is axis number, and third ky level are labels of values (n, tip, ssi, disp)
     topology is the list of key names used in parameters dict for plant number, axe number and metamer number
+    aborting_tiller_reduction is a scaling factor applied to reduce all dimensions of organs of tillers that will abort
 
     Axe number 0 is compulsory
   
@@ -424,6 +425,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
             if not 'Gd' in args:
                 args.update({'Gd':0.19}) 
             args.update({'split':split})
+            if args.get('HS_final') < args.get('nff'):
+                for what in ('Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv', 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
+                    args.update({what:args.get(what) * aborting_tiller_reduction})
             components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
             args={'L_shape':args.get('L_shape')}
         #

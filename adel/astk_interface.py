@@ -36,7 +36,7 @@ def get_normal_dist(nb_plants=10, sigma=30.):
 
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -61,6 +61,7 @@ class AdelWheat(object):
         self.split = split
         self.face_up = face_up
         self.aborting_tiller_reduction = aborting_tiller_reduction
+        self.classic = classic
     
     def timing(self, delay, steps, weather, start_date):
         """ compute timing and time_control_sets for a simulation between start and stop. 
@@ -83,7 +84,7 @@ class AdelWheat(object):
         else:
             stand = None
         g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand, dynamic_leaf_db=self.dynamic_leaf_db, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-        g = mtg_interpreter(g, leaf_twist=self.leaf_twist, face_up = self.face_up)
+        g = mtg_interpreter(g, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
         return g
 
     def checkAxeDyn(self, dates, density=1):

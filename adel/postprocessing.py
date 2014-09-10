@@ -175,7 +175,7 @@ def aggregate_adel_output(adel_output_df, by=['TT', 'plant', 'axe_id']):
     
     :Parameters:
     
-        - `adel_output_df` (pandas.DataFrame) - the output of Adel.
+        - `adel_output_df` (pandas.DataFrame) - the output of Adel (return by method adel.get_exposed_areas(g)).
         
         - `by` (list) - the name of the columns to group adel_output_df on.
     

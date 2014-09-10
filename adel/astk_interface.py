@@ -7,7 +7,7 @@ except:
     import pickle
 import os
 
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT, getPhenT
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
@@ -92,6 +92,9 @@ class AdelWheat(object):
         
     def axeT(self):
         return getAxeT(self.pars)
+        
+    def phenT(self, axe='MS'):
+        return getPhenT(self.pars, axe=axe)
         
     def grow(self, g, time_control):
     

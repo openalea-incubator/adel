@@ -62,6 +62,7 @@ RgenString = robj.globalEnv['genString']
 RcanL2canS = robj.globalEnv['canL2canS']
 RcheckAxeDyn = robj.globalEnv['checkAxeDyn']
 RgetAxeT = robj.globalEnv['getAxeT']
+RgetPhenT = robj.globalEnv['getPhenT']
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
 
 
@@ -199,6 +200,11 @@ def checkAxeDyn(setAdelPars, dates, plant_density = 1):
 def getAxeT(setAdelPars):
     """ return axeT table"""
     df = RgetAxeT(setAdelPars)
+    return pandas.DataFrame(dataframeAsdict(df))
+    
+def getPhenT(setAdelPars, axe='MS'):
+    """ return phenT table"""
+    df = RgetPhenT(setAdelPars, axe=axe)
     return pandas.DataFrame(dataframeAsdict(df))
    
 def canL2canS(RcanT,srdb,shrink=1):

@@ -148,8 +148,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     }
     ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allonges sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
-        kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
-        #kin[x > plant$axeT$disp[a],,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
+        #kin[x > plant$axeT$disp[a],,c("Ll","Gl","Llsen","Glsen")] <- 0
+        kin[x > plant$axeT$disp[a],,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
     #rang depuis flag leaf
     for (d in seq(along=x))
       kin[d,,"ntop"] <- -(seq(nrow(kin[d,,])) - nfa)
@@ -508,6 +508,7 @@ checkAxeDyn <- function(dates,plants, density=1) {
 }
 #
 getAxeT <- function(plants) do.call('rbind', mapply(function(idpl,pl) {df=pl$axeT;df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))
-    
+#
+getPhenT <- function(plants, axe='MS') do.call('rbind', mapply(function(idpl,pl) {df=pl$pheno[[axe]];df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))
     
 

@@ -15,7 +15,7 @@ from alinea.alep.disease_outputs import initiate_all_adel_septo_recorders
 # Imports for weather
 from alinea.astk.TimeControl import *
 from alinea.echap.weather_data import *
-from alinea.alep.alep_weather import basic_degree_days
+from alinea.alep.alep_weather import linear_degree_days
 
 # Temporary
 from alinea.adel.mtg_interpreter import plot3d
@@ -24,14 +24,14 @@ from openalea.plantgl.all import Viewer
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
 nsect = 5
-pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=20)
+pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=5)
 g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control
 start_date="2011-03-01 12:00:00"
 end_date="2011-06-20 01:00:00"
 weather = Boigneville_2010_2011()
-weather.check(varnames=['degree_days'], models={'degree_days':basic_degree_days}, start_date=start_date)
+weather.check(varnames=['degree_days'], models={'degree_days':linear_degree_days}, start_date=start_date)
 seq = pandas.date_range(start = start_date, end = end_date, freq='H')
 TTmodel = DegreeDayModel(Tbase = 0)
 every_dd = thermal_time_filter(seq, weather, TTmodel, delay = 20)
@@ -50,8 +50,8 @@ for canopy_iter in canopy_timing:
         g = adel.grow(g, canopy_iter.value)
         
         # Temporary : 3D display
-        scene = plot3d(g)
-        Viewer.display(scene)
+        # scene = plot3d(g)
+        # Viewer.display(scene)
         
         # Save variables
         for plant in recorders:

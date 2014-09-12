@@ -21,6 +21,10 @@ from alinea.alep.alep_weather import linear_degree_days
 from alinea.adel.mtg_interpreter import plot3d
 from openalea.plantgl.all import Viewer
 
+from random import seed 
+
+seed(0)
+
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
 nsect = 5
@@ -29,7 +33,7 @@ g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control
 start_date="2011-03-01 12:00:00"
-end_date="2011-06-20 01:00:00"
+end_date="2011-06-25 01:00:00"
 weather = Boigneville_2010_2011()
 weather.check(varnames=['degree_days'], models={'degree_days':linear_degree_days}, start_date=start_date)
 seq = pandas.date_range(start = start_date, end = end_date, freq='H')
@@ -58,6 +62,9 @@ for canopy_iter in canopy_timing:
             for lf, recorder in recorders[plant].iteritems():
                 recorder.update_vids_with_labels(adel_ids = adel_ids(g))
                 recorder.record_only_leaf_data(g, date, degree_days = canopy_iter.value.degree_days[-1])
+
+scene = plot3d(g)
+Viewer.display(scene)
 
 for plant in recorders:
     for recorder in recorders[plant].itervalues():

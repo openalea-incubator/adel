@@ -291,12 +291,16 @@ def leaf_to_mesh(x, y, r, twist_start=0, twist_end=0, **kwds):
     points = zip(x, -r/2. * abs(cos(theta)), y + abs(sin(theta)) * r / 2.)
     points.extend(zip(x, r/2.* abs(cos(theta)), y - abs(sin(theta)) * r / 2.))
 
-    ind = array(xrange(n-2))
+    ind = array(xrange(n-2)) if n > 2 else array([0])
     indices = zip(ind, ind+n, ind+(n+1))
     indices.extend(zip(ind, ind+(n+1), ind+1))
 
     # add only one triangle at the end !!
-    if r[-1] < 0.001:
+    if n < 2:
+        assert len(points) == 4
+        if r[-1] < 0.001:
+            indices = indices[0:1] 
+    elif r[-1] < 0.001:
         indices.append((n-2, 2*n-2, 2*n-1))
     else:
         indices.append((n-2, 2*n-2, 2*n-1))
@@ -411,6 +415,7 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max, twist=0):
 
     pts, ind = leaf_to_mesh(xf, yf, rf, twist_start=twist * min(s_val), twist_end=twist * max(s_val))
     
+
     ind = [id for id in ind if _surf(id,pts) > 1e-6]
     return pts, ind
 

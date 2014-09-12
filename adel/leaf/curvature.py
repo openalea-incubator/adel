@@ -1,13 +1,18 @@
 from math import *
-import numpy as np
-from scipy import interpolate
-from scipy.ndimage import measurements
 
-from openalea.plantgl.all import *
+
+#from openalea.plantgl.all import *
 from curve_discretizer import curve_discretizer
-from alinea.adel.fitting import curvilinear_abscisse
+#from alinea.adel.fitting import curvilinear_abscisse
+
+def curvilinear_abscisse( x, y ):
+    import numpy as np
+    s = np.zeros(len(x))
+    s[1:] = np.sqrt(diff(x)**2+diff(y)**2)
+    return s.cumsum()
 
 def curvature_xys(x,y,s):
+    import numpy as np
     ds = np.diff(s)
     dx, dy = np.diff(x), np.diff(y)
     #dx /= ds
@@ -24,6 +29,8 @@ def curvature(crv, n=100):
     Return the first point, the first tangent, the curvilinear abscisse and
     the curvature.
     """
+    import numpy as np
+
     x, y = curve_discretizer(crv, n)
     s = curvilinear_abscisse(x,y)
     L = s.max()
@@ -40,6 +47,8 @@ def curvature(crv, n=100):
     return (x[0], y[0]), theta[0], s, dtheta
 
 def curvature2xy(p0, angle, s, dtheta):
+    import numpy as np
+
     x0, y0 = p0
     ds = np.diff(s)
     theta = angle+np.cumsum([0]+list(dtheta*ds[1:]))
@@ -58,6 +67,11 @@ def interpolate_curvature(curvatures, times, kind='cubic'):
     A curvature is a parametrisation `s`, d(angle)/ ds and a parameter between [0,1].
     Return a surface f(s,t).
     """
+    import numpy as np
+
+    from scipy import interpolate
+    from scipy.ndimage import measurements
+    
     if len(curvatures) == 3 and not isinstance(curvatures[2], tuple):
         curvatures= [curvatures]
 

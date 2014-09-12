@@ -95,16 +95,22 @@ def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
     
     if leaf is not None:
         x,y,s,r = leaf
-        sre = [sr for sr in zip(s,r) if (sr[0] > sr_base) & (sr[0] < sr_top)]
+        sre = [sr for sr in zip(s,r) if (sr_base < sr[0] < sr_top)]
         # Temp G.Garin: 02/08/2013
-        if len(sre)>0:
+        if len(sre) > 0:
             se,re = zip(*sre)
             snew = [sr_base] + list(se) + [sr_top]
             rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
-            S = simps(rnew,snew) * Lshape * Lwshape
+        else:
+            snew = [sr_base, sr_top]
+            rnew = [interp(sr_base,s,r), interp(sr_top,s,r)]
+
+        S = simps(rnew,snew) * Lshape * Lwshape
+
         #print "S",S
     #except:
         #S = 0
+    return S
     return max(0,S)
     
 def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, split = False):
@@ -115,7 +121,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
     lrolled is the visible rolled length of the blade
     lsen is the senescent apical length
     Lshape is length of the blade used as a pattern shape
-"""
+    """
     lrolled=max(0, min(lrolled,lvis))
     if lrolled < 1e6:
         lrolled = 0
@@ -186,8 +192,8 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                 if ls_sen > 0:
                     S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
                 # made intergration again for avoiding fluctuations
-                S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
-                #S_tot = S_green + S_sen
+                #S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
+                S_tot = S_green + S_sen
                 #
                 # compute position of flat parts of the element
                 ls_flat = min(ls_vis, max(0., st - s_limrolled))

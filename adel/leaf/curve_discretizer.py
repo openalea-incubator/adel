@@ -1,13 +1,12 @@
-import numpy 
-from openalea.plantgl import all as pgl
+#from openalea.plantgl import all as pgl
 
 def curve_discretizer(curve, n=100):
     '''    
     '''
-    import numpy 
     x = []; y = []; 
 
-    u = numpy.linspace(curve.firstKnot, curve.lastKnot, n)
+    import numpy as np
+    u = np.linspace(curve.firstKnot, curve.lastKnot, n)
     pts = map(curve.getPointAt, u)
     x,y = zip(*pts)
 

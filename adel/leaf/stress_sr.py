@@ -1,6 +1,4 @@
-import numpy as np
-from scipy.stats._support import unique
-from alinea.adel.fitting import curvilinear_abscisse
+from curvature import curvilinear_abscisse
 
 
 class Interval(object):
@@ -87,6 +85,9 @@ def stress_sr(s, r, d):
 def stress_xy(s, x, y, d):
     '''    
     '''
+    import numpy as np
+    from scipy.stats._support import unique
+
     keys, intervals = sort_intervals(d)
 
     s_new = [keys[0].min]+[k.max for k in keys]
@@ -128,6 +129,9 @@ def stress_xy(s, x, y, d):
 def stress_xysr(x, y, s, r, d):
     '''    
     '''
+    import numpy as np
+    from scipy.stats._support import unique
+
     keys, intervals = sort_intervals(d)
 
     new_s, r = stress_sr(s,r,d)

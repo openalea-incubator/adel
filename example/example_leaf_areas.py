@@ -28,7 +28,7 @@ seed(0)
 # Initialize wheat plant
 Mercia = reconst_db['Mercia']
 nsect = 5
-pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=5)
+pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=0)
 g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control

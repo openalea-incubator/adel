@@ -60,14 +60,14 @@ def LeafElement_mesh(shape, L_shape, Lw_shape, length, s_base, s_top, twist=0):
     leaf_mesh = mesh4(shape, L_shape, length, s_base, s_top, Lw_shape, twist=twist)
     if leaf_mesh:
         pts, ind = leaf_mesh
-        if len(ind) < 2:
-            #print 'ERROR less than 2 triangles'
+        if len(ind) < 1:
+            print 'ERROR less than 1 triangles'
             mesh = None
         else:
             mesh = plantgl_shape(pts, ind)
     else:
         if length > 0:
-            #print 'ERROR No mesh', s_base, s_top, length
+            print 'ERROR No mesh', s_base, s_top, length
             pass
         mesh = None
 

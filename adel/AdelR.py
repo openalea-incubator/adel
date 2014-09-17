@@ -82,6 +82,8 @@ def saveRData(Robj,name,fn):
 
 def RlistAsDict(Rlist):
     """returns a dictionary containing the elements of the Rlist"""
+    if r['is.null'](Rlist.names)[0]:
+        Rlist.names = r['seq'](Rlist)
     return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
 
 def _rvect_asarray(rvect):
@@ -359,5 +361,48 @@ def freeGeoLeaf(rcode):
 
     return rcode
 
-
-
+    
+def R_xydb(rdata):
+    """ return a python readable database from RData file containing leaf xy data
+        - rdata is a regular .RData file containing a named list of list of xy matrix/dataframes
+    """
+    xy = r.load(rdata)[0]
+    # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
+    r('names(%s) = seq(%s)'%(xy,xy))
+  
+    xy = RlistAsDict(r(xy))
+    
+    rank = xy.keys()    
+    leaves = {}
+    for k in rank:
+        xyk = RlistAsDict(xy[k])
+        leaves_id = xyk.keys()
+        for leaf_id in leaves_id:
+            try:
+                x, y = numpy.transpose(numpy.array(xyk[leaf_id])) #xy is a matrix
+            except ValueError:#xy is a dataframe
+                x, y = numpy.array(xyk[leaf_id][0]),numpy.array(xyk[leaf_id][1])
+            leaves.setdefault(k,[]).append((x,y))
+    return leaves
+    
+def R_srdb(rdata):
+    """ return a python readable database from RData file containing leaf sr data
+        - rdata is a regular .RData file containing a named list of list of xy matrix/dataframes
+    """
+    sr = r.load(rdata)[0]
+    # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
+    r('names(%s) = seq(%s)'%(sr,sr))
+  
+    sr = RlistAsDict(r(sr))
+    
+    rank = sr.keys()
+   
+    leaves = {}
+    for k in rank:
+        try: 
+            s, radius = numpy.transpose(numpy.array(sr[k]))
+        except ValueError:#sr is a dataframe
+            s, radius = numpy.array(sr[k][0]),numpy.array(sr[k][1])
+        leaves[k] = (s,radius)   
+        
+    return leaves

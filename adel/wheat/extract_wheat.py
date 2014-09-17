@@ -1,15 +1,4 @@
-import rpy2.robjects as robj
-from rpy2.robjects.numpy2ri import numpy2ri
-r = robj.r
-
-import numpy
-from numpy import transpose
-
-def RlistAsDict(Rlist):
-    """returns a dictionary containing the elements of the Rlist"""
-    if r['is.null'](Rlist.names)[0]:
-        Rlist.names = r['seq'](Rlist)
-    return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
+from alinea.adel.AdelR import R_xydb, R_srdb
 
 def extract_leaf_info(rdata_xy, rdata_sr):
     """
@@ -17,42 +6,21 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     genotype, plant number, leaf rank, data
     database key: rank, value : x,y,s,r
     """
-#    global r
-    #xy = r.load(rdata_xy)[0]
-    #sr = r.load(rdata_sr)[0]
-    xy = r.load(rdata_xy)[0]
-    sr = r.load(rdata_sr)[0]
-    # rename Rlists with list index, to ensure leaf retrieval by index as key in python	
-    r('names(%s) = seq(%s)'%(xy,xy))
-    r('names(%s) = seq(%s)'%(sr,sr))
 
-    xy = RlistAsDict(r(xy))
-    sr = RlistAsDict(r(sr))
-
+    xy = R_xydb(rdata_xy)
+    sr = R_srdb(rdata_sr)
+    
     rank = xy.keys()
     rank.sort()
-
     # Assert that the two databases are compatible.
     rank_bis = sr.keys()
     rank_bis.sort()
     assert rank == rank_bis
 
-    leaves = {}
     for k in rank:
-        xyk = RlistAsDict(xy[k])
-        leaves_id = xyk.keys()
-        try: 
-            s, radius = transpose(numpy.array(sr[k]))
-        except ValueError:#sr is a dataframe
-            s, radius = numpy.array(sr[k][0]),numpy.array(sr[k][1])
-        for leaf_id in leaves_id:
-            try:
-                x, y = transpose(numpy.array(xyk[leaf_id])) #xy is a matrix
-            except ValueError:#xy is a dataframe
-                x, y = numpy.array(xyk[leaf_id][0]),numpy.array(xyk[leaf_id][1])
-            leaves.setdefault(k,[]).append((x,y,s,radius))
-
-    return leaves
+        for i in range(len(xy[k])):
+            xy[k][i] = (xy[k][i][0], xy[k][i][1], sr[k][0], sr[k][1])
+    return xy
 
 def test():
     rdata_xy = 'data/So99.RData'

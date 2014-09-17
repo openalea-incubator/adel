@@ -27,15 +27,19 @@ def devT():
     return devCsv(axeT,dimT,phenT,earT,ssisenT)
     
 def srdb():
-    return datadir + '/data/SRSo.RData'
+    from alinea.adel.AdelR import R_srdb
+    rdata = datadir + '/data/SRSo.RData'
+    return R_srdb(rdata)
     
 def xydb():
-    return datadir + '/data/So99.RData'
+    from alinea.adel.AdelR import R_xydb
+    rdata =  datadir + '/data/So99.RData'
+    return R_xydb(rdata)
     
 def wheat_leaf_db():
     from alinea.adel.wheat.extract_wheat import extract_leaf_info
     import alinea.adel.fitting as fitting
-    leaves= extract_leaf_info(xydb(),srdb())
+    leaves= extract_leaf_info(datadir + '/data/So99.RData',datadir + '/data/SRSo.RData')
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
 

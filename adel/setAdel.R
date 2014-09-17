@@ -184,7 +184,6 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     if (! all(is.finite(c(nfM,nrow(pT)))))
       stop("setAdel: Can't create phytoT array")
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
-    #leafT <- NULL
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]
       idaxe <- pT$axe[a]
@@ -210,8 +209,6 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
         phytoT[seq(nf),"Lindex",a] <- lindex
         phytoT[seq(nf),"Lseed",a] <- sapply(seq(lseed),function(x) {index = round(lseed[x] * length(xy_db[[lindex[x]]])); ifelse(index==0,1,index)})
       }
-      #
-      #leafT <- c(leafT, paste(idaxe, seq(nf),nf,sep="_"))
       #
       phytoT[(nf+1):(nf+3),,a] <- 0
       if (!is.na(pT$earIndex[a])) {

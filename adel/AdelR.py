@@ -63,6 +63,7 @@ RcanL2canS = robj.globalEnv['canL2canS']
 RcheckAxeDyn = robj.globalEnv['checkAxeDyn']
 RgetAxeT = robj.globalEnv['getAxeT']
 RgetPhenT = robj.globalEnv['getPhenT']
+RgetPhytoT = robj.globalEnv['getPhytoT']
 #RgetLeafT = robj.globalEnv['getLeafT']
 
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
@@ -169,13 +170,22 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
         
     if xydb is None:
         rxydb = r('as.null()')
+    elif isinstance(xydb, dict): # pure python xydb dict, a list of list is passed to setAdel
+        # Warning : setadel uses index only and finding closest index if db is too small. Unambiguous meaning of keys retrieving from Lindex afterward there fore will need sorting keys before using Lindex (python sorted key index = Lindex - 1 (Lindex follows Rindexing convention), python list index = lseed - 1. cf conversion infra
+        keys = xydb.keys()
+        keys.sort() # to ensure lseed index is sample in the good list)
+        rxydb = r.list(*keys)
+        for i in range(len(rxydb)):
+            rxydb[i] = r.list(*range(len(xydb[keys[i]])))            
     else:
         rxydb = r.load(xydb)[0]
         rxydb = r(rxydb)
         
     if srdb is None:
         rsrdb = r('as.null()')
-    else:
+    elif isinstance(srdb, dict): # pure python srdb dict, a list is passed to setAdel
+        rsrdb = r.list(*srdb.keys())
+    else: # path to RData file
         rsrdb = r.load(srdb)[0]
         rsrdb = r(rsrdb)
 
@@ -186,6 +196,15 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     geoLeaf = robj.globalEnv['geoLeaf']
     p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,sample,rseed,rxydb,rsrdb)
     return p
+    
+def leaf_keys(lindex, lseed, db):
+    """ convert R-style lindex/lseed (also called LcType/Lindex in canopy table)
+        into (keys,index) of python xy/sr data bases 
+    """
+    keys = db.keys()
+    keys.sort()
+    return keys[lindex - 1], lseed -1
+     
 
 def plantSample(setAdelPars):
     """return id of plants used by setAdel to setup the canopy """
@@ -209,6 +228,11 @@ def getAxeT(setAdelPars):
 def getPhenT(setAdelPars, axe='MS'):
     """ return phenT table"""
     df = RgetPhenT(setAdelPars, axe=axe)
+    return pandas.DataFrame(dataframeAsdict(df))
+    
+def getPhytoT(setAdelPars, axe='MS'):
+    """ return phytoT table"""
+    df = RgetPhytoT(setAdelPars, axe=axe)
     return pandas.DataFrame(dataframeAsdict(df))
     
 #def getLeafT(setAdelPars):

@@ -7,12 +7,16 @@ except:
     import pickle
 import os
 
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoLeaf,genGeoAxe, checkAxeDyn, getAxeT, getPhenT
+import numpy
+
+
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoAxe, checkAxeDyn, getAxeT, getPhenT, getPhytoT
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
-import numpy
+from alinea.adel.geometric_elements import LeafGeometry
+
 
 def get_normal_dist(nb_plants=10, sigma=30.):
     """ Calculate the "best possible" distribution of emergence dates for a given number of plants 
@@ -34,26 +38,28 @@ def get_normal_dist(nb_plants=10, sigma=30.):
         missing_pl = nb_plants - sum(round_distri)
     return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], d+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
+    
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, dynamic_leaf_db = False, geoLeaf=None, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaf_geometry = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
     
         if devT is None: 
             devT = adel_data.devT()
-        if leaf_db is None: 
-            # MODELE BLE
-            leaf_db = adel_data.wheat_leaf_db()
-            # MODELE MAIS
-            #leaf_db = adel_data.leaves_db()
+            
+        if leaf_db is not None:
+            print('!!!!Warning!!!! leafdb argument is deprecated, use LeafGeometry class instead. Use default leaves for this run')
+            
+        if leaf_geometry is None:
+            leaf_geometry = LeafGeometry()
+
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
-        if geoLeaf is None:
-            geoLeaf = genGeoLeaf()
+
         geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
-        self.pars = setAdel(devT,geoLeaf,geoAxe,nplants, seed = seed, sample=sample)
+        self.pars = setAdel(devT,leaf_geometry.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaf_geometry.xydb, srdb=leaf_geometry.srdb)
         self.positions = positions
-        self.leafdb = leaf_db
-        self.dynamic_leaf_db = dynamic_leaf_db
+        self.Leaf = leaf_geometry
+        self.leafdb = leaf_geometry.leafdb()
         self.nsect = nsect
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
@@ -83,7 +89,7 @@ class AdelWheat(object):
             stand = [(pos,0) for pos in self.positions]
         else:
             stand = None
-        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand, dynamic_leaf_db=self.dynamic_leaf_db, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
+        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand, dynamic_leaf_db=self.Leaf.dynamic, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
         g = mtg_interpreter(g, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
         return g
 
@@ -95,6 +101,9 @@ class AdelWheat(object):
         
     def phenT(self, axe='MS'):
         return getPhenT(self.pars, axe=axe)
+        
+    def phytoT(self, axe='MS'):
+        return getPhytoT(self.pars, axe=axe)
         
     def grow(self, g, time_control):
     

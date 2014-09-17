@@ -566,6 +566,9 @@ def fit_leaves( leaves, nb_points):
             try:
                 leaf = fit3(x, y, s, r, nb_points)
                 new_db.setdefault(key,[]).append(leaf)
+                #force leaf tip to be s,r = 1,0
+                leaf[2][-1] = 1
+                leaf[3][-1] = 0
             except:
                 print("alinea.adel.fitting->fit_leaves: can't fit leaf shape index %s, Rsub-index %d (python sub-index %d)=> leaf shape discarded"%(key,i+1,i))
                 discarded.setdefault(key,[]).append(i+1)

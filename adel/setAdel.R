@@ -206,8 +206,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
       else  {
         lindex <- sapply(lindex,function(x) ifelse(x %in% seq(xy_db),x,seq(xy_db)[which.min(abs(x - seq(xy_db)))]))
         lindex <- sapply(lindex,function(x) ifelse(x %in% seq(sr_db),x,seq(sr_db)[which.min(abs(x - seq(sr_db)))]))
+        # uses R-style indexing convention for lindex and lseed : they vary from 1 to length(object_list)
         phytoT[seq(nf),"Lindex",a] <- lindex
-        phytoT[seq(nf),"Lseed",a] <- sapply(seq(lseed),function(x) round(lseed[x] * length(xy_db[[lindex[x]]])))
+        phytoT[seq(nf),"Lseed",a] <- sapply(seq(lseed),function(x) {index = round(lseed[x] * length(xy_db[[lindex[x]]])); ifelse(index==0,1,index)})
       }
       #
       #leafT <- c(leafT, paste(idaxe, seq(nf),nf,sep="_"))

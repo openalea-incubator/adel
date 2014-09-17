@@ -627,12 +627,12 @@ def adel_label(g,vid):
     return label
                         
 def adel_labels(g, scale = 5):
-    """ return a dict vid:adel_ids
+    """ return a dict vid:adel_id
     """
     return {vid:adel_label(g,vid) for vid in g.vertices_iter(scale=scale)}
     
 def adel_ids(g, scale = 5):
-    """ return a dict vid:adel_ids
+    """ return a dict adel_id:vid
     """
     return {adel_label(g,vid):vid for vid in g.vertices_iter(scale=scale)}
                         

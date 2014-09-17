@@ -510,5 +510,7 @@ checkAxeDyn <- function(dates,plants, density=1) {
 getAxeT <- function(plants) do.call('rbind', mapply(function(idpl,pl) {df=pl$axeT;df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))
 #
 getPhenT <- function(plants, axe='MS') do.call('rbind', mapply(function(idpl,pl) {df=pl$pheno[[axe]];df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))
+#
+#getLeafT <- function(plants) do.call('c', mapply(function(idpl,pl) paste(paste('plant',idpl,sep=''), pl$leafT, sep='_'),seq(plants),plants,SIMPLIFY=FALSE))
     
 

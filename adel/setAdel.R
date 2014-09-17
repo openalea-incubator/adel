@@ -184,7 +184,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     if (! all(is.finite(c(nfM,nrow(pT)))))
       stop("setAdel: Can't create phytoT array")
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
-    leafT <- NULL
+    #leafT <- NULL
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]
       idaxe <- pT$axe[a]
@@ -210,7 +210,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
         phytoT[seq(nf),"Lseed",a] <- sapply(seq(lseed),function(x) round(lseed[x] * length(xy_db[[lindex[x]]])))
       }
       #
-      leafT <- c(leafT, paste(idaxe, seq(nf),nf,sep="_"))
+      #leafT <- c(leafT, paste(idaxe, seq(nf),nf,sep="_"))
       #
       phytoT[(nf+1):(nf+3),,a] <- 0
       if (!is.na(pT$earIndex[a])) {
@@ -235,7 +235,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
       if (!is.na(pT$earIndex[a]))
         pedT[[a]] <- predictPed(phenoT[[a]],phytoT[,,a],pT$earIndex[a],pT$nf[a],earT)
     
-    out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT, leafT=leafT)
+    out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT)
   }
   out
 }

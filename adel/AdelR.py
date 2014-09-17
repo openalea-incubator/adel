@@ -63,6 +63,8 @@ RcanL2canS = robj.globalEnv['canL2canS']
 RcheckAxeDyn = robj.globalEnv['checkAxeDyn']
 RgetAxeT = robj.globalEnv['getAxeT']
 RgetPhenT = robj.globalEnv['getPhenT']
+#RgetLeafT = robj.globalEnv['getLeafT']
+
 #r.load('D:\Christian\Projets\BleMaladie\ConfrontationArvalis\Calage\.RData')
 
 
@@ -206,6 +208,15 @@ def getPhenT(setAdelPars, axe='MS'):
     """ return phenT table"""
     df = RgetPhenT(setAdelPars, axe=axe)
     return pandas.DataFrame(dataframeAsdict(df))
+    
+#def getLeafT(setAdelPars):
+#    """ return a dict of leaves plantn_axetype_metamer : argument_dict_ for_leaf_sampler"""
+#    def id_args(label):
+#        plant, axe, n, nf = label.split('_')
+#        id = '_'.join((plant, axe, n))
+#        args = {'axe':axe, 'n': int(n), 'nf': int(nf)}
+#        return (id,args)
+#    return dict([id_args(s) for s in RgetLeafT(setAdelPars)])
    
 def canL2canS(RcanT,srdb,shrink=1):
     """outputs are : 

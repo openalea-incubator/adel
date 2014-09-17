@@ -3,3 +3,5 @@
 class AdelError(Exception): pass
 
 class AdelParameterisationError(AdelError): pass
+
+class AdelDeprecationError(AdelError): pass

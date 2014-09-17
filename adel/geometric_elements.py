@@ -11,7 +11,7 @@ import alinea.adel.AdelR as adelR
 
 # function for handling dynamical leaf shape databases    
 
-class LeafGeometry(object):
+class Leaves(object):
     
     def __init__(self, xydb = None, srdb = None, geoLeaf = None, dynamic = False, discretisation_level = 9):
     
@@ -30,21 +30,20 @@ class LeafGeometry(object):
         self.dynamic = dynamic
         self.discretisation_level = discretisation_level
         
-    def leafdb(self):
-
         leaves = {}
         xy = self.xydb
         sr = self.srdb
         for k in xy.keys():
             leaves[k]=[]
             for i in range(len(xy[k])):
-                leaves[k].append((xy[k][i][0], xy[k][i][1], sr[k][0], sr[k][1]))
-                
+                leaves[k].append((xy[k][i][0], xy[k][i][1], sr[k][0], sr[k][1]))        
         leaves,discard = fitting.fit_leaves(leaves, self.discretisation_level)
+        self.leaves = leaves
         
-        return leaves
-
-        
+    def get_leaf(self, lindex, lseed):
+        key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
+        leaf = self.leaves[key][index]
+        return leaf
     
 def dynamic_key(age, bins = [-10, 0.5, 1, 2, 3, 4, 10]):
     index = numpy.searchsorted(bins, age)

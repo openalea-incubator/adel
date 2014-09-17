@@ -15,7 +15,7 @@ from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
-from alinea.adel.geometric_elements import LeafGeometry
+from alinea.adel.geometric_elements import Leaves
 
 
 def get_normal_dist(nb_plants=10, sigma=30.):
@@ -41,25 +41,24 @@ def get_normal_dist(nb_plants=10, sigma=30.):
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaf_geometry = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
     
         if devT is None: 
             devT = adel_data.devT()
             
         if leaf_db is not None:
-            print('!!!!Warning!!!! leafdb argument is deprecated, use LeafGeometry class instead. Use default leaves for this run')
+            print('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead')
             
-        if leaf_geometry is None:
-            leaf_geometry = LeafGeometry()
+        if leaves is None:
+            leaves = Leaves()
 
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
 
         geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
-        self.pars = setAdel(devT,leaf_geometry.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaf_geometry.xydb, srdb=leaf_geometry.srdb)
+        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
         self.positions = positions
-        self.Leaf = leaf_geometry
-        self.leafdb = leaf_geometry.leafdb()
+        self.leaves = leaves
         self.nsect = nsect
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
@@ -89,7 +88,7 @@ class AdelWheat(object):
             stand = [(pos,0) for pos in self.positions]
         else:
             stand = None
-        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaf_db=self.leafdb, stand=stand, dynamic_leaf_db=self.Leaf.dynamic, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
+        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=stand, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
         g = mtg_interpreter(g, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
         return g
 

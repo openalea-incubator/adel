@@ -5,6 +5,10 @@ import os
 
 datadir = os.path.dirname(__file__)
 
+def leaves():
+    from alinea.adel.geometric_elements import Leaves
+    return Leaves()
+    
 def leaves_db():
     import cPickle as Pickle
     import alinea.adel.fitting as fitting
@@ -53,7 +57,7 @@ def adel_two_metamers(leaf_sectors = 1):
     d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
          'Laz': [0,90], 'Ll' :[3,3], 'Lv' :[3,3] ,'Lr':[0,0], 'Lsen':[0,0], 'L_shape':[3,3], 'Lw_shape':[.3,.3], 'Linc':[0,0],
          'Einc':[0,45],'El':[1,1],'Ev':[1,1],'Esen':[0,0],'Ed': [0.1,0.1],'Gd': [0.1,0.1]}
-    g=mtg_factory(d,adel_metamer,leaf_db=leaves_db(), leaf_sectors=leaf_sectors)
+    g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g)
     return g
     
@@ -74,7 +78,7 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
     domain = ((domain[0][0] - xc,domain[0][1] - yc),(domain[1][0] - xc,domain[1][1] - yc))
     domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
 
-    g=mtg_factory(d,adel_metamer,leaf_db=leaves_db(), leaf_sectors=leaf_sectors,stand=[(positions[0],0)])
+    g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=leaf_sectors,stand=[(positions[0],0)])
     g=mtg_interpreter(g)
     
     
@@ -85,7 +89,7 @@ def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}
-    g=mtg_factory(d,adel_metamer,leaf_db=leaves_db(),leaf_sectors=leaf_sectors)
+    g=mtg_factory(d,adel_metamer,leaves=leaves(),leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g)
     return g
 
@@ -94,7 +98,7 @@ def adel_one_leaf_element():
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[3], 'Lw_shape':[.3], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}
-    g=mtg_factory(d,adel_metamer,leaf_db=leaves_db(), leaf_sectors=1)
+    g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=1)
     g=mtg_interpreter(g)
     g.remove_vertex(13)
     labels = g.property('label')

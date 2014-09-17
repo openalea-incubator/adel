@@ -2,6 +2,7 @@
 A place to develop candidates methods for mtg.py / topological builder
 
 """
+from alinea.adel.exception import *
 
 #temporary import
 from alinea.adel.mtg import convert,properties_from_dict
@@ -310,13 +311,13 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], dynamic_leaf_db=False, split=False, aborting_tiller_reduction = 1.0):
+def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], split=False, aborting_tiller_reduction = 1.0, leaf_db =None):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
     metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
     leaf_sectors is an integer giving the number of LeafElements per Leaf blade
-    leaf_db is xysr leaf shape database
+    leaves is an instance of adel.geometric_elements.Leaves class
     stand is a list of tuple (xy_position_tuple, azimuth) of plant positions
     axis_dynamics is a 3 levels dict describing axis dynamic. 1st key level is plant number, 2nd key level is axis number, and third ky level are labels of values (n, tip, ssi, disp)
     topology is the list of key names used in parameters dict for plant number, axe number and metamer number
@@ -325,6 +326,14 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
     Axe number 0 is compulsory
   
     """
+    
+    if leaf_db is not None:
+        raise AdelDeprecationError('leaf_db argument is deprecated, use leaves argument instead')
+    
+    if leaves is None:
+        dynamic_leaf_db = False
+    else:
+        dynamic_leaf_db = leaves.dynamic
     
     g = MTG()
 
@@ -394,12 +403,12 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
         # args are added to metamers only if metamer_factory is none, otherwise compute metamer components
         components = []
         if metamer_factory:
-            if leaf_db is not None:
+            if leaves is not None:
                 if not dynamic_leaf_db:
                     try:
-                        xysr = leaf_db[str(int(args['LcType']))][int(args['LcIndex']) - 1]#R index starts at 1
+                        xysr = leaves.get_leaf(int(args['LcType']), int(args['LcIndex']))
                     except KeyError:
-                        xysr=leaf_db[leaf_db.keys()[0]][0]
+                        xysr = None
                 else:
                     try:
                         leaf_class = int(args['LcType'])
@@ -409,9 +418,9 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaf_db = None
                         #indices = numpy.arange(len(leaf_db[leaf_class].keys()))
                         #age_index = str(int(numpy.argmin(abs(indices-index))))
                         shape_index = int(args['LcIndex'] * len(leaf_db[leaf_class][index]))
-                        xysr = leaf_db[leaf_class][index][shape_index]
+                        xysr = leaves.leaves[leaf_class][index][shape_index]
                     except KeyError:
-                        xysr=leaf_db[leaf_db.keys()[0]][leaf_db[leaf_db.keys()[0]].keys()[0]][0]
+                        xysr=leaves.leaves[leaf_db.keys()[0]][leaf_db[leaf_db.keys()[0]].keys()[0]][0]
             else:
                 xysr = None
             

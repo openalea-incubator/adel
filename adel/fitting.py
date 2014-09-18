@@ -552,26 +552,42 @@ def leaf_shape2(leaf, nb_triangles, length_max, length, radius_max ):
 
     return mesh
 
-def fit_leaves( leaves, nb_points):
+def _fit_element(el, nb_points):
+    leaf = None
+    if isinstance(el,dict):
+        x,y,s,r = el['x'],el['y'],el['s'],el['r']
+    else:
+        x, y, s, r = el
+    try:
+        leaf = fit3(x, y, s, r, nb_points)
+        #force leaf tip to be s,r = 1,0
+        leaf[2][-1] = 1.
+        leaf[3][-1] = 0.
+    except:
+        pass
+    return leaf
+    
+    
+def fit_leaves(leaves, nb_points, dynamic = False):
     new_db = {}
     discarded={}
     db = leaves
     for key in db:
         l = db[key]
         for i,el in enumerate(l):
-            if isinstance(el,dict):
-                x,y,s,r = el['x'],el['y'],el['s'],el['r']
+            leaf = None
+            if not dynamic:
+                leaf = _fit_element(el, nb_points)
             else:
-                x, y, s, r = el
-            try:
-                leaf = fit3(x, y, s, r, nb_points)
+                leaf = {age:_fit_element(v, nb_points) for age,v in el.iteritems()}
+                if any(map(lambda x: x is None, leaf.values())):
+                    leaf = None                   
+            if leaf is not None:
                 new_db.setdefault(key,[]).append(leaf)
-                #force leaf tip to be s,r = 1,0
-                leaf[2][-1] = 1
-                leaf[3][-1] = 0
-            except:
+            else:
                 print("alinea.adel.fitting->fit_leaves: can't fit leaf shape index %s, Rsub-index %d (python sub-index %d)=> leaf shape discarded"%(key,i+1,i))
                 discarded.setdefault(key,[]).append(i+1)
-                pass
+
+                
     return new_db,discarded,
 

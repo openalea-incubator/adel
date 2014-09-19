@@ -211,6 +211,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
       }
       #
       phytoT[(nf+1):(nf+3),,a] <- 0
+      phytoT[(nf+1):(nf+3),c('Lindex', 'Lseed'),a] <- -999
       if (!is.na(pT$earIndex[a])) {
         phytoT[(nf+1):(nf+2),"El",a] <- unlist(earT[pT$earIndex[a],c("l_ped","l_ear")])
         phytoT[nf+3,"El",a] <- unlist(earT[pT$earIndex[a],"l_ear_awn"] - earT[pT$earIndex[a],"l_ear"])

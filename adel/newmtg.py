@@ -404,19 +404,18 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
         components = []
         if metamer_factory:
             if leaves is not None:
-                if not dynamic_leaf_db:
-                    try:
-                        xysr = leaves.get_leaf(int(args['LcType']), int(args['LcIndex']))
-                    except KeyError:
-                        xysr = None
-                else:
-                    try:
+                lctype = int(args['LcType'])
+                lcindex = int(args['LcIndex'])
+                if lctype != -999 and lcindex != -999:
+                    if not dynamic_leaf_db:
+                        xysr = leaves.get_leaf(lctype, lcindex)
+                    else:
                         age = args['rph']
                         if age != 'NA':
                             age = max(0,int(float(age)))
-                        xysr = leaves.get_leaf(int(args['LcType']), int(args['LcIndex']), age)
-                    except KeyError:
-                        xysr=None
+                        xysr = leaves.get_leaf(lctype, lcindex, age)
+                else: 
+                    xysr = None
             else:
                 xysr = None
             

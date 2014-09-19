@@ -53,7 +53,7 @@ class Leaves(object):
         self.leaves = leaves
     
     def get_leaf(self, lindex, lseed, age=None):
-    # to do return one default leaf even if key error occur
+    # to do return one default leaf even if key error occur ?
         key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
         if age is None:
             leaf = self.leaves[key][index]

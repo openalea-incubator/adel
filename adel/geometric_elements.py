@@ -9,9 +9,8 @@ import alinea.adel.data_samples as adel_data
 import alinea.adel.AdelR as adelR
 
 # function for handling dynamical leaf shape databases    
-  
 
-  
+
 
 class Leaves(object):
     
@@ -73,7 +72,16 @@ class Leaves(object):
             leaf = self.leaves[key][index]
         else:
             leaf = self.leaves[key][index][age_index]
+        if isinstance(leaf, dict):
+            leaf = leaf['x'], leaf['y'], leaf['s'], leaf['r']
         return leaf
+        
+    def get_sr(self, leaf_key):
+        key, index, age_index = leaf_key
+        sr = self.srdb[key]
+        if isinstance(sr, dict):
+            sr = sr['s'], sr['r']
+        return sr
         
     def blade_elt_area(self, leaf_key, Lshape, Lwshape, sr_base, sr_top):
         """ surface of a blade element, positioned with two relative curvilinear absisca"""
@@ -85,7 +93,7 @@ class Leaves(object):
         sr_base = min([1,max([0,sr_base])])
         sr_top = min([1,max([sr_base,sr_top])])
         if leaf_key is not None:
-            x,y,s,r = self.get_leaf(leaf_key)
+            s,r = self.get_sr(leaf_key)
             sre = [sr for sr in zip(s,r) if (sr_base < sr[0] < sr_top)]
             if len(sre) > 0:
                 se,re = zip(*sre)

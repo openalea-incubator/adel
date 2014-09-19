@@ -52,14 +52,20 @@ class Leaves(object):
             
         self.leaves = leaves
     
-    def get_leaf(self, lindex, lseed):
+    def get_leaf(self, lindex, lseed, age=None):
+    # to do return one default leaf even if key error occur
         key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
-        leaf = self.leaves[key][index]
+        if age is None:
+            leaf = self.leaves[key][index]
+        else:
+            age_index = numpy.searchsorted(self.bins, age)
+            if age_index ==0:
+                age_index = 1 # age below first value are in firts interval
+            if age_index >= len(self.bins):
+                age_index = len(self.bins) - 1# age above last value are set in last interval
+            age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
+            leaf = self.leaves[key][index][age_index]
         return leaf
     
-    def dynamic_key(self, age):
-        index = numpy.searchsorted(self.bins, age)
-        if index ==0:
-            index = 1 # age below first value are in firts interval
-        return '(%s, %s]'%(str(self.bins[index-1]), str(self.bins[index]))
+
     

@@ -174,7 +174,7 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
         # Warning : setadel uses index only and finding closest index if db is too small. Unambiguous meaning of keys retrieving from Lindex afterward there fore will need sorting keys before using Lindex (python sorted key index = Lindex - 1 (Lindex follows Rindexing convention), python list index = lseed - 1. cf conversion infra
         keys = xydb.keys()
         keys.sort() # to ensure lseed index is sample in the good list)
-        rxydb = r.list(*keys)
+        rxydb = r.list(*map(str,keys))
         for i in range(len(rxydb)):
             rxydb[i] = r.list(*range(len(xydb[keys[i]])))            
     else:
@@ -184,7 +184,7 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     if srdb is None:
         rsrdb = r('as.null()')
     elif isinstance(srdb, dict): # pure python srdb dict, a list is passed to setAdel
-        rsrdb = r.list(*srdb.keys())
+        rsrdb = r.list(*map(str,srdb.keys()))
     else: # path to RData file
         rsrdb = r.load(srdb)[0]
         rsrdb = r(rsrdb)

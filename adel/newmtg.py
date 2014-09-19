@@ -84,37 +84,9 @@ def sheath_elements(l, lvis, lsen, az, inc, d, split = False):
     return internode_elements(l,lvis,lsen, az, inc, d, split)
 
 
-def blade_elt_area(leaf, Lshape, Lwshape, sr_base, sr_top):
-    """ surface of a blade element, positioned with two relative curvilinear absisca"""
-    from scipy.integrate import simps
-    from numpy import interp, arange
-    #try:
-    #raise Exception("")
-    S=0
-    sr_base = min([1,max([0,sr_base])])
-    sr_top = min([1,max([sr_base,sr_top])])
-    
-    if leaf is not None:
-        x,y,s,r = leaf
-        sre = [sr for sr in zip(s,r) if (sr_base < sr[0] < sr_top)]
-        # Temp G.Garin: 02/08/2013
-        if len(sre) > 0:
-            se,re = zip(*sre)
-            snew = [sr_base] + list(se) + [sr_top]
-            rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
-        else:
-            snew = [sr_base, sr_top]
-            rnew = [interp(sr_base,s,r), interp(sr_top,s,r)]
 
-        S = simps(rnew,snew) * Lshape * Lwshape
-
-        #print "S",S
-    #except:
-        #S = 0
-    return S
-    return max(0,S)
     
-def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape, split = False):
+def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, leaves, split = False):
     """ return parameters of blade elements (visible parts of the blade).
     sectors is the number of sectors dividing pattern blade shape
     l is the length of the blade
@@ -189,9 +161,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
                 #
                 # Compute area of elements
                 if ls_green > 0:
-                    S_green = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
+                    S_green = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
                 if ls_sen > 0:
-                    S_sen = blade_elt_area(xysr_shape, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
+                    S_sen = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
                 # made intergration again for avoiding fluctuations
                 #S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
                 S_tot = S_green + S_sen
@@ -233,7 +205,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, xysr_shape,
 
         
         
-def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, xysr_shape=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, ntop = None, **kwargs):
+def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=None, shape_key=None, Linc=None, Laz=None, Lsect=1, Gl=None, Gv=None, Gsen=None, Gd=None, Ginc=None, El=None, Ev=None, Esen=None, Ed=None, Einc=None, elongation=None, ntop = None, leaves = None, **kwargs):
     """ Contructs metamer elements for adel from parameters describing a static state.
     Parameters are : 
        - Ll : length of the blade
@@ -290,9 +262,9 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'n_sect': Lsect,
         'shape_mature_length': L_shape,
         'shape_max_width' : Lw_shape,
-        'shape_xysr': xysr_shape,
+        'shape_key': shape_key,
         'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, xysr_shape, split = split)} 
+        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)} 
     ]
 
     if elongation:
@@ -403,21 +375,17 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
         # args are added to metamers only if metamer_factory is none, otherwise compute metamer components
         components = []
         if metamer_factory:
+            xysr_key = None
             if leaves is not None:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:
-                    if not dynamic_leaf_db:
-                        xysr = leaves.get_leaf(lctype, lcindex)
-                    else:
+                    age = None
+                    if dynamic_leaf_db:
                         age = args['rph']
                         if age != 'NA':
                             age = max(0,int(float(age)))
-                        xysr = leaves.get_leaf(lctype, lcindex, age)
-                else: 
-                    xysr = None
-            else:
-                xysr = None
+                    xysr_key = leaves.get_leaf_key(lctype, lcindex, age)
             
             elongation = None
             if add_elongation:
@@ -438,7 +406,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
             if args.get('HS_final') < args.get('nff'):
                 for what in ('Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv', 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
                     args.update({what:args.get(what) * aborting_tiller_reduction})
-            components = metamer_factory(Lsect = leaf_sectors, xysr_shape = xysr, elongation = elongation, **args)
+            components = metamer_factory(Lsect = leaf_sectors, shape_key = xysr_key, elongation = elongation, leaves = leaves, **args)
             args={'L_shape':args.get('L_shape')}
         #
         label = 'metamer'+str(num_metamer)

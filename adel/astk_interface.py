@@ -89,7 +89,7 @@ class AdelWheat(object):
         else:
             stand = None
         g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=stand, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-        g = mtg_interpreter(g, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
+        g = mtg_interpreter(g, self.leaves, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
         return g
 
     def checkAxeDyn(self, dates, density=1):

@@ -45,63 +45,8 @@ def StemElement_mesh(length, diameter_base, diameter_top, classic = False):
 
     return mesh
 
-#meshing function for leaf elements 
     
-def LeafElement_mesh(shape, L_shape, Lw_shape, length, s_base, s_top, twist=0):
-    """ Compute mesh for a leaf element.
-        - shape is a x,y,s,r tuple descriibing leaf shape
-        - L_shape is the length of the scaled shape
-        - Lw_shape is the width of the scaled shape
-        - length is the total visible length to be meshed
-        - s_base and s_top are relative proportion (on length) of the element to represent
-    """
-    
-    from alinea.adel.fitting import mesh4, plantgl_shape
-    
-    leaf_mesh = mesh4(shape, L_shape, length, s_base, s_top, Lw_shape, twist=twist)
-    if leaf_mesh:
-        pts, ind = leaf_mesh
-        if len(ind) < 1:
-            raise  AdelError('ERROR less than 1 triangles')
-            mesh = None
-        else:
-            mesh = plantgl_shape(pts, ind)
-    else:
-        if length > 0:
-            print 'ERROR No mesh', s_base, s_top, length
-            pass
-        mesh = None
-
-    return mesh
-
-    
-def incline_leaf(shape, inclin, relative_angle = True):
-    """ transform a xysr tuple representing leaf shape to get a given angle at leaf base.
-     - angle the desired angle (deg)
-     - if relative_angle == True, angle is interpreted as a multiplier to original shape angle
-     """   
-    Linc = inclin
-    x, y = shape[0], shape[1]
-    init_angle = pgl.angle((x[1]-x[0], y[1]-y[0]),(0,1))
-
-    if relative_angle:
-        angle = Linc * init_angle
-        angle = min(pi, angle)
-    else:
-        angle = radians(Linc)
-    
-    rotation_angle = init_angle - angle
-
-    # rotation of the midrib
-    cos_a = cos(rotation_angle); sin_a = sin(rotation_angle)
-
-    x1 = x[0] + cos_a*x - sin_a*y
-    y1 = y[0] + sin_a*x + cos_a*y
-    leaf= x1, y1, shape[2], shape[3]
-    
-    return leaf
-    
-def compute_element(element_node, leaves, classic=False, leaf_twist=0): 
+def compute_element(element_node, leaves, classic=False): 
     """ compute geometry of Adel base elements (LeafElement and StemElement) 
     element_node should be a mtg node proxy"""
     n = element_node
@@ -110,12 +55,12 @@ def compute_element(element_node, leaves, classic=False, leaf_twist=0):
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
         if blade.shape_key is not None and n.srb is not None:
-            xysr = leaves.get_leaf(blade.shape_key)
-            shape = incline_leaf(xysr, blade.inclination)
-            # x-> -x to place the shape along with the tiller positioned with turtle.down()
-            leaf = (-shape[0],)+shape[1:]
-            geom = LeafElement_mesh(leaf, blade.shape_mature_length, blade.shape_max_width, 
-                                blade.visible_length, n.srb, n.srt, leaf_twist) 
+            if leaves.dynamic:
+                inclin = 1 # inclination is encoded in db
+            else:
+                inclin = blade.inclination
+            geom = leaves.mesh(blade.shape_key, blade.shape_mature_length, blade.shape_max_width, blade.visible_length, n.srb, n.srt, incline= inclin, flipx = True) # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
+
         if n.lrolled > 0:
             rolled = StemElement_mesh(n.lrolled, n.d_rolled, n.d_rolled, classic)
             if geom is None:
@@ -167,9 +112,8 @@ class AdelTurtle(pgl.PglTurtle):
 class AdelVisitor():
     """ Performs geometric interpretation of mtg nodes
     """
-    def __init__(self, leaves, classic, leaf_twist, face_up):
+    def __init__(self, leaves, classic, face_up):
         self.classic = classic
-        self.leaf_twist = leaf_twist
         self.face_up = face_up
         self.leaves = leaves
     
@@ -256,7 +200,7 @@ class AdelVisitor():
         
         # update geometry of elements
         if n.length > 0:
-            mesh = compute_element(n, self.leaves, self.classic, self.leaf_twist)
+            mesh = compute_element(n, self.leaves, self.classic)
             if mesh:#To DO : reset to None if calculated so ?
                 n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
         # 3. Update the turtle and context
@@ -271,7 +215,7 @@ class AdelVisitor():
                 turtle.context.update({'top': turtle.getFrame()})        
         turtle.context.update({'axis':axis})
         
-def mtg_interpreter(g, leaves, classic=False, leaf_twist=0, face_up = False):
+def mtg_interpreter(g, leaves, classic=False, face_up = False):
     ''' Compute/update the geometry on each node of the MTG using Turtle geometry. '''
 #BUG : sub_mtg mange le vertex plant => on perd la plante !
     #plants = g.component_roots_at_scale(g.root, scale=1)
@@ -281,7 +225,7 @@ def mtg_interpreter(g, leaves, classic=False, leaf_twist=0, face_up = False):
     #for plant in plants:
     #   gplant = g.sub_mtg(plant)
     turtle = AdelTurtle()
-    visitor = AdelVisitor(leaves, classic, leaf_twist, face_up)
+    visitor = AdelVisitor(leaves, classic, face_up)
     scene = TurtleFrame(g, visitor=visitor, turtle=turtle, gc=False, all_roots=True)
     #   gt = union(gplant,gt)
        

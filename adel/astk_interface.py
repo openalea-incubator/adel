@@ -41,7 +41,7 @@ def get_normal_dist(nb_plants=10, sigma=30.):
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, leaf_twist = 0, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
+    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -62,7 +62,6 @@ class AdelWheat(object):
         self.nsect = nsect
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
-        self.leaf_twist = leaf_twist
         self.split = split
         self.face_up = face_up
         self.aborting_tiller_reduction = aborting_tiller_reduction
@@ -89,7 +88,7 @@ class AdelWheat(object):
         else:
             stand = None
         g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=stand, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-        g = mtg_interpreter(g, self.leaves, leaf_twist=self.leaf_twist, face_up = self.face_up, classic= self.classic)
+        g = mtg_interpreter(g, self.leaves, face_up = self.face_up, classic= self.classic)
         return g
 
     def checkAxeDyn(self, dates, density=1):

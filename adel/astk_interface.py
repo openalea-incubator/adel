@@ -16,6 +16,7 @@ import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
 from alinea.adel.geometric_elements import Leaves
+from alinea.adel.Stand import AgronomicStand
 
 
 def get_normal_dist(nb_plants=10, sigma=30.):
@@ -41,31 +42,39 @@ def get_normal_dist(nb_plants=10, sigma=30.):
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, positions = None, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None):
+    def __init__(self, nplants = 1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None):
     
         if devT is None: 
             devT = adel_data.devT()
             
         if leaf_db is not None:
             print('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead')
+        if positions is not None:
+            print('!!!!Warning!!!! positions argument is deprecated, use stand = adel.Stand class instead')
             
         if leaves is None:
             leaves = Leaves()
-
+            
+        if stand is None:
+            stand = AgronomicStand(sowing_density = 250, plant_density=250, inter_row=0.15)
+            positions
+            
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
 
         geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
         self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
-        self.positions = positions
         self.leaves = leaves
         self.nsect = nsect
+        self.nplants, self.domain, self.positions = stand.stand(nplants, aspect=aspect)
+        self.domain_area = abs(self.domain[1][0] - self.domain[0][0]) * abs(self.domain[1][1] - self.domain[0][1]) * convUnit * convUnit
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
         self.split = split
         self.face_up = face_up
         self.aborting_tiller_reduction = aborting_tiller_reduction
         self.classic = classic
+        self.convUnit = convUnit
     
     def timing(self, delay, steps, weather, start_date):
         """ compute timing and time_control_sets for a simulation between start and stop. 

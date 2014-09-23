@@ -21,6 +21,7 @@ import numpy
 
 from alinea.adel.plantgen import params, tools
 
+
 #
 # New propositions (C. Fournier, January 2014)
 #
@@ -53,7 +54,8 @@ class WheatTillering(object):
                        n_elongated_internode = n_elongated_internode,                   child_cohort_delay = params.FIRST_CHILD_DELAY,
                        #secondary_tiller_probabilities =secondary_tiller_probabilities,
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
-                       delta_reg = delta_reg):
+                       delta_reg = delta_reg,
+                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -63,23 +65,32 @@ class WheatTillering(object):
         #self.secondary_tiller_probabilities = secondary_tiller_probabilities
         self.cohort_delays = cohort_delays
         self.delta_reg = delta_reg
-
+        self.a1_a2 = a1_a2
+        #plantgen copies of primary proba emission per axis (0 filtered) and per cohort
+        self.axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
+        self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.axis_probabilities)
         
        
     def theoretical_probabilities(self):
         """ Computes cohort number, botanical position and theoretical probabilities of emergence all tillers using botanical position and probabilities of emergence of primary ones
         """
-        #filter proba=0 axis
-        axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }        
-        cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(axis_probabilities)
         _,res = tools.calculate_theoretical_cardinalities(1, 
-                                                      cohort_probabilities,
-                                                      axis_probabilities,
+                                                      self.cohort_probabilities,
+                                                      self.axis_probabilities,
                                                       self.child_cohort_delay)
         return res
+         
+         
+    def final_leaf_numbers(self):
+        """ returns the mean final leaf numbers of cohorts
+        """
+        ms_nff = [(1,self.nff)]
+        cohort_nff = [(cohort,tools.calculate_tiller_final_leaves_number(self.nff, cohort, self.a1_a2)) for cohort in self.cohort_probabilities]
+        return dict(ms_nff + cohort_nff)   
         
     def emited_cohort_density(self, plant_density = 1):
         proba = self.theoretical_probabilities()
+        nffs = self.final_leaf_numbers()
         data = zip(*[(k[0],k[1],v) for k,v in proba.iteritems()])
         df = pandas.DataFrame({'axis': data[1],
                                'cohort' : data[0] ,
@@ -96,8 +107,43 @@ class WheatTillering(object):
                  }
             out = pandas.DataFrame(d,index = [x.index[0]])
             out['total_axis'] = out['primary_axis'] + out['other_axis']
+            out['nff'] = nffs[cohort]
             return out
         return grouped.apply(_fun)
+        
+    def axis_cardinalities(self, nplants = 2):
+        """ compute cardinalities of axis in a stand of n plants
+        The strategy used here is based on rounding, and differs from the one used in plantgen (basd on random sampling). Difference are much expected for small plants numbers
+        """
+        
+        def _modalities(nff):
+            m1,m2 = int(nff), int(nff) + 1
+            p = m1 + 1 - nff
+            return {m1: p, m2: 1 - p}
+         
+        df = self.emited_cohort_density()
+        df = df.set_index('cohort')
+        cohort_cardinalities = {c:round(df.ix[c,'total_axis'] * nplants) for c in df.index}
+        cohort_modalities = {k:{m:round(p * v) for m,p in _modalities(df.ix[k,'nff']).iteritems()} for k,v in cohort_cardinalities.iteritems()}
+        
+        p = self.theoretical_probabilities()
+        axis_p = [(k[0],(k[1],v)) for k,v in p.iteritems()] 
+        axis_proba = {k:dict([a[1] for a in axis_p if a[0] == k]) for k in dict(axis_p)}
+        axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.iteritems()} for k,v in axis_proba.iteritems()}
+        
+        def _axis(axis_p, naxis):
+            import operator
+            card  = {k:int(v*naxis) for k,v in axis_p.iteritems()}
+            sorted_p = sorted(axis_p.iteritems(), key=operator.itemgetter(1), reverse=True)
+            missing = int(naxis - sum(card.values()))
+            new = [sorted_p[i][0] for i in range(missing)]
+            for k in new:
+                card[k] += 1
+            return {k:v for k,v in card.iteritems() if v > 0}
+            
+        axis_card = {k:{kk:_axis(axis_proba[k],vv) for kk,vv in v.iteritems() if vv > 0} for k, v in cohort_modalities.iteritems()}
+        
+        return axis_card
         
     def axis_dynamics(self, plant_density = 1, hs_bolting = None):
         """ Compute axis density = f (HS_mean_MS)
@@ -138,4 +184,6 @@ class WheatTillering(object):
         others = map(lambda x: _density(x, cohorts['delay'], cohorts['other_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs)
         total = numpy.array(primary) + numpy.array(others)
         return pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
+        
+
         

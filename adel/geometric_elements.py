@@ -7,6 +7,7 @@ import numpy
 import openalea.plantgl.all as pgl
 from math import degrees, radians, pi, cos, sin
 
+from alinea.adel.exception import *
 import alinea.adel.fitting as fitting
 import alinea.adel.data_samples as adel_data
 import alinea.adel.AdelR as adelR

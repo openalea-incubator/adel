@@ -20,7 +20,7 @@ import pandas
 import numpy
 
 from alinea.adel.plantgen import params, tools
-
+import alinea.adel.plantgen_extensions as pgen_ext
 
 #
 # New propositions (C. Fournier, January 2014)
@@ -43,6 +43,9 @@ n_elongated_internode = 4
 ears_per_plant = 2.5
 # mean number of leaves on main stem
 nff = 12.0
+
+# converter to pgen
+#
 
 
 class WheatTillering(object):
@@ -111,39 +114,22 @@ class WheatTillering(object):
             return out
         return grouped.apply(_fun)
         
-    def axis_cardinalities(self, nplants = 2):
+    def axis_list(self, nplants = 2):
         """ compute cardinalities of axis in a stand of n plants
-        The strategy used here is based on rounding, and differs from the one used in plantgen (basd on random sampling). Difference are much expected for small plants numbers
+        The strategy used here is based on deterministic rounding, and differs from the one used in plantgen (basd on random sampling). Difference are expected for small plants numbers
         """
+        return pgen_ext.axis_list(self.emited_cohort_density(), self.theoretical_probabilities(), nplants)
         
-        def _modalities(nff):
-            m1,m2 = int(nff), int(nff) + 1
-            p = m1 + 1 - nff
-            return {m1: p, m2: 1 - p}
-         
-        df = self.emited_cohort_density()
-        df = df.set_index('cohort')
-        cohort_cardinalities = {c:round(df.ix[c,'total_axis'] * nplants) for c in df.index}
-        cohort_modalities = {k:{m:round(p * v) for m,p in _modalities(df.ix[k,'nff']).iteritems()} for k,v in cohort_cardinalities.iteritems()}
         
-        p = self.theoretical_probabilities()
-        axis_p = [(k[0],(k[1],v)) for k,v in p.iteritems()] 
-        axis_proba = {k:dict([a[1] for a in axis_p if a[0] == k]) for k in dict(axis_p)}
-        axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.iteritems()} for k,v in axis_proba.iteritems()}
+    def plant_list(self, nplants = 2):
+
+        axis = self.axis_list(nplants)
+        plants = pgen_ext.plant_list(axis, nplants)
+        return plants
         
-        def _axis(axis_p, naxis):
-            import operator
-            card  = {k:int(v*naxis) for k,v in axis_p.iteritems()}
-            sorted_p = sorted(axis_p.iteritems(), key=operator.itemgetter(1), reverse=True)
-            missing = int(naxis - sum(card.values()))
-            new = [sorted_p[i][0] for i in range(missing)]
-            for k in new:
-                card[k] += 1
-            return {k:v for k,v in card.iteritems() if v > 0}
-            
-        axis_card = {k:{kk:_axis(axis_proba[k],vv) for kk,vv in v.iteritems() if vv > 0} for k, v in cohort_modalities.iteritems()}
-        
-        return axis_card
+    def pgen_tables(self, nplants=2):
+        plants = self.plant_list(nplants)
+        return pgen_ext.axeT_user(plants)
         
     def axis_dynamics(self, plant_density = 1, hs_bolting = None):
         """ Compute axis density = f (HS_mean_MS)

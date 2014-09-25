@@ -127,9 +127,17 @@ class WheatTillering(object):
         plants = pgen_ext.plant_list(axis, nplants)
         return plants
         
-    def pgen_tables(self, nplants=2):
+    def to_pgen(self, nplants=2, plant_density = 250):
         plants = self.plant_list(nplants)
-        return pgen_ext.axeT_user(plants)
+        pgen = { 'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
+              'MS_leaves_number_probabilities' :{str(k):v for k,v in pgen_ext.modalities(self.nff).iteritems()},
+              'plants_density': plant_density,
+              'ears_density' : plant_density * self.ears_per_plant,
+              'plants_number': nplants,
+              'axeT_user': pgen_ext.axeT_user(plants)
+              }
+        
+        return pgen 
         
     def axis_dynamics(self, plant_density = 1, hs_bolting = None):
         """ Compute axis density = f (HS_mean_MS)

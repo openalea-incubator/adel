@@ -318,7 +318,7 @@ of the MS are documented by the user, then this will lead to an error."
                                            decide_child_cohort_probabilities, 
                                            MS_leaves_number_probabilities, 
                                            theoretical_cohort_cardinalities,
-                                           theoretical_axis_cardinalities)
+                                           theoretical_axis_cardinalities, axeT_user = axeT_user)
      
     # define phenology functions
     dynT_ = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 

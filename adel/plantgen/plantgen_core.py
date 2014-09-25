@@ -53,7 +53,7 @@ class DataCompleteness:
 def init_axes(plants_number, decide_child_cohort_probabilities, 
               MS_leaves_number_probabilities, 
               theoretical_cohort_cardinalities,
-              theoretical_axis_cardinalities):
+              theoretical_axis_cardinalities, axeT_user = None):
     '''
     Initialize the axes randomly. 
     The following variables are calculated:
@@ -72,7 +72,10 @@ def init_axes(plants_number, decide_child_cohort_probabilities,
     The routine returns :ref:`cardinalityT` for debugging purpose. 
     '''
     #create axeT_tmp
-    axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
+    if axeT_user is None:
+        axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
+    else:
+        axeT_tmp = axeT_user
     # create cardinalityT
     cardinalityT = _create_cardinalityT(theoretical_cohort_cardinalities, 
                                        theoretical_axis_cardinalities, 

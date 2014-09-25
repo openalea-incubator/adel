@@ -111,10 +111,13 @@ class PhenologyFunctions():
     
     def __call__(self, plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                  dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                 dimT_user_completeness, TT_col_break, force=True):
+                 dimT_user_completeness, TT_col_break, force=True, axeT_user=None):
         if force or self.dynT_ is None:
             # 1. create axeT_tmp, dynT_tmp and dimT_tmp
-            axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+            if axeT_user is None:
+                axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+            else:
+                axeT_tmp = axeT_user
             dynT_tmp = _create_dynT_tmp(axeT_tmp)
             dimT_tmp = _create_dimT_tmp(axeT_tmp)
             
@@ -137,7 +140,7 @@ phenology_functions = PhenologyFunctions()
 def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                      dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                      dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                     number_of_ears, plants_density, ears_density):
+                     number_of_ears, plants_density, ears_density, axeT_user=None):
     '''
     Construct the structure of the plants.
     The following variables are calculated:
@@ -167,12 +170,15 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
         * :ref:`tilleringT` and :ref:`phenT_first` for debugging purpose.
     '''
     # 1. create axeT_tmp, dynT_
-    axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, 
+    if axeT_user is None:
+        axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, 
                                MS_leaves_number_probabilities, force=False)
+    else:
+        axeT_tmp = axeT_user
     
     dynT_ = phenology_functions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                 dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                dimT_user_completeness, TT_col_break, force=False)
+                                dimT_user_completeness, TT_col_break, force=False, axeT_user = axeT_user)
     
     # 2. create phenT_tmp
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_)
@@ -193,7 +199,8 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
 def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                       dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                       dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                      number_of_ears):
+                      number_of_ears,
+                      axeT_user = None):
     '''
     Calculate the dimensions of the organs.
     The following variables are calculated:
@@ -211,10 +218,13 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
         * :ref:`dimT_abs` for debugging purpose.
     '''
     #1. create axeT_, dimT_tmp, phenT_tmp and dynT_
-    axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+    if axeT_user is None:
+        axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+    else:
+        axeT_tmp = axeT_user
     dynT_ = phenology_functions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                 dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                dimT_user_completeness, TT_col_break, force=False)
+                                dimT_user_completeness, TT_col_break, force=False, axeT_user = axeT_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
     axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
@@ -231,7 +241,8 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
 def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                    dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                    dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                   number_of_ears):
+                   number_of_ears,
+                   axeT_user = None):
     '''
     Calculate the phenology of the axes.
     The following variables are calculated:
@@ -257,10 +268,13 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
         * :ref:`phenT_abs` and :ref:`HS_GL_SSI_T` for debugging purpose.
     '''
     # 1. create phenT_tmp, axeT_, dimT_abs, phenT_first and dynT_
-    axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+    if axeT_user is None:
+        axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
+    else:
+        axeT_tmp = axeT_user
     dynT_ = phenology_functions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                 dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                dimT_user_completeness, TT_col_break, force=False)
+                                dimT_user_completeness, TT_col_break, force=False, axeT_user = axeT_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
     axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)

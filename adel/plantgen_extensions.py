@@ -137,7 +137,6 @@ def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_ph
                           dtype=float)
     df.ix['MS'] = pandas.Series(MS_parameters)
     df['id_axis'] = idaxis
-    # ajout steph : remplir la colonne 'TT_col_N_phytomer_potential' par la valeur de la premiere case pour eviter le NaN qui pose pb
     df['TT_col_N_phytomer_potential'] = df['TT_col_N_phytomer_potential'][0]
     df = df.reset_index(drop=True)
     return df

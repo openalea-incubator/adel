@@ -376,7 +376,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
         components = []
         if metamer_factory:
             xysr_key = None
-            if leaves is not None:
+            if leaves is not None and 'LcType' in args and 'LcIndex' in args:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:

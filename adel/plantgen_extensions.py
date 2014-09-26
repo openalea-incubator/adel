@@ -23,6 +23,8 @@ import random
 import operator
 from itertools import chain
 
+from alinea.adel.exception import *
+
 def flat_list(nested_list):
     return list(chain.from_iterable(nested_list))
    
@@ -75,8 +77,12 @@ def axis_list(emited_cohorts, theoretical_probabilities,  nplants = 2):
     
 def plant_list(axis, nplants = 2):
 
+# TO DO for more robust name selection : test if any parent of same cohort is present on the plant to filter candidates,and, in update find the matching prent and then choose a compatible name
+
     def _choose_plant(axe_name, plantlist):   
         candidates = filter(lambda x: (axe_name not in x) and (_parent(axe_name) in x or _parent(axe_name) == ''), plantlist)
+        if len(candidates) == 0 and _parent(axe_name) == '':
+            raise AdelImplementationError(' Unable to build plants from cardinalities of axis...')
         return random.sample(candidates,1)[0]
         
     def _update(plantlist, axe):
@@ -106,3 +112,15 @@ def axeT_user(plants):
     
     df= df.sort(['id_plt','id_cohort','id_axis'])
     return df
+    
+def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_phytomer_potential':1100,'n0':4.5,'n1':2.5,'n2':5}, primary_tillers = ['T%d'%(i) for i in range (1,4)]):
+    idaxis = ['MS'] + primary_tillers
+    df = pandas.DataFrame(index=idaxis,
+                          columns=['id_axis','a_cohort','TT_col_0','TT_col_N_phytomer_potential','n0','n1','n2'],
+                          dtype=float)
+    df.ix['MS'] = pandas.Series(MS_parameters)
+    df['id_axis'] = idaxis
+    df = df.reset_index(drop=True)
+    return df
+    
+    

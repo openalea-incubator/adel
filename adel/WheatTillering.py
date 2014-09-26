@@ -129,15 +129,22 @@ class WheatTillering(object):
         
     def to_pgen(self, nplants=2, plant_density = 250):
         plants = self.plant_list(nplants)
-        pgen = { 'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
-              'MS_leaves_number_probabilities' :{str(k):v for k,v in pgen_ext.modalities(self.nff).iteritems()},
-              'plants_density': plant_density,
-              'ears_density' : plant_density * self.ears_per_plant,
-              'plants_number': nplants,
-              'axeT_user': pgen_ext.axeT_user(plants)
-              }
+        axeT = pgen_ext.axeT_user(plants)
+        mods = pgen_ext.modalities(self.nff)
+        nff_plants = {k: axeT['id_plt'][(axeT['id_axis'] == 'MS') & (axeT['N_phytomer_potential'] == k)].values.astype(int).tolist() for k in mods}
         
-        return pgen 
+        pgen_base = {'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
+              'plants_density': plant_density,
+              'ears_density' : plant_density * self.ears_per_plant
+              }
+        pgen = {k:{'MS_leaves_number_probabilities': {str(k):1.0},
+                   'axeT_user':axeT.ix[axeT['id_plt'].isin(v),:],
+                   'plants_number':len(v)} for k,v in nff_plants.iteritems() if len(v) > 0}
+        
+        for k in pgen:
+            pgen[k].update(pgen_base)
+            
+        return pgen
         
     def axis_dynamics(self, plant_density = 1, hs_bolting = None):
         """ Compute axis density = f (HS_mean_MS)

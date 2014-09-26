@@ -29,15 +29,21 @@ from alinea.adel.AdelR import devCsv
 
 
 
-def plantgen_to_devT(pgen):
+
+def build_tables(pgen):
+    axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**pgen)
+    axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
+    
+    adelT = (axeT, dimT, phenT)
+    pgenT = {'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
+    
+    return adelT, pgenT
+    
+def adelT_to_devT(pgen):
     """ Creates devT tables from plantgen dict
     """
-       
-    axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**pgen)
-    
-    axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
-    devT = devCsv(axeT, dimT, phenT)
-    return devT, {'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
+    devT = devCsv(*adelT)
+    return devT, 
 
 
 def flat_list(nested_list):

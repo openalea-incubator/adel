@@ -24,6 +24,21 @@ import operator
 from itertools import chain
 
 from alinea.adel.exception import *
+from alinea.adel.plantgen.plantgen_interface import gen_adel_input_data, plantgen2adel
+from alinea.adel.AdelR import devCsv
+
+
+
+def plantgen_to_devT(pgen):
+    """ Creates devT tables from plantgen dict
+    """
+       
+    axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**pgen)
+    
+    axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
+    devT = devCsv(axeT, dimT, phenT)
+    return devT, {'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
+
 
 def flat_list(nested_list):
     return list(chain.from_iterable(nested_list))
@@ -114,7 +129,9 @@ def axeT_user(plants):
     return df
     
 def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_phytomer_potential':1100,'n0':4.5,'n1':2.5,'n2':5}, primary_tillers = ['T%d'%(i) for i in range (1,4)]):
-    idaxis = ['MS'] + primary_tillers
+    p = primary_tillers
+    p.sort()
+    idaxis = ['MS'] + p
     df = pandas.DataFrame(index=idaxis,
                           columns=['id_axis','a_cohort','TT_col_0','TT_col_N_phytomer_potential','n0','n1','n2'],
                           dtype=float)
@@ -122,5 +139,5 @@ def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_ph
     df['id_axis'] = idaxis
     df = df.reset_index(drop=True)
     return df
-    
+  
     

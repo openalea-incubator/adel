@@ -105,8 +105,8 @@ def plant_list(axis, nplants = 2):
         if len(candidates) == 0 and _parent(axe_name) == '':
             raise AdelImplementationError(' Unable to build plants from cardinalities of axis...')
         #hack
-        else:
-            candidates = filter(lambda x: (axe_name not in x), plantlist)
+        #else:
+        #    candidates = filter(lambda x: (axe_name not in x), plantlist)
         return random.sample(candidates,1)[0]
         
     def _update(plantlist, axe):

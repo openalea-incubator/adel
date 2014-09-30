@@ -30,6 +30,7 @@ cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in params.LEAF_NUMBER_DELAY_
 cohort_delays[1] = 0
 # Express time-delta between tiller regression and bolting in phyllochronic units
 delta_reg = float(params.DELAIS_REG_MONT) / 110
+
 #
 # Add  defaults to handle 'less than MIN' datasets
 #
@@ -58,7 +59,7 @@ class WheatTillering(object):
                        #secondary_tiller_probabilities =secondary_tiller_probabilities,
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
                        delta_reg = delta_reg,
-                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS):
+                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_del = 600. / 110):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -69,6 +70,7 @@ class WheatTillering(object):
         self.cohort_delays = cohort_delays
         self.delta_reg = delta_reg
         self.a1_a2 = a1_a2
+        self.delta_del=delta_del
         #plantgen copies of primary proba emission per axis (0 filtered) and per cohort
         self.axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.axis_probabilities)
@@ -146,7 +148,7 @@ class WheatTillering(object):
             
         return pgen
         
-    def axis_dynamics(self, plant_density = 1, hs_bolting = None):
+    def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):
         """ Compute axis density = f (HS_mean_MS)
             Parameters:
                 - plant_density : plant per square meter
@@ -170,21 +172,27 @@ class WheatTillering(object):
         regression_rate = (ear_density - dmax) / (hs_max - hs_debreg)
         
         def _density(x, delays, cardinalities, total, cumulative_loss):
-            if x < hs_debreg:
+            if x < (hs_debreg + self.delta_del):
                 d = cardinalities[delays <= x].sum()
             else :
-                hs = min(x,hs_max)
-                loss = - regression_rate * (hs - hs_debreg) #dmax - (dmax + reg)
+                hs = min(x,hs_max + self.delta_del)
+                loss = - regression_rate * (hs - hs_debreg - self.delta_del) #dmax - (dmax + reg)
                 fraction_lost = (loss - cumulative_loss + total) / total
                 fraction_lost = numpy.maximum(0,numpy.minimum(1,fraction_lost))
                 d = (cardinalities * (1 - fraction_lost)).sum()           
             return d
                
-        hs = numpy.arange(0,1.2 * hs_max,0.1)
-        primary = map(lambda x: _density(x, cohorts['delay'], cohorts['primary_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs)
-        others = map(lambda x: _density(x, cohorts['delay'], cohorts['other_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs)
-        total = numpy.array(primary) + numpy.array(others)
-        return pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
+        hs = numpy.arange(0,1.2 * (hs_max + self.delta_del),0.1)
+        primary = numpy.array(map(lambda x: _density(x, cohorts['delay'], cohorts['primary_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))        
+        others = numpy.array( map(lambda x: _density(x, cohorts['delay'], cohorts['other_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))
+        total = primary + others
+        if include_MS:
+            return pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
+        else:
+            df = pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
+            for w in ['primary', 'total']:
+                df[w] -= 1
+            return df
         
 
         

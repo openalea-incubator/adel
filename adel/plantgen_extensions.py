@@ -98,12 +98,15 @@ def axis_list(emited_cohorts, theoretical_probabilities,  nplants = 2):
     
 def plant_list(axis, nplants = 2):
 
-# TO DO for more robust name selection : test if any parent of same cohort is present on the plant to filter candidates,and, in update find the matching prent and then choose a compatible name
+# TO DO for more robust name selection : test if any parent of same cohort is present on the plant to filter candidates,and, in update find the matching prent and then choose a compatible name : debug possible avec get_reconstruction Tremie 12
 
     def _choose_plant(axe_name, plantlist):   
         candidates = filter(lambda x: (axe_name not in x) and (_parent(axe_name) in x or _parent(axe_name) == ''), plantlist)
         if len(candidates) == 0 and _parent(axe_name) == '':
             raise AdelImplementationError(' Unable to build plants from cardinalities of axis...')
+        #hack
+        else:
+            candidates = filter(lambda x: (axe_name not in x), plantlist)
         return random.sample(candidates,1)[0]
         
     def _update(plantlist, axe):

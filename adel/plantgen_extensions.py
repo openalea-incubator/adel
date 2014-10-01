@@ -49,22 +49,43 @@ def adelT_to_devT(pgen):
 def flat_list(nested_list):
     return list(chain.from_iterable(nested_list))
    
+   
+def _parent(axe):
+    return '.'.join(axe.rsplit('.')[:-1])  
+    
 def modalities(nff):
     m1,m2 = int(nff), int(nff) + 1
     p = m1 + 1 - nff
     return {m1: p, m2: 1 - p}
     
-def cardinalities(proba, n):
-    card  = {k:int(v*n) for k,v in proba.iteritems()}
-    sorted_p = sorted(proba.iteritems(), key=operator.itemgetter(1), reverse=True)
+def cardinalities(proba, n, parents = None):
+    if parents is not None:#filter botanical impossibilities
+        proba = {k:v for k,v in proba.iteritems() if _parent(k) in parents}
+        proba = {k: v / sum(proba.values()) for k,v in proba.iteritems()} 
+        card  = {k:min(int(v*n), parents.get(_parent(k),n)) for k,v in proba.iteritems()}
+    else:
+        card  = {k:int(v*n) for k,v in proba.iteritems()}
+    if parents is not None:   #filter saturated parents after int rounding
+        proba = {k:v for k,v in proba.iteritems() if (card[k] < parents.get(_parent(k),n) or _parent(k) == '')}
+    
     missing = int(n - sum(card.values()))
-    new = [sorted_p[i][0] for i in range(missing)]
-    for k in new:
-        card[k] += 1
-    return {k:v for k,v in card.iteritems() if v > 0}
+    new=[1]
+    while (missing > 0 and len(new) > 0):
+        sorted_p = sorted(proba.iteritems(), key=operator.itemgetter(1), reverse=True)
+        new = [sorted_p[i][0] for i in range(min(len(sorted_p),missing))]
+        for k in new:
+            card[k] += 1
+            if parents is not None:
+                if (card[k] >= parents.get(_parent(k),n) and _parent(k) != ''):
+                    proba.pop(k)
+        missing = int(n - sum(card.values()))   
+            
+    res = {k:v for k,v in card.iteritems() if v > 0}
+    if parents is not None:
+        parents.update(res)
+    return res
  
-def _parent(axe):
-    return '.'.join(axe.rsplit('.')[:-1])  
+
  
 def axis_list(emited_cohorts, theoretical_probabilities,  nplants = 2):
     """ compute cardinalities of axis in a stand of n plants
@@ -86,8 +107,8 @@ def axis_list(emited_cohorts, theoretical_probabilities,  nplants = 2):
     axis_proba = {k:dict([a[1] for a in axis_p if a[0] == k]) for k in dict(axis_p)}
     axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.iteritems()} for k,v in axis_proba.iteritems()}
     
-    
-    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values())) for k, v in cohort_modalities.iteritems()}
+    parents={'':0}
+    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values()),parents) for k, v in cohort_modalities.iteritems()}
     cohort_ax = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_axis.iteritems()}
     
     axis = {k:zip(cohort_mods[k],cohort_ax[k]) for k in cohort_mods}
@@ -102,11 +123,8 @@ def plant_list(axis, nplants = 2):
 
     def _choose_plant(axe_name, plantlist):   
         candidates = filter(lambda x: (axe_name not in x) and (_parent(axe_name) in x or _parent(axe_name) == ''), plantlist)
-        if len(candidates) == 0 and _parent(axe_name) == '':
+        if len(candidates) == 0:
             raise AdelImplementationError(' Unable to build plants from cardinalities of axis...')
-        #hack
-        #else:
-        #    candidates = filter(lambda x: (axe_name not in x), plantlist)
         return random.sample(candidates,1)[0]
         
     def _update(plantlist, axe):

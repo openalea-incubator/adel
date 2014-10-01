@@ -59,7 +59,7 @@ class WheatTillering(object):
                        #secondary_tiller_probabilities =secondary_tiller_probabilities,
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
                        delta_reg = delta_reg,
-                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_del = 600. / 110):
+                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_stop_del = 600. / 110):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -70,7 +70,7 @@ class WheatTillering(object):
         self.cohort_delays = cohort_delays
         self.delta_reg = delta_reg
         self.a1_a2 = a1_a2
-        self.delta_del=delta_del
+        self.delta_stop_del=delta_stop_del
         #plantgen copies of primary proba emission per axis (0 filtered) and per cohort
         self.axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.axis_probabilities)
@@ -172,17 +172,17 @@ class WheatTillering(object):
         regression_rate = (ear_density - dmax) / (hs_max - hs_debreg)
         
         def _density(x, delays, cardinalities, total, cumulative_loss):
-            if x < (hs_debreg + self.delta_del):
+            if x < (hs_debreg + self.delta_stop_del):
                 d = cardinalities[delays <= x].sum()
             else :
-                hs = min(x,hs_max + self.delta_del)
-                loss = - regression_rate * (hs - hs_debreg - self.delta_del) #dmax - (dmax + reg)
+                hs = min(x,hs_max + self.delta_stop_del)
+                loss = - regression_rate * (hs - hs_debreg - self.delta_stop_del) #dmax - (dmax + reg)
                 fraction_lost = (loss - cumulative_loss + total) / total
                 fraction_lost = numpy.maximum(0,numpy.minimum(1,fraction_lost))
                 d = (cardinalities * (1 - fraction_lost)).sum()           
             return d
                
-        hs = numpy.arange(0,1.2 * (hs_max + self.delta_del),0.1)
+        hs = numpy.arange(0,1.2 * (hs_max + self.delta_stop_del),0.1)
         primary = numpy.array(map(lambda x: _density(x, cohorts['delay'], cohorts['primary_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))        
         others = numpy.array( map(lambda x: _density(x, cohorts['delay'], cohorts['other_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))
         total = primary + others

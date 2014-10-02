@@ -120,7 +120,10 @@ class WheatTillering(object):
         """ compute cardinalities of axis in a stand of n plants
         The strategy used here is based on deterministic rounding, and differs from the one used in plantgen (basd on random sampling). Difference are expected for small plants numbers
         """
-        return pgen_ext.axis_list(self.emited_cohort_density(), self.theoretical_probabilities(), nplants)
+        cohorts = self.emited_cohort_density()
+        # filter, if any, cohorts emited after regression start (not realy handled in pgen, as no model of regression is available for these tillers)
+        cohorts = cohorts[cohorts['delay'] <= self.hs_debreg()] 
+        return pgen_ext.axis_list(cohorts, self.theoretical_probabilities(), nplants)
         
         
     def plant_list(self, nplants = 2):

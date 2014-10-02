@@ -152,8 +152,7 @@ class WheatTillering(object):
         return pgen
     
     def hs_debreg(self):
-        if hs_bolting is None:
-            hs_bolting = self.hs_max - self.n_elongated_internode
+        hs_bolting = self.hs_max - self.n_elongated_internode
         return hs_bolting + self.delta_reg
     
     def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):

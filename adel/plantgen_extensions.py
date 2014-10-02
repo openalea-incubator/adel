@@ -168,4 +168,27 @@ def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_ph
     df = df.reset_index(drop=True)
     return df
   
+def time_of_death(nplants, density_table):
+    """
+    return n times of death for an effective of nplants that should suit density time course given in density_data
+    density data is a TT, density pandas DataFrame
+    """
+    df = density_table.sort('TT')
+    card = df['density'] * 1. / df['density'].iloc[0] * nplants
+    ndead = card[0] - round(min(card))
+    tdeath = numpy.interp(range(int(card[0] - ndead), int(card[0])),card[::-1],df['TT'][::-1])
+    return tdeath
     
+def adjust_density(devT, density):
+    nplants = len(set(devT['axeT']['id_plt']))
+    tdeath = time_of_death(nplants, density)
+    dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
+    df = pandas.DataFrame(devT['axeT'])
+    tdel = pandas.Series([float(v) if v != 'NA' else 1e6 for v in df['TT_del_axis'] ])
+    for i in range(len(dead)):
+        td = tdel[df['id_plt'] == dead[i]]
+        tdd = pandas.Series([tdeath[i]] * len(td))
+        td.index = tdd.index
+        newt = [str(round(t)) if t != 1e6 else 'NA' for t in pandas.DataFrame([td, tdd]).min()]
+        df['TT_del_axis'][df['id_plt'] == dead[i]] = newt
+    devT['axe_T'] = df.to_dict('list')

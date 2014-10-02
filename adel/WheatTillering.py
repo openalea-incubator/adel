@@ -147,7 +147,12 @@ class WheatTillering(object):
             pgen[k].update(pgen_base)
             
         return pgen
-        
+    
+    def hs_debreg(self):
+        if hs_bolting is None:
+            hs_bolting = self.hs_max - self.n_elongated_internode
+        return hs_bolting + self.delta_reg
+    
     def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):
         """ Compute axis density = f (HS_mean_MS)
             Parameters:
@@ -156,9 +161,7 @@ class WheatTillering(object):
         """
         
         hs_max = self.nff
-        if hs_bolting is None:
-            hs_bolting = hs_max - self.n_elongated_internode
-        hs_debreg = hs_bolting + self.delta_reg
+        hs_debreg = self.hs_debreg() 
         
         cohorts = self.emited_cohort_density(plant_density = plant_density)
         ear_density = self.ears_per_plant * plant_density

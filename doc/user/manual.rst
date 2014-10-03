@@ -7,7 +7,7 @@
     :Topic: *Alinea.Adel Documentation*
     :Release: |release|
     :Date: |today|
-    :Authors: Mariem ABICHOU, Bruno ANDRIEU and Camille CHAMBON
+    :Authors: Mariem ABICHOU, Bruno ANDRIEU, Camille CHAMBON and Shouyang Liu
     :Target: users
  
 .. contents:: **Alinea.Adel Documentation**
@@ -356,7 +356,7 @@ Besides these collections, R functions should be provided as inputs. A first lis
 A second list of functions is for selecting shapes in the collections mentioned above.
 
 The first list should provide 3 R functions of axis number (0 = main stem) that return:
-    * **azT** : the azimuth(deg) of the first leaf of the axis with reference to the azimuth of the parent leaf
+    * **azT** : the azimuth(deg) of the first leaf of the axis with reference to the azimuth of the parent axes
     * **incT** : the inclination (deg) of the base of the tiller compared with main stem
     * **dredT** : the distance (at maturity) between tiller and main stem
 
@@ -843,7 +843,124 @@ See :mod:`documentation of params <alinea.adel.plantgen.params>` for more inform
 Description of Adel's outputs
 *******************************
 
-.. todo:: to be documented by C.Fournier.
+The function :func:`RunAdel <alinea.adel.AdelR.RunAdel>` permits to simulate 3D architectural 
+development of the shoots of wheat plants, according to a list of dates (thermal times) and 
+Adel's inputs (see :ref:`adel_input`). 
+
+:func:`RunAdel <alinea.adel.AdelR.RunAdel>` returns a Python dictionary. Each key 
+of the dictionary represents an output.   
+The following table describes each of these outputs.
+
+.. list-table::
+    :widths: 10 50
+    :header-rows: 1
+
+    * - Output of RunAdel
+      - Description
+    * - **refplant_id**
+      - plant id
+    * - **axe_id**
+      - axe id
+    * - **ms_insertion**
+      - phytomer insertion position, starting from the base (not normalized)
+    * - **nff**
+      - final number of leaves produced by the axe
+    * - **HS_final**
+      - final haun stage reached by the axe (determine regression or not)
+    * - **numphy**
+      - phytomer position (from bottom)
+    * - **ntop**
+      - phytomer position  (from top)
+    * - **L_shape**
+      - lamina length (cm)
+    * - **Lw_shape**
+      - lamina width (cm)
+    * - **LsenShrink**
+      - shrink in lamina width due to senescense. Width is the remaining width proptional to the blade width before senecened
+    * - **LcType**
+      - selector for first level in leaf database (ntop). First level is the leaf type indexed by the phytomer position (ntop).
+    * - **LcIndex**
+      - index for selecting the leaf geometry from the replicates of the same phytomer (LcType)
+    * - **Linc**
+      - inclination of the base of the lamina relatively to the sheath (deg)
+    * - **Laz**
+      - azimuth relative to the previous leaf ( Laz[1] = azT, Laz[2:end] = azim) (azT refers to the the azimuth(deg) of the first leaf of the axis with reference to the azimuth of the parent axe. azim refers to the azimuth (deg) of the leaf compared to the previous one. azT and azim are defined in the user-defined function, geoAxe and geoLeaf, respectively.)
+    * - **Lpo**
+      - proportion of green tissue in the lamina (on a length basis)
+    * - **Lpos**
+      - proportion of senescent tissue in the lamina (on a length basis)
+    * - **Gd**
+      - apparent diameter of the sheath
+    * - **Ginc**
+      -  inclination relative to of the previous sheath
+    * - **Gpo**
+      - proportion of green tissue in the sheath (on a length basis)
+    * - **Gpos**
+      - proportion of senescent tissue in the sheath (on a length basis)
+    * - **Ed**
+      - diameter of the internode in cm
+    * - **Einc**
+      -  inclination relative to of the previous internode
+    * - **Epo**
+      - proportion of green tissue in the internode (on a length basis)
+    * - **Epos**
+      - proportion of senescent tissue in the internode (on a length basis)
+    * - **rph**
+      - normalized phytomer position (= numphy/nff ) ?? to be confirmed
+    * - **rssi**
+      - relative senescence index (ssi - numphy)
+    * - **rhs**
+      - relative haun stage (haun stage - numphy)
+      
+
+Then, the function :func:`mtg_factory <alinea.adel.newmtg.mtg_factory>` permits to 
+construct a MTG from the output of :func:`RunAdel <alinea.adel.AdelR.RunAdel>`.
+
+Finally, the function :func:`mtg_interpreter <alinea.adel.mtg_interpreter.mtg_interpreter>` permits to 
+add a geometry to the MTG computed by :func:`mtg_factory <alinea.adel.newmtg.mtg_factory>`. 
+
+The resulting MTG has the following properties:
+
+.. list-table::
+    :widths: 5 10 100 30
+    :header-rows: 1
+
+    * - Scale
+      - Lable
+      - Properties (up to date 26/09/2014; may change)
+      - Comments
+    * - 1
+      - plant*
+      - azimuth, edge_type, label, position, refplant_id
+      - *number of plants
+    * - 2
+      - MS/T*
+      - HS_final, edge_type, label, nff, timetable
+      - MS: main stem; * the order of tillers
+    * - 3
+      - metamer*
+      - L_shape, edge_type, label
+      - *the position of metamer (numphy)
+    * - 4
+      - internode
+      - azimuth, diameter, edge_type, inclination, label, length, ntop, senesced_length, visible_length
+      - 
+    * - 4
+      - sheath
+      - azimuth, diameter, edge_type, inclination, label, length, ntop, senesced_length, visible_length
+      - 
+    * - 5
+      - StemElement
+      - area, azimuth, edge_type, geometry, green_area, green_length, inclination, is_green, label, length, offset, senesced_area, senesced_length
+      - 
+    * - 5
+      - blade
+      - diameter, edge_type, inclination, label, length, n_sect, ntop, rolled_length, senesced_length, shape_mature_length, shape_max_width, shape_xysr,visible_length
+      - 
+    * - 5
+      - LeafElement1
+      - area, edge_type, geometry, green_area, green_length, is_green, label, length, position_senescence, senesced_area, senesced_length, srb, srt
+      - 
 
 
 Appendices

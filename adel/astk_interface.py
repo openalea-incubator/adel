@@ -63,10 +63,13 @@ class AdelWheat(object):
             thermal_time_model = DegreeDayModel(Tbase=0)
 
         geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
-        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
+        
+        self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+        
+        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
         self.leaves = leaves
         self.nsect = nsect
-        self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+
         self.domain_area = area_m2
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars

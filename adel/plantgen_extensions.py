@@ -30,14 +30,13 @@ from alinea.adel.AdelR import devCsv
 
 
 
-def build_tables(pgen):
+def pgen_tables(pgen):
     axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**pgen)
     axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
+   
+    return {'adelT': (axeT, dimT, phenT), 'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
     
-    adelT = (axeT, dimT, phenT)
-    pgenT = {'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
-    
-    return adelT, pgenT
+
     
 def adelT_to_devT(pgen):
     """ Creates devT tables from plantgen dict
@@ -209,3 +208,5 @@ def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
             newhs.append(numpy.interp(float(da['TT_stop_axis']), x, y))
         df['HS_final'][df['id_plt'] == dead[i]] = newhs
     devT['axe_T'] = df.to_dict('list')
+    
+    return devT

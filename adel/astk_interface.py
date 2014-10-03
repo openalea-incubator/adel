@@ -67,7 +67,7 @@ class AdelWheat(object):
         self.leaves = leaves
         self.nsect = nsect
         self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
-        self.domain_area = area_m2 * convUnit * convUnit
+        self.domain_area = area_m2
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
         self.split = split

@@ -35,4 +35,4 @@ class AgronomicStand(object):
         length, width = self.plot_dimensions(nplants, aspect)
         n_emerged, positions, domain, domain_area, convUnit = agronomicplot(length, width, self.sowing_density, self.plant_density, self.inter_row)
         
-        return n_emerged, domain, positions
+        return n_emerged, domain, positions, length * width

@@ -66,8 +66,8 @@ class AdelWheat(object):
         self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
         self.leaves = leaves
         self.nsect = nsect
-        self.nplants, self.domain, self.positions = stand.stand(nplants, aspect=aspect)
-        self.domain_area = abs(self.domain[1][0] - self.domain[0][0]) * abs(self.domain[1][1] - self.domain[0][1]) * convUnit * convUnit
+        self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+        self.domain_area = area_m2 * convUnit * convUnit
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
         self.split = split

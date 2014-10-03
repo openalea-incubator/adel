@@ -141,7 +141,7 @@ class WheatTillering(object):
         plants = pgen_ext.plant_list(axis, nplants)
         return plants
         
-    def to_pgen(self, nplants=2, plant_density = 250):
+    def to_pgen(self, nplants=2, plant_density = 250, density_harvest = 250, force_start_reg = False):
         plants = self.plant_list(nplants)
         axeT = pgen_ext.axeT_user(plants)
         mods = pgen_ext.modalities(self.nff)
@@ -149,8 +149,10 @@ class WheatTillering(object):
         
         pgen_base = {'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
               'plants_density': plant_density,
-              'ears_density' : plant_density * self.ears_per_plant
+              'ears_density' : density_harvest * self.ears_per_plant,
               }
+        if force_start_reg:
+            pgen_base.update({'hs_deb_reg': self.hs_debreg()})
         pgen = {k:{'MS_leaves_number_probabilities': {str(k):1.0},
                    'axeT_user':axeT.ix[axeT['id_plt'].isin(v),:],
                    'plants_number':len(v)} for k,v in nff_plants.iteritems() if len(v) > 0}

@@ -143,7 +143,7 @@ phenology_functions = PhenologyFunctions()
 def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                      dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                      dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                     number_of_ears, plants_density, ears_density, axeT_user=None):
+                     number_of_ears, plants_density, ears_density, axeT_user=None, TT_regression_start_user=None):
     '''
     Construct the structure of the plants.
     The following variables are calculated:
@@ -190,7 +190,7 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
     phenT_first = _create_phenT_first(phenT_tmp)
     
     # 4. create axeT
-    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears)
+    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
     
     # 5. create tilleringT
     tilleringT = _create_tilleringT(dynT_, phenT_first, axeT_.index.size, plants_number, 
@@ -339,13 +339,16 @@ class _CreateAxeT():
     def __init__(self):
         self.axeT_ = None
     
-    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True):
+    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None):
         if force or self.axeT_ is None:
             self.axeT_ = axeT_tmp.copy()
             TT_flag_leaf_ligulation = dynT_['TT_col_N_phytomer_potential'][dynT_.first_valid_index()]
             
-            t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
-            TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+            if TT_regression_start_user is None:
+                t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
+                TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+            else:
+                TT_regression_start = TT_regression_start_user
             
             (self.axeT_['TT_app_phytomer1'], 
              self.axeT_['TT_col_phytomer1'], 

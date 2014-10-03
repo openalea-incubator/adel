@@ -179,16 +179,33 @@ def time_of_death(nplants, density_table):
     tdeath = numpy.interp(range(int(card[0] - ndead), int(card[0])),card[::-1],df['TT'][::-1])
     return tdeath
     
-def adjust_density(devT, density):
+def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
     nplants = len(set(devT['axeT']['id_plt']))
     tdeath = time_of_death(nplants, density)
     dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
     df = pandas.DataFrame(devT['axeT'])
+    dp = pandas.DataFrame(devT['phenT'])
     tdel = pandas.Series([float(v) if v != 'NA' else 1e6 for v in df['TT_del_axis'] ])
+    tstop = pandas.Series([float(v) if v != 'NA' else 1e6 for v in df['TT_stop_axis'] ])
     for i in range(len(dead)):
         td = tdel[df['id_plt'] == dead[i]]
         tdd = pandas.Series([tdeath[i]] * len(td))
         td.index = tdd.index
+        ts = tstop[df['id_plt'] == dead[i]]
+        tss = tdd - TT_stop_del
+        ts.index = tss.index
         newt = [str(round(t)) if t != 1e6 else 'NA' for t in pandas.DataFrame([td, tdd]).min()]
+        newstop = [str(round(t)) if t != 1e6 else 'NA' for t in pandas.DataFrame([ts, tss]).min()]
         df['TT_del_axis'][df['id_plt'] == dead[i]] = newt
+        df['TT_stop_axis'][df['id_plt'] == dead[i]] = newstop
+        #maj HS_final
+        d = df[df['id_plt'] == dead[i]]
+        newhs = []
+        for a in range(len(d)):
+            da = d.iloc[a]
+            phen = dp[dp['id_phen'] == da['id_phen']]
+            x = da['TT_col_phytomer1'] + phen['dTT_col_phytomer']
+            y = da['N_phytomer'] * phen['index_rel_phytomer']
+            newhs.append(numpy.interp(float(da['TT_stop_axis']), x, y))
+        df['HS_final'][df['id_plt'] == dead[i]] = newhs
     devT['axe_T'] = df.to_dict('list')

@@ -59,7 +59,8 @@ class WheatTillering(object):
                        #secondary_tiller_probabilities =secondary_tiller_probabilities,
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
                        delta_reg = delta_reg,
-                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_stop_del = 600. / 110):
+                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_stop_del = 600. / 110,
+                       max_order = None):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -71,6 +72,7 @@ class WheatTillering(object):
         self.delta_reg = delta_reg
         self.a1_a2 = a1_a2
         self.delta_stop_del=delta_stop_del
+        self.max_order = max_order
         #plantgen copies of primary proba emission per axis (0 filtered) and per cohort
         self.axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.axis_probabilities)
@@ -101,6 +103,11 @@ class WheatTillering(object):
                                'cohort' : data[0] ,
                                'probability':data[2], 
                                'primary':map(lambda x: not '.' in x, data[1])})
+        if self.max_order != None:
+            def _order(axe):
+                return len(axe.rsplit('.'))
+            df = df[map(lambda x: _order(x) <= self.max_order,df['axis'])]
+ 
         grouped = df.groupby(['cohort'],group_keys=False)
         def _fun(x):
             cohort = x['cohort'].values[0]
@@ -123,8 +130,10 @@ class WheatTillering(object):
         cohorts = self.emited_cohort_density()
         # filter, if any, cohorts emited after regression start (not realy handled in pgen, as no model of regression is available for these tillers)
         cohorts = cohorts[cohorts['delay'] <= self.hs_debreg()] 
-        return pgen_ext.axis_list(cohorts, self.theoretical_probabilities(), nplants)
         
+        axis=pgen_ext.axis_list(cohorts, self.theoretical_probabilities(), nplants)
+                    
+        return axis
         
     def plant_list(self, nplants = 2):
 

@@ -65,54 +65,27 @@ Reference guide
     :show-inheritance:
     :synopsis: 
 
-:mod:`alinea.adel.plantgen.plantgen` module
-============================================================
-.. automodule:: alinea.adel.plantgen.plantgen
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :synopsis: 
-    
-:mod:`alinea.adel.plantgen.axeT` module
-=========================================================
-.. automodule:: alinea.adel.plantgen.axeT
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :synopsis: 
-    
-:mod:`alinea.adel.plantgen.dynT` module
-================================================================
-.. automodule:: alinea.adel.plantgen.dynT
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :synopsis: 
-    
-:mod:`alinea.adel.plantgen.dimT` module
-=========================================================
-.. automodule:: alinea.adel.plantgen.dimT
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :synopsis: 
-    
-:mod:`alinea.adel.plantgen.phenT` module
-=========================================================
-.. automodule:: alinea.adel.plantgen.phenT
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :synopsis: 
-
 :mod:`alinea.adel.plantgen.params` module
-=========================================================
+============================================================
 .. automodule:: alinea.adel.plantgen.params
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: 
+    
+:mod:`alinea.adel.plantgen.plantgen_core` module
+=========================================================
+.. automodule:: alinea.adel.plantgen.plantgen_core
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: 
+    
+:mod:`alinea.adel.plantgen.plantgen_interface` module
+================================================================
+.. automodule:: alinea.adel.plantgen.plantgen_interface
     :members:
     :undoc-members:
     :inherited-members:
@@ -122,6 +95,24 @@ Reference guide
 :mod:`alinea.adel.plantgen.tools` module
 =========================================================
 .. automodule:: alinea.adel.plantgen.tools
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: 
+    
+:mod:`alinea.adel.newmtg` module
+=========================================================
+.. automodule:: alinea.adel.newmtg
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: 
+    
+:mod:`alinea.adel.mtg_interpreter` module
+=========================================================
+.. automodule:: alinea.adel.mtg_interpreter
     :members:
     :undoc-members:
     :inherited-members:

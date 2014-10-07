@@ -41,7 +41,8 @@ def gen_adel_input_data(dynT_user,
                         TT_col_break=0.0,
                         inner_params={},
                         axeT_user=None,
-                        TT_regression_start_user=None
+                        TT_regression_start_user=None,
+                        TT_t1_user=None
                         ):
     '''
     Create the dataframes which contain the plant data to be used as input for 
@@ -123,7 +124,9 @@ def gen_adel_input_data(dynT_user,
           
         - axeT_user (:class:`pandas.DataFrame`): a table similar to the axeT_tmp that allows forcing which axis should be reconstructed.
         
-        - TT_regression_start_user (:class: `float`) : themal time at wich regression start on most frequent MS. If set to none, TT_regression_start is computed by pgen from bolting date of most frequent MS       
+        - TT_regression_start_user (:class: `float`) : thermal time at wich regression start on most frequent MS. If set to none, TT_regression_start is computed by pgen from bolting date of most frequent MS
+        
+        - TT_t1_user (:class: `float`) : thermal time at which n1 Green leaves are observed on most frequent MS. If set to none, TT_t1_user is computed by pgen from bolting date of most frequent MS
         
     :Returns:
         Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -333,19 +336,21 @@ of the MS are documented by the user, then this will lead to an error."
     axeT_, tilleringT, phenT_first = plantgen_core.plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                        dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                        dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                                                       number_of_ears, plants_density, ears_density, axeT_user=axeT_user, TT_regression_start_user=TT_regression_start_user)
+                                                       number_of_ears, plants_density, ears_density, axeT_user=axeT_user, TT_regression_start_user=TT_regression_start_user,
+                                                       TT_t1_user = TT_t1_user)
         
     #calculate organs dimensions
     dimT_, dimT_abs = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                       dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                       dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
-                                                      number_of_ears, axeT_user = axeT_user)
+                                                      number_of_ears, axeT_user = axeT_user, TT_t1_user=TT_t1_user)
     # calculate the phenology of the axes
     phenT_, phenT_abs, HS_GL_SSI_T = plantgen_core.axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                                   dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                                   dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
                                                                   number_of_ears,
-                                                                  axeT_user = axeT_user)
+                                                                  axeT_user = axeT_user,
+                                                                  TT_t1_user = TT_t1_user)
     
     return axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, \
            HS_GL_SSI_T, tilleringT, cardinalityT, config

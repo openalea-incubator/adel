@@ -150,6 +150,7 @@ class WheatTillering(object):
         pgen_base = {'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
               'plants_density': density,
               'ears_density' : density * self.ears_per_plant,
+              'TT_col_break' : 0.0
               }
         if force_start_reg:
             pgen_base.update({'hs_deb_reg': self.hs_debreg()})

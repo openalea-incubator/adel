@@ -25,6 +25,7 @@ from itertools import chain
 
 from alinea.adel.exception import *
 from alinea.adel.plantgen.plantgen_interface import gen_adel_input_data, plantgen2adel
+import alinea.adel.plantgen.tools as tools
 from alinea.adel.AdelR import devCsv
 
 
@@ -166,7 +167,51 @@ def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_ph
     df['TT_col_N_phytomer_potential'] = df['TT_col_N_phytomer_potential'][0]
     df = df.reset_index(drop=True)
     return df
-  
+ 
+class GL_model(object):
+    """
+    An object interface to a plantgen Green Leaf model variant
+    This variant handles cases where GL=f(HS) is fixed whatever nff
+    """
+
+    def __init__(self, HS_ref, GL_ref, n0=4.4, n1=1.5, hs_t1 = 8):
+        self.n0 = n0
+        self.n1 = n1 
+        self.hs_t1 = hs_t1
+        self.HS_ref = HS_ref
+        self.GL_ref = GL_ref
+    
+    def hs_t2(self, nff):
+        nmax = self.HS_ref[numpy.argmax(self.GL_ref)]
+        return min(nmax, nff)
+        
+    def n2(self, nff):
+       return numpy.interp(self.hs_t2(nff),self.HS_ref, self.GL_ref)
+       
+    def GL_number(self, nff):
+        GL = pandas.DataFrame({'HS':self.HS_ref, 'GL':self.GL_ref})
+        GL = GL = GL.ix[GL['HS'] > self.hs_t2(nff),:]
+        return GL
+     
+    def polyfit(self, nff, a_start = 4e-9):
+        n2 = self.n2(nff)
+        GL = self.GL_number(nff)
+        c = (n2 - self.n1) / (nff - self.hs_t1) - 1
+        fixed_coefs = [0.0, c, n2]
+        a, rmse = tools.fit_poly((GL['HS'] - self.hs_t2(nff)), GL['GL'], fixed_coefs, a_start)
+        return numpy.poly1d([a] + fixed_coefs), rmse
+        
+    def curve(self, nff, step = 0.1, a_start = 4e-9):
+        n2 = self.n2(nff)
+        pol, rmse = self.polyfit(nff, a_start) 
+        lin = pandas.DataFrame({'HS':[0, self.n0, self.hs_t1, self.hs_t2(nff)],
+                               'GL':[0, self.n0, self.n1, n2]})
+        xpol = numpy.arange(self.hs_t2(nff), 2 * nff, step)
+        ypol = pol(xpol - self.hs_t2(nff))
+        dpol = pandas.DataFrame({'HS':xpol,'GL':ypol})
+        dpol = dpol.ix[dpol['GL'] >= 0,:]
+        return pandas.concat([lin, dpol])
+       
 def time_of_death(nplants, density_table):
     """
     return n times of death for an effective of nplants that should suit density time course given in density_data

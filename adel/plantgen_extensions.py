@@ -174,40 +174,34 @@ class GL_model(object):
     This variant handles cases where GL=f(HS) is fixed whatever nff
     """
 
-    def __init__(self, HS_ref, GL_ref, n0=4.4, n1=1.5, hs_t1 = 8):
+    def __init__(self, HS, GL, nff=12, n0=4.4, n1=1.5, n2=5, hs_t1=8):
         self.n0 = n0
         self.n1 = n1 
         self.hs_t1 = hs_t1
-        self.HS_ref = HS_ref
-        self.GL_ref = GL_ref
-    
-    def hs_t2(self, nff):
-        nmax = self.HS_ref[numpy.argmax(self.GL_ref)]
-        return min(nmax, nff)
-        
-    def n2(self, nff):
-       return numpy.interp(self.hs_t2(nff),self.HS_ref, self.GL_ref)
-       
-    def GL_number(self, nff):
-        GL = pandas.DataFrame({'HS':self.HS_ref, 'GL':self.GL_ref})
-        GL = GL = GL.ix[GL['HS'] > self.hs_t2(nff),:]
-        return GL
+        self.HS = HS
+        self.GL = GL
+        self.nff = nff
+        self.hs_t2 = nff
+        self.n2 = n2
+               
+    def GL_number(self):
+        GLpol = pandas.DataFrame({'HS':self.HS, 'GL':self.GL})
+        GLpol = GLpol.ix[GLpol['HS'] > self.hs_t2,:]
+        return GLpol
      
-    def polyfit(self, nff, a_start = 4e-9):
-        n2 = self.n2(nff)
-        GL = self.GL_number(nff)
-        c = (n2 - self.n1) / (nff - self.hs_t1) - 1
-        fixed_coefs = [0.0, c, n2]
-        a, rmse = tools.fit_poly((GL['HS'] - self.hs_t2(nff)), GL['GL'], fixed_coefs, a_start)
+    def polyfit(self, a_start = -4e-9):
+        GLpol = self.GL_number()
+        c = (self.n2 - self.n1) / (self.hs_t2 - self.hs_t1) - 1
+        fixed_coefs = [0.0, c, self.n2]
+        a, rmse = tools.fit_poly((GLpol['HS'] - self.hs_t2), GLpol['GL'], fixed_coefs, a_start)
         return numpy.poly1d([a] + fixed_coefs), rmse
         
-    def curve(self, nff, step = 0.1, a_start = 4e-9):
-        n2 = self.n2(nff)
-        pol, rmse = self.polyfit(nff, a_start) 
-        lin = pandas.DataFrame({'HS':[0, self.n0, self.hs_t1, self.hs_t2(nff)],
-                               'GL':[0, self.n0, self.n1, n2]})
-        xpol = numpy.arange(self.hs_t2(nff), 2 * nff, step)
-        ypol = pol(xpol - self.hs_t2(nff))
+    def curve(self, step = 0.1, a_start = -4e-9):
+        pol, rmse = self.polyfit(a_start) 
+        lin = pandas.DataFrame({'HS':[0, self.n0, self.hs_t1, self.hs_t2],
+                               'GL':[0, self.n0, self.n1, self.n2]})
+        xpol = numpy.arange(self.hs_t2, 2 * self.nff, step)
+        ypol = pol(xpol - self.hs_t2)
         dpol = pandas.DataFrame({'HS':xpol,'GL':ypol})
         dpol = dpol.ix[dpol['GL'] >= 0,:]
         return pandas.concat([lin, dpol])

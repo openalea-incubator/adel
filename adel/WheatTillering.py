@@ -203,13 +203,18 @@ class WheatTillering(object):
         primary = numpy.array(map(lambda x: _density(x, cohorts['delay'], cohorts['primary_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))        
         others = numpy.array( map(lambda x: _density(x, cohorts['delay'], cohorts['other_axis'], cohorts['total_axis'],cohorts['cumulative_loss']),hs))
         total = primary + others
-        if include_MS:
-            return pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
-        else:
-            df = pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total})
-            for w in ['primary', 'total']:
+        
+        max3F = numpy.interp(hs_debreg - 2, hs, total)
+        tt3F = total.copy()
+        tt3F[tt3F > max3F] = max3F
+        tt3F_em = numpy.interp(hs, hs + 2, tt3F)
+        tt3F[hs < hs_debreg + 2] = tt3F_em[hs < hs_debreg + 2]
+        
+        df = pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total, '3F':tt3F})
+        if not include_MS:
+            for w in ['primary', 'total', '3F']:
                 df[w] -= 1
-            return df
+        return df
         
 
         

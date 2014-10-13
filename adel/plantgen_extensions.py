@@ -213,31 +213,34 @@ def time_of_death(nplants, density_table):
     """
     df = density_table.sort('TT')
     card = df['density'] * 1. / df['density'].iloc[0] * nplants
-    ndead = card[0] - round(min(card))
-    tdeath = numpy.interp(range(int(card[0] - ndead), int(card[0])),card[::-1],df['TT'][::-1])
+    ndead = card.iloc[0] - round(min(card))
+    tdeath = numpy.interp(range(int(card.iloc[0] - ndead), int(card.iloc[0])),card[::-1],df['TT'][::-1])
     return tdeath
-    
-def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
-    nplants = len(set(devT['axeT']['id_plt']))
-    tdeath = time_of_death(nplants, density)
-    dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
+
+def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
+    """
+    update devT tables by killing axis at pre-defined time
+    who is a list of boolean mask for rows of devT:axeT table identifying the axis that should die
+    when is a prralell list of time of death for axis dentified by who
+    """
     df = pandas.DataFrame(devT['axeT'])
     dp = pandas.DataFrame(devT['phenT'])
     tdel = pandas.Series([float(v) if v != 'NA' else 1e6 for v in df['TT_del_axis'] ])
     tstop = pandas.Series([float(v) if v != 'NA' else 1e6 for v in df['TT_stop_axis'] ])
-    for i in range(len(dead)):
-        td = tdel[df['id_plt'] == dead[i]]
-        tdd = pandas.Series([tdeath[i]] * len(td))
+    for i in range(len(who)):
+        to_kill = who[i]
+        td = tdel[to_kill]
+        tdd = pandas.Series([when[i]] * len(td))
         td.index = tdd.index
-        ts = tstop[df['id_plt'] == dead[i]]
+        ts = tstop[to_kill]
         tss = tdd - TT_stop_del
         ts.index = tss.index
         newt = [str(round(t)) if t != 1e6 else 'NA' for t in pandas.DataFrame([td, tdd]).min()]
         newstop = [str(round(t)) if t != 1e6 else 'NA' for t in pandas.DataFrame([ts, tss]).min()]
-        df['TT_del_axis'][df['id_plt'] == dead[i]] = newt
-        df['TT_stop_axis'][df['id_plt'] == dead[i]] = newstop
+        df['TT_del_axis'][to_kill] = newt
+        df['TT_stop_axis'][to_kill] = newstop
         #maj HS_final
-        d = df[df['id_plt'] == dead[i]]
+        d = df[to_kill]
         newhs = []
         for a in range(len(d)):
             da = d.iloc[a]
@@ -245,7 +248,33 @@ def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
             x = da['TT_col_phytomer1'] + phen['dTT_col_phytomer']
             y = da['N_phytomer'] * phen['index_rel_phytomer']
             newhs.append(numpy.interp(float(da['TT_stop_axis']), x, y))
-        df['HS_final'][df['id_plt'] == dead[i]] = newhs
+        df['HS_final'][to_kill] = newhs
     devT['axe_T'] = df.to_dict('list')
     
+    return devT
+    
+def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
+    nplants = len(set(devT['axeT']['id_plt']))
+    tdeath = time_of_death(nplants, density)
+    dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
+    df = pandas.DataFrame(devT['axeT'])
+    who = [df['id_plt'] == dead[i] for i in range(len(dead))]
+    devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
+        
+    return devT
+    
+def adjust_tiller_survival(devT, survival, TT_stop_del = 2.8 * 110):
+    """
+    Make tiller die along survival tables
+    survival is a dict : 'Tiller_name':survival table (pandasDataFrame TT,survival_fraction)
+    """
+    df = pandas.DataFrame(devT['axeT'])
+    for T in survival:
+        where_T = devT['axeT']['id_axis'] == T
+        nT = len(devT['axeT']['id_axis'][where_T])
+        tdeath = time_of_death(nT, survival[T])
+        dead = random.sample(devT['axeT']['id_plt'][where_T],len(tdeath))
+        who = [(df['id_plt'] == dead[i]) & (map(lambda x: x.startswith(T), df['id_axis'])) for i in range(len(dead))]
+        devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
+        
     return devT

@@ -249,7 +249,7 @@ def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
             y = da['N_phytomer'] * phen['index_rel_phytomer']
             newhs.append(numpy.interp(float(da['TT_stop_axis']), x, y))
         df['HS_final'][to_kill] = newhs
-    devT['axe_T'] = df.to_dict('list')
+    devT['axeT'] = df.to_dict('list')
     
     return devT
     
@@ -272,9 +272,13 @@ def adjust_tiller_survival(devT, survival, TT_stop_del = 2.8 * 110):
     for T in survival:
         where_T = devT['axeT']['id_axis'] == T
         nT = len(devT['axeT']['id_axis'][where_T])
-        tdeath = time_of_death(nT, survival[T])
-        dead = random.sample(devT['axeT']['id_plt'][where_T],len(tdeath))
-        who = [(df['id_plt'] == dead[i]) & (map(lambda x: x.startswith(T), df['id_axis'])) for i in range(len(dead))]
-        devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
+        if nT > 0:
+            tdeath = time_of_death(nT, survival[T])
+            candidates = numpy.array(devT['axeT']['id_plt'][where_T])
+            if candidates.size == 1:
+                candidates = [candidates.tolist()]
+            dead = random.sample(candidates,len(tdeath))
+            who = [(df['id_plt'] == dead[i]) & (map(lambda x: x.startswith(T), df['id_axis'])) for i in range(len(dead))]
+            devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
         
     return devT

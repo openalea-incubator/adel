@@ -73,17 +73,18 @@ class WheatTillering(object):
         self.a1_a2 = a1_a2
         self.delta_stop_del=delta_stop_del
         self.max_order = max_order
-        #plantgen copies of primary proba emission per axis (0 filtered) and per cohort
-        self.axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
-        self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.axis_probabilities)
+
         
        
     def theoretical_probabilities(self):
         """ Computes cohort number, botanical position and theoretical probabilities of emergence all tillers using botanical position and probabilities of emergence of primary ones
         """
+
+        axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
+        cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(axis_probabilities)
         _,res = tools.calculate_theoretical_cardinalities(1, 
-                                                      self.cohort_probabilities,
-                                                      self.axis_probabilities,
+                                                      cohort_probabilities,
+                                                      axis_probabilities,
                                                       self.child_cohort_delay)
         return res
          

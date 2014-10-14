@@ -253,12 +253,15 @@ def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
     
     return devT
     
-def adjust_density(devT, density, TT_stop_del = 2.8 * 110):
+def adjust_density(devT, density, TT_stop_del = 2.8 * 110, keep_MS = False):
     nplants = len(set(devT['axeT']['id_plt']))
     tdeath = time_of_death(nplants, density)
     dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
     df = pandas.DataFrame(devT['axeT'])
-    who = [df['id_plt'] == dead[i] for i in range(len(dead))]
+    if keep_MS:
+        who = [(df['id_plt'] == dead[i]) & (df['id_axis'] != 'MS') for i in range(len(dead))]
+    else:
+        who = [df['id_plt'] == dead[i] for i in range(len(dead))]
     devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
         
     return devT

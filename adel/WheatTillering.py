@@ -92,8 +92,10 @@ class WheatTillering(object):
     def final_leaf_numbers(self):
         """ returns the mean final leaf numbers of cohorts
         """
+        axis_probabilities = {k:v for k,v in self.primary_tiller_probabilities.iteritems() if v > 0 }
+        cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(axis_probabilities)
         ms_nff = [(1,self.nff)]
-        cohort_nff = [(cohort,tools.calculate_tiller_final_leaves_number(self.nff, cohort, self.a1_a2)) for cohort in self.cohort_probabilities]
+        cohort_nff = [(cohort,tools.calculate_tiller_final_leaves_number(self.nff, cohort, self.a1_a2)) for cohort in cohort_probabilities]
         return dict(ms_nff + cohort_nff)   
         
     def emited_cohort_density(self, plant_density = 1):

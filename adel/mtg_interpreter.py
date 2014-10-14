@@ -54,19 +54,20 @@ def compute_element(element_node, leaves, classic=False):
     
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
-        if blade.shape_key is not None and n.srb is not None:
-            if leaves.dynamic:
-                inclin = 1 # inclination is encoded in db
-            else:
-                inclin = blade.inclination
-            geom = leaves.mesh(blade.shape_key, blade.shape_mature_length, blade.shape_max_width, blade.visible_length, n.srb, n.srt, incline= inclin, flipx = True) # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
+        if blade.visible_length > 0.01:# filter less than 0.1 mm leaves
+            if blade.shape_key is not None and n.srb is not None:
+                if leaves.dynamic:
+                    inclin = 1 # inclination is encoded in db
+                else:
+                    inclin = blade.inclination
+                geom = leaves.mesh(blade.shape_key, blade.shape_mature_length, blade.shape_max_width, blade.visible_length, n.srb, n.srt, incline= inclin, flipx = True) # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
 
-        if n.lrolled > 0:
-            rolled = StemElement_mesh(n.lrolled, n.d_rolled, n.d_rolled, classic)
-            if geom is None:
-                geom = rolled
-            else:
-                geom = addSets(rolled,geom,translate = (0,0,n.lrolled))
+            if n.lrolled > 0:
+                rolled = StemElement_mesh(n.lrolled, n.d_rolled, n.d_rolled, classic)
+                if geom is None:
+                    geom = rolled
+                else:
+                    geom = addSets(rolled,geom,translate = (0,0,n.lrolled))
     elif n.label.startswith('Stem'): #stem element
         stem = n.complex()
         #diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter

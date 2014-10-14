@@ -253,35 +253,29 @@ def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
     
     return devT
     
-def adjust_density(devT, density, TT_stop_del = 2.8 * 110, keep_MS = False):
+def adjust_density(devT, density, TT_stop_del = 2.8 * 110, adjust_tiller = None):
     nplants = len(set(devT['axeT']['id_plt']))
     tdeath = time_of_death(nplants, density)
     dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
     df = pandas.DataFrame(devT['axeT'])
-    if keep_MS:
-        who = [(df['id_plt'] == dead[i]) & (df['id_axis'] != 'MS') for i in range(len(dead))]
-    else:
-        who = [df['id_plt'] == dead[i] for i in range(len(dead))]
+    who = [df['id_plt'] == dead[i] for i in range(len(dead))]
     devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
         
     return devT
     
 def adjust_tiller_survival(devT, survival, TT_stop_del = 2.8 * 110):
     """
-    Make tiller die along survival tables
-    survival is a dict : 'Tiller_name':survival table (pandasDataFrame TT,survival_fraction)
+    Make (all) tillers of a living plant die along survival table
     """
     df = pandas.DataFrame(devT['axeT'])
-    for T in survival:
-        where_T = devT['axeT']['id_axis'] == T
-        nT = len(devT['axeT']['id_axis'][where_T])
-        if nT > 0:
-            tdeath = time_of_death(nT, survival[T])
-            candidates = numpy.array(devT['axeT']['id_plt'][where_T])
-            if candidates.size == 1:
-                candidates = [candidates.tolist()]
-            dead = random.sample(candidates,len(tdeath))
-            who = [(df['id_plt'] == dead[i]) & (map(lambda x: x.startswith(T), df['id_axis'])) for i in range(len(dead))]
-            devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
+    living_p = numpy.array(devT['axeT']['id_plt'][(devT['axeT']['id_axis'] == 'MS') & (devT['axeT']['TT_stop_axis'] != 'NA')])
+    if living_p.size ==1:
+        living_p = [living_p.tolist()]
+    nplants = len(living_p)
+    tdeath = time_of_death(nplants, survival)
+    dead = random.sample(living_p, len(tdeath))
+    df = pandas.DataFrame(devT['axeT'])
+    who = [(df['id_plt'] == dead[i]) & (df['id_axis'] != 'MS') for i in range(len(dead))]
+    devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
         
     return devT

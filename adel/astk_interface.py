@@ -142,6 +142,13 @@ class AdelWheat(object):
         #newg = mtg_update(newg, g, refg)
         move_properties(g, newg)
         return newg
+       
+    def get_axis(plant='plant1', axe = 'MS'):
+        """ return a new mtg representing an axe
+        """
+        p = [vid for vid in g.vertices(scale=1) if g.label(vid) == plant][0]
+        ax = [vid for vid in g.components(p) if g.label(vid) == axe][0]
+        return g.sub_mtg(ax,copy=True)
    
     def plot(self, g):
         from openalea.plantgl.all import Viewer

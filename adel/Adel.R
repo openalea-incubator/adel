@@ -144,7 +144,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
         kin[,nfa+1,"El"] = 0
    #senescence of stem + ear + awn + peduncle
     for (i in 1:(nfa+3))
-      kin[,i,"Elsen"] <- ifelse(xa < ped$senPed,0,dim$El[i])
+      kin[,i,"Elsen"] <- tryCatch(ifelse(xa < ped$senPed,0,dim$El[i]), error = function(e) {print(paste('plant:', plant$refp, 'axe', a, 'i', i));e}) 
     }
     ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allonges sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))

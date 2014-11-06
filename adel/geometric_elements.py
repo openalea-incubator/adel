@@ -3,6 +3,7 @@ New proposal for computing organ shapes
 """
 
 import numpy
+from scipy.integrate import simps
 
 import openalea.plantgl.all as pgl
 from math import degrees, radians, pi, cos, sin
@@ -114,10 +115,7 @@ class Leaves(object):
         
     def blade_elt_area(self, leaf_key, Lshape, Lwshape, sr_base, sr_top):
         """ surface of a blade element, positioned with two relative curvilinear absisca"""
-        
-        from scipy.integrate import simps
-        from numpy import interp, arange
-
+       
         S=0
         sr_base = min([1,max([0,sr_base])])
         sr_top = min([1,max([sr_base,sr_top])])
@@ -127,10 +125,10 @@ class Leaves(object):
             if len(sre) > 0:
                 se,re = zip(*sre)
                 snew = [sr_base] + list(se) + [sr_top]
-                rnew = [interp(sr_base,s,r)] + list(re) + [interp(sr_top,s,r)]
+                rnew = [numpy.interp(sr_base,s,r)] + list(re) + [numpy.interp(sr_top,s,r)]
             else:
                 snew = [sr_base, sr_top]
-                rnew = [interp(sr_base,s,r), interp(sr_top,s,r)]
+                rnew = [numpy.interp(sr_base,s,r), numpy.interp(sr_top,s,r)]
 
             S = simps(rnew,snew) * Lshape * Lwshape
 
@@ -164,7 +162,12 @@ class Leaves(object):
             mesh = None
 
         return mesh
-
     
-
+    def form_factor(self):
+        """
+        return form factor for each key in sr_db
+        """
+        
+        return {k:simps(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
+        
 

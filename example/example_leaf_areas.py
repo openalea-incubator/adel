@@ -9,7 +9,7 @@ try:
 except:
     import pickle
 from alinea.adel.newmtg import move_properties, adel_ids
-from alinea.echap.architectural_reconstructions import reconst_db
+from alinea.echap.architectural_reconstructions import EchapReconstructions
 from alinea.alep.disease_outputs import initiate_all_adel_septo_recorders
 
 # Imports for weather
@@ -26,14 +26,14 @@ from random import seed
 seed(0)
 
 # Initialize wheat plant
-Mercia = reconst_db['Mercia']
 nsect = 5
-pgen, adel, domain, domain_area, convUnit, nplants = Mercia(nplants = 1, nsect=nsect, disc_level=0)
+reconst = EchapReconstructions()
+adel = reconst.get_reconstruction(name='Mercia', nplants = 1, nsect = nsect, disc_level = 5, aspect = 'line')
 g = adel.setup_canopy(age=600.)
 
 # Manage weather and time control
 start_date="2011-03-01 12:00:00"
-end_date="2011-06-25 01:00:00"
+end_date="2011-08-01 01:00:00"
 weather = Boigneville_2010_2011()
 weather.check(varnames=['degree_days'], models={'degree_days':linear_degree_days}, start_date=start_date)
 seq = pandas.date_range(start = start_date, end = end_date, freq='H')

@@ -330,7 +330,7 @@ of the MS are documented by the user, then this will lead to an error."
     dynT_ = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
                                              MS_leaves_number_probabilities, 
                                              dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                             dimT_user_completeness, TT_col_break, axeT_user = axeT_user)
+                                             dimT_user_completeness, TT_col_break, axeT_user = axeT_user, TT_t1_user = TT_t1_user)
     
     # construct plants structure
     axeT_, tilleringT, phenT_first = plantgen_core.plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 

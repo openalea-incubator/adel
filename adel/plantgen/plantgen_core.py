@@ -940,7 +940,7 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_interno
         most_frequent_MS['t0'][n0_smaller_than_HS_break_indexes] = most_frequent_MS['TT_col_0'][n0_smaller_than_HS_break_indexes] + most_frequent_MS['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_MS['a_cohort'][n0_smaller_than_HS_break_indexes]
         most_frequent_MS['t0'][n0_greater_than_HS_break_indexes] = (most_frequent_MS['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_MS['TT_col_break'][n0_greater_than_HS_break_indexes]    
     # calculation of c 
-    most_frequent_MS['c'] = -((most_frequent_MS['N_phytomer_potential'] - decimal_elongated_internode_number) - (most_frequent_MS['n2'] - most_frequent_MS['n1'])) / (most_frequent_MS['TT_col_N_phytomer_potential'] - most_frequent_MS['t1'])
+    most_frequent_MS['c'] = -((most_frequent_MS['N_phytomer_potential'] - most_frequent_MS['hs_t1']) - (most_frequent_MS['n2'] - most_frequent_MS['n1'])) / (most_frequent_MS['TT_col_N_phytomer_potential'] - most_frequent_MS['t1'])
     # calculation of a
     TT_col_N_phytomer_potential_0 = most_frequent_MS['TT_col_N_phytomer_potential'][0]
     n2_0 = most_frequent_MS['n2'][0]

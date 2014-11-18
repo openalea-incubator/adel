@@ -88,11 +88,13 @@ class Leaves(object):
         key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
         age_index = age
         if age is not None:
-            age_index = numpy.searchsorted(self.bins, age)
-            if age_index ==0:
-                age_index = 1 # age below first value are in firts interval
-            if age_index >= len(self.bins):
-                age_index = len(self.bins) - 1# age above last value are set in last interval
+            binf = numpy.searchsorted(self.bins, age) - 1#binf is position of bin below age (starting at zero)
+            if binf < 0: 
+                binf = 0 # age below first value are in firts interval
+            if binf >= (len(self.bins) - 1):#binf is the last value
+                age_index = binf - 1
+            else:
+                age_index = binf
             #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
         return key, index, age_index
     

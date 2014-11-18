@@ -93,7 +93,7 @@ class Leaves(object):
                 age_index = 1 # age below first value are in firts interval
             if age_index >= len(self.bins):
                 age_index = len(self.bins) - 1# age above last value are set in last interval
-            age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
+            #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
         return key, index, age_index
     
     def get_leaf(self, leaf_key):

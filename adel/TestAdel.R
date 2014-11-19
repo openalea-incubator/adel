@@ -75,3 +75,28 @@ chn <- genString(canopy)
 load("./data/Arvalis.RData")
 source("./data/Rfun.R")
 source("ArvalisToAdel.R")
+#
+# simulates how adel param is relaed to HS
+#
+phyl <- 110
+endLeaf <- 1.6
+nF <- 11
+#
+time <- seq(0,1500)
+leaves <- matrix(0,ncol=nF,nrow=length(time))
+for (i in seq(nF)) {
+  xem <- phyl * (i - 1)
+  xlig <- xem + endLeaf * phyl
+  l <- leaves[,i]
+  l[time >= xem] <- (time[time >= xem] - xem) / phyl / endLeaf
+  l[time >= xlig] <- 1
+  leaves[,i] <- l
+}
+#
+hs <- apply(leaves,1,sum)
+plot(time / phyl,hs,xlab='phyllochronic time (adel)', ylab='Leaf #',type='l',cex.lab=1.5)
+abline(0,1,lwd=2,col=4)
+abline(-1.6,1,col=4,lty=2)
+abline(-endLeaf,1,lwd=2,col=3)
+abline(-.5/1.6,1,lwd=2,col=2)
+legend(8,4,c('HS','Tips','Collars','HS_lin (Tips + 0.31)'),col=c(1,4,3,2),lty=1,lwd=c(1,2,2,2))

@@ -88,6 +88,12 @@ To parameterize the delay between tip appearance and collar appearance for the f
 :attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`.   
 '''
 
+DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5 / 1.6
+'''Delay between Haun Stage and collar appearance for all leaves. 
+
+The delay is given in phyllochron unit. 
+'''
+
 DELAIS_PHYLL_SEN_DISP = 3.0
 '''The time during which a fully senesced leaf on a non-elongated internode 
 remains on the plant. 

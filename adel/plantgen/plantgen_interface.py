@@ -38,7 +38,7 @@ def gen_adel_input_data(dynT_user,
                         ears_density=500,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
-                        TT_col_break=0.0,
+                        TT_hs_break=0.0,
                         inner_params={},
                         axeT_user=None,
                         TT_regression_start_user=None,
@@ -112,8 +112,8 @@ def gen_adel_input_data(dynT_user,
           concerns only the axes that do not regress and which do not produce any 
           cob).
         
-        - `TT_col_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing. If phyllochron is constant, then *TT_col_break* is null.
+        - `TT_hs_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
+          is changing. If phyllochron is constant, then *TT_hs_break* is null.
           
         - `inner_params` (:class:`dict`) - the values of the inner parameters used 
           for the construction of the input tables. These parameters are the same 
@@ -208,7 +208,7 @@ of the MS are documented by the user, then this will lead to an error."
     # calculate dynT_user completeness and check its validity
     if 'N_phytomer_potential' in dynT_user.columns:
         dynT_user_completeness = plantgen_core.DataCompleteness.FULL
-        expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
@@ -231,7 +231,7 @@ of the MS are documented by the user, then this will lead to an error."
             
     elif dynT_user.count().max() == dynT_user.count().min() == dynT_user.index.size:
         dynT_user_completeness = plantgen_core.DataCompleteness.SHORT
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
@@ -246,7 +246,7 @@ of the MS are documented by the user, then this will lead to an error."
         
     else:
         dynT_user_completeness = plantgen_core.DataCompleteness.MIN
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_col_0', 'TT_col_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
         if dynT_user.columns.tolist() != expected_dynT_user_columns:
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         available_axes = dynT_user['id_axis'].tolist()
@@ -330,24 +330,24 @@ of the MS are documented by the user, then this will lead to an error."
     dynT_ = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
                                              MS_leaves_number_probabilities, 
                                              dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                             dimT_user_completeness, TT_col_break, axeT_user = axeT_user, TT_t1_user = TT_t1_user)
+                                             dimT_user_completeness, TT_hs_break, axeT_user = axeT_user, TT_t1_user = TT_t1_user)
     
     # construct plants structure
     axeT_, tilleringT, phenT_first = plantgen_core.plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                        dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                                       dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
+                                                       dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
                                                        number_of_ears, plants_density, ears_density, axeT_user=axeT_user, TT_regression_start_user=TT_regression_start_user,
                                                        TT_t1_user = TT_t1_user)
         
     #calculate organs dimensions
     dimT_, dimT_abs = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                       dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                                      dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
+                                                      dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
                                                       number_of_ears, axeT_user = axeT_user, TT_t1_user=TT_t1_user)
     # calculate the phenology of the axes
     phenT_, phenT_abs, HS_GL_SSI_T = plantgen_core.axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                                   dynT_user, dimT_user, GL_number, dynT_user_completeness, 
-                                                                  dimT_user_completeness, TT_col_break, delais_TT_stop_del_axis, 
+                                                                  dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
                                                                   number_of_ears,
                                                                   axeT_user = axeT_user,
                                                                   TT_t1_user = TT_t1_user)
@@ -392,7 +392,7 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_filepath, dimT_user_filepath
     ears_density = inputs.ears_density
     GL_number = inputs.GL_number
     delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
-    TT_col_break = inputs.TT_col_break
+    TT_hs_break = inputs.TT_hs_break
     try:
         inner_params = inputs.inner_params
     except:
@@ -400,7 +400,7 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_filepath, dimT_user_filepath
     
     return (dynT_user, dimT_user, plants_number, plants_density, decide_child_axis_probabilities, 
             MS_leaves_number_probabilities, ears_density, GL_number, 
-            delais_TT_stop_del_axis, TT_col_break, inner_params)
+            delais_TT_stop_del_axis, TT_hs_break, inner_params)
     
     
 def plantgen2adel(axeT_, dimT_, phenT_):

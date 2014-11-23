@@ -69,6 +69,7 @@ psen <- function(rssi, nt, ssisenT, nf, hasEar=TRUE) {
 #
 kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLeaf" = 1.2, "endLeaf1" = 1.6)) {
   #Model parameter
+  dhslin <- 1.3125 # delay tip-hslin
   startLeaf <- pars$startLeaf
   endLeaf <- pars$endLeaf
   endLeaf1 <- pars$endLeaf1
@@ -89,7 +90,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     if (!is.na(xend))
       xa[xa>=xend] <- xend
     ph <- openapprox(plant$pheno[[a]]$tip,plant$pheno[[a]]$n,xa)
-    hs <- openapprox(plant$pheno[[a]]$col,plant$pheno[[a]]$n,xa)
+    hs <- ph - dhslin
+    phcol <- openapprox(plant$pheno[[a]]$col,plant$pheno[[a]]$n,xa)
     ssi <- openapprox(plant$pheno[[a]]$ssi,plant$pheno[[a]]$n,x)
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])

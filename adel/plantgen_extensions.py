@@ -155,16 +155,16 @@ def axeT_user(plants):
     df= df.sort(['id_plt','id_cohort','id_axis'])
     return df
     
-def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_col_0':160.,'TT_col_N_phytomer_potential':1100,'n0':4.5,'n1':2.5,'n2':5}, primary_tillers = ['T%d'%(i) for i in range (1,4)]):
+def dynT_user(MS_parameters = {'a_cohort':1. / 110.,'TT_hs_0':160.,'TT_hs_N_phytomer_potential':1100,'n0':4.5,'n1':2.5,'n2':5}, primary_tillers = ['T%d'%(i) for i in range (1,4)]):
     p = primary_tillers
     p.sort()
     idaxis = ['MS'] + p
     df = pandas.DataFrame(index=idaxis,
-                          columns=['id_axis','a_cohort','TT_col_0','TT_col_N_phytomer_potential','n0','n1','n2'],
+                          columns=['id_axis','a_cohort','TT_hs_0','TT_hs_N_phytomer_potential','n0','n1','n2'],
                           dtype=float)
     df.ix['MS'] = pandas.Series(MS_parameters)
     df['id_axis'] = idaxis
-    df['TT_col_N_phytomer_potential'] = df['TT_col_N_phytomer_potential'][0]
+    df['TT_hs_N_phytomer_potential'] = df['TT_hs_N_phytomer_potential'][0]
     df = df.reset_index(drop=True)
     return df
  

@@ -382,7 +382,7 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
                 if lctype != -999 and lcindex != -999:
                     age = None
                     if dynamic_leaf_db:
-                        age = args['rph']
+                        age = args['rph'] - 0.3 # age_db = HS - rank + 1 = ph - 1.3 - rank +1 = rph - .3
                         if age != 'NA':
                             age = max(0,int(float(age)))
                     xysr_key = leaves.get_leaf_key(lctype, lcindex, age)

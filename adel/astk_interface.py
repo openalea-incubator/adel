@@ -57,7 +57,7 @@ class AdelWheat(object):
             
         if stand is None:
             stand = AgronomicStand(sowing_density = 250, plant_density=250, inter_row=0.15)
-            positions
+            
             
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)

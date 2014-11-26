@@ -75,7 +75,7 @@ class Leaves(object):
             leaves[k]=[]
             for i in range(len(xy[k])):
                 if self.dynamic :
-                    xysr = {age:(xy[k][i][age]['x'], xy[k][i][age]['y'], sr[k]['s'], sr[k]['r']) for age in xy[k][i]}
+                    xysr = {age:(list(xy[k][i][age]['x']), list(xy[k][i][age]['y']), list(sr[k]['s']), list(sr[k]['r'])) for age in xy[k][i]}
                 else:
                     xysr = (xy[k][i][0], xy[k][i][1], sr[k][0], sr[k][1])
                 leaves[k].append(xysr)

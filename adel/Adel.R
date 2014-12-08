@@ -99,7 +99,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     kin <- array(NA,c(nx,nf[a]+3,20),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs")))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
-      kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen")] <- 0
+      kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen","Llvis")] <- 0
     for (i in seq(nf[a])) {
       #print(i)
       rph <- ph - i
@@ -111,28 +111,41 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
         LGl <- approx(c(startLeaf,endLeaf1),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
+      El <- approx(c(startE,endE),c(0,dim$El[i]),xout=rph,rule=2)$y
       kin[,i,"Ll"] <- sapply(LGl,function(x) min(x,dim$Ll[i]))
       kin[,i,"Gl"] <- LGl - kin[,i,"Ll"]
-      kin[,i,"El"] <- approx(c(startE,endE),c(0,dim$El[i]),xout=rph,rule=2)$y
-      # hidden length of metamer at leaf emergence
+      kin[,i,"El"] <- El
+      # hidden length of metamer at leaf emergence (depends only on coordination rule)
       Lhem <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=0,rule=2)$y + approx(c(startE,endE),c(0,dim$El[i]),xout=0,rule=2)$y
-      # hidden length of metamer at collar appearance
+      # hidden length of metamer at collar appearance (hypothesis: collar app = time at which blade is completly visible)
       xcol <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$col,i)
       rphcol <- openapprox(plant$pheno[[a]]$tip,plant$pheno[[a]]$n,xcol) - i
       LGcol <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rphcol,rule=2)$y
-      Lhcol <- LGcol - min(LGcol,dim$Ll[i]) + approx(c(startE,endE),c(0,dim$El[i]),xout=rphcol,rule=2)$y
-      # relative progress in emergence
-      xh <- max(0, min(1, rph / rphcol))
+      Ecol <- approx(c(startE,endE),c(0,dim$El[i]),xout=rphcol,rule=2)$y
+      Lhcol <- LGcol + Ecol - dim$Ll[i]
+      xh <- max(0, rph / rphcol)
+      Lh <-  ifelse(xh <= 0, sum(kin[,i,c("Ll","Gl","El")]),Lhem + (Lhcol - Lhem) * min(xh, 1))
+      # makes first phyto replace enclosing sheath after emergence
+      if (i == 1 & xh > 0) {
+        Lh <- 0
+      } else if (xh > 1) { 
+        Lhmat <- dim$Gl[i - 1]
+        Lh <- Lhcol + (Lhcol - Lhmat) * (xh - 1)
+        Lh <- ifelse(Lhmat < Lhcol, min(Lhmat, Lh), max(Lhmat, Lh))
+      }
+      #
       kin[,i,"Lhem"] <- Lhem
       kin[,i,"Lhcol"] <-  Lhcol
       kin[,i,"xh"] <- xh
-      kin[,i,"Lh"] <- ifelse(xh <= 0, sum(kin[,i,c("Ll","Gl","El")]),Lhem + (Lhcol - Lhem) * xh)
+      kin[,i,"Lh"] <- Lh
+      # Llvis is forced to be compatible with tip-col rates, Hcol/Glvis will be adjusted
+      kin[,i,"Llvis"] <-  max(0,min(dim$Ll[i],LGl + El - Lh))
       #senescence
       kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Ll"]
       kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Gl"]
 
       ## disparition feuille
-      kin[i <= disp,i,c("Ll","Llsen")] <- 0
+      kin[i <= disp,i,c("Ll","Llsen","Llvis","Lh")] <- 0
       kin[i <= (disp-1),i,c("Gl","Glsen")] <- 0
     }
     #ear + peduncle elongation
@@ -167,12 +180,15 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
 #hauteur du tube = depuis la base de l'entreneoud, pour chaque phyto
 #
 htube <- function(kin,ht0) {
+  nmax <- max(seq(nrow(kin))[kin$ntop >=0])
   # hauteur base phyto
   stem <- cumsum(kin$El) - kin$El
   hcol <- stem + kin$Gl + kin$El + kin$Llrolled - kin$Glopen
   #ajout ht0,=>parcours hcol de 1 a n-1
-  ht <- sapply(seq(along=hcol),function(i) max(c(ht0,hcol)[1:i]))
-  pmax(0,ht - stem)
+  hins <- sapply(seq(along=hcol),function(i) max(c(ht0,hcol)[1:i]))
+  Gt <- sapply(seq(along=hcol),function(i) min(nmax,which.max(c(ht0,hcol)[1:i]) - 1))
+  ht <- pmax(0,hins - stem)
+  data.frame(hins=hins,ht=ht,Gt=Gt)
 }
 #
 basetube <- function(kin,ht0=0) {
@@ -232,6 +248,21 @@ checktube <- function(kin,ht0=0) {
   kin
 }
 #
+# compute whorl  adjustements needed to make Lh match ht.
+#
+whorl <- function(kin) {
+  do.call('rbind',lapply(split(kin,kin$Gt),function(mat) {
+    res <- NULL
+    if (mat$Gt[1] > 0) {
+      delta <- mean((mat$Lh - mat$ht)[mat$xh > 0],na.rm=TRUE)
+      if (!is.na(delta))
+        if (abs(delta) > 1e-6)
+          res <- data.frame(Gt=mat$Gt[1],delta=delta)
+    }
+    res
+  }))
+}
+#
 #Hmax : hauteur max axe si feuille verticale (pour calcul visibilite talles)
 #
 Hmax <- function(kin) {
@@ -254,16 +285,21 @@ ms_pos <- function(axeid) {
 visibility <- function(kin,ht0=0) {
   #initialisation of rolling/opening
   kin[,c("Llrolled","Glopen")] <- 0
-  kin$ht <- htube(kin,ht0)
-  if (all(c("Lhem","Lhcol","xh","Lh") %in% colnames(kin))) {
-    kin <- basetube(kin,ht0)
-    kin <- checktube(kin)
-  } else {
-    kin$xh <- 1
-    kin <- basetube(kin,ht0)
+  kin[,c('hins','ht','Gt')] <- htube(kin,ht0)
+  if (all(c("xh","Lh") %in% colnames(kin))) {
+    w <- whorl(kin)
+    if (length(w) > 0)
+      for (i in seq(nrow(w))) {
+        if (w$delta[i] < 0) {
+          kin$Glopen[w$Gt[i]] <-  min(kin$Gl[i],-w$delta[i])
+        } else {
+          kin$Llrolled[w$Gt[i]] <-  min(w$delta[i],kin$Llvis[i])
+        }
+      }
+    kin[,c('hins','ht','Gt')] <- htube(kin,ht0)
   }
-  kin$Llvis <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
-  kin$Glvis <- pmin(pmax(0,kin$Gl + kin$El - kin$ht),kin$Gl)
+  #kin$Llvis <- pmin(pmax(0,kin$Ll + kin$Gl + kin$El - kin$ht),kin$Ll)
+  kin$Glvis <- pmin(pmax(0,kin$Gl - kin$Glopen + kin$El - kin$ht),kin$Gl)
   kin$Elvis <- pmin(pmax(0,kin$El - kin$ht),kin$El)
   kin
 }
@@ -276,10 +312,10 @@ kinLvis <- function(kinlist,pars=NULL) {
   for (d in seq(dim(kinlist[[1]])[1])) {
     #Haxe <- sapply(kinlist,function(kinaxe) Hmax(kinaxe[d,,]))
     for (a in seq(kinlist)) {
-      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Lhem","Lhcol","xh","Lh","rph","rssi", "rhs")])
+      kin <- data.frame(kinlist[[a]][d,,c("ntop","Ll","Gl","El","Llvis","Lhem","Lhcol","xh","Lh","rph","rssi", "rhs")])
     # calcul visibilite : talles doivent emerger du tube de la gaine axilante
       if (axes[a] == "MS") {
-        ht0 = max(kin$Lhem[1],kin$Gl[1])
+        ht0 = kin$Lh[1]
         kin <- visibility(kin,ht0)
         htbm <- kin$ht
       } else {

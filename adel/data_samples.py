@@ -61,11 +61,13 @@ def adel_two_metamers(leaf_sectors = 1):
     g=mtg_interpreter(g)
     return g
     
-def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, convunit=100, interleaf = 1, Einc=45):
+def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, convunit=100, 
+                            interleaf = 1, leaf_length = 3, leaf_width = .3, Einc=45):
     """ create a very simple adel mtg """
 
     d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
-         'Laz': [0,90], 'Ll' :[3,3], 'Lv' :[3,3] ,'Lr':[0,0], 'Lsen':[0,0], 'L_shape':[3,3], 'Lw_shape':[.3,.3], 'Linc':[0,0],
+         'Laz': [0,90], 'Ll' :[leaf_length, leaf_length], 'Lv' :[leaf_length, leaf_length] ,'Lr':[0,0],
+         'Lsen':[0,0], 'L_shape':[leaf_length,leaf_length], 'Lw_shape':[leaf_width, leaf_width], 'Linc':[0,0],
          'Einc':[0,Einc],'El':[1,interleaf],'Ev':[1,interleaf],'Esen':[0,0],'Ed': [0.1,0.1],'Gd': [0.1,0.1], 'LcType':[1,1],'LcIndex':[1,1]}
     
     inter_plant = 1. / inter_row / density
@@ -80,7 +82,6 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
     l = leaves()
     g=mtg_factory(d,adel_metamer,leaves=l, leaf_sectors=leaf_sectors,stand=[(positions[0],0)])
     g=mtg_interpreter(g,leaves=l)
-    
     
     return g, domain_area, domain, 1. / convunit
     

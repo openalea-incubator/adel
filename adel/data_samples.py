@@ -53,7 +53,7 @@ from alinea.adel.stand.stand import regular
 
 def adel_two_metamers(leaf_sectors = 1):
     """ create a very simple adel mtg """
-
+    l = leaves()
     d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
          'Laz': [0,90], 'Ll' :[3,3], 'Lv' :[3,3] ,'Lr':[0,0], 'Lsen':[0,0], 'L_shape':[3,3], 'Lw_shape':[.3,.3], 'Linc':[0,0],
          'Einc':[0,45],'El':[1,1],'Ev':[1,1],'Esen':[0,0],'Ed': [0.1,0.1],'Gd': [0.1,0.1]}
@@ -87,6 +87,7 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
     
 def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     """ create a very simple adel mtg """
+    l = leaves()
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}

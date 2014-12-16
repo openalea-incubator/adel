@@ -253,18 +253,18 @@ def plot3d(g,
             stem_material = Material(Color3(0,130,0))
         if soil_material is None:
             soil_material = Material(Color3(170, 85,0))
-        colors = g.property('color')
+        #colors = g.property('color')
         
     geometries = g.property('geometry')
     greeness = g.property('is_green')
     labels = g.property('label')
     scene = Scene()
 
-    def geom2shape(vid, mesh, scene):
+    def geom2shape(vid, mesh, scene,colors):
         shape = None
         if isinstance(mesh, list):
             for m in mesh:
-                geom2shape(vid, m, scene)
+                geom2shape(vid, m, scene,colors)
             return
         if mesh is None:
             return
@@ -288,7 +288,7 @@ def plot3d(g,
         scene.add(shape)
 
     for vid, mesh in geometries.iteritems():
-        geom2shape(vid, mesh, scene)
+        geom2shape(vid, mesh, scene,colors)
     return scene
 
         

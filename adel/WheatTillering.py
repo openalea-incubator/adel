@@ -60,7 +60,8 @@ class WheatTillering(object):
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
                        delta_reg = delta_reg,
                        a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_stop_del = 600. / 110,
-                       max_order = None):
+                       max_order = None,
+                       tiller_survival=None):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -73,6 +74,7 @@ class WheatTillering(object):
         self.a1_a2 = a1_a2
         self.delta_stop_del=delta_stop_del
         self.max_order = max_order
+        self.tiller_survival = tiller_survival
 
         
        
@@ -184,22 +186,47 @@ class WheatTillering(object):
         ear_density = self.ears_per_plant * plant_density
                 
         # filter, if any, cohorts emited after regression start
-        cohorts = cohorts[cohorts['delay'] <= hs_debreg]        
+        cohorts = cohorts[cohorts['delay'] <= hs_debreg]
+        
+        # early loss (if any) occuring before debreg
+        early_loss = 0
+        early_frac = 0
+        when_lost = -1 #means never
+        if self.tiller_survival is not None:
+            cohort_survival = tools.calculate_decide_child_cohort_probabilities(self.tiller_survival)# tools function convert 'tiller name' kays into cohort index keys
+            start_loss = {k:max(float(cohorts['delay'][cohorts['cohort'] == k]),v['HS'][0]) for k,v in cohort_survival.iteritems()}
+            start_loss = {k:v for k,v in start_loss.iteritems() if v < hs_debreg}
+            lost = cohorts['cohort'].isin(start_loss)
+            # apply early loss at weighted mean of losses (to be replaced by differentila rate/date of loss for every cohorts)
+            start = sum([start_loss[k] * float(cohorts['total_axis'][cohorts['cohort']==k]) for k in start_loss]) / cohorts['total_axis'][lost].sum()
+            when_lost = numpy.mean((start,hs_debreg))
+            # ammount lost before startreg
+            fraction_lost = {k:(1 - float(cohort_survival[k]['density'][1])) for k in start_loss}
+            end_loss = {k:float(cohort_survival[k]['HS'][1]) for k in start_loss}
+            total_lost = sum([fraction_lost[k] * float(cohorts['total_axis'][cohorts['cohort']==k]) for k in start_loss])
+            end = sum([end_loss[k] * float(cohorts['total_axis'][cohorts['cohort']==k]) for k in start_loss]) / cohorts['total_axis'][lost].sum()
+            early_loss = total_lost * min(1,(hs_debreg - start) / (end - start))
+            early_frac = early_loss / cohorts['total_axis'].sum()
+            
+        #regression rate (all cohorts)
+        dmax = cohorts['total_axis'].sum() - early_loss
+        regression_rate = (ear_density - dmax) / (hs_max - hs_debreg)
         # compute loss values that correspond to 100 percent loss for a cohort
         reverse_cohorts = cohorts.sort_index(by=['delay'], ascending = False)
         cohorts['cumulative_loss'] = reverse_cohorts['total_axis'].cumsum()       
-        dmax = cohorts['total_axis'].sum()
-        regression_rate = (ear_density - dmax) / (hs_max - hs_debreg)
+
         
         def _density(x, delays, cardinalities, total, cumulative_loss):
-            if x < (hs_debreg + self.delta_stop_del):
+            if x < (when_lost + self.delta_stop_del):
                 d = cardinalities[delays <= x].sum()
+            elif x < (hs_debreg + self.delta_stop_del):
+                d = cardinalities[delays <= x].sum() - early_frac * cardinalities.sum()
             else :
                 hs = min(x,hs_max + self.delta_stop_del)
-                loss = - regression_rate * (hs - hs_debreg - self.delta_stop_del) #dmax - (dmax + reg)
+                loss = - regression_rate * (hs - hs_debreg - self.delta_stop_del)#dmax - (dmax + reg)
                 fraction_lost = (loss - cumulative_loss + total) / total
                 fraction_lost = numpy.maximum(0,numpy.minimum(1,fraction_lost))
-                d = (cardinalities * (1 - fraction_lost)).sum()           
+                d = (cardinalities * (1 - fraction_lost)).sum() - early_frac * cardinalities.sum()
             return d
                
         hs = numpy.arange(0,1.2 * (hs_max + self.delta_stop_del),0.1)

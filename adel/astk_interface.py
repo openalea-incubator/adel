@@ -157,7 +157,7 @@ class AdelWheat(object):
         if property:
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
-            colors = {vid:colored.get(vid,colored.get(g.complex(vid))) for vid in g.vertices(scale=g.max_scale())}
+            colors = {vid:colored.get(vid,colored.get(g.complex(vid),[0,0,0])) for vid in g.vertices(scale=g.max_scale())}
         s = plot3d(g, colors=colors) #use the one of openalea.plantframe.color instead ?
         Viewer.display(s)
         return s

@@ -234,6 +234,9 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
     Eaz = Laz
     Gaz = 0
     split=kwargs.get('split', False)
+    exposition = kwargs.get('exposition', 'NA')
+    lifetime = kwargs.get('lifetime', 'NA')
+
     modules = [
         {'label': 'internode',
         'ntop': ntop,
@@ -267,6 +270,13 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)} 
     ]
 
+    try:
+        exposition = float(exposition)
+        lifetime = float(lifetime)
+        modules[2].update({'exposition':exposition, 'lifetime':lifetime})
+    except ValueError:
+        pass
+        
     if elongation:
         
         modules[0]['elongation_curve'] = {'x': [elongation['endleaf'], elongation['endE']], 'y' : [0,El]}

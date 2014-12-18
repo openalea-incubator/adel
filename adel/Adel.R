@@ -96,7 +96,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,20),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs")))
+    kin <- array(NA,c(nx,nf[a]+3,22),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs","exposition","lifetime")))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
       kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen","Llvis")] <- 0
@@ -107,6 +107,9 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       kin[,i,"rph"] <- rph
       kin[,i,"rssi"] <- rssi
       kin[,i,"rhs"] <- hs - i
+      xtip <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$tip,i)
+      xssi <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$ssi,i)
+      kin[,i,"lifetime"] <- max(0,min(1, (x - xtip) / (xssi - xtip)))
      #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
@@ -140,6 +143,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       kin[,i,"Lh"] <- Lh
       # Llvis is forced to be compatible with tip-col rates, Hcol/Glvis will be adjusted
       kin[,i,"Llvis"] <-  max(0,min(dim$Ll[i],LGl + El - Lh))
+      if (dim$Ll[i] > 0)
+        kin[,i,"exposition"] <- kin[,i,"Llvis"] / dim$Ll[i]
       #senescence
       kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Ll"]
       kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Gl"]
@@ -488,6 +493,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         rph <- kin[[a]][t,,"rph"]
         rssi <- kin[[a]][t,,"rssi"]
         rhs <- kin[[a]][t,,"rhs"]
+        exposition <- kin[[a]][t,,"exposition"]
+        lifetime <-  kin[[a]][t,,"lifetime"]
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
@@ -517,7 +524,10 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Epos=Epos,
                                          rph=rph,
                                          rssi=rssi,
-                                         rhs=rhs),
+                                         rhs=rhs,
+                                         exposition=exposition,
+                                         lifetime=lifetime
+),
                               dat))
       }
     }

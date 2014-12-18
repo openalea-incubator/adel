@@ -258,7 +258,7 @@ def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
     
 def adjust_density(devT, density, TT_stop_del = 2.8 * 110, adjust_tiller = None):
     nplants = len(set(devT['axeT']['id_plt']))
-    tdeath = time_of_death(nplants, density) + TT_stop_del # for tillers, survival means that the axe id stopped at that time
+    tdeath = time_of_death(nplants, density)
     dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
     df = pandas.DataFrame(devT['axeT'])
     who = [df['id_plt'] == dead[i] for i in range(len(dead))]

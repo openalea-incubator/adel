@@ -74,7 +74,7 @@ class WheatTillering(object):
         self.a1_a2 = a1_a2
         self.delta_stop_del=delta_stop_del
         self.max_order = max_order
-        self.tiller_survival = tiller_survival
+        self.tiller_survival = tiller_survival #parameter used to simulate plant damages (fly, freeze...) that make tillers die earlier than expected with the tiller regression model
 
         
        
@@ -171,6 +171,12 @@ class WheatTillering(object):
     def hs_debreg(self):
         hs_bolting = self.nff - self.n_elongated_internode
         return hs_bolting + self.delta_reg
+        
+    def cohort_survival(self):
+        cohort_survival = None
+        if self.tiller_survival is not None:
+            cohort_survival = tools.calculate_decide_child_cohort_probabilities(self.tiller_survival)# tools function convert 'tiller name' kays into cohort index keys
+        return cohort_survival
     
     def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):
         """ Compute axis density = f (HS_mean_MS)
@@ -193,7 +199,7 @@ class WheatTillering(object):
         early_frac = 0
         when_lost = -1 #means never
         if self.tiller_survival is not None:
-            cohort_survival = tools.calculate_decide_child_cohort_probabilities(self.tiller_survival)# tools function convert 'tiller name' kays into cohort index keys
+            cohort_survival = self.cohort_survival()
             start_loss = {k:max(float(cohorts['delay'][cohorts['cohort'] == k]),v['HS'][0]) for k,v in cohort_survival.iteritems()}
             start_loss = {k:v for k,v in start_loss.iteritems() if v < hs_debreg}
             lost = cohorts['cohort'].isin(start_loss)

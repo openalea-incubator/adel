@@ -206,13 +206,16 @@ class GL_model(object):
         dpol = dpol.ix[dpol['GL'] >= 0,:]
         return pandas.concat([lin, dpol])
        
-def time_of_death(nplants, density_table):
+def time_of_death(nplants, density_table, relative_density  = False):
     """
     return n times of death for an effective of nplants that should suit density time course given in density_data
     density data is a TT, density pandas DataFrame
     """
     df = density_table.sort('TT')
-    card = df['density'] * 1. / df['density'].iloc[0] * nplants
+    if relative_density:
+        card = df['density'] * nplants
+    else:
+        card = df['density'] * 1. / df['density'].iloc[0] * nplants
     ndead = card.iloc[0] - round(min(card))
     tdeath = numpy.interp(range(int(card.iloc[0] - ndead), int(card.iloc[0])),card[::-1],df['TT'][::-1])
     return tdeath
@@ -255,7 +258,7 @@ def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
     
 def adjust_density(devT, density, TT_stop_del = 2.8 * 110, adjust_tiller = None):
     nplants = len(set(devT['axeT']['id_plt']))
-    tdeath = time_of_death(nplants, density)
+    tdeath = time_of_death(nplants, density) + TT_stop_del # for tillers, survival means that the axe id stopped at that time
     dead = random.sample(set(devT['axeT']['id_plt']),len(tdeath))
     df = pandas.DataFrame(devT['axeT'])
     who = [df['id_plt'] == dead[i] for i in range(len(dead))]
@@ -263,19 +266,17 @@ def adjust_density(devT, density, TT_stop_del = 2.8 * 110, adjust_tiller = None)
         
     return devT
     
-def adjust_tiller_survival(devT, survival, TT_stop_del = 2.8 * 110):
+def adjust_tiller_survival(devT, cohort_survival, TT_stop_del = 2.8 * 110):
     """
     Make (all) tillers of a living plant die along survival table
     """
     df = pandas.DataFrame(devT['axeT'])
-    living_p = numpy.array(devT['axeT']['id_plt'][(devT['axeT']['id_axis'] == 'MS') & (devT['axeT']['TT_stop_axis'] != 'NA')])
-    if living_p.size ==1:
-        living_p = [living_p.tolist()]
-    nplants = len(living_p)
-    tdeath = time_of_death(nplants, survival)
-    dead = random.sample(living_p, len(tdeath))
-    df = pandas.DataFrame(devT['axeT'])
-    who = [(df['id_plt'] == dead[i]) & (df['id_axis'] != 'MS') for i in range(len(dead))]
-    devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
+    df['iaxe'] = range(len(df))
+    for cohort in cohort_survival:
+        naxes = len(df[df['id_cohort'] == cohort])
+        tdeath = time_of_death(naxes, cohort_survival[cohort], relative_density=True)
+        dead = random.sample(df['iaxe'][df['id_cohort'] == cohort], len(tdeath))
+        who = [df['iaxe'] == dead[i] for i in range(len(dead))]
+        devT = kill_axis(devT, who, tdeath, TT_stop_del = TT_stop_del)
         
     return devT

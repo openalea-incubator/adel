@@ -167,7 +167,7 @@ canL2canS <- function(canL,sr_db,leaf_shrink=NULL) {
     print("canL2canS : can't compute Blade surfaces : SR data not connected to setAdel!!!")
   }
   else {
-    rg <- ifelse(is.na(canS$LcType) | canS$LcType == 0, 1,canS$LcType)#handle phytomers above nff (peduncle, ear, awn) for which Lindex = zero
+    rg <- ifelse(is.na(canS$LcType) | canS$LcType <= 0, 1,canS$LcType)#handle phytomers above nff (peduncle, ear, awn) for which Lindex = zero
     shapes <- sr_db
     Lref <- canS$L_shape
     Lwref <- canS$Lw_shape

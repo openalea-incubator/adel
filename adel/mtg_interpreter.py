@@ -139,10 +139,11 @@ class AdelVisitor():
                 turtle.rollR(p.azimuth)
             #print prev_axis, 'stop'
             #print 'new MS start'
-            turtle.context.update({'MS_top':turtle.getFrame(),'tiller_base':turtle.getFrame(),  'top':turtle.getFrame()})
+            turtle.context.update({'MS_top':turtle.getFrame(),'tiller_base':turtle.getFrame(),  'top':turtle.getFrame(), 'is_axis_first_StemElement':True})
             
         if axis != prev_axis:
             if metamer.edge_type() == '+':
+                turtle.context['is_axis_first_StemElement'] = True
                 if prev_axis == 'MS':
                     #this is the begining of the first tiller
                     #print axis, 'start'
@@ -171,12 +172,13 @@ class AdelVisitor():
             if inclin:
                 #print 'node', n._vid, 'inclin', inclin
                 # incline along curent azimuth for ramification (tiller bases) or plant base
-                if (axis != prev_axis and metamer.edge_type() == '+') or n.parent() is None:
+                if turtle.context['is_axis_first_StemElement']:
                     #print 'axis',axis, 'prev_axis', prev_axis,' node ', n._vid, 'edge', n.edge_type(),'up before inclin ', turtle.getUp(), 'inclin', inclin
                     if prev_axis != 'MS': #new tiller attached to the same position than the firt
                         turtle.rollR(azim)
                         turtle.context['tiller_base'] = turtle.getFrame()
                     turtle.down(inclin)
+                    turtle.context['is_axis_first_StemElement'] = False
                     #print 'up after inclin', turtle.getUp()
                 # if not incline towardss vertical
                 else:

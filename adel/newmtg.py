@@ -57,6 +57,7 @@ def internode_elements(l,lvis, lsen, az, inc, d, split = False):
         lgreen = lvis - min(lsen,lvis)
         lsen = lvis - lgreen
         #
+        Shide = numpy.pi * lhide * d
         Svis = numpy.pi * lvis * d
         Sgreen = numpy.pi * lgreen * d    
         Ssen = numpy.pi * lsen * d         
@@ -64,13 +65,15 @@ def internode_elements(l,lvis, lsen, az, inc, d, split = False):
         is_green  = lgreen >= lsen
     except TypeError:
         pass
+    
+    hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': Shide, 'is_green': True}
     if split :
-        green_elt = {'label': 'StemElementg', 'offset': lhide, 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
-        sen_elt = {'label': 'StemElements', 'offset': 0, 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
-        return [green_elt, sen_elt]
+        green_elt = {'label': 'StemElementg', 'length': lgreen, 'is_green': True, 'azimuth': az, 'inclination': inc}
+        sen_elt = {'label': 'StemElements', 'length': lsen, 'is_green': False, 'azimuth': 0, 'inclination': 0}
+        return [hidden_elt, green_elt, sen_elt]
     else : 
-        elt = {'label': 'StemElement', 'offset': lhide, 'length': lvis, 'area': Svis, 'green_length': lgreen, 'green_area': Sgreen, 'senesced_length' : lsen, 'senesced_area': Ssen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
-        return [elt]
+        elt = {'label': 'StemElement', 'length': lvis, 'area': Svis, 'green_length': lgreen, 'green_area': Sgreen, 'senesced_length' : lsen, 'senesced_area': Ssen, 'is_green': is_green, 'azimuth': az, 'inclination': inc}
+        return [hidden_elt, elt]
     
 def sheath_elements(l, lvis, lsen, az, inc, d, split = False):
     """ returns parameters of sheath elements (visible parts of the sheath).
@@ -110,6 +113,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, 
     # compute partitioning of visible length
     try:
         lhide = max(l - lvis, 0.)
+        S_hide = 0
+        if lhide > 0:
+            S_hide = leaves.blade_elt_area(shape_key, Lshape, Lwshape, (Lshape - l) / Lshape, (Lshape - lvis) / Lshape)
         lflat = lvis - min(lrolled,lvis)
         lrolled = lvis - lflat
         lgreen = lvis - min(lsen,lvis)
@@ -123,7 +129,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, 
 
     # hidden part + rolled : area are set to zero as leaf rolled area is already counted in leaf element 
     #hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': 0, 'green_length': lrolled, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
-    hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': 0, 'area': 0, 'green_length': 0, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
+    hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': S_hide, 'is_green': True}
     elements = [hidden_elt]
     #elements=[]
     ds = 0

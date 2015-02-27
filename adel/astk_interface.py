@@ -154,6 +154,7 @@ class AdelWheat(object):
         from openalea.plantgl.all import Viewer
         from openalea.mtg.plantframe.color import colormap
         
+        colors = None
         if property:
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')

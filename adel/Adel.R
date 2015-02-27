@@ -372,7 +372,7 @@ stemElements <- function(desc) {
 #
 # Compute inclinations of stem elements
 #
-axe_inclination <- function(dat, HS, ht, axename, incBase, dredT,epsillon=1e-6, start_incT=1, incT_rate=30) {
+axe_inclination <- function(dat, HS, ht, axename, incBase, dredT, start_incT=1, incT_rate=30,epsillon=1e-6) {
   nbphy <- nrow(dat)#inclus ear,ped et awn
       # Calcul des inclinaisons de tiges
       # 1er phyto = entrenoeud a incT

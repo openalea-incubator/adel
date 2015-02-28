@@ -242,52 +242,66 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
     split=kwargs.get('split', False)
     exposition = kwargs.get('exposition', 'NA')
     lifetime = kwargs.get('lifetime', 'NA')
+    mtype = kwargs.get('m_type','vegetative')
 
-    modules = [
-        {'label': 'internode',
-        'ntop': ntop,
-        'length': El,
-        'visible_length': Ev,
-        'senesced_length': Esen,
-        'diameter' : Ed,
-        'azimuth': Eaz,
-        'inclination' : Einc,
-        'elements' : internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}, 
-        {'label': 'sheath',
-        'ntop': ntop,
-        'length': Gl,
-        'visible_length': Gv,
-        'senesced_length': Gsen,
-        'diameter' : Gd,
-        'azimuth' : Gaz,   
-        'inclination' : Ginc,
-        'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc, Gd)}, 
-        {'label': 'blade',
-         'ntop': ntop,
-        'length': Ll,
-        'rolled_length': Lr,
-        'visible_length': Lv,
-        'senesced_length': Lsen,
-        'n_sect': Lsect,
-        'shape_mature_length': L_shape,
-        'shape_max_width' : Lw_shape,
-        'shape_key': shape_key,
-        'inclination' : Linc,
-        'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)} 
-    ]
+    if mtype!='vegetative':
+        modules = [            
+        {'label': mtype,
+            'ntop': ntop,
+            'length': El,
+            'visible_length': Ev,
+            'senesced_length': Esen,
+            'diameter' : Ed,
+            'azimuth': Eaz,
+            'inclination' : Einc,
+            'elements' : internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}
+        ]
+    else:
+        modules = [
+            {'label': 'internode',
+            'ntop': ntop,
+            'length': El,
+            'visible_length': Ev,
+            'senesced_length': Esen,
+            'diameter' : Ed,
+            'azimuth': Eaz,
+            'inclination' : Einc,
+            'elements' : internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}, 
+            {'label': 'sheath',
+            'ntop': ntop,
+            'length': Gl,
+            'visible_length': Gv,
+            'senesced_length': Gsen,
+            'diameter' : Gd,
+            'azimuth' : Gaz,   
+            'inclination' : Ginc,
+            'elements': sheath_elements(Gl, Gv, Gsen, Gaz, Ginc, Gd)}, 
+            {'label': 'blade',
+             'ntop': ntop,
+            'length': Ll,
+            'rolled_length': Lr,
+            'visible_length': Lv,
+            'senesced_length': Lsen,
+            'n_sect': Lsect,
+            'shape_mature_length': L_shape,
+            'shape_max_width' : Lw_shape,
+            'shape_key': shape_key,
+            'inclination' : Linc,
+            'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)} 
+        ]
 
-    try:
-        exposition = float(exposition)
-        lifetime = float(lifetime)
-        modules[2].update({'exposition':exposition, 'lifetime':lifetime})
-    except ValueError:
-        pass
-        
-    if elongation:
-        
-        modules[0]['elongation_curve'] = {'x': [elongation['endleaf'], elongation['endE']], 'y' : [0,El]}
-        modules[1]['elongation_curve'] = {'x': [elongation['endBlade'], elongation['endleaf']], 'y' : [0,Gl]}
-        modules[2]['elongation_curve'] = {'x': [elongation['startleaf'], elongation['endBlade']], 'y' : [0,Ll]}
+        try:
+            exposition = float(exposition)
+            lifetime = float(lifetime)
+            modules[2].update({'exposition':exposition, 'lifetime':lifetime})
+        except ValueError:
+            pass
+            
+        if elongation:
+            
+            modules[0]['elongation_curve'] = {'x': [elongation['endleaf'], elongation['endE']], 'y' : [0,El]}
+            modules[1]['elongation_curve'] = {'x': [elongation['endBlade'], elongation['endleaf']], 'y' : [0,Gl]}
+            modules[2]['elongation_curve'] = {'x': [elongation['startleaf'], elongation['endBlade']], 'y' : [0,Ll]}
     
     return modules
     

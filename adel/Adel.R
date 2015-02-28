@@ -495,6 +495,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         rhs <- kin[[a]][t,,"rhs"]
         exposition <- kin[[a]][t,,"exposition"]
         lifetime <-  kin[[a]][t,,"lifetime"]
+		mtype <- c(rep('vegetative',nbleaf),'peduncle','ear','awn')
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
@@ -526,7 +527,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          rssi=rssi,
                                          rhs=rhs,
                                          exposition=exposition,
-                                         lifetime=lifetime
+                                         lifetime=lifetime,
+	                                 m_type=mtype
 ),
                               dat))
       }

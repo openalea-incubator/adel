@@ -105,7 +105,7 @@ readCsv <- function(file,type=1) {
 #
 #geoAxe from parameter
 #
-genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT = 5,depMax = 7) {
+genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT = 5,depMax = 7,depMin = 1.5) {
   list(
        azT = function(a) {
          ifelse(a == 'MS',
@@ -121,7 +121,7 @@ genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT =
          #1.5 is an offset to avoid tiller superposed to mainstem
          ifelse(a == 'MS',
                 0,
-                1.5 + runif(1) * (depMax-1.5))
+                depMin + runif(1) * (depMax-depMin))
        }
        )
 }

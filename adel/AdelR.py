@@ -336,7 +336,7 @@ def genString(RcanopyT):
     chn = RgenString(RcanopyT)
     return chn[0]
 
-def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7):
+def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5):
     """ generate geoAxe R code for Adel """
     rcode = """
     geoAxe <- list(
@@ -354,11 +354,11 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7):
          #1.5 is an offset to avoid tiller superposed to mainstem
           ifelse(a == 'MS',
                  0,
-                 1.5 + runif(1) * ({depMax:.2f}-1.5))
+                 {depMin:.2f} + runif(1) * ({depMax:.2f}-{depMin:.2f}))
         }}
        )
        """
-    return rcode.format(azTM = azM, dazT = daz, incBmM = ibmM, dincBm = dibm, incT = incT, dincT = dinT, depMax = dep)
+    return rcode.format(azTM = azM, dazT = daz, incBmM = ibmM, dincBm = dibm, incT = incT, dincT = dinT, depMax = dep, depMin=depMin)
 
 def genGeoLeaf(nlim=4,dazt=60,dazb=10):
     """ generate geoLeaf function for Adel """

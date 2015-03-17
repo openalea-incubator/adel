@@ -716,7 +716,7 @@ def exposed_areas(g):
     what = ('length', 'area', 'green_length', 'green_area', 'senesced_length', 'senesced_area')
     for vid in g.vertices_iter(scale=g.max_scale()):
         n = g.node(vid)
-        if n.length > 0:
+        if n.length > 0 and not n.label.startswith('Hidden'):
             numphy = int(''.join(list(n.complex().complex().label)[7:]))
             nf = n.complex().complex().complex().nff
             node_data = {

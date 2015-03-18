@@ -132,12 +132,12 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
   if (!is.null(axil))
     for (i in seq(along=unique(axil$axe_id))) {
       ax <- axil[axil$axe_id == unique(axil$axe_id)[i],]
-      azaxil <- 0
-      if (i > 1)
-        azaxil = azaxil + 170
+      azaxil <- azm + ax$az_insertion[1]
+      #if (i > 1)
+      #  azaxil = azaxil + 170
       chn <- paste(chn,
                  "[",
-                 roll(azm),
+                 roll(azaxil),
                  "newAxe")
       nf <- ax$nff[1]
       for (n in ax$numphy[1:nf]) {

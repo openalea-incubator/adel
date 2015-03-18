@@ -336,14 +336,31 @@ def genString(RcanopyT):
     chn = RgenString(RcanopyT)
     return chn[0]
 
-def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5):
-    """ generate geoAxe R code for Adel """
+def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5,dazTb=60):
+    """ generate geoAxe R code for Adel 
+    
+        Parameters:
+            - azM is the azimuth leaf plane change between a tiller and the bearing axis
+            - daz is the random deviation arround azM (azM_true = azM +/- daz/2
+            - incBm is the main stem inclination
+            - dincBm is the random deviation arround incBm (incBm_true = incBm +/ dincBm/2
+            - incT is the tiller inclination
+            - dincT is the random deviation arround incT
+            - dredT is the maximal distance at which the tiller will go upward
+            - dredMin is the minimal distance at which tiller go upward
+            -dazTb is the azimuth deviation between tiller azimuth and the azimuth of the bearing leaf
+    """
     rcode = """
     geoAxe <- list(
     azT = function(a) {{
           ifelse(a == 'MS',
           runif(1) * 360,#plant azimuth
           {azTM:.2f} + (runif(1) - .5) * {dazT:.2f})
+       }},
+    azTb = function(a) {{
+         ifelse(a == 'MS',
+                0,
+                (runif(1) - .5) * {dazTb:.2f})
        }},
     incT = function(a) {{
        ifelse(a == 'MS',
@@ -358,7 +375,7 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5):
         }}
        )
        """
-    return rcode.format(azTM = azM, dazT = daz, incBmM = ibmM, dincBm = dibm, incT = incT, dincT = dinT, depMax = dep, depMin=depMin)
+    return rcode.format(azTM = azM, dazT = daz, incBmM = ibmM, dincBm = dibm, incT = incT, dincT = dinT, depMax = dep, depMin=depMin,dazTb=dazTb)
 
 def genGeoLeaf(nlim=4,dazt=60,dazb=10):
     """ generate geoLeaf function for Adel """

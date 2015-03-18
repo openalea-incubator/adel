@@ -122,6 +122,7 @@ class AdelVisitor():
         # 1. retrieve the node
         n = g.node(v)
         axis = n.complex_at_scale(scale=2).label
+        az_axis = n.complex_at_scale(scale=2).azimuth
         prev_axis = turtle.context.get("axis",axis)
         metamer = n.complex_at_scale(scale=3)
         
@@ -175,7 +176,7 @@ class AdelVisitor():
                 if turtle.context['is_axis_first_StemElement']:
                     #print 'axis',axis, 'prev_axis', prev_axis,' node ', n._vid, 'edge', n.edge_type(),'up before inclin ', turtle.getUp(), 'inclin', inclin
                     if prev_axis != 'MS': #new tiller attached to the same position than the firt
-                        turtle.rollR(azim)
+                        turtle.rollR(az_axis)
                         turtle.context['tiller_base'] = turtle.getFrame()
                     turtle.down(inclin)
                     turtle.context['is_axis_first_StemElement'] = False

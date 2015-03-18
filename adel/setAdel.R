@@ -172,6 +172,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
                            end = pT$end,
                            disp = pT$disp,
                            azT = sapply(pT$axe,geoAxe$azT),
+                           azTb = sapply(pT$axe,geoAxe$azTb),
                            incT = sapply(pT$axe,geoAxe$incT),
                            dredT = sapply(pT$axe,geoAxe$dredT),
                            hasEar = is.na(pT$end),

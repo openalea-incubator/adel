@@ -60,7 +60,7 @@ __editable__ = True
 __description__ = 'Utilities for generating parameters to simulation models from different types of data'
 __license__ = 'CECILL'
 __url__ = ''
-__alias__ = ['adel.parameterisation']
+#__alias__ = ['adel.parameterisation']
 __version__ = '0.0.1'
 __authors__ = 'C. Fournier, C. Pradal'
 __institutes__ = 'INRA, CIRAD, INRIA'
@@ -132,7 +132,8 @@ parameterisation_genGeoAxe = Factory(name='geoAxe',
                 {'interface': IFloat, 'name': 'tiller inclination', 'value': 60, 'desc': ''}, 
                 {'interface': IFloat, 'name': 'dincT', 'value': 5, 'desc': ''}, 
                 {'interface': IFloat, 'name': 'dredT', 'value': 7, 'desc': ''},
-                {'interface': IFloat, 'name': 'dredMin', 'value': 1.5, 'desc': ''}],
+                {'interface': IFloat, 'name': 'dredMin', 'value': 1.5, 'desc': ''},
+                {'interface': IFloat, 'name': 'dazTb', 'value': 60, 'desc': ''}],
                 outputs=[{'interface': None, 'name': 'Robj', 'desc': ''}],
                 widgetmodule=None,
                 widgetclass=None,

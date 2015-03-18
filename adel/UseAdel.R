@@ -105,12 +105,17 @@ readCsv <- function(file,type=1) {
 #
 #geoAxe from parameter
 #
-genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT = 5,depMax = 7,depMin = 1.5) {
+genGeoAxe <- function(azTM = 75,dazT = 5,incBmM = 2,dincBm = 2,incT = 60,dincT = 5,depMax = 7,depMin = 1.5,dazTb=60) {
   list(
        azT = function(a) {
          ifelse(a == 'MS',
                 runif(1) * 360,#plant azimuth
                 azTM + (runif(1) - .5) * dazT)
+       },
+       azTb = function(a) {
+         ifelse(a == 'MS',
+                0,
+                (runif(1) - .5) * dazTb)
        },
        incT = function(a) {
          ifelse(a == 'MS',

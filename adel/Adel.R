@@ -501,6 +501,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
                                          axe_id = rep(axename,nbphy),
                                          ms_insertion=rep(ms_pos(axename),nbphy),
+                                         az_insertion = rep(dataxe$azTb,nbphy),
                                          nff = dataxe$nf,
                                          HS_final= dataxe$HS_final,
                                          hasEar = dataxe$hasEar,

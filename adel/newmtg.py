@@ -395,10 +395,10 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
             if axis_dynamics:
                 timetable = axis_dynamics[str(plant)][str(axe)]
             if axe == 'MS':
-                vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'), hasEar=args.get('hasEar'))
+                vid_axe = g.add_component(vid_plant,edge_type='/',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'), hasEar=args.get('hasEar'), azimuth=args.get('az_insertion'))
                 vid_main_stem = vid_axe
             else:
-                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'), hasEar=args.get('hasEar'))
+                vid_axe = g.add_child(vid_main_stem, edge_type='+',label=label, timetable=timetable, HS_final=args.get('HS_final'), nff=args.get('nff'), hasEar=args.get('hasEar'), azimuth=args.get('az_insertion'))
 
         # Add metamer
         assert num_metamer > 0

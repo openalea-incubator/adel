@@ -1,5 +1,5 @@
 from curvature import curvilinear_abscisse
-
+import numpy as np
 
 class Interval(object):
     def __init__(self, min_, max_):
@@ -85,7 +85,7 @@ def stress_sr(s, r, d):
 def stress_xy(s, x, y, d):
     '''    
     '''
-    import numpy as np
+    #import numpy as np
     from scipy.stats._support import unique
 
     keys, intervals = sort_intervals(d)
@@ -129,7 +129,7 @@ def stress_xy(s, x, y, d):
 def stress_xysr(x, y, s, r, d):
     '''    
     '''
-    import numpy as np
+    #import numpy as np
     from scipy.stats._support import unique
 
     keys, intervals = sort_intervals(d)

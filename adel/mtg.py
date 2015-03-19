@@ -16,14 +16,15 @@ try:
 except:
     pass
 
-#from openalea.mtg.io import read_lsystem_string
+# from openalea.mtg.io import read_lsystem_string
 from openalea.mtg.algo import union
 
 import numpy
 try:
-    from openalea.plantgl.all import (Scene,Translation, Vector3, Geometry,
-                                AxisRotation, AxisRotated,  Transform4, BaseOrientation, 
-                                Shape, Material, Color3, PglTurtle, Mesh, Translated) 
+    from openalea.plantgl.all import (Scene, Translation, Vector3, Geometry,
+                                      AxisRotation, AxisRotated, Transform4,
+                                      BaseOrientation, Shape, Material, Color3,
+                                      PglTurtle, Mesh, Translated)
 except:
     Material = tuple
     Color3 = tuple
@@ -31,10 +32,10 @@ except:
 import random
 from math import pi
 
-#import read_lsystem string & deps from newmtg/io
+# import read_lsystem string & deps from newmtg/io
 try:
     from openalea.core.logger import get_logger, logging
-    
+
     logger = get_logger('openalea.mtg')
     _ch = logging.StreamHandler()
     logger.addHandler(_ch)
@@ -42,6 +43,7 @@ except:
     logger = None
 
 debug = 0
+
 
 def log(*args):
     if debug:
@@ -52,6 +54,7 @@ def log(*args):
 
 import re
 
+
 def get_expr(s, expr):
     res = re.search(expr, s)
     _str = ''
@@ -59,26 +62,32 @@ def get_expr(s, expr):
         _str = s[res.start():res.end()]
     return _str
 
+
 def get_label(s):
     name = r'[a-zA-Z0-9]+'
     return get_expr(s, name)
+
 
 def get_name(s):
     name = r'[a-zA-Z]+'
     return get_expr(s, name)
 
+
 def get_index(s):
     name = r'[0-9]+'
     return get_expr(s, name)
+
 
 def get_args(s):
     args = r'\([0-9,-\.\+]+\)'
     return get_expr(s, args)
 
+
 def get_float(s):
     args = r'[0-9-\+]+'
     num = get_expr(s, args)
     return float(num)
+
 
 def read_lsystem_string( string,
                          symbol_at_scale,
@@ -681,7 +690,8 @@ def topological_table_to_mtg(csv_file, epsilon=1e-6):
     edge_type = '<'
     for d in reader:
         plant, axe, num_metamer = [int(convert(d.get(x),undef=None)) for x in topology]
-        print 'adding vertices for plant: %d, axe:%d, metamer: %d'%(plant, axe, num_metamer)
+        
+        #print 'adding vertices for plant: %d, axe:%d, metamer: %d'%(plant, axe, num_metamer)
         # Add new plant
         if plant != prev_plant:
             label = 'plant'+str(plant)
@@ -1218,7 +1228,6 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
                 if n.edge_type()=='+':
                     angle = float(n.Laz) if n.Laz else 0.
                     turtle.rollL(angle)
-                    print 'Leaf angle ',angle
             else:
                 angle = float(n.Laz) if n.Laz else 0.
                 turtle.rollL(angle)
@@ -1229,16 +1238,12 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             #angle = n.inclination
             #angle = float(angle) if angle is not None else 0.
             turtle.up(angle)
-            if 'Leaf' not in n.label:
-                print 'Ramif ', angle
 
         # 2. Compute the geometric symbol
         mesh, can_label = compute_element(n, symbols, time)
         if mesh:
             n.geometry = transform(turtle, mesh)
             n.can_label = can_label
-        else:
-            print 'No mesh for vid ', n._vid
 
         # 3. Update the turtle
         turtle.setId(v)

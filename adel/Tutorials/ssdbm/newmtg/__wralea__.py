@@ -1,5 +1,5 @@
 
-# This file has been generated at Sat Mar 14 00:19:37 2015
+# This file has been generated at Tue Mar 17 09:57:44 2015
 
 from openalea.core import *
 
@@ -17,11 +17,10 @@ __institutes__ = 'INRIA'
 __icon__ = ''
 
 
-__all__ = ['algo_union']
+__all__ = ['openalea_mtg_algo_union',]
 
 
-
-algo_union = Factory(name='union',
+openalea_mtg_algo_union = Factory(name='union',
                 authors='C. Pradal, C. Fournier, S. Cohen-Boulakia (wralea authors)',
                 description='',
                 category='Unclassified',
@@ -32,4 +31,5 @@ algo_union = Factory(name='union',
                 widgetmodule=None,
                 widgetclass=None,
                )
+
 

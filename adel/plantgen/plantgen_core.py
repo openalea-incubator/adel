@@ -143,7 +143,7 @@ phenology_functions = PhenologyFunctions()
 def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                      dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                      dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
-                     number_of_ears, plants_density, ears_density, axeT_user=None, TT_regression_start_user=None, TT_t1_user=None):
+                     number_of_ears, plants_density, ears_density, axeT_user=None, TT_regression_start_user=None, TT_t1_user=None,echap_delay=False):
     '''
     Construct the structure of the plants.
     The following variables are calculated:
@@ -190,7 +190,7 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
     phenT_first = _create_phenT_first(phenT_tmp)
     
     # 4. create axeT
-    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
+    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user,echap_delay=echap_delay)
     
     # 5. create tilleringT
     tilleringT = _create_tilleringT(dynT_, phenT_first, axeT_.index.size, plants_number, 
@@ -341,7 +341,7 @@ class _CreateAxeT():
     def __init__(self):
         self.axeT_ = None
     
-    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None):
+    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None,echap_delay=False):
         if force or self.axeT_ is None:
             self.axeT_ = axeT_tmp.copy()
             TT_hs_flag_leaf = dynT_['TT_hs_N_phytomer_potential'][dynT_.first_valid_index()]
@@ -356,7 +356,10 @@ class _CreateAxeT():
              self.axeT_['TT_col_phytomer1'], 
              self.axeT_['TT_sen_phytomer1'],
              self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-            self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
+            if echap_delay:
+                self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start - delais_TT_stop_del_axis, TT_hs_flag_leaf - delais_TT_stop_del_axis)
+            else:
+                self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
@@ -1392,30 +1395,28 @@ def _create_phenT(phenT_abs, phenT_first):
     '''
     Create the :ref:`phenT <phenT>` dataframe.
     '''
-    if not (phenT_abs.count().max() == phenT_abs.count().min() == phenT_abs.index.size):
+    if not all(phenT_abs.notnull()):
         raise tools.InputError("phenT_abs contains NA values")
+        
+    #compute index_phytomer_max
+    nmax = phenT_abs.groupby('id_phen').max()
+    nmax = nmax.reset_index()
+    nmax = nmax.loc[:,['id_phen','index_phytomer']]
+    nmax = nmax.rename(columns={'index_phytomer':'index_phytomer_max'})
+    tmp_first = pd.merge(phenT_first,nmax)
     
+    #define TT_*_phytomer_1 and merge in tmp
+    tmp_first = tmp_first.drop('index_phytomer',1)
+    stades = ('app','col','sen','del')
+    tmp_first = tmp_first.rename(columns={'_'.join(('TT',k,'phytomer')):'_'.join(('TT',k,'phytomer','1')) for k in stades})
+    tmp = pd.merge(phenT_abs,tmp_first,on='id_phen')
+    
+    # build phenT_
     phenT_ = pd.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_app_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
     phenT_['id_phen'] = phenT_abs['id_phen']
-    tmp_series = pd.Series(phenT_.index)
-    for name, group in phenT_abs.groupby('id_phen'):
-        current_first_leaf_row = phenT_first[phenT_first['id_phen'] == name]
-        def normalize_index_phytomer(i):
-            return group['index_phytomer'][i] / float(group['index_phytomer'][group.index[-1]])
-        phenT_['index_rel_phytomer'][group.index] = tmp_series[group.index].map(normalize_index_phytomer)
-        def get_relative_TT_col_phytomer(i):
-            return group['TT_col_phytomer'][i] - current_first_leaf_row['TT_col_phytomer'][current_first_leaf_row.first_valid_index()]
-        phenT_['dTT_col_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_col_phytomer)
-        def get_relative_TT_app_phytomer(i):
-            return group['TT_app_phytomer'][i] - current_first_leaf_row['TT_app_phytomer'][current_first_leaf_row.first_valid_index()]
-        phenT_['dTT_app_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_app_phytomer)
-        def get_relative_TT_sen_phytomer(i):
-            return group['TT_sen_phytomer'][i] - current_first_leaf_row['TT_sen_phytomer'][current_first_leaf_row.first_valid_index()]
-        phenT_['dTT_sen_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_sen_phytomer)
-        def get_relative_TT_del_phytomer(i):
-            return group['TT_del_phytomer'][i] - current_first_leaf_row['TT_del_phytomer'][current_first_leaf_row.first_valid_index()]
-        phenT_['dTT_del_phytomer'][group.index] = tmp_series[group.index].map(get_relative_TT_del_phytomer)
-        
+    phenT_['index_rel_phytomer'] = 1. * tmp['index_phytomer']  / tmp['index_phytomer_max']
+    for w in stades:
+        phenT_['_'.join(('dTT',w,'phytomer'))] = tmp['_'.join(('TT',w,'phytomer'))] - tmp['_'.join(('TT',w,'phytomer','1'))]  
     return phenT_
 
 

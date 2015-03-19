@@ -42,7 +42,8 @@ def gen_adel_input_data(dynT_user,
                         inner_params={},
                         axeT_user=None,
                         TT_regression_start_user=None,
-                        TT_t1_user=None
+                        TT_t1_user=None,
+                        echap_delay = False
                         ):
     '''
     Create the dataframes which contain the plant data to be used as input for 
@@ -337,7 +338,7 @@ of the MS are documented by the user, then this will lead to an error."
                                                        dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                        dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
                                                        number_of_ears, plants_density, ears_density, axeT_user=axeT_user, TT_regression_start_user=TT_regression_start_user,
-                                                       TT_t1_user = TT_t1_user)
+                                                       TT_t1_user = TT_t1_user, echap_delay=echap_delay)
         
     #calculate organs dimensions
     dimT_, dimT_abs = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 

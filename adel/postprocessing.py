@@ -273,12 +273,13 @@ def phenology(adel_output_df):
         SSI = pd.Series(0.0, index=group.index)
         if indexes_of_all_non_null_Lsen.size != 0:
             nonzero_Slvsen_indexes = group.index[group.Slvsen.nonzero()]
-            last_nonzero_Slvsen_index = nonzero_Slvsen_indexes[-1]
-            for nonzero_Slvsen_index in nonzero_Slvsen_indexes:
-                n = group['numphy'][nonzero_Slvsen_index]
-                Slvsen_values = group['Slvsen'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
-                S_shape_values = group['S_shape'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
-                SSI[nonzero_Slvsen_index] = n + (Slvsen_values / S_shape_values).sum()
+            if nonzero_Slvsen_indexes.size > 0:
+                last_nonzero_Slvsen_index = nonzero_Slvsen_indexes[-1]
+                for nonzero_Slvsen_index in nonzero_Slvsen_indexes:
+                    n = group['numphy'][nonzero_Slvsen_index]
+                    Slvsen_values = group['Slvsen'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
+                    S_shape_values = group['S_shape'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
+                    SSI[nonzero_Slvsen_index] = n + (Slvsen_values / S_shape_values).sum()
                 
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
         HS_final = group['HS_final'][group.first_valid_index()]

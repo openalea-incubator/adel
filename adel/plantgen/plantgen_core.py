@@ -1222,20 +1222,19 @@ class _CreatePhenTTmp():
                 
                 HS_break = a_cohort * (TT_hs_break - TT_hs_0)
                 a2 = (N_phytomer_potential - HS_break) / (TT_hs_N_phytomer_potential - TT_hs_break)
-                
-                self.phenT_tmp['TT_col_phytomer'][phenT_tmp_group.index] = \
-                    phenT_tmp_group['TT_col_phytomer'] = \
+                self.phenT_tmp.loc[phenT_tmp_group.index, 'TT_col_phytomer']= \
+                    phenT_tmp_group.loc[:,'TT_col_phytomer'] = \
                         phenT_tmp_group['index_phytomer'].apply(_calculate_TT_col_phytomer, args=(HS_break, TT_hs_0, a_cohort, a2, TT_hs_break))
                 
                 first_leaf_indexes = phenT_tmp_group.index[0:2]
-                self.phenT_tmp['TT_app_phytomer'][first_leaf_indexes] = \
-                    phenT_tmp_group['TT_app_phytomer'][first_leaf_indexes] = \
+                self.phenT_tmp.loc[first_leaf_indexes,'TT_app_phytomer'] = \
+                    phenT_tmp_group.loc[first_leaf_indexes,'TT_app_phytomer'] = \
                         phenT_tmp_group['TT_col_phytomer'][first_leaf_indexes].apply(
                             _calculate_TT_app_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
                 
                 other_leaves_indexes = phenT_tmp_group.index - phenT_tmp_group.index[0:2]
-                self.phenT_tmp['TT_app_phytomer'][other_leaves_indexes] = \
-                    phenT_tmp_group['TT_app_phytomer'][other_leaves_indexes] = \
+                self.phenT_tmp.loc[other_leaves_indexes,'TT_app_phytomer'] = \
+                    phenT_tmp_group.loc[other_leaves_indexes,'TT_app_phytomer'] = \
                         phenT_tmp_group['TT_col_phytomer'][other_leaves_indexes].apply(
                             _calculate_TT_app_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
                      
@@ -1243,12 +1242,12 @@ class _CreatePhenTTmp():
                     dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
                 HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort, TT_hs_0, TT_hs_break, TT_hs_N_phytomer_potential, n0, n1, n2, t0, t1, a, c, a2)
                 
-                self.phenT_tmp['TT_sen_phytomer'][phenT_tmp_group.index] = \
-                    phenT_tmp_group['TT_sen_phytomer'] = \
+                self.phenT_tmp.loc[phenT_tmp_group.index,'TT_sen_phytomer'] = \
+                    phenT_tmp_group.loc[:,'TT_sen_phytomer'] = \
                         phenT_tmp_group['index_phytomer'].apply(_calculate_TT_sen_phytomer, args=(HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_hs_N_phytomer_potential, N_phytomer_potential))
                 
-                self.phenT_tmp['TT_del_phytomer'][phenT_tmp_group.index] = \
-                    phenT_tmp_group['TT_del_phytomer'] = \
+                self.phenT_tmp.loc[phenT_tmp_group.index,'TT_del_phytomer'] = \
+                    phenT_tmp_group.loc[:,'TT_del_phytomer'] = \
                         _calculate_TT_del_phytomer(a_cohort, phenT_tmp_group['TT_sen_phytomer'])
         return self.phenT_tmp
 

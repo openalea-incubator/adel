@@ -106,7 +106,7 @@ predictPed <- function(pheno,phyto,index,nf,earT) {
   
 #setAdel performs the dressing (geometry, tiller number ...) of plants from parameters and duplicate them for a given number of outputed plants
 #
-setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample='random',seed=NULL,xy_db=NULL,sr_db=NULL) {
+setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample='random',seed=NULL,xy_db=NULL,sr_db=NULL,ssipars=NULL) {
 
   #prise en chage nouveaux noms
   conv <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
@@ -141,8 +141,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     earT <- data.frame(index = 1,em_ear = 100, em_ped = 200, end_gf = 1000, l_ped = 0, d_ped = 0, l_ear = 0, Sp_ear = 0, l_ear_awn = 0)
   }
   
-  if (is.null(ssisenT))
-    ssisenT <- data.frame(ndel=1:4,rate1=0.07,dssit1=c(0,1.2,2.5,3),dssit2=c(1.2,2.5,3.7,4))
+  if (is.null(ssisenT)) 
+    if (is.null(ssipars))#otherwise, use ssipars
+      ssisenT <- data.frame(ndel=1:4,rate1=0.07,dssit1=c(0,1.2,2.5,3),dssit2=c(1.2,2.5,3.7,4))
  
   if (!"incB"%in%colnames(dimT)) 
     dimT <- cbind(dimT,incB = -999,dincB = 0)
@@ -239,8 +240,10 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     for (a in seq(nrow(pT))) 
       if (!is.na(pT$earIndex[a]))
         pedT[[a]] <- predictPed(phenoT[[a]],phytoT[,,a],pT$earIndex[a],pT$nf[a],earT)
-    
-    out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT)
+    if (!is.null(ssisenT))
+      out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssisenT=ssisenT)
+    else
+      out[[p]] <- list(refp=names(out)[p],axeT = axeTable,phytoT=phytoT,pheno=phenoT,pedT = pedT,ssipars=ssipars)
   }
   out
 }

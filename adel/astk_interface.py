@@ -42,7 +42,7 @@ def get_normal_dist(nb_plants=10, sigma=30.):
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None):
+    def __init__(self, nplants = 1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -66,7 +66,7 @@ class AdelWheat(object):
         
         self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
         
-        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb)
+        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
         self.leaves = leaves
         self.nsect = nsect
 

@@ -161,7 +161,7 @@ def setAdelArv(Rcalage,Rfunstr,np,sdlev = 20):
     p = RsetAdelArv(Rcalage,np,sdlev,RFun)
     return p
 
-def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, srdb = None,sample = 'random'):
+def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, srdb = None,sample = 'random', ssipars=None):
     """Creates a set of parameter for simulating np plants with adel from R inputs (see adeldoc.R)"""
     if seed is None:
         rseed = r('as.null()')
@@ -194,7 +194,12 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     geoAxe = robj.globalEnv['geoAxe']
     r(RcodegeoLeaf)
     geoLeaf = robj.globalEnv['geoLeaf']
-    p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,sample,rseed,rxydb,rsrdb)
+    
+    if ssipars is None:
+        ssipars = r('as.null()')
+    else:
+        ssipars = robj.r['list'](**ssipars)
+    p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,sample,rseed,rxydb,rsrdb,ssipars)
     return p
     
 def leaf_keys(lindex, lseed, db):

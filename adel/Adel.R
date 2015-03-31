@@ -37,22 +37,64 @@ openapprox <- function(x,y,xout,extrapolate=TRUE) {
   res
 }
 #
+#senescence pattern for leaf n on an axe bearing nf leaves
+#
+# 'old' adel model based on csv ssi2sen table
+rssi_patternT <- function(n,nf,ssisenT,hasEar=TRUE) {
+  ndelsen <- max(ssisenT$ndel)
+  pattern <- list(t=c(-1, 0),p=c(0,1))
+  if (hasEar & n > (nf - ndelsen)) {
+    idel <- n - (nf - ndelsen)
+    t0 <- -idel
+    t1 <- t0 + ssisenT$dssit1[idel]
+    t2 <-  min(t0 + ssisenT$dssit2[idel],nf - n)
+    if (nf < ndelsen) {
+      t0 <- -nf
+      t1 <- min(nf - n, max(t1,t0))#nf - n is complete senescence of last leaf
+      t2 <- min(nf - n, max(t2,t1))
+      }
+    p1 <- ssisenT$rate[idel] * (t1 - t0)
+    pattern <- list(t=c(t0,t1,t2),p=c(0,p1,1))
+  }
+  pattern
+}
+# new model based on r1 and ndel only
+#
+#ssi table
+ssi_table <- function(r1=.1, ndel=3) {
+  table <- matrix(0,ncol=ndel,nrow=ndel)
+  table[1,] <- c(rep(r1,ndel-1),1-(ndel-1)*r1)
+  for (i in 2:ndel) {
+    if ((ndel-i) >= 1)
+      table[i,1:(ndel-i)] <- r1
+    table[i,ndel-i+2] <- 1 - sum(table[1:(i-1),(ndel-i+2)])
+    table[i,ndel-i+1] <- 1 - sum(table[i,])
+  }
+  table
+}
+#
+rssi_pattern <- function(n,nf,hasEar=TRUE,pars=list(r1=0.07,ndelsen=3)) {
+  pattern <- list(t=c(-1, 0),p=c(0,1))
+  ndel <- min(pars$ndelsen,nf)
+  if (ndel > 1 & hasEar & (nf - n) < pars$ndel) {
+    table <- ssi_table(r1=pars$r1,ndel=ndel)
+    t <- ((nf - ndel):nf) - n
+    p <- cumsum(c(0,table[nf - n + 1,]))
+    pattern <- list(t=t,p=p)
+  }
+  pattern
+}
+#
 #proportion Senesced as a function of Relative ssi and number from top
 #TO DO add nf pour gerer pattern special si nf <4 & hasEar
-psen <- function(rssi, nt, ssisenT, nf, hasEar=TRUE) {
-  ndelsen <- max(ssisenT$ndel)
-  ssisenT <- ssisenT[order(ssisenT$ndel),]
-  t1delsen <- ssisenT$dssit1 - ssisenT$ndel
-  t2delsen <- ssisenT$dssit2 - ssisenT$ndel
-  senrate <- ssisenT$rate
-  psen <- ifelse(rssi<=(-1),0,ifelse(rssi >= 0,1,rssi + 1))
-  if (hasEar & nt < ndelsen) {
-    t0 <- max(nt-ndelsen, nt-nf)
-    t1 <- max(t1delsen[ndelsen-nt], t0)
-    t2 <- max(t2delsen[ndelsen-nt], t1)
-    psen <- openapprox(c(t0,t1,t2),c(0,senrate[ndelsen-nt]*(t1-t0),1),rssi,extrapolate=FALSE)
-  }
-  psen
+psen <- function(rssi, n, nf, hasEar=TRUE, pars = NULL) {
+  if ('ssisenT' %in% names(pars)) 
+    pat <- rssi_patternT(n, nf, pars$ssisenT,hasEar)
+  else if ('ssipars' %in% names(pars))
+    pat <- rssi_pattern(n,nf,hasEar,pars$ssipars)
+  else
+    pat <- rssi_pattern(n,nf,hasEar)
+  openapprox(pat$t, pat$p, rssi, extrapolate=FALSE)
 }
                  
 #
@@ -146,8 +188,8 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       if (dim$Ll[i] > 0)
         kin[,i,"exposition"] <- kin[,i,"Llvis"] / dim$Ll[i]
       #senescence
-      kin[,i,"Llsen"] <- psen(rssi,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Ll"]
-      kin[,i,"Glsen"] <- psen(rssi - 2,nf[a]-i, plant$ssisenT, nf[a], plant$axeT$hasEar[a]) * kin[,i,"Gl"]
+      kin[,i,"Llsen"] <- psen(rssi, i, nf[a], plant$axeT$hasEar[a], plant) * kin[,i,"Ll"]
+      kin[,i,"Glsen"] <- psen(rssi - 2, i, nf[a], plant$axeT$hasEar[a], plant) * kin[,i,"Gl"]
 
       ## disparition feuille
       kin[i <= disp,i,c("Ll","Llsen","Llvis","Lh")] <- 0

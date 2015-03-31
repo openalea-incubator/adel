@@ -93,9 +93,9 @@ for (i in seq(nF)) {
   leaves[,i] <- l
 }
 #
-hs <- apply(leaves,1,sum)
+hs <- apply(leaves,1,function(x) {ifelse(any(x>=1),sum(x[1:min(length(x),max(which(x>=1)) + 1)]),x[0])})
 plot(time / phyl,hs,xlab='phyllochronic time since emergence 1(adel)/HS_0', ylab='Leaf #',type='l',cex.lab=1.5)
 abline(1,1,lwd=2,col=4)
 abline(1-endLeaf,1,lwd=2,col=3)
-abline(-.5/1.6,1,lwd=2,col=2)
-legend(8,4,c('HS','Tips','Collars','HS_lin (Tips - 1.31)'),col=c(1,4,3,2),lty=1,lwd=c(1,2,2,2))
+abline(1 -endLeaf + 0.2,1,lwd=2,col=2)
+legend(8,4,c('HS','Tips','Collars','HS_lin (cols - 0.2)'),col=c(1,4,3,2),lty=1,lwd=c(1,2,2,2))

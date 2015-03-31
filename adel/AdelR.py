@@ -348,7 +348,7 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5,dazTb=6
             - dincT is the random deviation arround incT
             - dredT is the maximal distance at which the tiller will go upward
             - dredMin is the minimal distance at which tiller go upward
-            -dazTb is the azimuth deviation between tiller azimuth and the azimuth of the bearing leaf
+            - dazTb is the azimuth deviation between tiller azimuth and the azimuth of the bearing leaf
     """
     rcode = """
     geoAxe <- list(

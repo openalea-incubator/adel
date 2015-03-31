@@ -125,6 +125,7 @@ class PhenologyFunctions():
             dimT_tmp = _create_dimT_tmp(axeT_tmp)
             
             # 2. merge dynT_tmp and dynT_user
+            dynT_user=dynT_user.rename(columns={'TT_col_0':'TT_hs_0','TT_col_N_phytomer_potential':'TT_hs_N_phytomer_potential'})
             dynT_tmp_merged = _merge_dynT_tmp_and_dynT_user(dynT_tmp, dynT_user, dynT_user_completeness, TT_hs_break)
         
             # 3. merge dimT_tmp and dimT_user

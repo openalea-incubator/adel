@@ -1414,9 +1414,9 @@ def _create_phenT(phenT_abs, phenT_first):
     # build phenT_
     phenT_ = pd.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_app_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
     phenT_['id_phen'] = phenT_abs['id_phen']
-    phenT_['index_rel_phytomer'] = 1. * tmp['index_phytomer']  / tmp['index_phytomer_max']
+    phenT_['index_rel_phytomer'] = (1. * tmp['index_phytomer']  / tmp['index_phytomer_max']).tolist()#CF 2015: fill with values as tmp index may differ from phenT_ one
     for w in stades:
-        phenT_['_'.join(('dTT',w,'phytomer'))] = tmp['_'.join(('TT',w,'phytomer'))] - tmp['_'.join(('TT',w,'phytomer','1'))]  
+        phenT_['_'.join(('dTT',w,'phytomer'))] = (tmp['_'.join(('TT',w,'phytomer'))] - tmp['_'.join(('TT',w,'phytomer','1'))]).tolist()#CF 2015: idem  
     return phenT_
 
 

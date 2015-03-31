@@ -184,7 +184,7 @@ box {{ <{x1}, {y1},  -0.1>,
             if image_name.exists():
                 self.rendered_image_path = str(self.wdir / namebase + '.png')
             else:
-                raise PovRayError('Image not created. Check that povray is installed and set in the path.')
+                raise PovRayError('Image not created. Check that povray is installed and set in the path (path to the pvengine programm).')
         finally:        
             os.chdir(old_dir)
             

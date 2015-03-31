@@ -68,18 +68,22 @@ predictDim <- function(dimT,index,nf) {
 #
 predictPhen <- function(phenT,index,nf,datesf1) {
   if (!"disp"%in%colnames(phenT))
-    stop("Missing input for leaf desapearance in phenT (see docAdel.txt")
+    stop("setAdel: Missing input for leaf desapearance in phenT (see docAdel.txt")
   res <- NULL
   if (!index %in% phenT$index)
-    stop(paste("setAdel : phenIndex", index, "not found in phenTable"))
+    stop(paste("setAdel : phenIndex/id_phen", index, "not found in phenTable"))
   else {
     nout <- c(0,seq(nf))/nf
     phen <- phenT[phenT$index == index,]
+    if (length(na.omit(phen$nrel)) < 2)
+      stop(paste("setAdel : not enough data in phenTable for id_phen:",index))
     out <- vector("list",ncol(phenT) -2)
     names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
     names(datesf1) <- c("tip","col","ssi","disp")
     for (i in 1:4) {
       w <- names(out)[i]
+      if (length(na.omit(phen[,w])) < 2)
+        stop(paste("setAdel : not enough data in phenTable for id_phen:",index, 'column:', w))
       out[[w]] <- openapprox(phen$nrel,phen[,w],nout) + datesf1[[w]] 
     }
     res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
@@ -164,6 +168,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
   out <- vector("list",nplants)
   names(out) <- names(plantdb)[plnb]
   for (p in seq(out)) {
+    #print(p)
     #axeTable from axeT and geoAxe or dimT if azim/azdev in colums
     pT <- plantdb[[plnb[p]]]
     axeTable <- data.frame(axe = pT$axe,

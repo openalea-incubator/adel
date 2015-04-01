@@ -230,10 +230,7 @@ def phenology(adel_output_df):
  
     '''
     
-    phenology_df = pd.DataFrame(columns=['TT', 'plant', 'axe_id', 'NFF',
-                                         'HS', 'SSI', 'GreenLeaf', 'NFL',
-                                         'NFV', 'has_ear', 'd_base-lastcol', 
-                                         'HS_final'])
+    phenology_list = []
     
     for name, group in adel_output_df.groupby(['TT', 'plant', 'axe_id'], as_index=False):
         TT, plant, axe_id = name
@@ -270,41 +267,31 @@ def phenology(adel_output_df):
         Lsen_non_null_series = group['Lvsen'][indexes_of_vegetative_phytomers][indexes_of_all_non_null_Lsen]
         Lsen_equal_L_shape_series = Lsen_non_null_series[Lsen_non_null_series == L_shape[indexes_of_all_non_null_Lsen]]
         # SSI
-        SSI = pd.Series(0.0, index=group.index)
-        if indexes_of_all_non_null_Lsen.size != 0:
+        if indexes_of_all_non_null_Lsen.size == 0:
+            SSI = 0.0
+        else:
             nonzero_Slvsen_indexes = group.index[group.Slvsen.nonzero()]
-            if nonzero_Slvsen_indexes.size > 0:
-                last_nonzero_Slvsen_index = nonzero_Slvsen_indexes[-1]
-                for nonzero_Slvsen_index in nonzero_Slvsen_indexes:
-                    n = group['numphy'][nonzero_Slvsen_index]
-                    Slvsen_values = group['Slvsen'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
-                    S_shape_values = group['S_shape'].loc[nonzero_Slvsen_index:last_nonzero_Slvsen_index]
-                    SSI[nonzero_Slvsen_index] = n + (Slvsen_values / S_shape_values).sum()
-                
+            SSI = group['numphy'][nonzero_Slvsen_indexes[0]]
+            if len(nonzero_Slvsen_indexes) > 0:
+                nonzero_Slvsen_indexes_from_nplus1 = nonzero_Slvsen_indexes[1:]
+                Slvsen_values = group['Slvsen'].loc[nonzero_Slvsen_indexes_from_nplus1]
+                S_shape_values = group['S_shape'].loc[nonzero_Slvsen_indexes_from_nplus1]
+                SSI += (Slvsen_values / S_shape_values).sum()
+        
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
         HS_final = group['HS_final'][group.first_valid_index()]
         has_ear = int(group[group['HS_final'] >= group['nff']].any().any())
               
         GreenLeaf = HS - SSI
-       
-        new_phenology_df = pd.DataFrame(index=group.index, 
-                                        columns=phenology_df.columns)
         
-        new_phenology_df['TT'] = TT
-        new_phenology_df['plant'] = plant
-        new_phenology_df['axe_id'] = axe_id
-        new_phenology_df['NFF'] = NFF
-        new_phenology_df['HS'] = HS
-        new_phenology_df['SSI'] = SSI
-        new_phenology_df['GreenLeaf'] = GreenLeaf
-        new_phenology_df['NFL'] = NFL
-        new_phenology_df['NFV'] = NFV
-        new_phenology_df['has_ear'] = has_ear
-        new_phenology_df['d_base-lastcol'] = d_base_lastcol
-        new_phenology_df['HS_final'] = HS_final
-        
-        phenology_df = pd.concat([phenology_df, new_phenology_df], 
-                                 ignore_index=True)
+        phenology_list.append([TT, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,
+                              NFV, has_ear, d_base_lastcol, HS_final])
+    
+    phenology_df = pd.DataFrame(phenology_list, 
+                                columns=['TT', 'plant', 'axe_id', 'NFF',
+                                         'HS', 'SSI', 'GreenLeaf', 'NFL',
+                                         'NFV', 'has_ear', 'd_base-lastcol', 
+                                         'HS_final'])
     
     return phenology_df
                                                 

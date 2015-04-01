@@ -326,10 +326,8 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
     
     area_in_cm = domain_area * 1.0 / convUnit ** 2
 
-    axis_statistics_df = \
-        pd.DataFrame(columns=['ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
-                                  'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol', 'axes_cardinality', 
-                                  'growing_axes_cardinality', 'active_axes_cardinality', 'axis_order'])
+    axis_statistics_list = []
+    
     for (ThermalTime, axe_id, NFF, has_ear), group in intermediate_df.groupby(['TT', 'axe_id', 'NFF', 'has_ear'], as_index=False):
         HS = group['HS'].mean()
         SSI = group['SSI'].mean()
@@ -347,25 +345,26 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         # - any of its metamers is growing,
         # - XOR one of its phytomers is a ear (i.e. HS_final == NFF)
         growing_indexes = growing_axes_cardinality_df.index
-        not_growing_indexes = group.index - growing_indexes
+        not_growing_indexes = group.index.difference(growing_indexes)
         is_ear_indexes = not_growing_indexes.intersection(group[group['HS_final'] == group['NFF']].index)
-        active_axes_indexes = growing_indexes + is_ear_indexes
+        active_axes_indexes = growing_indexes.union(is_ear_indexes)
         active_axes_cardinality = len(active_axes_indexes)
         if axe_id == 'MS':
             axis_order = 0
         else:
             axis_order = axe_id.count('.') + 1
         
-        new_axis_statistics_data = [[ThermalTime, axe_id, NFF, HS, SSI, tot_LAI, 
+        axis_statistics_list.append([ThermalTime, axe_id, NFF, HS, SSI, tot_LAI, 
                                      green_LAI, tot_PAI, green_PAI, has_ear, 
                                      d_base_lastcol, axes_cardinality, 
                                      growing_axes_cardinality, 
-                                     active_axes_cardinality, axis_order]]
-        new_axis_statistics_df = pd.DataFrame(new_axis_statistics_data, 
-                                                  columns=axis_statistics_df.columns)
-        axis_statistics_df = pd.concat([axis_statistics_df, 
-                                            new_axis_statistics_df], 
-                                           ignore_index=True)
+                                     active_axes_cardinality, axis_order])
+        
+    axis_statistics_df = \
+        pd.DataFrame(axis_statistics_list,
+                     columns=['ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
+                                  'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol', 'axes_cardinality', 
+                                  'growing_axes_cardinality', 'active_axes_cardinality', 'axis_order'])
     
     return axis_statistics_df
     
@@ -390,10 +389,8 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
     :Returns Type:
         pandas.DataFrame
     '''
-    plot_statistics_df = \
-        pd.DataFrame(columns=['aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
-                              'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
-                              'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2.old', 'number_of_active_axes_per_m2'])
+    
+    plot_statistics_list = []
                                   
     for ThermalTime, group in axis_statistics_df.groupby('ThermalTime', as_index=False):
                                   
@@ -405,16 +402,16 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
         growing_axes_density = group['growing_axes_cardinality'].sum() / float(domain_area)
         active_axes_density = group['active_axes_cardinality'].sum() / float(domain_area)
                                       
-        new_plot_statistics_data = [[domain_area, plant_number, ThermalTime, 
+        plot_statistics_list.append([domain_area, plant_number, ThermalTime, 
                                      tot_LAI, green_LAI, tot_PAI, green_PAI, 
                                      axes_density, growing_axes_density, 
-                                     active_axes_density]]
-        new_plot_statistics_df = \
-        pd.DataFrame(new_plot_statistics_data, 
-                         columns=plot_statistics_df.columns)
-        plot_statistics_df = \
-            pd.concat([plot_statistics_df, new_plot_statistics_df], 
-                          ignore_index=True)
+                                     active_axes_density])
+        
+    plot_statistics_df = \
+        pd.DataFrame(plot_statistics_list, 
+                     columns=['aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
+                              'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
+                              'Nbr.axe.tot.m2', 'Nbr.axe.actif.m2.old', 'number_of_active_axes_per_m2'])
                           
     return plot_statistics_df
     

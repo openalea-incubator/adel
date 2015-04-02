@@ -222,7 +222,7 @@ def time_of_death(nplants, density_table, relative_density  = False):
 
 def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
     """
-    update devT tables by killing axis at pre-defined time
+    update devT tables by killing (deleting) axis at pre-defined time, hence stoping them growing at when - TT_stop_del
     who is a list of boolean mask for rows of devT:axeT table identifying the axis that should die
     when is a prralell list of time of death for axis dentified by who
     """

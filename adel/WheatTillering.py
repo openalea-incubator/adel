@@ -195,7 +195,7 @@ class WheatTillering(object):
         return cohort_survival
     
     def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):
-        """ Compute axis density = f (HS_mean_MS)
+        """ Compute axis density (growing + stopped but not deleted) = f (HS_mean_MS)
             Parameters:
                 - plant_density : plant per square meter
                 - hs_bolting : Force Haun Stage of mean_MS at bolting (facultative).If None, hs_bolting is estimated using the number of elongated internodes
@@ -239,9 +239,9 @@ class WheatTillering(object):
 
         
         def _density(x, delays, cardinalities, total, cumulative_loss):
-            if x < (when_lost + self.delta_stop_del):
+            if x < when_lost:#when_lost is time of deletion
                 d = cardinalities[delays <= x].sum()
-            elif x < (hs_debreg + self.delta_stop_del):
+            elif x < (hs_debreg + self.delta_stop_del):#hs_debreg is time of stop
                 d = cardinalities[delays <= x].sum() - early_frac * cardinalities.sum()
             else :
                 hs = min(x,hs_max + self.delta_stop_del)

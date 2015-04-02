@@ -144,7 +144,7 @@ phenology_functions = PhenologyFunctions()
 def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                      dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                      dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
-                     number_of_ears, plants_density, ears_density, axeT_user=None, TT_regression_start_user=None, TT_t1_user=None,echap_delay=False):
+                     number_of_ears, plants_density, ears_density, axeT_user=None, TT_regression_start_user=None, TT_t1_user=None):
     '''
     Construct the structure of the plants.
     The following variables are calculated:
@@ -191,7 +191,7 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
     phenT_first = _create_phenT_first(phenT_tmp)
     
     # 4. create axeT
-    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user,echap_delay=echap_delay)
+    axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
     
     # 5. create tilleringT
     tilleringT = _create_tilleringT(dynT_, phenT_first, axeT_.index.size, plants_number, 
@@ -342,7 +342,7 @@ class _CreateAxeT():
     def __init__(self):
         self.axeT_ = None
     
-    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None,echap_delay=False):
+    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None):
         if force or self.axeT_ is None:
             self.axeT_ = axeT_tmp.copy()
             TT_hs_flag_leaf = dynT_['TT_hs_N_phytomer_potential'][dynT_.first_valid_index()]
@@ -357,10 +357,7 @@ class _CreateAxeT():
              self.axeT_['TT_col_phytomer1'], 
              self.axeT_['TT_sen_phytomer1'],
              self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-            if echap_delay:
-                self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start - delais_TT_stop_del_axis, TT_hs_flag_leaf - delais_TT_stop_del_axis)
-            else:
-                self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
+            self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)

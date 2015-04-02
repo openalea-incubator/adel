@@ -17,5 +17,5 @@ ears_density = 491
 GL_number = {1732.1: 4.03631578947369, 1818.05:3.01047368421053,
              1959.55:1.90263157894737, 2108.65:0.0}
 delais_TT_stop_del_axis = 600
-TT_col_break = 0.0
+TT_hs_break = 0.0
 inner_params = {'DELAIS_REG_MONT': -40.0, 'TT_DEL_FHAUT': 3000}

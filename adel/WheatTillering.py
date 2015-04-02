@@ -28,26 +28,38 @@ import alinea.adel.plantgen_extensions as pgen_ext
 #index cohort delays with cohorts number (instead of primary_axis id of the same cohort) and add MS
 cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in params.LEAF_NUMBER_DELAY_MS_COHORT.iteritems()}
 cohort_delays[1] = 0
-# Express time-delta between tiller regression and bolting in phyllochronic units
-delta_reg = float(params.DELAIS_REG_MONT) / 110
+
 
 #
-# Add  defaults to handle 'less than MIN' datasets
+# Add  defaults to handle 'less than MIN' datasets / set some defaults differents from those of plantgen
 #
 # Defaults probabilities of appearance of tillers
 primary_tiller_probabilities = {'T0':0,'T1':0.95, 'T2':0.85, 'T3':0.75, 'T4':0.4, 'T5':0.2, 'T6':0.1}
 # relative probability  of emergence (ie actual to theoretical) of secondary tillers for the different cohorts (may be usfull for fitting?)
 #secondary_tiller_probabilities = {i:1.0 for i in range(11)}
-# number of elongated internodes (used in case hs_bolting is unknown, hs_bolting = hs_end - n_elongated_internode)
+# Express time-delta between tiller regression and bolting in phyllochronic units
+delta_reg = float(params.DELAIS_REG_MONT) / 110
+# number of elongated internodes (used to compute hs_regression_start with the same formula as pgen: hs_start_reg =  hs_bolting + delta_reg  & hsbolting = hs_end - n_elongated_internode
 n_elongated_internode = 4
 # mean number of ears per plant. This is better than ear density as it allows separate fitting of tillering and of and global scaling of axis per plant  with ear density
 ears_per_plant = 2.5
 # mean number of leaves on main stem
 nff = 12.0
+# delay between end of growth and disparition of an axe
+delta_stop_del = 2.
 
-# converter to pgen
-#
 
+def decimal_elongated_internode_number(internode_ranks, internode_lengths):
+    """ estimate the (decimal) number of elongated internode as determined in Plantgen from internode dimension of most frequent axis
+    """
+    df = pandas.DataFrame({'rank':internode_ranks, 'length':internode_lengths})
+    # keep only the non-zero lengths
+    df = df[df['length'] > 0]
+    # Fit a polynomial of degree 2 to, and get the coefficient of degree 0. 
+    n = df['rank'].max() - numpy.polyfit(df['length'].values, df['rank'].values, 2)[2]
+    return n
+
+  
 
 class WheatTillering(object):
     """Model of tiller population dynamics on wheat"""
@@ -55,11 +67,13 @@ class WheatTillering(object):
     def __init__(self, primary_tiller_probabilities = primary_tiller_probabilities,
                        ears_per_plant = ears_per_plant,
                        nff = nff,
-                       n_elongated_internode = n_elongated_internode,                   child_cohort_delay = params.FIRST_CHILD_DELAY,
+                       n_elongated_internode = n_elongated_internode,
+                       child_cohort_delay = params.FIRST_CHILD_DELAY,
                        #secondary_tiller_probabilities =secondary_tiller_probabilities,
                        cohort_delays = cohort_delays, #delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf 1
                        delta_reg = delta_reg,
-                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS, delta_stop_del = 600. / 110,
+                       a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS,
+                       delta_stop_del = delta_stop_del,
                        max_order = None,
                        tiller_survival=None):
         """ Instantiate model with default parameters """
@@ -146,25 +160,27 @@ class WheatTillering(object):
         plants = pgen_ext.plant_list(axis, nplants)
         return plants
         
-    def to_pgen(self, nplants=2, density = 250, force_start_reg = False):
+    def to_pgen(self, nplants=2, density = 250, phyllochron = 110, TTem=0, pgen_base ={}):
         plants = self.plant_list(nplants)
         axeT = pgen_ext.axeT_user(plants)
         mods = pgen_ext.modalities(self.nff)
         nff_plants = {k: axeT['id_plt'][(axeT['id_axis'] == 'MS') & (axeT['N_phytomer_potential'] == k)].values.astype(int).tolist() for k in mods}
         
-        pgen_base = {'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
+        base={}
+        base.update(pgen_base)# avoid altering pgen_base
+        base.update({'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
               'plants_density': density,
-              'ears_density' : density * self.ears_per_plant,
-              'TT_hs_break' : 0.0
-              }
-        if force_start_reg:
-            pgen_base.update({'hs_deb_reg': self.hs_debreg()})
+              'ears_density' : density * self.ears_per_plant, 
+              'delais_TT_stop_del_axis': self.delta_stop_del * phyllochron,
+              'TT_regression_start_user': TTem + self.hs_debreg() * phyllochron
+              })
+        
         pgen = {k:{'MS_leaves_number_probabilities': {str(k):1.0},
                    'axeT_user':axeT.ix[axeT['id_plt'].isin(v),:],
                    'plants_number':len(v)} for k,v in nff_plants.iteritems() if len(v) > 0}
         
         for k in pgen:
-            pgen[k].update(pgen_base)
+            pgen[k].update(base)
             
         return pgen
     

@@ -14,6 +14,14 @@ def regular(nb_plants, nb_rank, dx, dy):
     ny = nb_rank
     domain = ((0,0),(nx*dx, ny*dy))
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
+    
+def randomise_position(position, radius):
+    az = random() * 2 * np.pi
+    r = random() * radius
+    dx = r * cos(az)
+    dy = r * sin(az)
+    x,y,z = position
+    return (x + dx, y + dy, z)
 
 def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,center_scene = True):
     """ Returns the number of plants, the positions, the domain (scene units), the domain area (square meter) and the conversion coefficient for meter to scene unit (1/convunit) of a micro-plot specified with agronomical variables
@@ -22,7 +30,7 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     sowing density is the density of seeds sawn
     plant_density is the density of plants that are present (after loss due to bad emergence, early death...)
     inter_row (m) is for the  distance between rows
-    noise (%), indicates the precision of the sowing for the inter plant spacing
+    noise (m) is the radius of the circle where individual plant are randomly positionned
     convunit is the conversion factor from meter to scene unit
     center_scene allows to center the position arround origin. If False, the scene is in the x+,y+ sector, the origin being at the lower left corner of the domain
     
@@ -43,6 +51,9 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     # sorting by ranks
     positions = sorted(positions,key= itemgetter(1,0))
     domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
+    # add noise
+    if noise > 0:
+        positions = map(lambda x: randomise_position(x, noise), positions)
     if center_scene:
         xc = float(domain[1][0] + domain[0][0]) / 2
         yc = float(domain[1][1] + domain[0][1]) / 2

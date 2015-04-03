@@ -8,7 +8,7 @@ from alinea.adel.stand.stand import agronomicplot
 
 class AgronomicStand(object):
     
-    def __init__(self, sowing_density=10, plant_density=10, inter_row=0.8):
+    def __init__(self, sowing_density=10, plant_density=10, inter_row=0.8, noise=0):
         self.sowing_density = sowing_density
         self.inter_row = inter_row
         self.plant_density = plant_density
@@ -33,7 +33,7 @@ class AgronomicStand(object):
     def stand(self, nplants = 1, aspect='square'):
         
         length, width = self.plot_dimensions(nplants, aspect)
-        n_emerged, positions, domain, domain_area, convUnit = agronomicplot(length, width, self.sowing_density, self.plant_density, self.inter_row)
+        n_emerged, positions, domain, domain_area, convUnit = agronomicplot(length, width, self.sowing_density, self.plant_density, self.inter_row, noise=self.noise)
         
         return n_emerged, domain, positions, length * width
         

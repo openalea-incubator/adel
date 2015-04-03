@@ -13,6 +13,7 @@ class AgronomicStand(object):
         self.inter_row = inter_row
         self.plant_density = plant_density
         self.inter_plant = 1. / inter_row / sowing_density
+        self.noise = noise
         
     def plot_dimensions(self, nplants =1, aspect = 'square'):
     

@@ -64,6 +64,8 @@ class AdelWheat(object):
 
         geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
         
+        self.devT = devT
+        
         self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
         
         self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
@@ -105,7 +107,29 @@ class AdelWheat(object):
 
     def checkAxeDyn(self, dates, density=1):
         return checkAxeDyn(self.pars, dates, density)
+     
+    def check_nff(self):
+        """ Count the probability of occurence of MS with given nff
+        """
+        ms = numpy.array(self.devT['axeT']['id_axis']) == 'MS'
+        nffs = numpy.array(self.devT['axeT']['N_phytomer'])[ms]
+        counts = {n:nffs.tolist().count(n) for n in set(nffs)}
+        probas = {n:nffs.tolist().count(n) * 1.0 / len(nffs) for n in set(nffs)}
+        return counts, probas
         
+        
+    def check_primary_tillers(self):
+        """ Count/estimate probabilitie of occurence of primary tillers
+        """
+        import re 
+        axis = self.devT['axeT']['id_axis']
+        ms = [e for e in axis if re.match('MS',e)]
+        tillers = [e for e in axis if re.match('T.$',e)]
+        counts = {n:tillers.count(n) for n in set(tillers)}
+        probas = {n:tillers.count(n) * 1.0 / len(ms) for n in set(tillers)}
+        return counts, probas
+         
+     
     def axeT(self):
         return getAxeT(self.pars)
         

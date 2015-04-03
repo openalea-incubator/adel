@@ -1027,7 +1027,10 @@ def _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_ti
     # calculation of TT_hs_break
     most_frequent_tiller_axes['TT_hs_break'] = most_frequent_MS['TT_hs_break'][0]
     without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.dropna(subset=['TT_hs_0']).index
-    nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index.difference(without_nan_most_frequent_tiller_axis_indexes)
+    try:
+        nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index.difference(without_nan_most_frequent_tiller_axis_indexes)
+    except AttributeError:# backward compatibility with pandas < 0.16
+        nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index - without_nan_most_frequent_tiller_axis_indexes
     if len(nan_most_frequent_tiller_axis_indexes) == 0:
         return most_frequent_tiller_axes
     # calculation of TT_hs_0
@@ -1054,7 +1057,10 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
     '''
     most_frequent_tiller_axes = most_frequent_tiller_axes.copy()
     without_nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.dropna(subset=['n1']).index
-    nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index.difference(without_nan_most_frequent_tiller_axis_indexes)
+    try:
+        nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index.difference(without_nan_most_frequent_tiller_axis_indexes)
+    except AttributeError:# backward compatibility with pandas < 0.16 
+        nan_most_frequent_tiller_axis_indexes = most_frequent_tiller_axes.index - without_nan_most_frequent_tiller_axis_indexes
     # calculation of n1
     most_frequent_tiller_axes.loc[nan_most_frequent_tiller_axis_indexes, 'n1'] = most_frequent_MS['n1'][0]
     # calculation of t1
@@ -1096,7 +1102,10 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
     # calculation of TT_hs_break
     other_tiller_axes['TT_hs_break'] = most_frequent_MS['TT_hs_break'][0]    
     without_nan_other_tiller_axis_indexes = other_tiller_axes.dropna(subset=['TT_hs_0']).index
-    nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
+    try:
+        nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
+    except AttributeError:# backward compatibility with pandas < 0.16 
+        nan_other_tiller_axis_indexes = other_tiller_axes.index - without_nan_other_tiller_axis_indexes
     for name, group in other_tiller_axes.ix[nan_other_tiller_axis_indexes].groupby('id_axis'):
         most_frequent_tiller_axis_idx = most_frequent_tiller_axes[most_frequent_tiller_axes['id_axis'] == name].first_valid_index()
         # calculation of TT_hs_0
@@ -1125,7 +1134,10 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
     '''
     other_tiller_axes = other_tiller_axes.copy()
     without_nan_other_tiller_axis_indexes = other_tiller_axes.dropna(subset=['n1']).index
-    nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
+    try:
+        nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
+    except AttributeError:# backward compatibility with pandas < 0.16 
+        nan_other_tiller_axis_indexes = other_tiller_axes.index - without_nan_other_tiller_axis_indexes
     for name, group in other_tiller_axes.ix[nan_other_tiller_axis_indexes].groupby('id_axis'):
         most_frequent_tiller_axis_idx = most_frequent_tiller_axes[most_frequent_tiller_axes['id_axis'] == name].first_valid_index()
         # calculation ofn1
@@ -1228,8 +1240,10 @@ class _CreatePhenTTmp():
                     phenT_tmp_group.loc[first_leaf_indexes,'TT_app_phytomer'].values[:] = \
                         phenT_tmp_group['TT_col_phytomer'][first_leaf_indexes].apply(
                             _calculate_TT_app_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
-                
-                other_leaves_indexes = phenT_tmp_group.index.difference(phenT_tmp_group.index[0:2])
+                try:
+                    other_leaves_indexes = phenT_tmp_group.index.difference(phenT_tmp_group.index[0:2])
+                except AttributeError:# backward compatibility with pandas < 0.16 
+                    other_leaves_indexes = phenT_tmp_group.index - phenT_tmp_group.index[0:2]
                 self.phenT_tmp.loc[other_leaves_indexes,'TT_app_phytomer'] = \
                     phenT_tmp_group.loc[other_leaves_indexes,'TT_app_phytomer'].values[:] = \
                         phenT_tmp_group['TT_col_phytomer'][other_leaves_indexes].apply(

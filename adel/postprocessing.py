@@ -345,7 +345,10 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         # - any of its metamers is growing,
         # - XOR one of its phytomers is a ear (i.e. HS_final == NFF)
         growing_indexes = growing_axes_cardinality_df.index
-        not_growing_indexes = group.index.difference(growing_indexes)
+        try:
+            not_growing_indexes = group.index.difference(growing_indexes)
+        except AttributeError:# backward compatibility with pandas < 0.16 
+            not_growing_indexes = group.index - growing_indexes
         is_ear_indexes = not_growing_indexes.intersection(group[group['HS_final'] == group['NFF']].index)
         active_axes_indexes = growing_indexes.union(is_ear_indexes)
         active_axes_cardinality = len(active_axes_indexes)

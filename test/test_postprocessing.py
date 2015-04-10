@@ -12,12 +12,14 @@ INPUTS_DIRPATH = DATA_DIRPATH/'inputs'
 
 OUTPUTS_DIRPATH = DATA_DIRPATH/'outputs'
 
+ADEL_OUTPUT_FILENAME = 'adel_output.csv'
+
 RELATIVE_TOLERANCE = 10e-3
 ABSOLUTE_TOLERANCE = 10e-3
 
 
 def test_aggregate_adel_output():
-    adel_output_df = pd.read_csv(INPUTS_DIRPATH/'adel_output.csv')
+    adel_output_df = pd.read_csv(INPUTS_DIRPATH/ADEL_OUTPUT_FILENAME)
     adel_output_aggregated_df = pp.aggregate_adel_output(adel_output_df, by=['TT', 'plant', 'axe_id'])
     adel_output_aggregated_df.to_csv(OUTPUTS_DIRPATH/'actual_adel_aggregated_output.csv', index=False, na_rep='NA')
     desired_adel_output_aggregated_df = pd.read_csv(OUTPUTS_DIRPATH/'desired_adel_aggregated_output.csv')
@@ -27,7 +29,7 @@ def test_aggregate_adel_output():
 
 
 def test_phenology():
-    adel_output_df = pd.read_csv(INPUTS_DIRPATH/'adel_output.csv')
+    adel_output_df = pd.read_csv(INPUTS_DIRPATH/ADEL_OUTPUT_FILENAME)
     phenology_df = pp.phenology(adel_output_df)
     phenology_df.to_csv(OUTPUTS_DIRPATH/'actual_phenology.csv', index=False, na_rep='NA')
     desired_phenology_df = pd.read_csv(OUTPUTS_DIRPATH/'desired_phenology.csv')
@@ -37,21 +39,33 @@ def test_phenology():
  
  
 def test_axis_statistics():
-    adel_output_df = pd.read_csv(INPUTS_DIRPATH/'adel_output.csv')
-    axis_statistics_df = pp.axis_statistics(adel_output_df, domain_area=1)
+    adel_output_df = pd.read_csv(INPUTS_DIRPATH/ADEL_OUTPUT_FILENAME)
+    axis_statistics_df, intermediate_df = pp.axis_statistics(adel_output_df, domain_area=1)
     axis_statistics_df.to_csv(OUTPUTS_DIRPATH/'actual_axis_statistics.csv', index=False, na_rep='NA')
+    intermediate_df.to_csv(OUTPUTS_DIRPATH/'actual_intermediate.csv', index=False, na_rep='NA')
+    
     desired_axis_statistics_df = pd.read_csv(OUTPUTS_DIRPATH/'desired_axis_statistics.csv')
     axis_statistics_df = axis_statistics_df.select_dtypes(include=[np.number])
     desired_axis_statistics_df = desired_axis_statistics_df.select_dtypes(include=[np.number])
     np.testing.assert_allclose(axis_statistics_df.values, desired_axis_statistics_df.values, RELATIVE_TOLERANCE, ABSOLUTE_TOLERANCE)
+    
+    desired_intermediate_df = pd.read_csv(OUTPUTS_DIRPATH/'desired_intermediate.csv')
+    intermediate_df = intermediate_df.select_dtypes(include=[np.number])
+    desired_intermediate_df = desired_intermediate_df.select_dtypes(include=[np.number])
+    np.testing.assert_allclose(intermediate_df.values, desired_intermediate_df.values, RELATIVE_TOLERANCE, ABSOLUTE_TOLERANCE)
  
  
 def test_plot_statistics():
     axis_statistics_df = pd.read_csv(INPUTS_DIRPATH/'axis_statistics.csv')
-    plot_statistics_df = pp.plot_statistics(axis_statistics_df, plant_number=1, domain_area=1)
+    plot_statistics_df = pp.plot_statistics(axis_statistics_df, plant_number=9, domain_area=1)
     plot_statistics_df.to_csv(OUTPUTS_DIRPATH/'actual_plot_statistics.csv', index=False, na_rep='NA')
     desired_plot_statistics_df = pd.read_csv(OUTPUTS_DIRPATH/'desired_plot_statistics.csv')
     plot_statistics_df = plot_statistics_df.select_dtypes(include=[np.number])
     desired_plot_statistics_df = desired_plot_statistics_df.select_dtypes(include=[np.number])
     np.testing.assert_allclose(plot_statistics_df.values, desired_plot_statistics_df.values, RELATIVE_TOLERANCE, ABSOLUTE_TOLERANCE)
-
+    
+if __name__ == '__main__':
+    test_aggregate_adel_output()
+    test_phenology()
+    test_axis_statistics()
+    test_plot_statistics()

@@ -730,13 +730,7 @@ def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_abs):
                                                                     TT_app_phytomer_group)
             # ceiling
             dimT_abs.loc[indexes_to_ceil.intersection(dimT_abs_group.index), length] = MS_last_length
-            if dimT_abs_group['is_ear'][dimT_abs_group.first_valid_index()] == 0:
-                # regression
-                for i in range(len(params.REGRESSION_OF_DIMENSIONS[length])):
-                    current_phytomer_index = i-3
-                    if current_phytomer_index in dimT_abs_group.index:
-                        dimT_abs.loc[dimT_abs_group.index[current_phytomer_index], length] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[length][i])
-
+            
         # thresholding
         if length == 'L_internode':
             MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_lengths_rows_indexes[0]]
@@ -749,6 +743,7 @@ def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_abs):
     '''Fit the widths in-place.'''
     MS_rows_indexes = dimT_abs[dimT_abs['id_dim'] == MS_id_dim].index
     TT_app_phytomer_series = dimT_abs['TT_app_phytomer']
+    id_dim_to_reduction_mapping = dict([(id_dim, params.WIDTHS_REDUCTION_FACTORS[int(str(int(id_dim))[:-3])]) for id_dim in dimT_abs['id_dim'].unique()])
     for width in ['W_blade', 'W_sheath', 'W_internode']:
         current_width_series = dimT_abs[width]
         MS_width_series = current_width_series[MS_rows_indexes]
@@ -758,45 +753,55 @@ def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_abs):
         MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[0]]
         MS_last_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[-1]]
         
-        for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
-            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
-            if width == 'W_internode':
-                # get TT_app_phytomer of the main stem first phytomer which has a 
-                # TT_app_phytomer greater than the first main stem phytomer with 
-                # a non null width
-                valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer]
-                if len(valid_TT_app_phytomers) == 0:
-                    continue # The widths of these phytomers are thresholded to 0 later.
-                x1 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[0]]
-                # get TT_app_phytomer of the main stem last phytomer which has a 
-                # TT_app_phytomer lesser than the last main stem phytomer
-                valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group <= MS_last_non_null_TT_app_phytomer]
-                x2 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[-1]]
-            else:
-                x1 = TT_app_phytomer_group[TT_app_phytomer_group.first_valid_index()]
-                x2 = TT_app_phytomer_group[TT_app_phytomer_group.last_valid_index()]
-                
+        if width == 'W_blade':
+            x1 = MS_first_non_null_TT_app_phytomer
+            x2 = MS_last_non_null_TT_app_phytomer
             y1 = MS_first_non_null_width
             y2 = MS_last_non_null_width
-            polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
-            dimT_abs.loc[dimT_abs_group.index, width] = np.polyval(polynomial_coefficient_array, TT_app_phytomer_group)
-            if width == 'W_internode':
-                # ceiling of the width of the phytomers which have a TT_app_phytomer 
-                # greater than the TT_app_phytomer of the last main stem 
-                indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_app_phytomer].index
-                dimT_abs.loc[indexes_to_ceil.intersection(dimT_abs_group.index), width] = MS_last_non_null_width
+            blade_polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
             
-            if dimT_abs_group['is_ear'][dimT_abs_group.first_valid_index()] == 0:
-                # regression
-                for i in range(len(params.REGRESSION_OF_DIMENSIONS[width])):
-                    current_phytomer_index = i-3
-                    if current_phytomer_index in dimT_abs_group.index:
-                        dimT_abs[dimT_abs_group.index[current_phytomer_index], width] *= (1.0 - params.REGRESSION_OF_DIMENSIONS[width][i])
+        for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
+            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
+            if width == 'W_blade':
+                positive_TT_app_phytomers_indexes = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer].index
+                positive_TT_app_phytomers = TT_app_phytomer_group.loc[positive_TT_app_phytomers_indexes]
+                widths_array = np.polyval(blade_polynomial_coefficient_array, positive_TT_app_phytomers)
+                widths_array *= id_dim_to_reduction_mapping[id_dim]
+                dimT_abs.loc[positive_TT_app_phytomers_indexes, width] = widths_array
+            else:
+                if width == 'W_internode':
+                    # get TT_app_phytomer of the main stem first phytomer which has a 
+                    # TT_app_phytomer greater than the first main stem phytomer with 
+                    # a non null width
+                    valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer]
+                    if len(valid_TT_app_phytomers) == 0:
+                        continue # The widths of these phytomers are thresholded to 0 later.
+                    x1 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[0]]
+                    # get TT_app_phytomer of the main stem last phytomer which has a 
+                    # TT_app_phytomer lesser than the last main stem phytomer
+                    valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group <= MS_last_non_null_TT_app_phytomer]
+                    if len(valid_TT_app_phytomers) == 0:
+                        continue # The widths of these phytomers are thresholded to 0 later.
+                    x2 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[-1]]
+                else: # W_sheath
+                    x1 = TT_app_phytomer_group[TT_app_phytomer_group.first_valid_index()]
+                    x2 = TT_app_phytomer_group[TT_app_phytomer_group.last_valid_index()]
+                
+                y1 = MS_first_non_null_width
+                y2 = MS_last_non_null_width
+                polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
+                dimT_abs.loc[dimT_abs_group.index, width] = np.polyval(polynomial_coefficient_array, TT_app_phytomer_group)
+                if width == 'W_internode':
+                    # ceiling of the width of the phytomers which have a TT_app_phytomer 
+                    # greater than the TT_app_phytomer of the last main stem 
+                    indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_app_phytomer].index
+                    dimT_abs.loc[indexes_to_ceil.intersection(dimT_abs_group.index), width] = MS_last_non_null_width
+            
         
-        if width == 'W_internode':
+        if width in ('W_internode', 'W_blade'):
             # thresholding of the width of the phytomers which have a TT_app_phytomer 
             # lesser than the TT_app_phytomer of the first main stem which has a non null width
-            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series <= MS_first_non_null_TT_app_phytomer].index
+            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series < MS_first_non_null_TT_app_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
             dimT_abs.loc[indexes_to_threshold, width] = 0.0
             

@@ -8,7 +8,7 @@ from curve_discretizer import curve_discretizer
 def curvilinear_abscisse( x, y ):
     import numpy as np
     s = np.zeros(len(x))
-    s[1:] = np.sqrt(diff(x)**2+diff(y)**2)
+    s[1:] = np.sqrt(np.diff(x)**2+np.diff(y)**2)
     return s.cumsum()
 
 def curvature_xys(x,y,s):

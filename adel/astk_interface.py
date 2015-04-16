@@ -18,6 +18,8 @@ from alinea.astk.TimeControl import *
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
 
+    
+
 
 def get_normal_dist(nb_plants=10, sigma=30.):
     """ Calculate the "best possible" distribution of emergence dates for a given number of plants 
@@ -239,7 +241,34 @@ class AdelWheat(object):
         
         return g, TT
         
+    def get_midribs(self,g, resample = False):
+        
+        vids = [vid for vid in g.vertices(scale=g.max_scale() - 1) if g.label(vid).startswith('blade')]
+        visible_length = g.property('visible_length')
+        midribs = {vid:self.leaves.midrib(g.node(vid), resample=resample) for vid in vids if visible_length[vid] > 0}
+        #
+        anchor = g.property('anchor_point')
+        midribs_anchor = {vid:[anchor[cid] for cid in g.components(vid) if cid in anchor] for vid in midribs}
+        hins = {k:v[0][2] + midribs[k][2] for k,v in midribs_anchor.iteritems() if len(v) > 0}
 
+        metamer = {vid:g.complex(vid) for vid in midribs}
+        axe = {vid:g.complex(metamer[vid]) for vid in midribs}
+        plant = {vid:g.complex(axe[vid]) for vid in midribs}
+        ntop=g.property('ntop')
+        
+        res = [pandas.DataFrame({'vid':vid,
+                                 'ntop':ntop[vid],
+                                 'metamer':int(g.label(metamer[vid]).split('metamer')[1]),
+                                 'axe':g.label(axe[vid]),
+                                 'plant':int(g.label(plant[vid]).split('plant')[1]),
+                                  'x':midribs[vid][0],
+                                  'y':midribs[vid][1],
+                                  'hins':hins[vid]}) for vid in hins]#hins keys are for midribs keys wich also have a geometry (anchor point
+        
+        return pandas.concat(res)
+
+
+        
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
     model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)
     return model

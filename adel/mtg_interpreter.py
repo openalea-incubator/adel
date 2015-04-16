@@ -207,6 +207,7 @@ class AdelVisitor():
             mesh = compute_element(n, self.leaves, self.classic)
             if mesh:#To DO : reset to None if calculated so ?
                 n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
+                n.anchor_point = turtle.getPosition()
         # 3. Update the turtle and context
         turtle.setId(v)
         if n.label.startswith('Stem'):

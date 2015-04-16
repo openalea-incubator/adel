@@ -13,6 +13,12 @@ import alinea.adel.fitting as fitting
 import alinea.adel.data_samples as adel_data
 import alinea.adel.AdelR as adelR
 
+
+def curvilinear_abscisse( x, y ):
+    s = numpy.zeros(len(x))
+    s[1:] = numpy.sqrt(numpy.diff(x)**2+numpy.diff(y)**2)
+    return s.cumsum()
+
 # function for handling dynamical leaf shape databases    
 def incline_leaf(shape, inclin, relative_angle = True):
     """ transform a xysr tuple representing leaf shape to get a given angle at leaf base.
@@ -153,7 +159,7 @@ class Leaves(object):
         if leaf_mesh:
             pts, ind = leaf_mesh
             if len(ind) < 1:
-                raise  AdelError('ERROR less than 1 triangles')
+                #raise  AdelError('ERROR less than 1 triangles') # mesh4 filters triangle < 1e-6
                 mesh = None
             else:
                 mesh = fitting.plantgl_shape(pts, ind)
@@ -172,4 +178,30 @@ class Leaves(object):
         
         return {k:simps(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
         
+    def midrib(self, blade, resample=False):
+        """ Compute visible midrib x,y coordinates  and vertical distance to insertion point due to rollingfrom a blade node
+        """
+        x = y = dy = None
+        if blade.visible_length > 0.01:
+            if blade.shape_key is not None:
+                if self.dynamic:
+                    inclin = 1 # inclination is encoded in db
+                else:
+                    inclin = blade.inclination
+
+                shape = self.get_leaf(blade.shape_key)
+                shape = incline_leaf(shape, inclin)
+                
+                x,y,s,r = fitting.leaf_element(shape, blade.shape_mature_length, blade.visible_length, 0, 1, blade.shape_max_width)
+                
+                if resample:
+                    def _resample(xx,yy):
+                        ss = curvilinear_abscisse(xx,yy)
+                        snew = numpy.linspace(0,max(ss),20)
+                        return numpy.interp(snew,ss,xx), numpy.interp(snew,ss,yy)
+                    x,y = _resample(x,y)
+                    
+                dy = blade.rolled_length
+
+        return x, y, dy
 

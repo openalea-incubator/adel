@@ -42,7 +42,7 @@ def pgen_tables(pgen):
 def adelT_to_devT(pgen):
     """ Creates devT tables from plantgen dict
     """
-    devT = devCsv(*adelT)
+    devT = devCsv(*pgen['adelT'])
     return devT, 
 
 

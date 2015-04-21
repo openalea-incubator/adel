@@ -10,7 +10,7 @@ import os
 import numpy
 
 
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoAxe, checkAxeDyn, getAxeT, getPhenT, getPhytoT
+from alinea.adel.AdelR import setAdel,RunAdel,genGeoAxe, checkAxeDyn, getAxeT, getPhenT, getPhytoT, saveRData
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
@@ -59,7 +59,7 @@ class AdelWheat(object):
             
         if stand is None:
             stand = AgronomicStand(sowing_density = 250, plant_density=250, inter_row=0.15)
-            
+        self.stand=stand
             
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
@@ -107,7 +107,9 @@ class AdelWheat(object):
         g = mtg_interpreter(g, self.leaves, face_up = self.face_up, classic= self.classic)
         return g
 
-    def checkAxeDyn(self, dates, density=1):
+    def checkAxeDyn(self, dates=range(0,2000,100), density=None):
+        if density is None:
+            density=self.stand.plant_density
         return checkAxeDyn(self.pars, dates, density)
      
     def check_nff(self):
@@ -140,6 +142,9 @@ class AdelWheat(object):
         
     def phytoT(self, axe='MS'):
         return getPhytoT(self.pars, axe=axe)
+        
+    def save_pars(self):
+        saveRData(self.pars,'plants','adel_pars.RData')
         
     def grow(self, g, time_control):
     

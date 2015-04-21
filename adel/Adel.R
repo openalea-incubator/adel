@@ -589,16 +589,22 @@ checkAxeDyn <- function(dates,plants, density=1) {
   em <- unlist(sapply(plants,function(p) p$axeT$emf1))
   end <- unlist(sapply(plants,function(p) p$axeT$end))
   disp <- unlist(sapply(plants,function(p) p$axeT$disp))
+  em_p <- unlist(sapply(plants,function(p) p$axeT$emf1[p$axeT$axe=='MS']))
+  disp_p <- unlist(sapply(plants,function(p) p$axeT$disp[p$axeT$axe=='MS']))
   disp[is.na(disp)] <- max(dates) + 1
   end[is.na(end)] <- max(dates) + 1
+  disp_p[is.na(disp_p)] <- max(dates) + 1
   emited <- sapply(dates,function(d) length(em[em <=d]))
   stoped <- sapply(dates,function(d) length(end[end <=d]))
   disped <- sapply(dates,function(d) length(disp[disp <=d]))
+  emited_p <- sapply(dates,function(d) length(em_p[em_p<=d]))
+  disped_p <- sapply(dates,function(d) length(disp_p[disp_p<=d]))
   nbaxes <- emited
   nbaxes_growing <- emited - stoped
   nbaxes_present <- emited - disped
-  nbpl <- length(plants)
-  data.frame(TT=dates, nbaxes=nbaxes/nbpl*density, nbaxes_growing=nbaxes_growing/nbpl*density, nbaxes_present=nbaxes_present/nbpl*density)
+  nbpl <- emited_p - disped_p
+  nbpld <- length(plants)
+  data.frame(TT=dates, nbplants=nbpl/nbpld*density, nbaxes_emited=nbaxes/nbpld*density, nbaxes_growing=nbaxes_growing/nbpld*density, nbaxes_present=nbaxes_present/nbpld*density)
 }
 #
 getAxeT <- function(plants) do.call('rbind', mapply(function(idpl,pl) {df=pl$axeT;df$plant=idpl;df},seq(plants),plants,SIMPLIFY=FALSE))

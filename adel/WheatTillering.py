@@ -18,6 +18,7 @@
 """
 import pandas
 import numpy
+from scipy.interpolate import interp1d
 
 from alinea.adel.plantgen import params, tools
 import alinea.adel.plantgen_extensions as pgen_ext
@@ -194,6 +195,86 @@ class WheatTillering(object):
             cohort_survival = tools.calculate_decide_child_cohort_probabilities(self.tiller_survival)# tools function convert 'tiller name' kays into cohort index keys
         return cohort_survival
     
+    def emission_curves(self, plant_density=1, include_MS=True, delta = 30. / 110.):
+        """ return interpolation functions for axe emission as a function of haun stage
+        """
+        cohorts = self.emited_cohort_density(plant_density = plant_density)
+        
+        if not include_MS:
+            cohorts = cohorts.loc[cohorts['cohort'] > 1,:] 
+            
+        hs = reduce(lambda x,y:x+y,[[hs - delta / 2,hs + delta / 2] for hs in cohorts['delay']])
+        
+        curves = {}
+        for w in ('primary','other', 'total'):
+            card = cohorts[w + '_axis'].values
+            cum = card.cumsum()
+            em = reduce(lambda x,y:x+y,[[cum[i] - card[i],cum[i]] for i in range(len(card))])
+            curves[w] = interp1d([-delta] + hs + [20],[0] + em + [em[-1]])
+        return curves
+        
+    def regression_curves(self, plant_density=1, include_MS=True):
+        """ interpolation function for axe regression (number of axes lost) as a function of haun stage
+        """
+        # regression period for the disparition of axes
+        hs_debreg = self.hs_debreg() + self.delta_stop_del
+        hs_max = self.nff + self.delta_stop_del
+        
+        #regression rate
+        cohorts = self.emited_cohort_density(plant_density = plant_density)
+        dmax = cohorts['total_axis'].sum() #include MS as dmin includes MS ears
+        dmin = self.ears_per_plant * plant_density
+        regression_rate = (dmin - dmax) / (hs_max - hs_debreg)
+        
+        # compute t_disp: times at which a cohort has completly disapeared
+        # hypothesis : disparition of cohorts is sequential from last appeared to first 
+        # accumulated loss at hs = t_disp
+        reverse_cohorts = cohorts.sort_index(by=['delay'], ascending = False)
+        loss_acc = reverse_cohorts['total_axis'].cumsum()
+        t_disp = hs_debreg + loss_acc / abs(regression_rate)
+        #
+        t_d = t_disp[t_disp < hs_max]
+        n_d = loss_acc[t_disp < hs_max]
+        total_lost = dmax - dmin
+        # fraction of last cohort lost
+        last_frac = (total_lost - n_d.max()) / reverse_cohorts['total_axis'][t_disp >= hs_max].iloc[0]
+        
+        # compute curves
+        hs = [0, hs_debreg] +  t_d.tolist() + [hs_max,20]
+        curves = {}
+        if not include_MS:
+            reverse_cohorts = reverse_cohorts.loc[reverse_cohorts['cohort'] > 1,:]            
+        for w in ('primary','other', 'total'):
+            reverse_card = reverse_cohorts[w + '_axis']
+            loss_acc = reverse_card.cumsum()
+            n_d = loss_acc[t_disp < hs_max]
+            total_loss = n_d.max() + reverse_card[t_disp >= hs_max].iloc[0] * last_frac
+            loss = [0] * 2 + n_d.tolist() + [total_loss] * 2
+            curves[w] = interp1d(hs, loss)
+        return curves
+        
+    def survival_curves(self, plant_density=1, include_MS=True):
+        pass
+        
+    def new_axdyn(self, plant_density = 1, hs_bolting = None, include_MS = True):
+        
+        hs = numpy.arange(0,18,0.1)
+        emission = self.emission_curves(plant_density=plant_density, include_MS=include_MS)
+        regression = self.regression_curves(plant_density=plant_density, include_MS=include_MS)
+        primary = emission['primary'](hs) - regression['primary'](hs)
+        others = emission['other'](hs) - regression['other'](hs)
+        total = emission['total'](hs) - regression['total'](hs)
+
+        hs_debreg = self.hs_debreg()
+        max3F = numpy.interp(hs_debreg - 2, hs, total)
+        tt3F = total.copy()
+        tt3F[tt3F > max3F] = max3F
+        tt3F_em = numpy.interp(hs, hs + 2, tt3F)
+        tt3F[hs < hs_debreg + 2] = tt3F_em[hs < hs_debreg + 2]
+        
+        df = pandas.DataFrame({'HS':hs, 'primary':primary, 'others' : others, 'total': total, '3F':tt3F})
+
+        return df
     def axis_dynamics(self, plant_density = 1, hs_bolting = None, include_MS = True):
         """ Compute axis density (growing + stopped but not deleted) = f (HS_mean_MS)
             Parameters:
@@ -230,7 +311,7 @@ class WheatTillering(object):
             early_loss = total_lost * min(1,(hs_debreg - start) / (end - start))
             early_frac = early_loss / cohorts['total_axis'].sum()
             
-        #regression rate (all cohorts)
+        #regression rate (all cohorcohortsts)
         dmax = cohorts['total_axis'].sum() - early_loss
         regression_rate = (ear_density - dmax) / (hs_max - hs_debreg)
         # compute loss values that correspond to 100 percent loss for a cohort

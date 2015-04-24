@@ -76,7 +76,8 @@ class WheatTillering(object):
                        a1_a2 = params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS,
                        delta_stop_del = delta_stop_del,
                        max_order = None,
-                       tiller_survival=None):
+                       tiller_damages=None,
+                       hs_bolting=None):
         """ Instantiate model with default parameters """
         self.primary_tiller_probabilities = primary_tiller_probabilities
         self.ears_per_plant = ears_per_plant
@@ -89,8 +90,11 @@ class WheatTillering(object):
         self.a1_a2 = a1_a2
         self.delta_stop_del=delta_stop_del
         self.max_order = max_order
-        self.tiller_survival = tiller_survival #parameter used to simulate plant damages (fly, freeze...) that make tillers die earlier than expected with the tiller regression model
-
+        self.tiller_damages = tiller_damages #parameter used to simulate plant damages (fly, freeze...) that make tillers die earlier than expected with the tiller regression model
+        if hs_bolting is None:
+            self.hs_bolting = self.nff - self.n_elongated_internode
+        else:
+            self.hs_bolting = hs_bolting
         
        
     def theoretical_probabilities(self):
@@ -115,7 +119,7 @@ class WheatTillering(object):
         cohort_nff = [(cohort,tools.calculate_tiller_final_leaves_number(self.nff, cohort, self.a1_a2)) for cohort in cohort_probabilities]
         return dict(ms_nff + cohort_nff)   
         
-    def emited_cohort_density(self, plant_density = 1):
+    def emited_cohort_density(self, plant_density=1, include_MS=True):
         proba = self.theoretical_probabilities()
         nffs = self.final_leaf_numbers()
         data = zip(*[(k[0],k[1],v) for k,v in proba.iteritems()])
@@ -141,16 +145,23 @@ class WheatTillering(object):
             out['total_axis'] = out['primary_axis'] + out['other_axis']
             out['nff'] = nffs[cohort]
             return out
-        return grouped.apply(_fun)
+        cohorts = grouped.apply(_fun)
+        
+        # filter, if any, cohorts emited after regression start (not realy handled in pgen, as no model of regression is available for these tillers)
+        cohorts = cohorts[cohorts['delay'] <= self.hs_debreg()]
+        
+        #filter MS if needed
+        if not include_MS:
+            cohorts = cohorts.loc[cohorts['cohort'] > 1,:] 
+            
+        return cohorts
         
     def axis_list(self, nplants = 2):
         """ compute cardinalities of axis in a stand of n plants
         The strategy used here is based on deterministic rounding, and differs from the one used in plantgen (basd on random sampling). Difference are expected for small plants numbers
         """
         cohorts = self.emited_cohort_density()
-        # filter, if any, cohorts emited after regression start (not realy handled in pgen, as no model of regression is available for these tillers)
-        cohorts = cohorts[cohorts['delay'] <= self.hs_debreg()] 
-        
+  
         axis=pgen_ext.axis_list(cohorts, self.theoretical_probabilities(), nplants)
                     
         return axis
@@ -186,22 +197,52 @@ class WheatTillering(object):
         return pgen
     
     def hs_debreg(self):
-        hs_bolting = self.nff - self.n_elongated_internode
-        return hs_bolting + self.delta_reg
+        return self.hs_bolting + self.delta_reg
         
-    def cohort_survival(self):
+    def cohort_survival(self):# futur deprecated
         cohort_survival = None
         if self.tiller_survival is not None:
             cohort_survival = tools.calculate_decide_child_cohort_probabilities(self.tiller_survival)# tools function convert 'tiller name' kays into cohort index keys
         return cohort_survival
-    
+        
+    def cohort_damages(self, plant_density=1):#futur deprecated
+        damages = self.tiller_damages
+        if damages is not None:
+            when = damages['when']
+            f_damaged = tools.calculate_decide_child_cohort_probabilities(damages['damage'])# tools function convert 'tiller name' kays into cohort index keys
+            hs_deb, hs_end, reg_rate, reg_table = self.regression_parameters()
+            cohorts = self.emited_cohort_density(plant_density = plant_density)
+            cohorts = cohorts.merge(reg_table)
+            damages = cohorts[cohorts['cohort'].isin(f_damaged)]
+            damages['start_damages'] = numpy.maximum(damages['delay'],when[0])
+            damages['end_damages'] = numpy.maximum(damages['delay'],when[1])
+            damages = damages.merge(pandas.DataFrame({'cohort':f_damaged.keys(), 'f_damaged':f_damaged.values()}))
+            #filter tillers emited after end
+            damages = damages.loc[damages['end_damages'] > damages['start_damages'],:]
+        return damages
+        
+    def damage_table(self):
+        """ compute damage table for the differents cohorts
+        """
+        damages = self.tiller_damages
+        if damages is not None:
+            when_start,when_end = damages['when']
+            f_damaged = tools.calculate_decide_child_cohort_probabilities(damages['damage'])# tools function convert 'tiller name' kays into cohort index keys
+            damages = pandas.DataFrame({'cohort':f_damaged.keys(), 'f_damaged':f_damaged.values()})
+            # compute start/end for the different cohorts
+            delays = pandas.DataFrame({'cohort':self.cohort_delays.keys(), 'delay':self.cohort_delays.values()})
+            damages = damages.merge(delays)
+            damages['start_damages'] = numpy.maximum(damages['delay'],when_start)
+            damages['end_damages'] = numpy.maximum(damages['delay'], when_end)
+            #filter tillers emited after end
+            damages = damages.loc[damages['end_damages'] > damages['start_damages'],:]
+            damages = damages.drop('delay',axis=1)
+        return damages
+        
     def emission_curves(self, plant_density=1, include_MS=True, delta = 30. / 110.):
         """ return interpolation functions for axe emission as a function of haun stage
         """
-        cohorts = self.emited_cohort_density(plant_density = plant_density)
-        
-        if not include_MS:
-            cohorts = cohorts.loc[cohorts['cohort'] > 1,:] 
+        cohorts = self.emited_cohort_density(plant_density = plant_density, include_MS=include_MS)
             
         hs = reduce(lambda x,y:x+y,[[hs - delta / 2,hs + delta / 2] for hs in cohorts['delay']])
         
@@ -212,59 +253,165 @@ class WheatTillering(object):
             em = reduce(lambda x,y:x+y,[[cum[i] - card[i],cum[i]] for i in range(len(card))])
             curves[w] = interp1d([-delta] + hs + [20],[0] + em + [em[-1]])
         return curves
-        
-    def regression_curves(self, plant_density=1, include_MS=True):
-        """ interpolation function for axe regression (number of axes lost) as a function of haun stage
+     
+    def regression_table(self):
+        """ compute regression table for the differents cohorts
         """
+        
         # regression period for the disparition of axes
-        hs_debreg = self.hs_debreg() + self.delta_stop_del
-        hs_max = self.nff + self.delta_stop_del
+        hs_deb = self.hs_debreg() + self.delta_stop_del
+        hs_end = self.nff + self.delta_stop_del
         
         #regression rate
-        cohorts = self.emited_cohort_density(plant_density = plant_density)
-        dmax = cohorts['total_axis'].sum() #include MS as dmin includes MS ears
-        dmin = self.ears_per_plant * plant_density
-        regression_rate = (dmin - dmax) / (hs_max - hs_debreg)
+        cohorts = self.emited_cohort_density(plant_density=1, include_MS = True)
+        d_deb = cohorts['total_axis'].sum()
+        d_end = self.ears_per_plant
+        regression_rate = (d_end - d_deb) / (hs_end - hs_deb)
         
-        # compute t_disp: times at which a cohort has completly disapeared
-        # hypothesis : disparition of cohorts is sequential from last appeared to first 
-        # accumulated loss at hs = t_disp
+        # regression parameters per cohort
+        # time of disparition of cohorts in case of complete regression
+        # hypothesis : disparition of cohorts is sequential from last appeared to first
         reverse_cohorts = cohorts.sort_index(by=['delay'], ascending = False)
-        loss_acc = reverse_cohorts['total_axis'].cumsum()
-        t_disp = hs_debreg + loss_acc / abs(regression_rate)
+        loss_acc = reverse_cohorts['total_axis'].cumsum().values
+        t_disp = hs_deb + loss_acc / abs(regression_rate)
+        #actual fraction lost at t_disp
+        f_disp = t_disp.copy()
+        f_disp[t_disp < hs_end] = 1
+        f_disp[t_disp >= hs_end] = 0
+        #compute last fraction
+        card = reverse_cohorts['total_axis'].values
+        last = min(numpy.where(t_disp >= hs_end)[0])
+        last_loss = (d_deb - d_end) - sum(card * f_disp) #total_lost - loss by completly disapeared cohorts
+        f_disp[last] = last_loss / card[last]
         #
-        t_d = t_disp[t_disp < hs_max]
-        n_d = loss_acc[t_disp < hs_max]
-        total_lost = dmax - dmin
-        # fraction of last cohort lost
-        last_frac = (total_lost - n_d.max()) / reverse_cohorts['total_axis'][t_disp >= hs_max].iloc[0]
+        t_disp = numpy.minimum(t_disp, hs_end)
+        reg_table = pandas.DataFrame({'cohort':reverse_cohorts['cohort'].values,
+                                      't_disp': t_disp,
+                                      'f_disp': f_disp,
+                                      't_start':[hs_deb] + t_disp.tolist()[:-1]})
         
-        # compute curves
-        hs = [0, hs_debreg] +  t_d.tolist() + [hs_max,20]
-        curves = {}
-        if not include_MS:
-            reverse_cohorts = reverse_cohorts.loc[reverse_cohorts['cohort'] > 1,:]            
+        return reg_table[reg_table['f_disp'] > 0]
+               
+     # ici to do: calculer damage table et en tenir compte pour mettre a jour la table de regresssion (en transferant des quantite), puis enchainer sur curve   
+    def regression_curves(self, plant_density=1):
+        """ interpolation function for natural axe regression (number of axes lost) as a function of haun stage
+        """
+        reg_table = self.regression_table()
+        cohorts = self.emited_cohort_density(plant_density = plant_density)
+        regressing_cohorts = reg_table.merge(cohorts)
+        #
+        # compensate for damages occuring before resgression starts (damages shoud not influence fitted final axe density nor final ear number)
+        damages = self.damage_table()
+        if damages is not None:
+            # compute fraction to be compensated (ie occuring before regression starts)
+            deb = min(regressing_cohorts['t_start'])
+            early_frac =  1. * (deb - damages['start_damages']) / (damages['end_damages'] - damages['start_damages'])
+            early_frac = 1 #all should be compensated for preserving axe density after regression
+            damages['f_comp'] = damages['f_damaged'] * numpy.maximum(0,numpy.minimum(1, early_frac))
+            # for damaged regressing cohort, reduce f_disp to compensate for part/all of f_comp
+            regressing_cohorts = regressing_cohorts.set_index('cohort')
+            damages = damages.set_index('cohort')
+            cohorts = cohorts.set_index('cohort')
+            for c in damages.index:
+                if c in regressing_cohorts.index:
+                    comp = min(damages['f_comp'][c], regressing_cohorts['f_disp'][c])
+                    regressing_cohorts['f_disp'][c] = regressing_cohorts['f_disp'][c] - comp
+                    damages['f_comp'][c] = damages['f_comp'][c] - comp
+            # remaining compensation obtained by reducing f_disp of regressing cohorts, older first
+            if sum(damages['f_comp']) > 1e-6:
+                damages = damages[damages['f_comp'] > 0]
+                regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = True) 
+                for c in damages.index:
+                    f_d = damages['f_comp'][c]
+                    for c_r in regressing_cohorts.index:
+                        f_r = f_d * 1. * cohorts['total_axis'][c] / cohorts['total_axis'][c_r]
+                        comp = min(f_r, regressing_cohorts['f_disp'][c_r])
+                        regressing_cohorts['f_disp'][c_r] = regressing_cohorts['f_disp'][c_r] - comp
+                        comp_d = comp * 1. * cohorts['total_axis'][c_r] / cohorts['total_axis'][c]
+                        f_d = f_d - comp_d
+                        if f_d < 1e-6:
+                            break
+                        
+        #curve
+        regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = False)           
+        hs = [0, regressing_cohorts['t_start'].tolist()[0]] +  regressing_cohorts['t_disp'].tolist() + [20]
+        curves = {}            
         for w in ('primary','other', 'total'):
-            reverse_card = reverse_cohorts[w + '_axis']
-            loss_acc = reverse_card.cumsum()
-            n_d = loss_acc[t_disp < hs_max]
-            total_loss = n_d.max() + reverse_card[t_disp >= hs_max].iloc[0] * last_frac
-            loss = [0] * 2 + n_d.tolist() + [total_loss] * 2
+            card = regressing_cohorts[w + '_axis'] * regressing_cohorts['f_disp']
+            n_d = card.cumsum()
+            loss = [0] * 2 + card.cumsum().tolist() + [card.sum()]
             curves[w] = interp1d(hs, loss)
         return curves
         
-    def survival_curves(self, plant_density=1, include_MS=True):
-        pass
+    # ici, to do : calculer damage table et en deduire courbe, a priori juste when a ajuster    
+    def damage_curves(self, plant_density=1):
+        """ interpolation function for damages to tilers (number of axes lost) as a function of haun stage
+            As damages may influence regression curve, an anti-regression curve is also return, so that is total loss = regression + damage - anti_regression
+        """
+        #default curves for zero damages
+        hs = [0,20]
+        damages = [0,0]
+        no_damage = interp1d(hs, damages)       
+        curves = {}
+        #anti_curves = {}
+        for w in ('primary','other', 'total'):
+            curves[w] = no_damage
+            #anti_curves[w] = no_damage
+        
+        damages = self.damage_table()
+        if damages is not None:
+            cohorts = self.emited_cohort_density(plant_density = plant_density)
+            damages = damages.merge(cohorts)
+            damages = damages.set_index('cohort')
+            for w in ('primary','other', 'total'):
+                # compute curves for each cohort individualy
+                cfits = {}
+                for c in damages.index:
+                    d = damages.loc[c,:]
+                    card = d[w + '_axis']
+                    hs = [0,d['start_damages'], d['end_damages'],20]
+                    loss = [0] * 2 + [d['f_damaged'] * card] * 2
+                    cfits[c] = {'hs':hs,'loss':loss}
+                #merge cohorts
+                hs = [0] + numpy.unique(damages.ix[:,('start_damages','end_damages')].values).tolist() + [20]
+                loss = numpy.array([0] * len(hs))
+                for c in cfits:
+                    loss = loss + numpy.interp(hs,cfits[c]['hs'],cfits[c]['loss'])
+                curves[w] = interp1d(hs, loss)
+                #compute compensation
+                # cfits = {}
+                # for c in damages.index:
+                    # d = damages.loc[c,:]
+                    # card = d[w + '_axis']
+                    # if d['f_disp'] <= 0 or d['start_damages'] >= d['t_disp']: # no compensation needed
+                        # hs = [0,20]
+                        # loss = [0,0]
+                    # else: #compensation up to ammount lost by damages
+                        # f_rec = min((d['f_damaged'],d['f_disp']))
+                        # t_disp = d['t_start'] + d['f_disp'] * (d['t_disp'] - d['t_start'])
+                        # t_end = d['t_start'] + f_rec * 1. /  d['f_disp'] * (t_disp - d['t_start'])
+                        # hs = [0, d['t_start'], t_end, 20]
+                        # loss = [0] * 2 + [f_rec * card] * 2
+                    # cfits[c] = {'hs':hs,'loss':loss}
+                # hs = [0] + numpy.unique(damages.ix[:,('start_damages','end_damages', 't_start','t_disp')].values).tolist() + [20]
+                # loss = numpy.array([0] * len(hs))
+                # for c in cfits:
+                    # loss = loss + numpy.interp(hs,cfits[c]['hs'],cfits[c]['loss'])
+                # anti_curves[w] = interp1d(hs, loss)                    
+               
+        return curves
         
     def new_axdyn(self, plant_density = 1, hs_bolting = None, include_MS = True):
         
         hs = numpy.arange(0,18,0.1)
         emission = self.emission_curves(plant_density=plant_density, include_MS=include_MS)
-        regression = self.regression_curves(plant_density=plant_density, include_MS=include_MS)
-        primary = emission['primary'](hs) - regression['primary'](hs)
-        others = emission['other'](hs) - regression['other'](hs)
-        total = emission['total'](hs) - regression['total'](hs)
+        regression = self.regression_curves(plant_density=plant_density)
+        damages= self.damage_curves(plant_density=plant_density)
+        primary = emission['primary'](hs) - regression['primary'](hs) - damages['primary'](hs)
+        others = emission['other'](hs) - regression['other'](hs) - damages['other'](hs)
+        total = emission['total'](hs) - regression['total'](hs) - damages['total'](hs)
 
+        #approx nt3F : max = nb axe > 2phyllo at start of regression (stop of dvpt)
         hs_debreg = self.hs_debreg()
         max3F = numpy.interp(hs_debreg - 2, hs, total)
         tt3F = total.copy()
@@ -288,9 +435,6 @@ class WheatTillering(object):
         cohorts = self.emited_cohort_density(plant_density = plant_density)
         ear_density = self.ears_per_plant * plant_density
                 
-        # filter, if any, cohorts emited after regression start
-        cohorts = cohorts[cohorts['delay'] <= hs_debreg]
-        
         # early loss (if any) occuring before debreg
         early_loss = 0
         early_frac = 0

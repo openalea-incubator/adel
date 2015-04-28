@@ -211,7 +211,7 @@ of the MS are documented by the user, then this will lead to an error."
     if 'N_phytomer_potential' in dynT_user.columns:
         dynT_user_completeness = plantgen_core.DataCompleteness.FULL
         expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
-        if dynT_user.columns.tolist() != expected_dynT_user_columns:
+        if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
         if len(grouped.groups) != dynT_user.index.size:
@@ -234,7 +234,7 @@ of the MS are documented by the user, then this will lead to an error."
     elif dynT_user.count().max() == dynT_user.count().min() == dynT_user.index.size:
         dynT_user_completeness = plantgen_core.DataCompleteness.SHORT
         expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
-        if dynT_user.columns.tolist() != expected_dynT_user_columns:
+        if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
             raise tools.InputError("dynT_user contains duplicated id_axis")
@@ -249,7 +249,7 @@ of the MS are documented by the user, then this will lead to an error."
     else:
         dynT_user_completeness = plantgen_core.DataCompleteness.MIN
         expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
-        if dynT_user.columns.tolist() != expected_dynT_user_columns:
+        if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         available_axes = dynT_user['id_axis'].tolist()
         if not possible_axes.issubset(set(available_axes)):
@@ -263,7 +263,7 @@ of the MS are documented by the user, then this will lead to an error."
     if 'N_phytomer_potential' in dimT_user.columns:
         dimT_user_completeness = plantgen_core.DataCompleteness.FULL
         expected_dimT_user_columns = ['id_axis', 'N_phytomer_potential', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        if dimT_user.columns.tolist() != expected_dimT_user_columns:
+        if set(dimT_user.columns.tolist()) != set(expected_dimT_user_columns):
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
         grouped = dimT_user.groupby(['id_axis', 'N_phytomer_potential', 'index_phytomer'])
         if len(grouped.groups) != dimT_user.index.size:
@@ -286,7 +286,7 @@ of the MS are documented by the user, then this will lead to an error."
     elif 'id_axis' in dimT_user.columns:
         dimT_user_completeness = plantgen_core.DataCompleteness.SHORT
         expected_dimT_user_columns = ['id_axis', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        if dimT_user.columns.tolist() != expected_dimT_user_columns:
+        if set(dimT_user.columns.tolist()) != set(expected_dimT_user_columns):
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
         grouped = dimT_user.groupby(['id_axis', 'index_phytomer'])
         if len(grouped.groups) != dimT_user.index.size:
@@ -309,7 +309,7 @@ of the MS are documented by the user, then this will lead to an error."
     else:
         dimT_user_completeness = plantgen_core.DataCompleteness.MIN
         expected_dimT_user_columns = ['index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
-        if dimT_user.columns.tolist() != expected_dimT_user_columns:
+        if set(dimT_user.columns.tolist()) != set(expected_dimT_user_columns):
             raise tools.InputError("dimT_user does not have the columns: %s" % ', '.join(expected_dimT_user_columns))
         if dimT_user['index_phytomer'].unique().size != dimT_user['index_phytomer'].size:
             raise tools.InputError("dimT_user contains duplicated index_phytomer")

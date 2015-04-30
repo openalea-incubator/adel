@@ -50,43 +50,67 @@ setCanopy <- function(canT, nplants=1, randomize = TRUE, seed = NULL) {
 }
   
 #
-predictDim <- function(dimT,index,nf) {
+predictDim <- function(dimT,index,nf,nf_end) {
   res <- NULL
   if (!index %in% dimT$index)
     stop(paste("setAdel : dimIndex", index, "not found in dimTable"))
   else {
-    nout <- seq(nf)/nf 
     dim <- dimT[dimT$index == index,]
-    out <- vector("list",ncol(dimT)-2)
-    names(out) <- colnames(dim)[-match(c('index','nrel'),colnames(dim))]
-    for (w in names(out))
-      out[[w]] <- approx(dim$nrel,dim[,w],nout,rule=2)$y
-    res <- data.frame(do.call("cbind",out))
+    if ('index_phytomer' %in% colnames(dimT)) {# index is absolute
+      headers <- c('index_phytomer', 'index', 'nrel')
+      headers <- headers[headers %in% colnames(dim)]
+      out <- vector("list",ncol(dimT) - length(headers))
+      names(out) <- colnames(dim)[-match(headers,colnames(dim))]
+      for (w in names(out))
+        out[[w]] <- c(dim[seq(nf_end),w], rep(0, nf - nf_end))
+      res <- data.frame(do.call("cbind",out))
+    } else {#index is relative to n phytomer potentiel
+      nout <- seq(nf)/nf 
+      out <- vector("list",ncol(dimT)-2)
+      names(out) <- colnames(dim)[-match(c('index','nrel'),colnames(dim))]
+      for (w in names(out))
+        out[[w]] <- approx(dim$nrel,dim[,w],nout,rule=2)$y
+      res <- data.frame(do.call("cbind",out))
+    }
   }
   res
 }
 #
-predictPhen <- function(phenT,index,nf,datesf1) {
+predictPhen <- function(phenT,index,nf,datesf1,nf_end) {
   if (!"disp"%in%colnames(phenT))
     stop("setAdel: Missing input for leaf desapearance in phenT (see docAdel.txt")
   res <- NULL
   if (!index %in% phenT$index)
     stop(paste("setAdel : phenIndex/id_phen", index, "not found in phenTable"))
   else {
-    nout <- c(0,seq(nf))/nf
     phen <- phenT[phenT$index == index,]
-    if (length(na.omit(phen$nrel)) < 2)
-      stop(paste("setAdel : not enough data in phenTable for id_phen:",index))
-    out <- vector("list",ncol(phenT) -2)
-    names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
-    names(datesf1) <- c("tip","col","ssi","disp")
-    for (i in 1:4) {
-      w <- names(out)[i]
-      if (length(na.omit(phen[,w])) < 2)
-        stop(paste("setAdel : not enough data in phenTable for id_phen:",index, 'column:', w))
-      out[[w]] <- openapprox(phen$nrel,phen[,w],nout) + datesf1[[w]] 
+    if ('index_phytomer' %in% colnames(dimT)) {# index is absolute
+      headers <- c('index_phytomer', 'index', 'nrel')
+      headers <- headers[headers %in% colnames(dim)]
+      out <- vector("list",ncol(phenT) - length(headers))
+      names(out) <- colnames(phen)[-match(headers,colnames(phen))]
+      names(datesf1) <- c("tip","col","ssi","disp")
+      for (i in 1:4) {
+        w <- names(out)[i]
+        out[[w]] <- c(phen[seq(0,nf_end),w] + datesf1[[w]], rep(datesf1[[w]]+phen[nf_end,w], nf - nf_end))
+      }
+      res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
+      
+    } else {#index is relative to n phytomer potentielnout <- c(0,seq(nf))/nf
+      nout <- c(0,seq(nf))/nf
+      if (length(na.omit(phen$nrel)) < 2)
+        stop(paste("setAdel : not enough data in phenTable for id_phen:",index))
+      out <- vector("list",ncol(phenT) -2)
+      names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
+      names(datesf1) <- c("tip","col","ssi","disp")
+      for (i in 1:4) {
+        w <- names(out)[i]
+        if (length(na.omit(phen[,w])) < 2)
+          stop(paste("setAdel : not enough data in phenTable for id_phen:",index, 'column:', w))
+        out[[w]] <- openapprox(phen$nrel,phen[,w],nout) + datesf1[[w]] 
+      }
+      res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
     }
-    res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
   }
   res
 }
@@ -110,8 +134,13 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
 
   #prise en chage nouveaux noms
   conv <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
-  names(conv) <- c("plant","axe","nf","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
+  names(conv) <- c("plant","axe","nf_end","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
   colnames(axeT)[colnames(axeT) %in% conv] <- names(conv)[na.omit(match(colnames(axeT),conv))]
+  # nf in adel is N_phytomer_potential (=N_phytomer/nf_end for old adel, or N_phytomer_potential in pgen)
+    if (!"N_phytomer_potential"%in%colnames(axeT)) #old adel
+      axeT <- cbind(axeT,N_phytomer_potential = axeT$nf)
+  colnames(axeT)[match("N_phytomer_potential",colnames(axeT))] <- "nf"
+
   #
   conv <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
   names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
@@ -154,7 +183,10 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
   }
 
   if (!"HS_final"%in%colnames(axeT))
-    axeT <- cbind(axeT, HS_final = ifelse(is.na(axeT$end), 1, NA) * axeT$nf)
+    axeT <- cbind(axeT, HS_final = ifelse(is.na(axeT$end), 1, NA) * pmin(axeT$nf_end,axeT$nf))
+
+
+  
   
   plantdb <- by(axeT,list(axeT$plant),function(x) {
     if (! "MS" %in% x$axe)
@@ -174,6 +206,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     pT <- plantdb[[plnb[p]]]
     axeTable <- data.frame(axe = pT$axe,
                            nf = pT$nf,
+                           nf_end = pT$nf_end,
                            emf1 = pT$emf1,
                            end = pT$end,
                            disp = pT$disp,
@@ -193,8 +226,9 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     phytoT <- array(NA,dim=c(nfM,length(nomsdim)+3,nrow(pT)),dimnames=list(seq(nfM),c(nomsdim,"Azim","Lindex","Lseed"),pT$axe))
     for (a in seq(nrow(pT))) {
       nf <- pT$nf[a]
+      nf_end <- pT$nf_end[a]
       idaxe <- pT$axe[a]
-      pred <- predictDim(dimT,pT$dimIndex[a],nf)[,nomsdim]
+      pred <- predictDim(dimT,pT$dimIndex[a],nf, nf_end)[,nomsdim]
       if (!is.null(pred))
         phytoT[seq(nf),nomsdim,a] <- unlist(pred)
       phytoT[seq(nf),"incB",a] <- phytoT[seq(nf),"incB",a] + (runif(nf) - .5) * phytoT[seq(nf),"dincB",a]
@@ -233,7 +267,7 @@ setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample
     if (!"dispf1"%in%colnames(pT))
       print("Missing input for leaf desapearance in axeT (see docAdel.txt")
     for (a in seq(nrow(pT)))
-      phenoT[[a]] <- predictPhen(phenT,pT$phenIndex[a],pT$nf[a],pT[a,c("emf1","ligf1","senf1","dispf1")])
+      phenoT[[a]] <- predictPhen(phenT,pT$phenIndex[a],pT$nf[a],pT[a,c("emf1","ligf1","senf1","dispf1")], pT$nf_end[a])
     # date of start and end of peduncle elongation
     pedT <- vector("list",nrow(pT))
     names(pedT) <- pT$axe

@@ -73,7 +73,6 @@ def gen_adel_input_data(dynT_user,
         * the :ref:`tilleringT <tilleringT>`,
         * the :ref:`cardinalityT <cardinalityT>`,
         * the :ref:`phenT_abs <phenT_abs>`,
-        * the :ref:`dimT_abs <dimT_abs>`,
         * the :ref:`dynT <dynT>`, 
         * the :ref:`phenT_first <phenT_first>`,
         * the :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`,
@@ -130,7 +129,7 @@ def gen_adel_input_data(dynT_user,
         
     :Returns:
         Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
-        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, :ref:`dimT_abs <dimT_abs>`, 
+        :ref:`phenT <phenT>`, :ref:`phenT_abs <phenT_abs>`, 
         :ref:`dynT <dynT>`, :ref:`phenT_first <phenT_first>`, :ref:`HS_GL_SSI_T <HS_GL_SSI_T>`, 
         :ref:`tilleringT <tilleringT>`, :ref:`cardinalityT <cardinalityT>`, and 
         a dictionary which stores the configuration used for the construction.
@@ -342,7 +341,7 @@ of the MS are documented by the user, then this will lead to an error."
                                                        TT_t1_user = TT_t1_user)
         
     #calculate organs dimensions
-    dimT_, dimT_abs = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
+    dimT_ = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                       dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                       dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
                                                       number_of_ears, axeT_user = axeT_user, TT_t1_user=TT_t1_user)
@@ -354,7 +353,7 @@ of the MS are documented by the user, then this will lead to an error."
                                                                   axeT_user = axeT_user,
                                                                   TT_t1_user = TT_t1_user)
     
-    return axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, \
+    return axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, \
            HS_GL_SSI_T, tilleringT, cardinalityT, config
 
 
@@ -425,9 +424,6 @@ def plantgen2adel(axeT_, dimT_, phenT_):
         tuple
     
     '''
-    # Replace *TT_app* columns by *TT_em* in axeT_ and phenT_
-    axeT_ = axeT_.rename(columns={'TT_app_phytomer1' : 'TT_em_phytomer1'})
-    phenT_ = phenT_.rename(columns={'dTT_app_phytomer' : 'dTT_em_phytomer'})
     
     # In dimT, duplicate the line for each axis which has only one leaf.
     id_dims_with_one_leaf = axeT_[axeT_['N_phytomer'] == 1]['id_dim'].unique()
@@ -436,9 +432,5 @@ def plantgen2adel(axeT_, dimT_, phenT_):
         new_line = dimT_.ix[idx:idx].copy()
         new_line['index_rel_phytomer'] = 0.5
         dimT_ = pd.concat([dimT_[:idx], new_line, dimT_[idx:]], ignore_index=True)
-        
-    # In axeT_, remove N_phytomer and rename N_phytomer_potential to N_phytomer
-    axeT_= axeT_.drop('N_phytomer',axis=1)
-    axeT_ = axeT_.rename(columns={'N_phytomer_potential' : 'N_phytomer'})
         
     return axeT_, dimT_, phenT_

@@ -160,7 +160,7 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
         * id_ear: Key (int) linking to earT. id_ear allows referring to the data 
           that describe the ear of the axis. For the regressive axes, id_ear=NA. 
           For the non-regressive axes, id_ear=1.
-        * TT_app_phytomer1: Thermal time (relative to canopy appearance) of tip 
+        * TT_em_phytomer1: Thermal time (relative to canopy appearance) of tip 
           appearance of the first true leaf (not coleoptile or prophyll)
         * TT_col_phytomer1: Thermal time (relative to canopy appearance) of collar 
           appearance of the first true leaf
@@ -209,8 +209,8 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
     '''
     Calculate the dimensions of the organs.
     The following variables are calculated:
-        * index_phytomer: The rank of the phytomer
-        * index_rel_phytomer: The relative phytomer position : index_rel_phytomer = phytomer rank/N_phytomer
+        * id_dim: key (int) of the axis
+        * index_phytomer: The absolute phytomer position, i.e. phytomer rank
         * L_blade: length of the mature blade (cm)
         * W_blade: Maximum width of the mature leaf blade (cm)
         * L_sheath: Length of a mature sheath (cm)
@@ -218,9 +218,7 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
         * L_internode: Length of an internode (cm)
         * W_internode: Diameter of an internode (cm)
     and are stored in memory for the next steps of the process.
-    The routine returns:
-        * :ref:`dimT <dimT>` as final result, 
-        * :ref:`dimT_abs` for debugging purpose.
+    The routine returns :ref:`dimT <dimT>` as final result. 
     '''
     #1. create axeT_, dimT_tmp, phenT_tmp and dynT_
     if axeT_user is None:
@@ -235,12 +233,10 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
     axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
     
-    # 2. create dimT_abs
-    dimT_abs = _create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_)
-    # 3. create dimT
-    dimT_ = _create_dimT(dimT_abs)
+    # 2. create dimT
+    dimT_ = _create_dimT(axeT_, dimT_tmp, phenT_tmp, dynT_)
     
-    return dimT_, dimT_abs
+    return dimT_
 
 
 def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
@@ -252,15 +248,15 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
     '''
     Calculate the phenology of the axes.
     The following variables are calculated:
-        * TT_app_phytomer: Thermal time of the appearance of the tip of leaf out of 
+        * TT_em_phytomer: Thermal time of the appearance of the tip of leaf out of 
           the whorl made by the older blade.
         * TT_col_phytomer: Thermal time of the appearance of collar.
         * TT_sen_phytomer: Thermal time for which SSI = n (where n is the phytomer 
           rank).
         * TT_del_phytomer: Thermal time after which the leaf blade is destroyed 
           and is not displayed in the 3D mock-up anymore.
-        * dTT_app_phytomer: Thermal time of the appearance of the tip of leaf out of 
-          the whorl made by the older blade; expressed as thermal time since TT_app_phytomer1
+        * dTT_em_phytomer: Thermal time of the appearance of the tip of leaf out of 
+          the whorl made by the older blade; expressed as thermal time since TT_em_phytomer1
         * dTT_col_phytomer: Thermal time of the appearance of collar; expressed as 
           thermal time since TT_col_phytomer1
         * dTT_sen_phytomer: Thermal time for which SSI = n (where n is the phytomer 
@@ -273,7 +269,7 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
         * :ref:`phenT <phenT_>` as final result, 
         * :ref:`phenT_abs` and :ref:`HS_GL_SSI_T` for debugging purpose.
     '''
-    # 1. create phenT_tmp, axeT_, dimT_abs, phenT_first and dynT_
+    # 1. create phenT_tmp, axeT_, dimT_, phenT_first and dynT_
     if axeT_user is None:
         axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, force=False)
     else:
@@ -285,10 +281,10 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
     axeT_ = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
-    dimT_abs = _create_dimT_abs(axeT_, dimT_tmp, phenT_tmp, dynT_, force=False)
+    dimT_ = _create_dimT(axeT_, dimT_tmp, phenT_tmp, dynT_, force=False)
     
     # create phenT_abs
-    phenT_abs = _create_phenT_abs(phenT_tmp, axeT_, dimT_abs)
+    phenT_abs = _create_phenT_abs(phenT_tmp, axeT_, dimT_)
     # create phenT
     phenT_ = _create_phenT(phenT_abs, phenT_first)
     # create HS_GL_SSI_T 
@@ -323,7 +319,7 @@ class _CreateAxeTTmp():
             id_phen_list = _gen_id_phen_list(id_cohort_list, N_phytomer_potential_list)
             
             self.axeT_tmp = pd.DataFrame(index=range(len(id_plt_list)),
-                                           columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_app_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
+                                           columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_em_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
                                            dtype=float)
             self.axeT_tmp['id_plt'] = id_plt_list
             self.axeT_tmp['id_cohort'] = id_cohort_list
@@ -353,11 +349,11 @@ class _CreateAxeT():
             else:
                 TT_regression_start = TT_regression_start_user
             
-            (self.axeT_['TT_app_phytomer1'], 
+            (self.axeT_['TT_em_phytomer1'], 
              self.axeT_['TT_col_phytomer1'], 
              self.axeT_['TT_sen_phytomer1'],
              self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-            self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_app_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
+            self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_em_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
@@ -433,11 +429,11 @@ def _gen_N_phytomer(HS_final_series):
     
 
 def _gen_all_TT_phytomer1_list(axeT_tmp, emf_1_MS_standard_deviation, phenT_first):
-    '''Generate the *TT_app_phytomer1*, *TT_col_phytomer1*, *TT_sen_phytomer1* and *TT_del_phytomer1* columns.
+    '''Generate the *TT_em_phytomer1*, *TT_col_phytomer1*, *TT_sen_phytomer1* and *TT_del_phytomer1* columns.
     For each plant, define a delay of appearance, and for each axis add this delay to the first leaf development schedule.'''
     sigma = emf_1_MS_standard_deviation
     sigma_div_2 = sigma / 2.0
-    TT_app_phytomer1_series = pd.Series(index=axeT_tmp.index)
+    TT_em_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_col_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_sen_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_del_phytomer1_series = pd.Series(index=axeT_tmp.index)
@@ -449,12 +445,12 @@ def _gen_all_TT_phytomer1_list(axeT_tmp, emf_1_MS_standard_deviation, phenT_firs
         for id_phen, axeT_tmp_grouped_by_id_plt_and_id_phen in axeT_tmp_grouped_by_id_plt.groupby('id_phen'):
             current_row = phenT_first[phenT_first['id_phen']==id_phen]
             first_valid_index = current_row.first_valid_index()
-            TT_app_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_app_phytomer'][first_valid_index]
+            TT_em_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_em_phytomer'][first_valid_index]
             TT_col_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_col_phytomer'][first_valid_index]
             TT_sen_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_sen_phytomer'][first_valid_index]
             TT_del_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_del_phytomer'][first_valid_index]
                 
-    return TT_app_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
+    return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
 
 def _gen_id_dim_list(id_cohort_series, N_phytomer_series, id_ear_series):
@@ -472,7 +468,7 @@ def _gen_id_phen_list(id_cohort_list, N_phytomer_potential_list):
     '''Generate the *id_phen* column.'''
     id_phen_list = []
     for i in range(len(id_cohort_list)):
-        id_phen_list.append(int(''.join([str(id_cohort_list[i]), str(N_phytomer_potential_list[i]).zfill(2)])))
+        id_phen_list.append(int(''.join([str(id_cohort_list[i]), str(N_phytomer_potential_list[i]).zfill(2), '1']))) # 1: axis with ear
     return id_phen_list
 
 
@@ -525,9 +521,9 @@ def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants
     
     dynT_most_frequent_MS = dynT_.ix[dynT_.first_valid_index()]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
-    N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential']).zfill(2)
-    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS]))
-    TT_start = phenT_first['TT_app_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
+    N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential']).zfill(2) # we use N_phytomer_potential because N_phytomer_potential == N_phytomer for the most frequent MS
+    id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS, '1']))
+    TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     
     axes_density = number_of_axes / float(plants_number) * plants_density 
     return pd.DataFrame({'TT': [TT_start, TT_regression_start, TT_hs_flag_leaf], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
@@ -603,15 +599,15 @@ class _CreateDimTTmp():
 _create_dimT_tmp = _CreateDimTTmp()
     
 
-class _CreateDimTAbs():
+class _CreateDimT():
     '''
-    Create the :ref:`dimT_abs <dimT_abs>` dataframe filling the *dimT_tmp* dataframe.
+    Create the :ref:`dimT <dimT>` dataframe filling the *dimT_tmp* dataframe.
     '''
     def __init__(self):
-        self.dimT_abs = None
+        self.dimT_ = None
     
     def __call__(self, axeT_, dimT_tmp, phenT_abs, dynT_, force=True):
-        if force or self.dimT_abs is None:
+        if force or self.dimT_ is None:
             if dimT_tmp['id_axis'].count() != dimT_tmp['id_axis'].size:
                 raise tools.InputError("dimT_tmp['id_axis'] contains NA values")
             if dimT_tmp['N_phytomer_potential'].count() != dimT_tmp['N_phytomer_potential'].size:
@@ -625,7 +621,7 @@ class _CreateDimTAbs():
             if len(dimT_tmp_group_without_na) != len(dimT_tmp_group):
                 raise tools.InputError("dimT_tmp does not contain the dimensions of the most frequent MS")
             
-            self.dimT_abs = _init_dimT_abs(axeT_, 
+            self.dimT_ = _init_dimT(axeT_, 
                                       dimT_tmp, 
                                       phenT_abs, 
                                       dynT_)
@@ -634,38 +630,38 @@ class _CreateDimTAbs():
             idxmax = MS_dynT['cardinality'].idxmax()
             MS_id_cohort = MS_dynT['id_cohort'][idxmax]
             MS_N_phytomer_potential = MS_dynT['N_phytomer_potential'][idxmax]
-            axeT_grouped = axeT_.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential'])
+            axeT_grouped = axeT_.groupby(['id_axis', 'id_cohort', 'N_phytomer'])
             axeT_group = axeT_grouped.get_group(('MS', MS_id_cohort, MS_N_phytomer_potential))
             MS_id_dim = axeT_group['id_dim'][axeT_group.first_valid_index()]
         
-            L_blade_is_null = self.dimT_abs['L_blade'].isnull()
+            L_blade_is_null = self.dimT_['L_blade'].isnull()
             row_indexes_to_fit = L_blade_is_null[L_blade_is_null == True].index
             
-            _gen_lengths(MS_id_dim, row_indexes_to_fit, self.dimT_abs)
+            _gen_lengths(MS_id_dim, row_indexes_to_fit, self.dimT_)
             
-            _gen_widths(MS_id_dim, row_indexes_to_fit, self.dimT_abs)
+            _gen_widths(MS_id_dim, row_indexes_to_fit, self.dimT_)
             
-            self.dimT_abs.sort(['is_ear', 'id_dim'], inplace=True)
+            self.dimT_.sort(['is_ear', 'id_dim'], inplace=True)
             
             # reinitialize the index
-            self.dimT_abs.index = range(self.dimT_abs.index.size)
-            self.dimT_abs = self.dimT_abs.drop(['TT_app_phytomer', 'is_ear'], axis=1)
-        return self.dimT_abs
+            self.dimT_.index = range(self.dimT_.index.size)
+            self.dimT_ = self.dimT_.drop(['TT_em_phytomer', 'is_ear'], axis=1)
+        return self.dimT_
 
-_create_dimT_abs = _CreateDimTAbs()
+_create_dimT = _CreateDimT()
 
 
-def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
-    '''Initialize dimT_abs.'''
+def _init_dimT(axeT_, dimT_tmp, phenT_abs, dynT_):
+    '''Initialize dimT.'''
     # create a new dataframe from phenT_abs, removing the lines for which index_phytomer==0.0, 
-    # and keeping only the columns 'id_phen', 'index_phytomer' and 'TT_app_phytomer'.
-    TT_app_phytomer_cleaned = phenT_abs.drop(phenT_abs.groupby('index_phytomer').groups[0.0])['TT_app_phytomer']
-    id_phen_cleaned = phenT_abs['id_phen'][TT_app_phytomer_cleaned.index].astype(int)
-    index_phytomer_cleaned = phenT_abs['index_phytomer'][TT_app_phytomer_cleaned.index].astype(int)
-    phenT_abs_cleaned = pd.DataFrame(np.array([id_phen_cleaned.values, index_phytomer_cleaned.values, TT_app_phytomer_cleaned.values]).transpose(),
-                                         columns=['id_phen', 'index_phytomer', 'TT_app_phytomer'])
+    # and keeping only the columns 'id_phen', 'index_phytomer' and 'TT_em_phytomer'.
+    TT_em_phytomer_cleaned = phenT_abs.drop(phenT_abs.groupby('index_phytomer').groups[0.0])['TT_em_phytomer']
+    id_phen_cleaned = phenT_abs['id_phen'][TT_em_phytomer_cleaned.index].astype(int)
+    index_phytomer_cleaned = phenT_abs['index_phytomer'][TT_em_phytomer_cleaned.index].astype(int)
+    phenT_abs_cleaned = pd.DataFrame(np.array([id_phen_cleaned.values, index_phytomer_cleaned.values, TT_em_phytomer_cleaned.values]).transpose(),
+                                         columns=['id_phen', 'index_phytomer', 'TT_em_phytomer'])
     
-    dimT_abs = pd.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'TT_app_phytomer', 'is_ear'])
+    dimT_ = pd.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'TT_em_phytomer', 'is_ear'])
     
     phenT_abs_cleaned_grouped = phenT_abs_cleaned.groupby('id_phen')
     dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
@@ -675,17 +671,17 @@ def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
         idxmax = dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()
         id_cohort = dynT_group['id_cohort'][idxmax]
         N_phytomer_potential = dynT_group['N_phytomer_potential'][idxmax]
-        id_phen = int(''.join([str(id_cohort), str(N_phytomer_potential).zfill(2)]))
+        id_phen = int(''.join([str(id_cohort), str(N_phytomer_potential).zfill(2), '1']))
             
         phenT_abs_cleaned_group = phenT_abs_cleaned_grouped.get_group(id_phen)
         
-        dimT_abs_group_idx = np.arange(axeT_group['N_phytomer'][axeT_group.first_valid_index()])
+        dimT_group_idx = np.arange(axeT_group['N_phytomer'][axeT_group.first_valid_index()])
         
-        dimT_abs_group = pd.DataFrame(index=dimT_abs_group_idx, 
-                                          columns=dimT_abs.columns,
+        dimT_group = pd.DataFrame(index=dimT_group_idx, 
+                                          columns=dimT_.columns,
                                           dtype=float)
-        dimT_abs_group['id_dim'] = id_dim
-        dimT_abs_group['index_phytomer'] = dimT_abs_group_idx + 1
+        dimT_group['id_dim'] = id_dim
+        dimT_group['index_phytomer'] = dimT_group_idx + 1
         
         is_ear = int(str(int(id_dim))[-1])
         
@@ -694,137 +690,119 @@ def _init_dimT_abs(axeT_, dimT_tmp, phenT_abs, dynT_):
             dimT_tmp_group = dimT_tmp_grouped.get_group((id_axis, N_phytomer_potential))
             organ_dim_list = ['L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']
             for organ_dim in organ_dim_list:
-                dim_idx_to_get = dimT_tmp_group.index[dimT_abs_group.index]
-                dimT_abs_group[organ_dim] = dimT_tmp_group[organ_dim][dim_idx_to_get].values.astype(float)
+                dim_idx_to_get = dimT_tmp_group.index[dimT_group.index]
+                dimT_group[organ_dim] = dimT_tmp_group[organ_dim][dim_idx_to_get].values.astype(float)
         
-        phen_idx_to_get = phenT_abs_cleaned_group.index[dimT_abs_group.index]
-        dimT_abs_group['TT_app_phytomer'] = phenT_abs_cleaned_group['TT_app_phytomer'][phen_idx_to_get].values.astype(float)
+        phen_idx_to_get = phenT_abs_cleaned_group.index[dimT_group.index]
+        dimT_group['TT_em_phytomer'] = phenT_abs_cleaned_group['TT_em_phytomer'][phen_idx_to_get].values.astype(float)
         
-        dimT_abs_group['is_ear'] = is_ear
+        dimT_group['is_ear'] = is_ear
         
-        dimT_abs = pd.concat([dimT_abs, dimT_abs_group], ignore_index=True)
+        dimT_ = pd.concat([dimT_, dimT_group], ignore_index=True)
     
     # force the type of id_dim and is_ear
-    dimT_abs[['id_dim', 'index_phytomer', 'is_ear']] = dimT_abs[['id_dim', 'index_phytomer', 'is_ear']].astype(int)
+    dimT_[['id_dim', 'index_phytomer', 'is_ear']] = dimT_[['id_dim', 'index_phytomer', 'is_ear']].astype(int)
 
-    return dimT_abs
+    return dimT_
     
 
-def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_abs):
+def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_):
     '''Fit the lengths in-place.'''
-    TT_app_phytomer_series = dimT_abs['TT_app_phytomer']
-    MS_rows_indexes = dimT_abs[dimT_abs['id_dim'] == MS_id_dim].index
-    MS_last_TT_app_phytomer = TT_app_phytomer_series[MS_rows_indexes[-1]]
-    indexes_to_ceil = TT_app_phytomer_series[TT_app_phytomer_series > MS_last_TT_app_phytomer].index
+    TT_em_phytomer_series = dimT_['TT_em_phytomer']
+    MS_rows_indexes = dimT_[dimT_['id_dim'] == MS_id_dim].index
+    MS_last_TT_em_phytomer = TT_em_phytomer_series[MS_rows_indexes[-1]]
+    indexes_to_ceil = TT_em_phytomer_series[TT_em_phytomer_series > MS_last_TT_em_phytomer].index
     
     for length in ['L_blade', 'L_sheath', 'L_internode']:
-        current_length_series = dimT_abs[length]
+        current_length_series = dimT_[length]
         MS_lengths_series = current_length_series[MS_rows_indexes]
         MS_non_null_lengths_rows_indexes = MS_lengths_series[MS_lengths_series != 0.0].index
-        polynomial_coefficients_array = np.polyfit(dimT_abs['TT_app_phytomer'][MS_non_null_lengths_rows_indexes].values, 
+        polynomial_coefficients_array = np.polyfit(dimT_['TT_em_phytomer'][MS_non_null_lengths_rows_indexes].values, 
                                                    current_length_series[MS_non_null_lengths_rows_indexes].values, 6)
         MS_last_length = MS_lengths_series[MS_non_null_lengths_rows_indexes[-1]]
-        for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
-            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
-            dimT_abs.loc[dimT_abs_group.index, length] = np.polyval(polynomial_coefficients_array, 
-                                                                    TT_app_phytomer_group)
+        for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+            TT_em_phytomer_group = dimT_group['TT_em_phytomer']
+            dimT_.loc[dimT_group.index, length] = np.polyval(polynomial_coefficients_array, 
+                                                                    TT_em_phytomer_group)
             # ceiling
-            dimT_abs.loc[indexes_to_ceil.intersection(dimT_abs_group.index), length] = MS_last_length
+            dimT_.loc[indexes_to_ceil.intersection(dimT_group.index), length] = MS_last_length
             
         # thresholding
         if length == 'L_internode':
-            MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_lengths_rows_indexes[0]]
-            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series <= MS_first_non_null_TT_app_phytomer].index
+            MS_first_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_lengths_rows_indexes[0]]
+            indexes_to_threshold = TT_em_phytomer_series[TT_em_phytomer_series <= MS_first_non_null_TT_em_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
-            dimT_abs.loc[indexes_to_threshold, length] = 0.0
+            dimT_.loc[indexes_to_threshold, length] = 0.0
 
 
-def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_abs):
+def _gen_widths(MS_id_dim, row_indexes_to_fit, dimT_):
     '''Fit the widths in-place.'''
-    MS_rows_indexes = dimT_abs[dimT_abs['id_dim'] == MS_id_dim].index
-    TT_app_phytomer_series = dimT_abs['TT_app_phytomer']
-    id_dim_to_reduction_mapping = dict([(id_dim, params.WIDTHS_REDUCTION_FACTORS[int(str(int(id_dim))[:-3])]) for id_dim in dimT_abs['id_dim'].unique()])
+    MS_rows_indexes = dimT_[dimT_['id_dim'] == MS_id_dim].index
+    TT_em_phytomer_series = dimT_['TT_em_phytomer']
+    id_dim_to_reduction_mapping = dict([(id_dim, params.WIDTHS_REDUCTION_FACTORS[int(str(int(id_dim))[:-3])]) for id_dim in dimT_['id_dim'].unique()])
     for width in ['W_blade', 'W_sheath', 'W_internode']:
-        current_width_series = dimT_abs[width]
+        current_width_series = dimT_[width]
         MS_width_series = current_width_series[MS_rows_indexes]
         MS_non_null_widths_rows_indexes = MS_width_series[MS_width_series != 0.0].index
         MS_first_non_null_width = current_width_series[MS_non_null_widths_rows_indexes[0]]
         MS_last_non_null_width = current_width_series[MS_non_null_widths_rows_indexes[-1]]
-        MS_first_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[0]]
-        MS_last_non_null_TT_app_phytomer = TT_app_phytomer_series[MS_non_null_widths_rows_indexes[-1]]
+        MS_first_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_widths_rows_indexes[0]]
+        MS_last_non_null_TT_em_phytomer = TT_em_phytomer_series[MS_non_null_widths_rows_indexes[-1]]
         
         if width == 'W_blade':
-            x1 = MS_first_non_null_TT_app_phytomer
-            x2 = MS_last_non_null_TT_app_phytomer
+            x1 = MS_first_non_null_TT_em_phytomer
+            x2 = MS_last_non_null_TT_em_phytomer
             y1 = MS_first_non_null_width
             y2 = MS_last_non_null_width
             blade_polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
             
-        for id_dim, dimT_abs_group in dimT_abs.ix[row_indexes_to_fit].groupby(by='id_dim'):
-            TT_app_phytomer_group = dimT_abs_group['TT_app_phytomer']
+        for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+            TT_em_phytomer_group = dimT_group['TT_em_phytomer']
             if width == 'W_blade':
-                positive_TT_app_phytomers_indexes = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer].index
-                positive_TT_app_phytomers = TT_app_phytomer_group.loc[positive_TT_app_phytomers_indexes]
-                widths_array = np.polyval(blade_polynomial_coefficient_array, positive_TT_app_phytomers)
+                positive_TT_em_phytomers_indexes = TT_em_phytomer_group[TT_em_phytomer_group >= MS_first_non_null_TT_em_phytomer].index
+                positive_TT_em_phytomers = TT_em_phytomer_group.loc[positive_TT_em_phytomers_indexes]
+                widths_array = np.polyval(blade_polynomial_coefficient_array, positive_TT_em_phytomers)
                 widths_array *= id_dim_to_reduction_mapping[id_dim]
-                dimT_abs.loc[positive_TT_app_phytomers_indexes, width] = widths_array
+                dimT_.loc[positive_TT_em_phytomers_indexes, width] = widths_array
             else:
                 if width == 'W_internode':
-                    # get TT_app_phytomer of the main stem first phytomer which has a 
-                    # TT_app_phytomer greater than the first main stem phytomer with 
+                    # get TT_em_phytomer of the main stem first phytomer which has a 
+                    # TT_em_phytomer greater than the first main stem phytomer with 
                     # a non null width
-                    valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group >= MS_first_non_null_TT_app_phytomer]
-                    if len(valid_TT_app_phytomers) == 0:
+                    valid_TT_em_phytomers = TT_em_phytomer_group[TT_em_phytomer_group >= MS_first_non_null_TT_em_phytomer]
+                    if len(valid_TT_em_phytomers) == 0:
                         continue # The widths of these phytomers are thresholded to 0 later.
-                    x1 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[0]]
-                    # get TT_app_phytomer of the main stem last phytomer which has a 
-                    # TT_app_phytomer lesser than the last main stem phytomer
-                    valid_TT_app_phytomers = TT_app_phytomer_group[TT_app_phytomer_group <= MS_last_non_null_TT_app_phytomer]
-                    if len(valid_TT_app_phytomers) == 0:
+                    x1 = valid_TT_em_phytomers[valid_TT_em_phytomers.index[0]]
+                    # get TT_em_phytomer of the main stem last phytomer which has a 
+                    # TT_em_phytomer lesser than the last main stem phytomer
+                    valid_TT_em_phytomers = TT_em_phytomer_group[TT_em_phytomer_group <= MS_last_non_null_TT_em_phytomer]
+                    if len(valid_TT_em_phytomers) == 0:
                         continue # The widths of these phytomers are thresholded to 0 later.
-                    x2 = valid_TT_app_phytomers[valid_TT_app_phytomers.index[-1]]
+                    x2 = valid_TT_em_phytomers[valid_TT_em_phytomers.index[-1]]
                 else: # W_sheath
-                    x1 = TT_app_phytomer_group[TT_app_phytomer_group.first_valid_index()]
-                    x2 = TT_app_phytomer_group[TT_app_phytomer_group.last_valid_index()]
+                    x1 = TT_em_phytomer_group[TT_em_phytomer_group.first_valid_index()]
+                    x2 = TT_em_phytomer_group[TT_em_phytomer_group.last_valid_index()]
                 
                 y1 = MS_first_non_null_width
                 y2 = MS_last_non_null_width
                 polynomial_coefficient_array = np.polyfit(np.array([x1, x2]), np.array([y1, y2]), 1)
-                dimT_abs.loc[dimT_abs_group.index, width] = np.polyval(polynomial_coefficient_array, TT_app_phytomer_group)
+                dimT_.loc[dimT_group.index, width] = np.polyval(polynomial_coefficient_array, TT_em_phytomer_group)
                 if width == 'W_internode':
-                    # ceiling of the width of the phytomers which have a TT_app_phytomer 
-                    # greater than the TT_app_phytomer of the last main stem 
-                    indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_app_phytomer].index
-                    dimT_abs.loc[indexes_to_ceil.intersection(dimT_abs_group.index), width] = MS_last_non_null_width
+                    # ceiling of the width of the phytomers which have a TT_em_phytomer 
+                    # greater than the TT_em_phytomer of the last main stem 
+                    indexes_to_ceil = current_width_series[current_width_series > MS_last_non_null_TT_em_phytomer].index
+                    dimT_.loc[indexes_to_ceil.intersection(dimT_group.index), width] = MS_last_non_null_width
             
         
         if width in ('W_internode', 'W_blade'):
-            # thresholding of the width of the phytomers which have a TT_app_phytomer 
-            # lesser than the TT_app_phytomer of the first main stem which has a non null width
-            indexes_to_threshold = TT_app_phytomer_series[TT_app_phytomer_series < MS_first_non_null_TT_app_phytomer].index
+            # thresholding of the width of the phytomers which have a TT_em_phytomer 
+            # lesser than the TT_em_phytomer of the first main stem which has a non null width
+            indexes_to_threshold = TT_em_phytomer_series[TT_em_phytomer_series < MS_first_non_null_TT_em_phytomer].index
             indexes_to_threshold = indexes_to_threshold.intersection(row_indexes_to_fit)
-            dimT_abs.loc[indexes_to_threshold, width] = 0.0
+            dimT_.loc[indexes_to_threshold, width] = 0.0
             
         current_width_series = current_width_series.clip_lower(0.0)
     
-
-def _create_dimT(dimT_abs):
-    '''
-    Create the :ref:`dimT <dimT>` dataframe. 
-    '''
-    if not (dimT_abs.count().max() == dimT_abs.count().min() == dimT_abs.index.size):
-        raise tools.InputError("dimT_abs contains NA values")
-
-    dimT_ = pd.DataFrame(index=dimT_abs.index, columns=['id_dim', 'index_rel_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'], dtype=float)
-    dimT_[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']] = dimT_abs[['id_dim', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]
-    tmp_series = pd.Series(dimT_.index)
-    for name, group in dimT_abs.groupby('id_dim'):
-        def normalize_index_phytomer(i):
-            return group['index_phytomer'][i] / float(group['index_phytomer'][group.index[-1]])
-        dimT_.loc[group.index, 'index_rel_phytomer'] = tmp_series[group.index].map(normalize_index_phytomer) 
-        
-    return dimT_
-
 
 def _create_dynT_tmp(axeT_tmp):
     '''
@@ -1201,7 +1179,7 @@ class _CreatePhenTTmp():
     '''
     Create the *phenT_tmp* dataframe. 
     Compute all the columns, but the column 'TT_del_phytomer' is temporary and will 
-    be recalculated in _create_phenT_abs using dimT_abs. 
+    be recalculated in _create_phenT_abs using dimT_. 
     '''
     def __init__(self):
         self.phenT_tmp = None
@@ -1218,7 +1196,7 @@ class _CreatePhenTTmp():
                 index_phytomer_list.extend(range(N_phytomer_potential + 1))
                 
             self.phenT_tmp = pd.DataFrame(index=range(len(id_phen_list)), 
-                                         columns=['id_phen', 'index_phytomer', 'TT_app_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'],
+                                         columns=['id_phen', 'index_phytomer', 'TT_em_phytomer', 'TT_col_phytomer', 'TT_sen_phytomer', 'TT_del_phytomer'],
                                          dtype=float)
             
             self.phenT_tmp['id_phen'] = id_phen_list
@@ -1241,18 +1219,18 @@ class _CreatePhenTTmp():
                         phenT_tmp_group['index_phytomer'].apply(_calculate_TT_col_phytomer, args=(HS_break, TT_hs_0, a_cohort, a2, TT_hs_break))
                 
                 first_leaf_indexes = phenT_tmp_group.index[0:2]
-                self.phenT_tmp.loc[first_leaf_indexes,'TT_app_phytomer'] = \
-                    phenT_tmp_group.loc[first_leaf_indexes,'TT_app_phytomer'].values[:] = \
+                self.phenT_tmp.loc[first_leaf_indexes,'TT_em_phytomer'] = \
+                    phenT_tmp_group.loc[first_leaf_indexes,'TT_em_phytomer'].values[:] = \
                         phenT_tmp_group['TT_col_phytomer'][first_leaf_indexes].apply(
-                            _calculate_TT_app_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
+                            _calculate_TT_em_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_1ST))
                 try:
                     other_leaves_indexes = phenT_tmp_group.index.difference(phenT_tmp_group.index[0:2])
                 except AttributeError:# backward compatibility with pandas < 0.16 
                     other_leaves_indexes = phenT_tmp_group.index - phenT_tmp_group.index[0:2]
-                self.phenT_tmp.loc[other_leaves_indexes,'TT_app_phytomer'] = \
-                    phenT_tmp_group.loc[other_leaves_indexes,'TT_app_phytomer'].values[:] = \
+                self.phenT_tmp.loc[other_leaves_indexes,'TT_em_phytomer'] = \
+                    phenT_tmp_group.loc[other_leaves_indexes,'TT_em_phytomer'].values[:] = \
                         phenT_tmp_group['TT_col_phytomer'][other_leaves_indexes].apply(
-                            _calculate_TT_app_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
+                            _calculate_TT_em_phytomer, args=(TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, params.DELAIS_PHYLL_COL_TIP_NTH))
                      
                 id_axis, n0, n1, n2, t0, t1, a, c = \
                     dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
@@ -1270,18 +1248,18 @@ class _CreatePhenTTmp():
 _create_phenT_tmp = _CreatePhenTTmp()
 
 
-def _create_phenT_abs(phenT_tmp, axeT_, dimT_abs):
+def _create_phenT_abs(phenT_tmp, axeT_, dimT_):
     '''
     Create the :ref:`phenT_abs <phenT_abs>` dataframe.
     '''
     phenT_abs = phenT_tmp.select(lambda idx: phenT_tmp['id_phen'][idx] in axeT_['id_phen'].values)
     axeT_grouped = axeT_.groupby('id_phen')
-    dimT_abs_grouped = dimT_abs.groupby('id_dim')
+    dimT_grouped = dimT_.groupby('id_dim')
     for id_phen, phenT_abs_group in phenT_abs.groupby('id_phen'):
         axeT_group = axeT_grouped.get_group(id_phen)
         id_dim = axeT_group['id_dim'].max()
-        dimT_abs_group = dimT_abs_grouped.get_group(id_dim)
-        non_zero_L_internode_group = dimT_abs_group[dimT_abs_group['L_internode'] != 0]
+        dimT_group = dimT_grouped.get_group(id_dim)
+        non_zero_L_internode_group = dimT_group[dimT_group['L_internode'] != 0]
         if len(non_zero_L_internode_group) > 0:
             min_index_phytomer = non_zero_L_internode_group['index_phytomer'].min()
             indexes_to_ceil = phenT_abs_group[phenT_abs_group['index_phytomer'] >= min_index_phytomer].index
@@ -1297,14 +1275,14 @@ def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_hs_0, a_cohort, a2, 
     return TT_col_phytomer
 
 
-def _calculate_TT_app_phytomer(TT_col_phytomer, TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, delais_phyll_col_tip):
+def _calculate_TT_em_phytomer(TT_col_phytomer, TT_hs_break, a_cohort, HS_break, N_phytomer_potential, TT_hs_N_phytomer_potential, a2, delais_phyll_col_tip):
     if TT_col_phytomer < TT_hs_break:
-        TT_app_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
+        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a_cohort)
     else:
-        TT_app_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a2)
-        if TT_app_phytomer <= HS_break:
-            TT_app_phytomer = TT_hs_break - (delais_phyll_col_tip - a2 * (TT_col_phytomer - TT_hs_break)) / a_cohort
-    return TT_app_phytomer
+        TT_em_phytomer = TT_col_phytomer - (delais_phyll_col_tip / a2)
+        if TT_em_phytomer <= HS_break:
+            TT_em_phytomer = TT_hs_break - (delais_phyll_col_tip - a2 * (TT_col_phytomer - TT_hs_break)) / a_cohort
+    return TT_em_phytomer
 
 
 def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_hs_N_phytomer_potential, N_phytomer_potential):  
@@ -1414,25 +1392,18 @@ def _create_phenT(phenT_abs, phenT_first):
     if not all(phenT_abs.notnull()):
         raise tools.InputError("phenT_abs contains NA values")
         
-    #compute index_phytomer_max
-    nmax = phenT_abs.groupby('id_phen').max()
-    nmax = nmax.reset_index()
-    nmax = nmax.loc[:,['id_phen','index_phytomer']]
-    nmax = nmax.rename(columns={'index_phytomer':'index_phytomer_max'})
-    tmp_first = pd.merge(phenT_first,nmax)
-    
     #define TT_*_phytomer_1 and merge in tmp
-    tmp_first = tmp_first.drop('index_phytomer',1)
-    stades = ('app','col','sen','del')
+    tmp_first = phenT_first.drop('index_phytomer',1)
+    stades = ('em','col','sen','del')
     tmp_first = tmp_first.rename(columns={'_'.join(('TT',k,'phytomer')):'_'.join(('TT',k,'phytomer','1')) for k in stades})
     tmp = pd.merge(phenT_abs,tmp_first,on='id_phen')
     
     # build phenT_
-    phenT_ = pd.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_rel_phytomer', 'dTT_app_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
+    phenT_ = pd.DataFrame(index=phenT_abs.index, columns=['id_phen', 'index_phytomer', 'dTT_em_phytomer', 'dTT_col_phytomer', 'dTT_sen_phytomer', 'dTT_del_phytomer'], dtype=float)
     phenT_['id_phen'] = phenT_abs['id_phen']
-    phenT_['index_rel_phytomer'] = (1. * tmp['index_phytomer']  / tmp['index_phytomer_max']).tolist()#CF 2015: fill with values as tmp index may differ from phenT_ one
+    phenT_['index_phytomer'] = tmp['index_phytomer']
     for w in stades:
-        phenT_['_'.join(('dTT',w,'phytomer'))] = (tmp['_'.join(('TT',w,'phytomer'))] - tmp['_'.join(('TT',w,'phytomer','1'))]).tolist()#CF 2015: idem  
+        phenT_['_'.join(('dTT',w,'phytomer'))] = (tmp['_'.join(('TT',w,'phytomer'))] - tmp['_'.join(('TT',w,'phytomer','1'))]).tolist()  
     return phenT_
 
 

@@ -60,7 +60,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   names(conv) <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
   if (all(conv %in% colnames(dimT)))
     colnames(dimT)[colnames(dimT) %in% conv] <- names(conv)[na.omit(match(colnames(dimT),conv))]
-  else if (!all(names(conv) %in% colnames(dimT)))
+  else if (!all(names(conv[-grep('nrel',conv)]) %in% colnames(dimT)))
     stop(paste("dimT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(dimT)],collapse=" ")))
   # phenT
   phenT = reader(phenTfile)
@@ -68,7 +68,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   names(conv) <- c("id_phen","index_rel_phytomer","dTT_em_phytomer","dTT_col_phytomer","dTT_sen_phytomer","dTT_del_phytomer")
   if (all(conv %in% colnames(phenT)))
     colnames(phenT)[colnames(phenT) %in% conv] <- names(conv)[na.omit(match(colnames(phenT),conv))]
-  else if (!all(names(conv) %in% colnames(phenT)))
+  else if (!all(names(conv[-grep('nrel',conv)]) %in% colnames(phenT)))
     stop(paste("phenT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(phenT)],collapse=" ")))
   phenT <- phenT[!is.na(phenT$id_phen),]
   # earT

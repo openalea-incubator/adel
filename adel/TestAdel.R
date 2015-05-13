@@ -15,6 +15,7 @@ sapply(AdelRfiles,source)
 #run the model with csv files
 #
 #read parameters from csv
+#devT <- devTcsv('axeT.csv','dimT.csv','phenT.csv')
 manip <- c("Ca0N")
 chem <- c("./data/")
 devT <- devTcsv(paste(chem,"axeT",manip,".csv",sep=""),

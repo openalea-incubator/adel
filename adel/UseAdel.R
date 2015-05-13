@@ -28,16 +28,22 @@ setAdeluser <- function(devT,geoLeaf,geoAxe,nplants,sample='random',seed=NULL,xy
   setAdel(devT$axeT,devT$dimT,devT$phenT,devT$earT,devT$ssisenT,geoLeaf,geoAxe,nplants,sample,seed,xy_db,sr_db)
 }
 #
-                                        #build devT from csv parameter files
+#build devT from csv parameter files
+#
+readCsv <- function(file,type=1) {
+  reader <- get(ifelse(type==1,"read.csv","read.csv2"))
+  #type 1 : "." for decimal, "," for separator
+  #type 2:  "," for decimal, ";" for separator
+  data <- reader(file)
+  #filter empty columns
+  Filter(function(x)!all(is.na(x)), data)
+}
 #
 devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,type=1) {
-  reader <- get(ifelse(type==1,"read.csv","read.csv2"))
-    #type 1 : "." for decimal, "," for separator
-    #type 2:  "," for decimal, ";" for separator
-  
+
   #conversion nouvelle nomencalture
   #axeT
-  axeT <- reader(axeTfile)
+  axeT <- readCsv(axeTfile)
   # nouvelle convention (kirby) id_axe
   if ("axe" %in% colnames(axeT))
     axeT$axe <- ifelse(axeT$axe==0,"MS",paste("T",axeT$axe,sep=""))
@@ -55,7 +61,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   for (w in numcols)
     axeT[,w] <- as.numeric(as.character(axeT[,w]))
   #dimT
-  dimT <- reader(dimTfile)
+  dimT <- readCsv(dimTfile, type)
   conv <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")
   names(conv) <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
   if (all(conv %in% colnames(dimT)))
@@ -63,7 +69,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   else if (!all(names(conv[-grep('nrel',conv)]) %in% colnames(dimT)))
     stop(paste("dimT : missing data: ",paste(names(conv)[!names(conv) %in% colnames(dimT)],collapse=" ")))
   # phenT
-  phenT = reader(phenTfile)
+  phenT = readCsv(phenTfile, type)
   conv <- c("index","nrel","tip","col","ssi","disp")
   names(conv) <- c("id_phen","index_rel_phytomer","dTT_em_phytomer","dTT_col_phytomer","dTT_sen_phytomer","dTT_del_phytomer")
   if (all(conv %in% colnames(phenT)))
@@ -73,7 +79,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
   phenT <- phenT[!is.na(phenT$id_phen),]
   # earT
   if (!is.null(earTfile)) {
-    earT <- reader(earTfile)
+    earT <- readCsv(earTfile, type)
     conv <- c("index","em_ear","em_ped","end_gf","l_ped","d_ped","l_ear","Sp_ear","l_ear_awn")
     names(conv) <- c("id_ear","dTT_em_ear","dTT_em_peduncle","TT_z92","L_peduncle","W_peduncle","L_ear","A_ear","L_spike")
     if (all(conv %in% colnames(earT)))
@@ -85,7 +91,7 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
     earT <- NULL
     
   if (!is.null(ssisenTfile))
-    ssisenT <- reader(ssisenTfile)
+    ssisenT <- readCsv(ssisenTfile, type)
   else
     ssisenT <- NULL
   list(axeT = axeT,
@@ -93,13 +99,6 @@ devTcsv <- function(axeTfile,dimTfile,phenTfile,earTfile=NULL,ssisenTfile=NULL,t
        phenT = phenT,
        earT = earT,
        ssisenT = ssisenT)
-}
-#
-readCsv <- function(file,type=1) {
-  reader <- get(ifelse(type==1,"read.csv","read.csv2"))
-    #type 1 : "." for decimal, "," for separator
-    #type 2:  "," for decimal, ";" for separator
-  reader(file)
 }
 #
 #

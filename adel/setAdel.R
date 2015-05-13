@@ -84,33 +84,30 @@ predictPhen <- function(phenT,index,nf,datesf1,nf_end) {
     stop(paste("setAdel : phenIndex/id_phen", index, "not found in phenTable"))
   else {
     phen <- phenT[phenT$index == index,]
-    if ('index_phytomer' %in% colnames(dimT)) {# index is absolute
-      headers <- c('index_phytomer', 'index', 'nrel')
-      headers <- headers[headers %in% colnames(dim)]
-      out <- vector("list",ncol(phenT) - length(headers))
-      names(out) <- colnames(phen)[-match(headers,colnames(phen))]
-      names(datesf1) <- c("tip","col","ssi","disp")
-      for (i in 1:4) {
-        w <- names(out)[i]
-        out[[w]] <- c(phen[seq(0,nf_end),w] + datesf1[[w]], rep(datesf1[[w]]+phen[nf_end,w], nf - nf_end))
-      }
-      res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
-      
+    headers <- c('index_phytomer', 'index', 'nrel')
+    headers <- headers[headers %in% colnames(phen)]
+    out <- vector("list",ncol(phen) - length(headers))
+    names(out) <- colnames(phen)[-match(headers,colnames(phen))]
+    names(datesf1) <- c("tip","col","ssi","disp")
+    #
+    if ('index_phytomer' %in% colnames(phen)) {# index is absolute
+      nin <- phen$index_phytomer
+      nout <-  c(0,seq(nf))
+      if (length(na.omit(phen$index_phytomer)) < 2)
+        stop(paste("setAdel : not enough data in phenTable for id_phen:",index))
     } else {#index is relative to n phytomer potentielnout <- c(0,seq(nf))/nf
+      nin <- phen$nrel
       nout <- c(0,seq(nf))/nf
       if (length(na.omit(phen$nrel)) < 2)
         stop(paste("setAdel : not enough data in phenTable for id_phen:",index))
-      out <- vector("list",ncol(phenT) -2)
-      names(out) <- colnames(phen)[-match(c('index','nrel'),colnames(phen))]
-      names(datesf1) <- c("tip","col","ssi","disp")
-      for (i in 1:4) {
-        w <- names(out)[i]
-        if (length(na.omit(phen[,w])) < 2)
-          stop(paste("setAdel : not enough data in phenTable for id_phen:",index, 'column:', w))
-        out[[w]] <- openapprox(phen$nrel,phen[,w],nout) + datesf1[[w]] 
-      }
-      res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
     }
+    for (i in 1:4) {
+      w <- names(out)[i]
+      if (length(na.omit(phen[,w])) < 2)
+        stop(paste("setAdel : not enough data in phenTable for id_phen:",index, 'column:', w))
+      out[[w]] <- openapprox(nin,phen[,w],nout,extrapolate=FALSE) + datesf1[[w]]
+    }
+    res <- data.frame(cbind(n=c(0,seq(nf)),do.call("cbind",out)))
   }
   res
 }
@@ -130,17 +127,23 @@ predictPed <- function(pheno,phyto,index,nf,earT) {
   
 #setAdel performs the dressing (geometry, tiller number ...) of plants from parameters and duplicate them for a given number of outputed plants
 #
+#debug load defaults
+#axeT=devT$axeT;dimT=devT$dimT;phenT=devT$phenT;earT=devT$earT;ssisenT=devT$ssisenT;nplants=1;sample='random';seed=NULL;xy_db=xydb;sr_db=srdb;ssipars=NULL
+#
 setAdel <- function(axeT,dimT,phenT,earT,ssisenT,geoLeaf,geoAxe,nplants=1,sample='random',seed=NULL,xy_db=NULL,sr_db=NULL,ssipars=NULL) {
 
+  # Handle semantic of nf, N_phytomer and N_phytomer_potentiel, that depend on the history of adel.
+  #
+  if ("nf"%in%colnames(axeT)) {#first version of adel: N_phytomer_potentiel = nf & N_phytomer = nf
+    colnames(axeT)[match("nf",colnames(axeT))] <- "N_phytomer_potentiel"
+    axeT <- cbind(axeT,N_phytomer = axeT$N_phytomer_potentiel)
+  } else if (!"N_phytomer_potentiel"%in%colnames(axeT)) {# old plantgen (before may 2015)
+    axeT <- cbind(axeT,N_phytomer_potentiel = axeT$N_phytomer)
+  }  
   #prise en chage nouveaux noms
-  conv <- c("id_plt","id_axis","N_phytomer","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
-  names(conv) <- c("plant","axe","nf_end","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
+  conv <- c("id_plt","id_axis","N_phytomer","N_phytomer_potentiel","TT_stop_axis","TT_del_axis","id_dim","id_phen","id_ear","TT_em_phytomer1","TT_col_phytomer1","TT_sen_phytomer1","TT_del_phytomer1")
+  names(conv) <- c("plant","axe","nf_end","nf","end","disp","dimIndex","phenIndex","earIndex","emf1","ligf1","senf1","dispf1")
   colnames(axeT)[colnames(axeT) %in% conv] <- names(conv)[na.omit(match(colnames(axeT),conv))]
-  # nf in adel is N_phytomer_potential (=N_phytomer/nf_end for old adel, or N_phytomer_potential in pgen)
-    if (!"N_phytomer_potential"%in%colnames(axeT)) #old adel
-      axeT <- cbind(axeT,N_phytomer_potential = axeT$nf)
-  colnames(axeT)[match("N_phytomer_potential",colnames(axeT))] <- "nf"
-
   #
   conv <- c("id_dim","index_rel_phytomer","L_blade","W_blade","L_sheath","W_sheath","L_internode","W_internode")
   names(conv) <- c("index","nrel","Ll","Lw","Gl","Gd","El","Ed")

@@ -65,16 +65,18 @@ def cardinalities(proba, n, parents = None):
         proba = {k:v for k,v in proba.iteritems() if (card[k] < parents.get(_parent(k),n) or _parent(k) == '')}
     
     missing = int(n - sum(card.values()))
-    new=[1]
-    while (missing > 0 and len(new) > 0):
-        sorted_p = sorted(proba.iteritems(), key=operator.itemgetter(1), reverse=True)
-        new = [sorted_p[i][0] for i in range(min(len(sorted_p),missing))]
-        for k in new:
-            card[k] += 1
-            if parents is not None:
-                if (card[k] >= parents.get(_parent(k),n) and _parent(k) != ''):
-                    proba.pop(k)
-        missing = int(n - sum(card.values()))   
+    while (missing > 0):
+        # current frequencies
+        freq = {k:float(v) / n for k,v in card.iteritems()}
+        # diff with probabilities
+        dp = {k:abs(freq[k] - proba[k]) for k in freq}
+        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        k = sorted_p[0][0]
+        card[k] += 1
+        if parents is not None:
+            if (card[k] >= parents.get(_parent(k),n) and _parent(k) != ''):
+                proba.pop(k)
+        missing -= 1   
             
     res = {k:v for k,v in card.iteritems() if v > 0}
     if parents is not None:
@@ -109,6 +111,13 @@ def plant_list(axis, nplants = 2):
     plants= reduce(_update, axis, plants)
     
     return plants    
+    
+def t_death(nlost, t_start, t_end):
+    """ regular sampling of time of death between t_start and t_end
+    """
+    step = 1. / nlost
+    at_n = numpy.linspace(step / 2., nlost - step / 2., nlost)
+    return numpy.interp(at_n, [0, nlost], [t_start, t_end]).round(2).tolist()
     
 #define classes for structuring/handling the different botanical models found in pgen
                 
@@ -379,10 +388,10 @@ class WheatDimensions(object):
     
 
 class AxePop(object):
-    """ An extended axe population generator based on plantgen axe generation methods
+    """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)
     """
         
-    def __init__(self, MS_leaves_number_probabilities={'11': 0.3, '12': 0.7}, Emission=None, Regression=None, Damages=None):
+    def __init__(self, MS_leaves_number_probabilities={'11': 0.3, '12': 0.7}, Emission=None, Regression=None, tiller_damages=None, max_order=None):
 
         if Regression is None:
             Regression = TillerRegression(ears_per_plant=2.5, n_elongated_internode=4, delta_stop_del= 2)            
@@ -391,8 +400,9 @@ class AxePop(object):
             
         self.Emission = Emission
         self.Regression = Regression
-        self.Damages = Damages
+        self.tiller_damages = tiller_damages
         self.MS_probabilities = MS_leaves_number_probabilities
+        self.max_order = max_order
       
     
     def mean_nff(self):
@@ -401,8 +411,42 @@ class AxePop(object):
     def mode_nff(self):
         v = self.MS_probabilities.values()
         nff = self.MS_probabilities.keys()
-        return int(nff[v.index(max(v))])        
-      
+        return int(nff[v.index(max(v))])
+
+    def axis_emission_table(self):
+        nff = self.mean_nff()
+        #regression start is set/defined at population level
+        hs_debreg = self.Regression.hs_debreg(nff)
+        table = self.Emission.emission_table(nff, hs_debreg=hs_debreg, max_order=self.max_order)
+        return table
+
+    def cohort_emission_table(self):
+        axis_table = self.axis_emission_table()
+        cohort_table = self.Emission.cohort_emission_table(axis_table)
+        return cohort_table
+        
+    def regression_table(self):
+        cohort_table = self.cohort_emission_table()
+        return self.Regression.regression_table(cohort_table)
+     
+    def damage_table(self):
+        """ compute damage table for the differents cohorts
+        """
+        damages = self.tiller_damages
+        if damages is not None:
+            when_start,when_end = damages['when']
+            f_damaged = tools.calculate_decide_child_cohort_probabilities(damages['damage'])# tools function convert 'tiller name' kays into cohort index keys
+            damages = pandas.DataFrame({'cohort':f_damaged.keys(), 'f_damaged':f_damaged.values()})
+            # compute start/end for the different cohorts
+            delays = pandas.DataFrame({'cohort':self.Emission.cohort_delays().keys(), 'delay':self.Emission.cohort_delays().values()})
+            damages = damages.merge(delays)
+            damages['start_damages'] = numpy.maximum(damages['delay'],when_start)
+            damages['end_damages'] = numpy.maximum(damages['delay'], when_end)
+            #filter tillers emited after end
+            damages = damages.loc[damages['end_damages'] > damages['start_damages'],:]
+            damages = damages.drop('delay',axis=1)
+        return damages
+     
     def random_population(self, nplants=1):
         """ Ramdomly generate a population of axes (reproduce plantgen original behavior)
         """
@@ -420,22 +464,18 @@ class AxePop(object):
             plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff}))
         return pandas.concat(plants) 
 
-    def control_population(self, nplants=1, max_order=None):
+    def smart_population(self, nplants=1):
         """ Generate an axe population using deteministic rounding
         """
-        nff = self.mean_nff()
-        #regression start is set/defined at population level
-        hs_debreg = self.Regression.hs_debreg(nff)
-        table = self.Emission.emission_table(nff, hs_debreg=hs_debreg, max_order=max_oder)               
-        cohort_table = self.Emission.cohort_emission_table(table)
-        
+        table = self.axis_emission_table()              
+        cohort_table = self.Emission.cohort_emission_table(table)       
         cohort_cardinalities = numpy.round(cohort_table['probability'] * nplants)
         
         groups = table.groupby('cohort')
         axis_proba = groups.apply(lambda x: dict(zip(x['axis'].values, x['probability'].values / sum(x['probability'])))).to_dict()
         parents={'':0}
-        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.iteritems()}
-    
+        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.iteritems()}    
+
         axis_list = flat_list([flat_list(map(lambda x: [(k,x[0])] * int(x[1]),v.items())) for k, v in axis_cardinalities.iteritems()])
         plist = plant_list(axis_list, nplants)
         plant_axes = map(lambda x: [(v[0],k) for k,v in x.iteritems()],plist)
@@ -461,6 +501,43 @@ class AxePop(object):
         df= df.sort(['id_plt','id_cohort','id_axis'])
         return df
 
+    def disparition_times(self, population):
+        """ Compute disparition times  of a population of axis, expressed in haun stage of mean plant
+        """
+              
+        regression_table = self.regression_table()
+        regression_table.set_index('cohort',inplace=True)
+        fdisp = regression_table['f_disp'].to_dict()
+        
+        damages = self.damage_table()
+        damages.set_index('cohort', inplace=True)
+        fdamaged = damages['f_damaged'].to_dict()
+        
+        cards = population.groupby('id_cohort').count()['id_axis'].to_dict()
+        
+        nlost = {k: round(v * cards[k]) for k,v in fdisp.iteritems()}
+        nlost = {k:v for k,v in nlost.iteritems() if v > 0}
+        tlost = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nlost.iteritems()}
+        
+        if damages if not None:
+            ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.iteritems()}
+            ndamaged = {k:v for k,v in ndamaged.iteritems() if v > 0}
+            assert sum(ndamaged.values()) <= sum(nlost.values()), 'Damages are too important to be compensated by reggressing tillers !'
+            tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.iteritems()}
+            for k in tdamaged:
+                if k in tlost:
+                    for i in range(min(len(tlost[k]), len(tdamaged[k]))):
+                        tlost[k][i] = tdamaged[k].pop() #use numpy search sorted first to alter the closest tlost ?
+                    #to do?: use other (undamaged) regressing tiller to make damages if tdamaged[k] is not emptied ?
+                else:
+                    tlost[k] = tdamaged[k]#to do: compensate ! otherwise near is not good !
+                            
+        
+        disp_times = {k: tlost[k] + [None] * (cards[k] - nlost[k]) if k in tlost else [None] * cards[k] for k in cards}
+        for k in disp_times:
+            random.shuffle(disp_times[k])
+        
+        return [disp_times[c].pop() for c in population['id_cohort']]
         
 class PlantGen(object):
     """ A class interface for generating plants one by one with plantgen

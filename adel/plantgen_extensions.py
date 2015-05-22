@@ -41,7 +41,13 @@ def random_round(decimal):
     rounded = int(decimal)
     if random.random() <= (decimal - rounded):
         rounded += 1
-    return rounded    
+    return rounded
+
+def _order(axe):
+    if axe is 'MS':
+        return 0
+    else:
+        return len(axe.rsplit('.'))    
     
 def _parent(axe):
     return '.'.join(axe.rsplit('.')[:-1])  
@@ -174,8 +180,6 @@ class TillerEmission(object):
         df = df.sort(['cohort','axis'])
         
         if max_order != None:
-            def _order(axe):
-                return len(axe.rsplit('.'))
             df = df[map(lambda x: _order(x) <= max_order,df['axis'])]
            
         if hs_debreg != None:
@@ -188,10 +192,6 @@ class TillerEmission(object):
         df = emission_table.groupby('cohort', group_keys=False).agg(how)
         return df
         
-    #deprecated
-   
-    def emission_parameters(self):
-        return {'decide_child_axis_probabilities':self.primary_tiller_probabilities, 'MS_leaves_number_probabilities':self.MS_leaves_number_probabilities}
 
 class TillerRegression(object):
     """ Tiller regression model
@@ -257,6 +257,7 @@ class TillerRegression(object):
         
         return reg_table[reg_table['f_disp'] > 0]    
         
+               
 class HaunStage(object):
     """ Handle HaunStage = f (ThermalTime) fits
     """
@@ -284,7 +285,7 @@ class HS_flag(object):
         self.most_frequent_nff = most_frequent_MS_nff
         self.a_cohort = most_frequent_MS_a_cohort
         #
-        self.a1_a2 = inner_parameters.get('SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS',params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
+        self.a1_a2 = inner_params.get('SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS',params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
     #  
     def dTT_MS_cohort(self, cohort):
         """ 
@@ -557,31 +558,32 @@ class AxePop(object):
         
         return [disp_times[c].pop() for c in population['id_cohort']]
         
+    def plant_list(self, nplants=1):
+        pop = self.smart_population(nplants)
+        pop['hs_disparition'] = self.disparition_times(pop)
+        pop['hs_stop'] = pop['hs_disparition'] - self.Regression.delta_stop_del
+        return dict(list(pop.groupby('id_plt'))).values()
+        
+
+        
 class PlantGen(object):
-    """ A class interface for generating plants one by one with plantgen
+    """ A class interface to modular plantgen
     """
     
-    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, Regression = None, Emission=None, inner_parameters={}):
+    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, inner_parameters={}):
     
         #defaults for fitted models
-        if HSfit is None:#HS fit is for the most frequent main stem
+        if HSfit is None:#HS fit is for the mean plant main stem
             HSfit = HaunStage(a_cohort = 1. / 110., TT_hs_0 = 0)           
         if GLfit is None:
             GLfit = GreenLeaves(GL_start_senescence=4.4, GL_bolting=1.5, GL_HS_flag=5, n_elongated_internode= 4, curvature = -0.01)        
         if Dimfit is None:
             Dimfit = WheatDimensions()            
-        if Regression is None:
-            Regression = TillerRegression(ears_per_plant=2.5, n_elongated_internode=4, delta_stop_del= 2)            
-        if Emission is None:
-            Emission = TillerEmission({'T1':0.95, 'T2':0.85, 'T3':0.75}, {'11':0.3, '12':0.7}, inner_parameters)
-            
         self.inner_parameters = inner_parameters
         self.HSfit = HSfit
         self.GLfit = GLfit
         self.Dimfit = Dimfit
-        self.Emission = Emission
-        self.Regression = Regression
-        self.HS_flag = HS_flag(most_frequent_MS_nff = self.Emission.most_frequent_nff_MS(), most_frequent_MS_a_cohort = self.HSfit.a_cohort, inner_params=self.inner_parameters)
+        #self.HS_flag = HS_flag(most_frequent_MS_nff = self.AxeGenerator.mode_nff(), most_frequent_MS_a_cohort = self.HSfit.a_cohort, inner_params=inner_parameters)
         
         #setup base configuration for plantgen interface for one plant
         self.base_config = {}
@@ -590,46 +592,43 @@ class PlantGen(object):
         self.base_config.update({'plants_number': 1,
                             'plants_density': 1.})
                   
-        self.count=0
-                       
-    def reset(self):
-        self.count = 0
+    
      
-    def config(self, axeT = None):
-        """ Generate plantgengen configuration dict for a plant decribed in axeT
-            if axeT is None, a random plant with id is generated using the plant_generator
+    def config(self, plant):
+        """ Generate plantgen configuration dict for a plant without any axis regression
         """
            
         config = {}
         config.update(self.base_config) #avoid side effects on base_config
         
-        if axeT is None:
-            self.count += 1
-            axeT = self.Emission.new_plant(self.count)
-          
-        # emision parameters for plantgen (used for hs_flag model among others)
-        emission_parameters = self.Emission.emission_parameters()
-        config.update({'decide_child_axis_probabilities': emission_parameters['decide_child_axis_probabilities'],
-                        'MS_leaves_number_probabilities': emission_parameters['MS_leaves_number_probabilities']})
+        nff = plant['N_phytomer_potential'].max()
+                  
+        # report emision/regression parameters for plantgen (for info only, except MS_probas that impact HS_flag of tillers) should not be used : to be sure make a test without setting these parameters)
+        #emission_parameters = self.plant_parameters.get('emission',{})
+        #reg_pars = self.plant_parameters.get('regression',{})
+        #config.update({'decide_child_axis_probabilities': emission_parameters['decide_child_axis_probabilities'],
+        #                'MS_leaves_number_probabilities': emission_parameters['MS_leaves_number_probabilities'],
+        #                'delais_TT_stop_del_axis': reg_pars['delais_HS_stop_del_axis'] * self.HSfit.phyllochron(),
+        #                'TT_regression_start_user': self.HSfit.TT(nff - reg_pars['delta_HS_regression_start_user'])})
                                 
         #nff dependent fits: TO DO : compute HSfit for current plant nff (a_cohort should be re-computed to match hs_flag predicted by hs_flag model)
         # alternatively, HSfit may contain parameter forfitted plant main stem, but then ms_probalities_nff  for pgen and should be one and for HSflag model too
-        nff = axeT['N_phytomer_potential'].max()
+        
         
         # Tillering
-        hs_deb_reg = self.Regression.hs_debreg(nff)
-        axeT_user = self.axeT_user_table(axeT)
-        config.update({'ears_density' : self.Regression.ears_per_plant, 
-                        'delais_TT_stop_del_axis': self.Regression.delta_stop_del * self.HSfit.phyllochron(),
-                        'TT_regression_start_user': self.HSfit.TT(hs_deb_reg),
-                        'axeT_user':axeT_user
-                       })
+          
+        axeT_user = self.axeT_user_table(plant)
+        config.update({'ears_density' : None, #no regression 
+                        'axeT_user':axeT_user,
+                        'MS_leaves_number_probabilities':{str(nff):1.0},
+                        'decide_child_axis_probabilities':{k:1.0 for k in plant['id_axis'] if  0 < _order(k) <= 1}
+                        })
                        
         # Dimensions
         config['dimT_user'] = self.Dimfit.dimT_user_table(nff)
         
         # Dynamic              
-        config['dynT_user'] = self.dynT_user_table(nff)
+        config['dynT_user'] = self.dynT_user_table(plant)
         
         GL = self.GLfit.HS_GL_sample(nff)
         GL['TT'] = self.HSfit.TT(GL['HS'])
@@ -640,6 +639,21 @@ class PlantGen(object):
         config['TT_t1_user'] = self.HSfit.TT(hs_t1)
         
         return config
+
+    def pgen_tables(self, plant):
+        config = self.config(plant)
+        axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**config)
+        axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
+        # include regression
+        axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])
+        axeT['TT_del_axis'] = self.HSfit.TT(plant['hs_disparition'])
+        for i in axeT.index:
+            TT_stop = axeT['TT_stop_axis'][i]
+            if not numpy.isnan(TT_stop):
+                phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
+                axeT['HS_final'][i] = numpy.interp(TT_stop, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT['id_ear'][i] = numpy.nan
+        return {'adelT': (axeT, dimT, phenT), 'phenT_abs':phenT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
         
             
     def axeT_user_table(self, axeT):
@@ -652,43 +666,32 @@ class PlantGen(object):
         df['id_axis'] = axeT['id_axis']
         df['id_cohort'] = axeT['id_cohort']
         df['N_phytomer_potential'] = axeT['N_phytomer_potential']
-        df['id_phen'] = df['id_cohort'] * 100 + df['N_phytomer_potential']
+        df['id_phen'] = (df['id_cohort'] * 100 + df['N_phytomer_potential']) * 10 + 1#id for axe with ear
         
         df= df.sort(['id_plt','id_cohort','id_axis'])
         return df
       
-    def dynT_user_table(self, nff):
+    def dynT_user_table(self, plant):
     
+        nff = plant['N_phytomer_potential'].max()
         MS_parameters = {'a_cohort': self.HSfit.a_cohort,
                          'TT_hs_0': self.HSfit.TT_hs_0,
                          'TT_hs_N_phytomer_potential': self.HSfit.TT(nff),
                          'n0': self.GLfit.n0,
                          'n1': self.GLfit.n1,
                          'n2': self.GLfit.n2}
-        tillers_probabilities = self.Emission.primary_tiller_probabilities
-        cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(tillers_probabilities)
-        primary_tillers = tillers_probabilities.keys()
-        primary_tillers.sort()
-        idaxis = ['MS'] + primary_tillers
+        idaxis = plant['id_axis'].values
         df = pandas.DataFrame(index=idaxis,
                               columns=['id_axis','a_cohort','TT_hs_0','TT_hs_N_phytomer_potential','n0','n1','n2'],
                               dtype=float)
         df.ix['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
-        cohorts = cohort_probabilities.keys()
-        cohorts.sort()
         hs_flag = df['TT_hs_N_phytomer_potential'][0] #ICI : ajouter prediction HSflag
-        df['TT_hs_N_phytomer_potential'] = [df['TT_hs_N_phytomer_potential'][0]] + hs_flag.tolist()
+        df['TT_hs_N_phytomer_potential'] = hs_flag
         df = df.reset_index(drop=True)
         return df
     
     
-    def tables(self, axe_T=None):
-        config = self.config(axe_T)
-        axeT_, dimT_, phenT_, phenT_abs, dimT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**config)
-        axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
-       
-        return {'adelT': (axeT, dimT, phenT), 'phenT_abs':phenT_abs, 'dimT_abs':dimT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
  
 
     

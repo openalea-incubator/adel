@@ -112,12 +112,12 @@ def plant_list(axis, nplants = 2):
     
     return plants    
     
-def t_death(nlost, t_start, t_end):
+def t_death(n, t_start, t_end):
     """ regular sampling of time of death between t_start and t_end
     """
-    step = 1. / nlost
-    at_n = numpy.linspace(step / 2., nlost - step / 2., nlost)
-    return numpy.interp(at_n, [0, nlost], [t_start, t_end]).round(2).tolist()
+    step = 1. / n
+    at_n = numpy.linspace(step / 2., n - step / 2., n)
+    return numpy.interp(at_n, [0, n], [t_start, t_end]).round(2).tolist()
     
 #define classes for structuring/handling the different botanical models found in pgen
                 
@@ -403,8 +403,7 @@ class AxePop(object):
         self.tiller_damages = tiller_damages
         self.MS_probabilities = MS_leaves_number_probabilities
         self.max_order = max_order
-      
-    
+          
     def mean_nff(self):
         return sum([int(k) * v for k,v in self.MS_probabilities.iteritems()])
         
@@ -510,30 +509,49 @@ class AxePop(object):
         fdisp = regression_table['f_disp'].to_dict()
         
         damages = self.damage_table()
-        damages.set_index('cohort', inplace=True)
-        fdamaged = damages['f_damaged'].to_dict()
         
         cards = population.groupby('id_cohort').count()['id_axis'].to_dict()
         
-        nlost = {k: round(v * cards[k]) for k,v in fdisp.iteritems()}
-        nlost = {k:v for k,v in nlost.iteritems() if v > 0}
-        tlost = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nlost.iteritems()}
+        nreg = {k: round(v * cards[k]) for k,v in fdisp.iteritems()}
+        nreg = {k:v for k,v in nreg.iteritems() if v > 0}
+        treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.iteritems()}
         
-        if damages if not None:
+        if damages is None:
+            tdisp = treg
+        else:
+            damages.set_index('cohort', inplace=True)
+            fdamaged = damages['f_damaged'].to_dict()
             ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.iteritems()}
             ndamaged = {k:v for k,v in ndamaged.iteritems() if v > 0}
-            assert sum(ndamaged.values()) <= sum(nlost.values()), 'Damages are too important to be compensated by reggressing tillers !'
+            assert sum(ndamaged.values()) <= sum(nreg.values()), 'Damages are too important to be compensated by reggressing tillers !'
             tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.iteritems()}
+            tdisp = {}
+            # for damaged regressing tillers, choose min(tdamage, treg)
             for k in tdamaged:
-                if k in tlost:
-                    for i in range(min(len(tlost[k]), len(tdamaged[k]))):
-                        tlost[k][i] = tdamaged[k].pop() #use numpy search sorted first to alter the closest tlost ?
-                    #to do?: use other (undamaged) regressing tiller to make damages if tdamaged[k] is not emptied ?
-                else:
-                    tlost[k] = tdamaged[k]#to do: compensate ! otherwise near is not good !
-                            
+                if k in treg:
+                    tdisp[k] = []
+                    for i in range(min(len(treg[k]), len(tdamaged[k]))):
+                        tdisp[k].append(min(treg[k].pop(), tdamaged[k].pop()))
+            # remaining damages are compensated by unregressing oldest tillers (compensation is for getting the right nears/plant)
+            for k in tdamaged:
+                if len(tdamaged[k]) > 0:# more than the regressing tillers are damaged
+                    if not k in tdisp:
+                        tdisp[k]= []
+                    tdisp[k].extend(tdamaged[k])
+                    # compensation : unregressing oldest tillers
+                    for i in range(len(tdamaged[k])):
+                        for j in sorted(treg.keys()):
+                            if len(treg[j]) > 0:
+                                treg[j].pop()
+                                break
+            # add remaining regression
+            for k in treg:
+                if len(treg[k]) > 0:
+                    if not k in tdisp:
+                        tdisp[k] = []
+                    tdisp[k].extend(treg[k])
         
-        disp_times = {k: tlost[k] + [None] * (cards[k] - nlost[k]) if k in tlost else [None] * cards[k] for k in cards}
+        disp_times = {k: tdisp[k] + [None] * (cards[k] - len(tdisp[k])) if k in tdisp else [None] * cards[k] for k in cards}
         for k in disp_times:
             random.shuffle(disp_times[k])
         

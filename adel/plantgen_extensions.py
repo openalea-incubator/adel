@@ -573,7 +573,7 @@ class PlantGen(object):
     def __init__(self, HSfit=None, GLfit=None, Dimfit=None, inner_parameters={}):
     
         #defaults for fitted models
-        if HSfit is None:#HS fit is for the mean plant main stem
+        if HSfit is None:#HS fit is for the main stem of the mean plant 
             HSfit = HaunStage(a_cohort = 1. / 110., TT_hs_0 = 0)           
         if GLfit is None:
             GLfit = GreenLeaves(GL_start_senescence=4.4, GL_bolting=1.5, GL_HS_flag=5, n_elongated_internode= 4, curvature = -0.01)        
@@ -653,9 +653,26 @@ class PlantGen(object):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
                 axeT['HS_final'][i] = numpy.interp(TT_stop, phen['TT_col_phytomer'], phen['index_phytomer'])
                 axeT['id_ear'][i] = numpy.nan
+                
+        # include plant number in ids to allow future concatenation with other plants
+        id_plt = plant['id_plt'][0]
+        axeT['id_dim'] = id_plt * 1e5 + axeT['id_dim']
+        dimT['id_dim'] = id_plt * 1e5 + dimT['id_dim']
+        axeT['id_phen'] = id_plt * 1e5 + axeT['id_phen']
+        phenT['id_phen'] = id_plt * 1e5 + phenT['id_phen']
+        
         return {'adelT': (axeT, dimT, phenT), 'phenT_abs':phenT_abs, 'phenT_first':phenT_first, 'HS_GL_SSI_T':HS_GL_SSI_T, 'tilleringT':tilleringT, 'cardinalityT':cardinalityT, 'config':config}
         
-            
+    def adelT(self, plants):
+        """ Compute Adel input tables (axeT, phenT, dimT) for a collection of plants
+        """        
+        tables = map(lambda x: self.pgen_tables(x)['adelT'], plants)
+        if len(plants) > 1:
+            axeT, dimT, phenT =  map(pandas.concat, zip(*tables))
+        else:
+            axeT, dimT, phenT = tables[0]
+        return axeT, dimT, phenT
+     
     def axeT_user_table(self, axeT):
     
         df = pandas.DataFrame(index=range(len(axeT['id_plt'])),

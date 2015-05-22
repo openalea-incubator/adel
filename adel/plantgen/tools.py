@@ -167,45 +167,47 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_r
         * *min_axes_number* must be smaller (or equal) than *max_axes_number*.
 
     '''
-    
-    if max_axes_number < 0:
-        raise InputError("max_axes_number negative")
-    if min_axes_number < 0:
-        raise InputError("min_axes_number negative")
-    if TT_regression_start < 0:
-        raise InputError("TT_regression_start negative")
-    if TT_hs_flag_leaf < 0:
-        raise InputError("TT_hs_flag_leaf negative")
-    
-    if TT_regression_start > TT_hs_flag_leaf:
-        raise InputError("TT_regression_start greater than TT_hs_flag_leaf")
-    
-    if min_axes_number > max_axes_number:
-        raise InputError("min_axes_number greater than max_axes_number")
-    
-    polynomial_coefficient_array = np.polyfit([TT_hs_flag_leaf, TT_regression_start], [min_axes_number, max_axes_number], 1)
-                
-    remaining_axes_number = max_axes_number
-    T_em_leaf1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
-    T_em_leaf1_tuples.sort()
-    T_stop_axis_tuples = []
-    for tt in range(int(TT_regression_start), int(TT_hs_flag_leaf) + 1):
-        simulated_axes_number = int(np.polyval(polynomial_coefficient_array, tt))
-        axes_to_delete_number = remaining_axes_number - simulated_axes_number
-        while axes_to_delete_number > 0:
-            max_emf_1, axis_row_number = T_em_leaf1_tuples.pop()
-            T_stop_axis_tuples.append((axis_row_number, tt))
-            axes_to_delete_number -= 1
-            remaining_axes_number -= 1
-        if remaining_axes_number == 0:
-            break 
-    T_stop_axis_tuples.sort()
-    T_stop_axis_row_number_list = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
-    TT_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
-    for i in range(len(TT_em_phytomer1)):
-        if i not in T_stop_axis_row_number_list:
-            TT_stop_axis_list.insert(i, np.nan)
-    return TT_stop_axis_list 
+    if min_axes_number is None:#no regression
+        return [np.nan] * len(TT_em_phytomer1)
+    else:
+        if max_axes_number < 0:
+            raise InputError("max_axes_number negative")
+        if min_axes_number < 0:
+            raise InputError("min_axes_number negative")
+        if TT_regression_start < 0:
+            raise InputError("TT_regression_start negative")
+        if TT_hs_flag_leaf < 0:
+            raise InputError("TT_hs_flag_leaf negative")
+        
+        if TT_regression_start > TT_hs_flag_leaf:
+            raise InputError("TT_regression_start greater than TT_hs_flag_leaf")
+        
+        if min_axes_number > max_axes_number:
+            raise InputError("min_axes_number greater than max_axes_number")
+        
+        polynomial_coefficient_array = np.polyfit([TT_hs_flag_leaf, TT_regression_start], [min_axes_number, max_axes_number], 1)
+                    
+        remaining_axes_number = max_axes_number
+        T_em_leaf1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
+        T_em_leaf1_tuples.sort()
+        T_stop_axis_tuples = []
+        for tt in range(int(TT_regression_start), int(TT_hs_flag_leaf) + 1):
+            simulated_axes_number = int(np.polyval(polynomial_coefficient_array, tt))
+            axes_to_delete_number = remaining_axes_number - simulated_axes_number
+            while axes_to_delete_number > 0:
+                max_emf_1, axis_row_number = T_em_leaf1_tuples.pop()
+                T_stop_axis_tuples.append((axis_row_number, tt))
+                axes_to_delete_number -= 1
+                remaining_axes_number -= 1
+            if remaining_axes_number == 0:
+                break 
+        T_stop_axis_tuples.sort()
+        T_stop_axis_row_number_list = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
+        TT_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
+        for i in range(len(TT_em_phytomer1)):
+            if i not in T_stop_axis_row_number_list:
+                TT_stop_axis_list.insert(i, np.nan)
+        return TT_stop_axis_list 
 
 
 def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):

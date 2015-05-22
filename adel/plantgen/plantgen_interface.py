@@ -100,7 +100,7 @@ def gen_adel_input_data(dynT_user,
           The keys are the final numbers of main stem leaves, and the values are 
           the probabilities distribution.
           
-        - `ears_density` (:class:`int`) - the number of ears per square meter. 
+        - `ears_density` (:class:`int`) - the number of ears per square meter, or None if no regression occured 
         
         - `GL_number` (:class:`dict` of :class:`float`::class:`float`) - the GL decimal numbers measured at 
           several thermal times (including the senescence end). The keys are the 
@@ -169,20 +169,24 @@ def gen_adel_input_data(dynT_user,
                                                                                  decide_child_axis_probabilities,
                                                                                  params.FIRST_CHILD_DELAY)
     theoretical_cardinalities_sum = sum(theoretical_cohort_cardinalities.values())
-    number_of_ears = plants_number * ears_density / float(plants_density)
-    if number_of_ears < plants_number:
-        raise tools.InputError("the number of ears (%s) is lesser than plants_number (%s). \
-The number of ears (%s) is calculated from plants_number (%s), ears_density (%s) \
-and plants_density (%s)." % (number_of_ears, plants_number, number_of_ears, plants_number, 
-                             ears_density, plants_density))
-    
-    if number_of_ears > theoretical_cardinalities_sum:
-        raise tools.InputError("the number of ears (%s) is greater than the theoretical number of axes (%s). \
-The number of ears (%s) is calculated from plants_number (%s), ears_density (%s) and plants_density (%s). \
-The theoretical number of axes (%s) is calculated from plants_number (%s), decide_child_cohort_probabilities \
-(%s) and params.FIRST_CHILD_DELAY (%s)" % (number_of_ears, theoretical_cardinalities_sum, number_of_ears, 
-                                           plants_number, ears_density, plants_density, theoretical_cardinalities_sum,
-                                           plants_number, decide_child_cohort_probabilities, params.FIRST_CHILD_DELAY))
+    if ears_density is not None:
+        number_of_ears = plants_number * ears_density / float(plants_density)
+    else:
+        number_of_ears = None
+    if number_of_ears is not None:
+        if number_of_ears < plants_number:
+            raise tools.InputError("the number of ears (%s) is lesser than plants_number (%s). \
+    The number of ears (%s) is calculated from plants_number (%s), ears_density (%s) \
+    and plants_density (%s)." % (number_of_ears, plants_number, number_of_ears, plants_number, 
+                                 ears_density, plants_density))
+        
+        if number_of_ears > theoretical_cardinalities_sum:
+            raise tools.InputError("the number of ears (%s) is greater than the theoretical number of axes (%s). \
+    The number of ears (%s) is calculated from plants_number (%s), ears_density (%s) and plants_density (%s). \
+    The theoretical number of axes (%s) is calculated from plants_number (%s), decide_child_cohort_probabilities \
+    (%s) and params.FIRST_CHILD_DELAY (%s)" % (number_of_ears, theoretical_cardinalities_sum, number_of_ears, 
+                                               plants_number, ears_density, plants_density, theoretical_cardinalities_sum,
+                                               plants_number, decide_child_cohort_probabilities, params.FIRST_CHILD_DELAY))
     
     available_axes_warning_message = "the probabilities defined in decide_child_axis_probabilities (%s) and \
 the axes documented by the user (%s) in %s indicate that some of the possible axes (%s) \

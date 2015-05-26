@@ -262,9 +262,11 @@ class HaunStage(object):
     """ Handle HaunStage = f (ThermalTime) fits
     """
     
-    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0):
+    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, cohort_flag_leaf_delays={'first': 60, 'increment': 10}, nff_flag_leaf_delay = 0.25):
         self.a_cohort = a_cohort
         self.TT_hs_0 = TT_hs_0
+        self.cohort_flag_leaf_delays = cohort_flag_leaf_delays
+        self.nff_flag_leaf_delay = nff_flag_leaf_delay
         
     def __call__(self, TT):# HS
         return (numpy.array(TT) - self.TT_hs_0) * self.a_cohort
@@ -278,46 +280,19 @@ class HaunStage(object):
     def phyllochron(self):
         return 1. / self.a_cohort
         
-class HS_flag(object):
-    """ models for predicting HS flag of axes from most frequent Main stem
-    """
-    def __init__(self, most_frequent_MS_nff = 12, most_frequent_MS_a_cohort = 1. / 110, inner_params={}):
-        self.most_frequent_nff = most_frequent_MS_nff
-        self.a_cohort = most_frequent_MS_a_cohort
-        #
-        self.a1_a2 = inner_params.get('SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS',params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
-    #  
-    def dTT_MS_cohort(self, cohort):
-        """ 
-        'model' for thermal time delay between Most frequent MS flag leaf appearance and and its relative tillers
-        (plantgen doest provide a model, but consider this as inpus)     
-        id axis is tiller axis name (T0, T1...)
+    def dTT_MS_cohort(self, cohort=1):
+        """ delay between main stem flag leaf emergenece and emerenece of flag leaf of the most frequent axis of a cohort
         """
-        
         if cohort == 1:
             return 0
         else:
-            return 60 + (cohort - 3) #valeurs maxwell mariem
-        
-    def dTT_nff(self, cohort, nff):
-        """ delay between flag leaf appearance of the most frequent axis of a cohort and an axis of the same cohort with nff leaves 
+            return self.cohort_flag_leaf_delays['first'] + self.cohort_flag_leaf_delays['increment'] * (cohort - 3)
+    
+    def dTT_nff(self, delta_nff):
+        """ delay between emergence of axis of the same cohort but with different nff
         """
-        if cohort == 1:#MS
-            most_frequent_nff = self.most_frequent_nff
-        else:
-            most_frequent_nff = tools.calculate_tiller_final_leaves_number(self.most_frequent_nff, cohort, self.a1_a2)
-            
-        return 1. * (nff - most_frequent_nff) / (4 * self.a_cohort)
-        
-        
-    def dTT_MS(self, axis_id, nff):
-        """ delay between most frequent MS flag leaf ligulation and axis axis_id with nff leaves
-        """
-        if axis_id == "MS":
-            cohort = 1
-        else:
-            cohort = int(id_axis.lstrip('T')) + 3
-        return self.dTT_MS_cohort(cohort) + self.dTT_nff(cohort, nff)
+        return self.nff_flag_leaf_delay * delta_nff * self.phyllochron() 
+    
 
 class GreenLeaves(object):
     """
@@ -573,8 +548,8 @@ class PlantGen(object):
     def __init__(self, HSfit=None, GLfit=None, Dimfit=None, inner_parameters={}):
     
         #defaults for fitted models
-        if HSfit is None:#HS fit is for the main stem of the mean plant 
-            HSfit = HaunStage(a_cohort = 1. / 110., TT_hs_0 = 0)           
+        if HSfit is None:#HS fit is for the main stem of the plant (or mean plant but then difference for flag leaf emergence should be added in equations)
+            HSfit = HaunStage()           
         if GLfit is None:
             GLfit = GreenLeaves(GL_start_senescence=4.4, GL_bolting=1.5, GL_HS_flag=5, n_elongated_internode= 4, curvature = -0.01)        
         if Dimfit is None:
@@ -583,7 +558,6 @@ class PlantGen(object):
         self.HSfit = HSfit
         self.GLfit = GLfit
         self.Dimfit = Dimfit
-        #self.HS_flag = HS_flag(most_frequent_MS_nff = self.AxeGenerator.mode_nff(), most_frequent_MS_a_cohort = self.HSfit.a_cohort, inner_params=inner_parameters)
         
         #setup base configuration for plantgen interface for one plant
         self.base_config = {}
@@ -602,19 +576,7 @@ class PlantGen(object):
         config.update(self.base_config) #avoid side effects on base_config
         
         nff = plant['N_phytomer_potential'].max()
-                  
-        # report emision/regression parameters for plantgen (for info only, except MS_probas that impact HS_flag of tillers) should not be used : to be sure make a test without setting these parameters)
-        #emission_parameters = self.plant_parameters.get('emission',{})
-        #reg_pars = self.plant_parameters.get('regression',{})
-        #config.update({'decide_child_axis_probabilities': emission_parameters['decide_child_axis_probabilities'],
-        #                'MS_leaves_number_probabilities': emission_parameters['MS_leaves_number_probabilities'],
-        #                'delais_TT_stop_del_axis': reg_pars['delais_HS_stop_del_axis'] * self.HSfit.phyllochron(),
-        #                'TT_regression_start_user': self.HSfit.TT(nff - reg_pars['delta_HS_regression_start_user'])})
-                                
-        #nff dependent fits: TO DO : compute HSfit for current plant nff (a_cohort should be re-computed to match hs_flag predicted by hs_flag model)
-        # alternatively, HSfit may contain parameter forfitted plant main stem, but then ms_probalities_nff  for pgen and should be one and for HSflag model too
-        
-        
+               
         # Tillering
           
         axeT_user = self.axeT_user_table(plant)
@@ -627,7 +589,7 @@ class PlantGen(object):
         # Dimensions
         config['dimT_user'] = self.Dimfit.dimT_user_table(nff)
         
-        # Dynamic              
+        # Leaf appearance / Green leaves          
         config['dynT_user'] = self.dynT_user_table(plant)
         
         GL = self.GLfit.HS_GL_sample(nff)
@@ -703,8 +665,9 @@ class PlantGen(object):
                               dtype=float)
         df.ix['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
-        hs_flag = df['TT_hs_N_phytomer_potential'][0] #ICI : ajouter prediction HSflag
-        df['TT_hs_N_phytomer_potential'] = hs_flag
+        cohort = plant['id_cohort'].values
+        dTT_MS_cohort = numpy.frompyfunc(self.HSfit.dTT_MS_cohort, 1, 1) # make function operates on 'vectorised' arrays
+        df['TT_hs_N_phytomer_potential'] = self.HSfit.TT(nff) + dTT_MS_cohort(cohort)
         df = df.reset_index(drop=True)
         return df
     

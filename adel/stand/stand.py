@@ -245,7 +245,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
       
     aggregated_adel_output_df = pp.aggregate_adel_output(adel_output_df, by=['plant', 'axe_id'])
     phenology_df = pp.phenology(adel_output_df)
-    axis_statistics_df = pp.axis_statistics(adel_output_df, domain_area, convUnit)
+    axis_statistics_df = pp.axis_statistics(adel_output_df, domain_area, convUnit)[0]
     intermediate_df = pd.merge(aggregated_adel_output_df, phenology_df, on=['TT', 'plant', 'axe_id'])    
     plot_statistics_df = pp.plot_statistics(axis_statistics_df, plant_number, domain_area)
             

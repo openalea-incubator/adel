@@ -259,39 +259,49 @@ class TillerRegression(object):
         
                
 class HaunStage(object):
-    """ Handle HaunStage = f (ThermalTime) fits
+    """ Handle HaunStage = f (ThermalTime) fits for mean plant and its nff modalities
     """
     
-    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, cohort_flag_leaf_delays={'first': 60, 'increment': 10}, nff_flag_leaf_delay = 0.25):
+    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, std_TT_hs_0 = 0, nff = 12, dTT_nff = 1. / 110. / 4., dTT_cohort={'first': 60, 'increment': 10}):
         self.a_cohort = a_cohort
         self.TT_hs_0 = TT_hs_0
-        self.cohort_flag_leaf_delays = cohort_flag_leaf_delays
-        self.nff_flag_leaf_delay = nff_flag_leaf_delay
+        self.nff = nff# nff of the mean plant
+        self.dTT_nff = dTT_nff
+        self.dTT_cohort = dTT_cohort
+        self.std_TT_hs_0 = std_TT_hs_0
         
-    def __call__(self, TT):# HS
-        return (numpy.array(TT) - self.TT_hs_0) * self.a_cohort
+    def __call__(self, TT, nff=None):# HS
+        return (numpy.array(TT) - self.TT_hs_0) * self.a_nff(nff)
         
-    def TT(self, HS):
-        return self.TT_hs_0 + numpy.array(HS) / self.a_cohort
+    def TT(self, HS, nff=None):
+        return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
         
     def TTem(self, TT):
         return numpy.array(TT) - self.TT_hs_0
         
-    def phyllochron(self):
-        return 1. / self.a_cohort
+    def TTflag(self, nff = None, cohort = 1):
+        if nff is None: 
+            nff = self.nff
+        return self.TT_hs_0 + self.nff / self.a_cohort + dTT_nff * (nff - self.nff) + dTT_MS_cohort
+    
+    def a_nff(self, nff=None):
+        if nff is None:
+            return self.a_cohort
+        else:
+            return nff / (TTflag(nff) - self.TT_hs_0)
+    
+    def phyllochron(self, nff=None):
+        return 1. / self.a_nff(nff)
         
     def dTT_MS_cohort(self, cohort=1):
-        """ delay between main stem flag leaf emergenece and emerenece of flag leaf of the most frequent axis of a cohort
+        """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
         """
         if cohort == 1:
             return 0
         else:
-            return self.cohort_flag_leaf_delays['first'] + self.cohort_flag_leaf_delays['increment'] * (cohort - 3)
+            return self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
     
-    def dTT_nff(self, delta_nff):
-        """ delay between emergence of axis of the same cohort but with different nff
-        """
-        return self.nff_flag_leaf_delay * delta_nff * self.phyllochron() 
+
     
 
 class GreenLeaves(object):

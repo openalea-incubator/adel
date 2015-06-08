@@ -291,7 +291,7 @@ class HaunStage(object):
         if nff is None:
             return self.a_cohort
         else:
-            return nff / (TTflag(nff) - self.TT_hs_0)
+            return nff / (self.TTflag(nff) - self.TT_hs_0)
     
     def phyllochron(self, nff=None):
         return 1. / self.a_nff(nff)
@@ -577,7 +577,7 @@ class AxePop(object):
 
         
 class PlantGen(object):
-    """ A class interface to modular plantgen
+    """ A class interface to plantgen
     """
     
     def __init__(self, HSfit=None, GLfit=None, Dimfit=None, inner_parameters={}):
@@ -604,7 +604,7 @@ class PlantGen(object):
     
      
     def config(self, plant):
-        """ Generate plantgen configuration dict for a plant without any axis regression
+        """ Generate plantgen configuration dict for one plant without any axis regression
         """
            
         config = {}
@@ -627,13 +627,14 @@ class PlantGen(object):
         # Leaf appearance / Green leaves          
         config['dynT_user'] = self.dynT_user_table(plant)
         
-        GL = self.GLfit.HS_GL_sample(nff)
-        GL['TT'] = self.HSfit.TT(GL['HS'])
+        hs_flag = nff
+        GL = self.GLfit.HS_GL_sample(hs_flag)
+        GL['TT'] = self.HSfit.TT(GL['HS'], nff)
         GL = dict(zip(GL['TT'],GL['GL']))
         config['GL_number'] = GL
         
-        hs_t1 = self.GLfit.hs_t1(nff)
-        config['TT_t1_user'] = self.HSfit.TT(hs_t1)
+        hs_t1 = self.GLfit.hs_t1(hs_flag)
+        config['TT_t1_user'] = self.HSfit.TT(hs_t1, nff)
         
         return config
 
@@ -642,7 +643,7 @@ class PlantGen(object):
         axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**config)
         axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
         # include regression
-        axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])
+        axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])# use hs of mean plant
         axeT['TT_del_axis'] = self.HSfit.TT(plant['hs_disparition'])
         for i in axeT.index:
             TT_stop = axeT['TT_stop_axis'][i]
@@ -688,9 +689,9 @@ class PlantGen(object):
     def dynT_user_table(self, plant):
     
         nff = plant['N_phytomer_potential'].max()
-        MS_parameters = {'a_cohort': self.HSfit.a_cohort,
+        MS_parameters = {'a_cohort': self.HSfit.a_nff(nff),
                          'TT_hs_0': self.HSfit.TT_hs_0,
-                         'TT_hs_N_phytomer_potential': self.HSfit.TT(nff),
+                         'TT_hs_N_phytomer_potential': self.HSfit.TTflag(nff),
                          'n0': self.GLfit.n0,
                          'n1': self.GLfit.n1,
                          'n2': self.GLfit.n2}
@@ -702,7 +703,7 @@ class PlantGen(object):
         df['id_axis'] = idaxis
         cohort = plant['id_cohort'].values
         dTT_MS_cohort = numpy.frompyfunc(self.HSfit.dTT_MS_cohort, 1, 1) # make function operates on 'vectorised' arrays
-        df['TT_hs_N_phytomer_potential'] = self.HSfit.TT(nff) + dTT_MS_cohort(cohort)
+        df['TT_hs_N_phytomer_potential'] = self.HSfit.TTflag(nff) + dTT_MS_cohort(cohort)
         df = df.reset_index(drop=True)
         return df
     

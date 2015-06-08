@@ -310,44 +310,57 @@ class HaunStage(object):
 class GreenLeaves(object):
     """
     An object interface to a plantgen derived Green Leaf model
-    This variant is for GL=f(HS) fits (instead of GL=f(TT)) with varying nff
+    This variant is for GL=f(HS_since_flag_leaf) fits (instead of GL=f(TT)) that allow to predict a curve for different nff
     """
 
-    def __init__(self, GL_start_senescence=4.8, GL_bolting=3.2, GL_HS_flag=5.8, n_elongated_internode= 4, curvature = -0.01):
+    def __init__(self, GL_start_senescence=4.8, GL_bolting=3.2, GL_flag=5.8, n_elongated_internode= 4, curvature = -0.01):
+        """ n_elongated_internode is the HS interval between bolting and flag leaf ligulation
+        """
         # rename parameters using plantgen terminology
         self.n0 = GL_start_senescence
         self.n1 = GL_bolting
         self.n_elongated_internode = n_elongated_internode
         self.n2 = GL_HS_flag
         self.a = curvature
-               
+    
+    def fit_a(HS_since_flag, GL):
+        """ Fit curvature coefficient from a HS, GL dataset
+        """
+        GLpol = pandas.DataFrame({'HS':HS_since_flag, 'GL':GL})
+        GLpol = GLpol.ix[GLpol['HS'] > 0,:]
+        c = (self.n2 - self.n1) / (self.n_elongated_internode) - 1
+        fixed_coefs = [0.0, c, self.n2]
+        a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_start)
+        self.a = a
+        return a,rmse
       
-    def hs_t1(self, nff=12):
-        return nff - self.n_elongated_internode
+      
+    def hs_t1(self, hs_flag=12):
+        return hs_flag - self.n_elongated_internode
     
-    def linear_fit(self, nff=12):
-        hs_t2 = nff
-        return interp1d([0, self.n0, self.hs_t1(nff), hs_t2],[0, self.n0, self.n1, self.n2], bounds_error=False, fill_value=0)
+    def linear_fit(self, hs_flag=12):
+        hs_t2 = hs_flag
+        return interp1d([0, self.n0, self.hs_t1(hs_flag), hs_t2],[0, self.n0, self.n1, self.n2], bounds_error=False, fill_value=0)
     
-    def polynomial_fit(self, nff=12):
-        hs_t2 = nff
-        c = (self.n2 - self.n1) / (hs_t2 - self.hs_t1(nff)) - 1
+    def polynomial_fit(self, hs_flag=12):
+        hs_t2 = hs_flag
+        c = (self.n2 - self.n1) / (hs_t2 - self.hs_t1(hs_flag)) - 1
         pol = numpy.poly1d([self.a, 0.0, c, self.n2])
         def _fit(hs):
             gl = numpy.where(hs <= hs_t2, 0, pol(hs - hs_t2))
             return numpy.where(gl >=0, gl, 0)
         return _fit
         
-    def curve(self, nff=12):
-        lin = self.linear_fit(nff)
-        pol = self.polynomial_fit(nff)
+    def curve(self, hs_flag=12):
+        lin = self.linear_fit(hs_flag)
+        pol = self.polynomial_fit(hs_flag)
         def _curve(hs):
             return lin(hs) + pol(hs)            
         return _curve
         
-    def HS_GL_sample(self, nff=12):
-        curve = self.curve(nff)
-        hs = numpy.linspace(nff, 2*nff,20)
+    def HS_GL_sample(self, hs_flag=12):
+        curve = self.curve(hs_flag)
+        hs = numpy.linspace(hs_flag, 2*hs_flag,20)
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
         return df.loc[df['GL'] > 0,:]
             

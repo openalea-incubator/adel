@@ -270,7 +270,10 @@ class HaunStage(object):
         self.dTT_cohort = dTT_cohort
         self.std_TT_hs_0 = std_TT_hs_0
         
-    def __call__(self, TT, nff=None):# HS
+    def __call__(self, TT, nff=None):
+        return self.HS(TT, nff)
+        
+    def HS(self, TT, nff=None):
         return (numpy.array(TT) - self.TT_hs_0) * self.a_nff(nff)
         
     def TT(self, HS, nff=None):
@@ -282,7 +285,7 @@ class HaunStage(object):
     def TTflag(self, nff = None, cohort = 1):
         if nff is None: 
             nff = self.nff
-        return self.TT_hs_0 + self.nff / self.a_cohort + dTT_nff * (nff - self.nff) + dTT_MS_cohort
+        return self.TT_hs_0 + self.nff / self.a_cohort + self.dTT_nff * (nff - self.nff) + self.dTT_MS_cohort(cohort)
     
     def a_nff(self, nff=None):
         if nff is None:

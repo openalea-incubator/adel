@@ -68,12 +68,12 @@ def cardinalities(proba, n, parents = None):
     else:
         card  = {k:int(v*n) for k,v in proba.iteritems()}
     if parents is not None:   #filter saturated parents after int rounding
-        proba = {k:v for k,v in proba.iteritems() if (card[k] < parents.get(_parent(k),n) or _parent(k) == '')}
+        proba = {k:v for k,v in proba.iteritems() if (card[k] <= parents.get(_parent(k),n) or _parent(k) == '')}
     
     missing = int(n - sum(card.values()))
     while (missing > 0):
         # current frequencies
-        freq = {k:float(v) / n for k,v in card.iteritems()}
+        freq = {k:float(v) / n for k,v in card.iteritems() if k in proba}
         # diff with probabilities
         dp = {k:abs(freq[k] - proba[k]) for k in freq}
         sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
@@ -320,7 +320,7 @@ class GreenLeaves(object):
         self.n0 = GL_start_senescence
         self.n1 = GL_bolting
         self.n_elongated_internode = n_elongated_internode
-        self.n2 = GL_HS_flag
+        self.n2 = GL_flag
         self.a = curvature
     
     def fit_a(HS_since_flag, GL):
@@ -483,9 +483,18 @@ class AxePop(object):
         
         nff_MS_cardinalities = cardinalities(self.MS_probabilities, nplants)
         nff_MS = card2list(nff_MS_cardinalities)
+        #count cohort cardinalities per nff
+        def _dfc(x,y):
+            df = pandas.DataFrame(x)
+            df = df.rename(columns={0:'cohort',1:'axe'})
+            df['nff'] = y
+            return df
+        df = pandas.concat(map(lambda x: _dfc(x[0],x[1]), zip(plant_axes, list(reversed(nff_MS)))))# plants are constructed by poping nff_MS, ie from last to first
+        cardnff = df.groupby(('nff','cohort')).agg('count')
+        #find nff per cohort
         cohort_decimal_nff = {int(k):self.Emission.final_leaf_numbers(int(k)) for k in self.MS_probabilities}
         cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.iteritems()} for k,v in cohort_decimal_nff.iteritems()}
-        cohort_nff_cardinalities = {int(k):{kk:cardinalities(vv, int(float(nff_MS_cardinalities[k]) / nplants * cohort_cardinalities[kk]) + 1) for kk,vv in cohort_nff_modalities[int(k)].iteritems()} for k in nff_MS_cardinalities}
+        cohort_nff_cardinalities = {int(nff):{int(c):cardinalities(cohort_nff_modalities[int(nff)][int(c)], int(cardnff.loc[nff,c])) for c in cardnff.loc[nff].index} for nff in nff_MS_cardinalities}
         cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
         
         plants = []
@@ -577,7 +586,7 @@ class PlantGen(object):
         if HSfit is None:#HS fit is for the main stem of the plant (or mean plant but then difference for flag leaf emergence should be added in equations)
             HSfit = HaunStage()           
         if GLfit is None:
-            GLfit = GreenLeaves(GL_start_senescence=4.4, GL_bolting=1.5, GL_HS_flag=5, n_elongated_internode= 4, curvature = -0.01)        
+            GLfit = GreenLeaves()        
         if Dimfit is None:
             Dimfit = WheatDimensions()            
         self.inner_parameters = inner_parameters

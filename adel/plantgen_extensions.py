@@ -304,8 +304,12 @@ class HaunStage(object):
         else:
             return self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
     
-
-    
+    def curve(self, nff=None):
+        if nff is None: 
+            ymax = self.nff
+        else:
+            ymax = nff
+        return interp1d([-1000., self.TT_hs_0, self.TTflag(nff), 3000.],[0., 0., ymax, ymax]) 
 
 class GreenLeaves(object):
     """

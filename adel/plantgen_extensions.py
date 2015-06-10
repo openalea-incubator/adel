@@ -364,6 +364,12 @@ class HaunStage(object):
             nff = self.nff
         return self.TT_hs_0 + self.nff / self.a_cohort + self.dTT_nff * (nff - self.nff) + self.dTT_MS_cohort(cohort)
     
+    def HSflag(self, nff = None):
+        if nff is None:
+            return self.nff
+        else:
+            return nff
+    
     def a_nff(self, nff=None):
         if nff is None:
             return self.a_cohort

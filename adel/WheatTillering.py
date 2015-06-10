@@ -21,8 +21,6 @@ import numpy
 from scipy.interpolate import interp1d
 
 from alinea.adel.plantgen import params, tools
-import alinea.adel.plantgen_extensions as pgen_ext
-
 #
 # New propositions (C. Fournier, January 2014)
 #
@@ -60,7 +58,11 @@ def decimal_elongated_internode_number(internode_ranks, internode_lengths):
     n = df['rank'].max() - numpy.polyfit(df['length'].values, df['rank'].values, 2)[2]
     return n
 
-  
+
+
+
+
+    
 
 class WheatTillering(object):
     """Model of tiller population dynamics on wheat"""
@@ -96,7 +98,6 @@ class WheatTillering(object):
         else:
             self.hs_bolting = hs_bolting
         
-       
     def theoretical_probabilities(self):
         """ Computes cohort number, botanical position and theoretical probabilities of emergence all tillers using botanical position and probabilities of emergence of primary ones
         """
@@ -108,8 +109,8 @@ class WheatTillering(object):
                                                       axis_probabilities,
                                                       self.child_cohort_delay)
         return res
-         
-         
+
+    
     def final_leaf_numbers(self):
         """ returns the mean final leaf numbers of cohorts
         """
@@ -150,44 +151,23 @@ class WheatTillering(object):
         cohorts = cohorts[cohorts['delay'] <= self.hs_debreg()]
         
         return cohorts
-        
-    def axis_list(self, nplants = 2):
-        """ compute cardinalities of axis in a stand of n plants
-        The strategy used here is based on deterministic rounding, and differs from the one used in plantgen (basd on random sampling). Difference are expected for small plants numbers
-        """
-        cohorts = self.emited_cohorts() 
-        axis=pgen_ext.axis_list(cohorts, self.theoretical_probabilities(), nplants)
-                    
-        return axis
-        
-    def plant_list(self, nplants = 2):
-
-        axis = self.axis_list(nplants)
-        plants = pgen_ext.plant_list(axis, nplants)
-        return plants
-        
-    def to_pgen(self, nplants=2, density = 250, phyllochron = 110, TTem=0, pgen_base ={}):
-        plants = self.plant_list(nplants)
-        axeT = pgen_ext.axeT_user(plants)
-        mods = pgen_ext.modalities(self.nff)
-        nff_plants = {k: axeT['id_plt'][(axeT['id_axis'] == 'MS') & (axeT['N_phytomer_potential'] == k)].values.astype(int).tolist() for k in mods}
-        
-        base={}
-        base.update(pgen_base)# avoid altering pgen_base
-        base.update({'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
-              'plants_density': density,
-              'ears_density' : density * self.ears_per_plant, 
-              'delais_TT_stop_del_axis': self.delta_stop_del * phyllochron,
-              'TT_regression_start_user': TTem + self.hs_debreg() * phyllochron
-              })
-        
-        pgen = {k:{'MS_leaves_number_probabilities': {str(k):1.0},
-                   'axeT_user':axeT.ix[axeT['id_plt'].isin(v),:],
-                   'plants_number':len(v)} for k,v in nff_plants.iteritems() if len(v) > 0}
-        
-        for k in pgen:
-            pgen[k].update(base)
-            
+     
+    def regression_parameters(self):
+        pars = {'ears_per_plant': self.ears_per_plant, 
+                'n_elongated_internode': self.n_elongated_internode, 
+                'delta_reg': self.delta_reg, 
+                'delta_stop_del': self.delta_stop_del}
+        return pars
+     
+    def pgen_base(self, phyllochron = 110, TTem=0):
+        """ Return parameter set for plantgen for a mean plant representing the canopy
+        """    
+        pgen = {'decide_child_axis_probabilities' : self.primary_tiller_probabilities,
+                'plants_density': 1.,
+                'ears_density' : self.ears_per_plant, 
+                'delais_TT_stop_del_axis': self.delta_stop_del * phyllochron,
+                'TT_regression_start_user': TTem + self.hs_debreg() * phyllochron
+                }      
         return pgen
     
     def hs_debreg(self):
@@ -271,7 +251,6 @@ class WheatTillering(object):
         
         return reg_table[reg_table['f_disp'] > 0]
                
-     # ici to do: calculer damage table et en tenir compte pour mettre a jour la table de regresssion (en transferant des quantite), puis enchainer sur curve   
     def regression_curves(self):
         """ interpolation function for natural axe regression (number of axes lost) as a function of haun stage
         """
@@ -355,7 +334,6 @@ class WheatTillering(object):
         
             Parameters:
                 - plant_density : plant per square meter or callable returning plant density as a function of haun stage
-                - hs_bolting : Force Haun Stage of mean_MS at bolting (facultative).If None, hs_bolting is estimated using the number of elongated internodes
         """
         
         hs = numpy.arange(0,18,0.1)

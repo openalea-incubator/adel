@@ -191,7 +191,36 @@ class TillerEmission(object):
         how = {'cohort':numpy.mean,'delay':numpy.mean, 'nff':numpy.mean, 'probability':numpy.sum}
         df = emission_table.groupby('cohort', group_keys=False).agg(how)
         return df
+
+    def curve_emission_table(self, emission_table):
+        emission_table['primary'] = map(lambda x: not '.' in x, emission_table['axis'])
+        def _fun(x):
+            d = {'cohort': x['cohort'].mean(), 
+                 'delay': x['delay'].mean(),
+                 'primary_axis':x[x['primary']]['probability'].sum(),
+                 'other_axis' : x[~x['primary']]['probability'].sum(),
+                 'nff' : x['nff'].mean()
+                 }
+            out = pandas.DataFrame(d,index = [x.index[0]])
+            out['total_axis'] = out['primary_axis'] + out['other_axis']
+            return out
+        return emission_table.groupby(['cohort'],group_keys=False).apply(_fun)
         
+    def emission_curves(self, emission_table, include_MS=True, delta=0.1):
+        """ return interpolation functions for axe emission (primary, other, total) as a function of haun stage
+        """
+        cohorts = self.curve_emission_table(emission_table)        
+        if not include_MS:
+            cohorts = cohorts.loc[cohorts['cohort'] > 1,:] 
+            
+        hs = reduce(lambda x,y:x+y,[[hs - delta / 2,hs + delta / 2] for hs in cohorts['delay']])        
+        curves = {}
+        for w in ('primary','other', 'total'):
+            card = cohorts[w + '_axis'].values
+            cum = card.cumsum()
+            em = reduce(lambda x,y:x+y,[[cum[i] - card[i],cum[i]] for i in range(len(card))])
+            curves[w] = interp1d([-delta] + hs + [20],[0] + em + [em[-1]])
+        return curves
 
 class TillerRegression(object):
     """ Tiller regression model
@@ -256,11 +285,59 @@ class TillerRegression(object):
                                       't_start':[hs_deb] + t_disp.tolist()[:-1]})
         
         return reg_table[reg_table['f_disp'] > 0]    
+
+    def regression_curves(self, cohort_emission_table, curve_emission_table, damage_table=None):
+        """ interpolation function for natural axe regression (number of axes lost) as a function of haun stage
+        """
+        reg_table = self.regression_table(cohort_emission_table)
+        cohorts = curve_emission_table
+        regressing_cohorts = reg_table.merge(cohorts)
+        #
+        #  Reduce regression to compensate for damage loss (damages shoud not influence fitted final axe density nor final ear number)
+        damages = damage_table
+        if damages is not None:
+            regressing_cohorts = regressing_cohorts.set_index('cohort')
+            damages = damages.set_index('cohort')
+            cohorts = cohorts.set_index('cohort')
+            # for damaged regressing cohort, reduce f_disp to compensate for part/all of f_comp
+            for c in damages.index:
+                if c in regressing_cohorts.index:
+                    comp = min(damages['f_damaged'][c], regressing_cohorts['f_disp'][c])
+                    regressing_cohorts['f_disp'][c] = regressing_cohorts['f_disp'][c] - comp
+                    damages['f_damaged'][c] = damages['f_damaged'][c] - comp
+            # remaining compensation obtained by reducing f_disp of regressing cohorts, older first
+            if sum(damages['f_damaged']) > 1e-6:
+                damages = damages[damages['f_damaged'] > 0]
+                regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = True) 
+                for c in damages.index:
+                    f_d = damages['f_damaged'][c]
+                    for c_r in regressing_cohorts.index:
+                        f_r = f_d * 1. * cohorts['total_axis'][c] / cohorts['total_axis'][c_r]
+                        comp = min(f_r, regressing_cohorts['f_disp'][c_r])
+                        regressing_cohorts['f_disp'][c_r] = regressing_cohorts['f_disp'][c_r] - comp
+                        comp_d = comp * 1. * cohorts['total_axis'][c_r] / cohorts['total_axis'][c]
+                        f_d = f_d - comp_d
+                        if f_d < 1e-6:
+                            break
+                    assert f_d < 1e-6, 'Damages are too important to be compensated by reggressing tillers !'
+                        
+        #curve
+        regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = False)           
+        hs = [0, regressing_cohorts['t_start'].tolist()[0]] +  regressing_cohorts['t_disp'].tolist() + [20]
+        curves = {}            
+        for w in ('primary','other', 'total'):
+            card = regressing_cohorts[w + '_axis'] * regressing_cohorts['f_disp']
+            n_d = card.cumsum()
+            loss = [0] * 2 + card.cumsum().tolist() + [card.sum()]
+            curves[w] = interp1d(hs, loss)
+        return curves
+
         
                
 class HaunStage(object):
     """ Handle HaunStage = f (ThermalTime) fits for mean plant and its nff modalities
     """
+    # TO DO : add method for thermal time date of leaf emergence/ligulation
     
     def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, std_TT_hs_0 = 0, nff = 12, dTT_nff = 1. / 110. / 4., dTT_cohort={'first': 60, 'increment': 10}):
         self.a_cohort = a_cohort
@@ -418,6 +495,10 @@ class AxePop(object):
         nff = self.MS_probabilities.keys()
         return int(nff[v.index(max(v))])
 
+    def hs_debreg(self):
+        nff = self.mean_nff()
+        return self.Regression.hs_debreg(nff)
+        
     def axis_emission_table(self):
         nff = self.mean_nff()
         #regression start is set/defined at population level
@@ -429,6 +510,10 @@ class AxePop(object):
         axis_table = self.axis_emission_table()
         cohort_table = self.Emission.cohort_emission_table(axis_table)
         return cohort_table
+        
+    def curve_emission_table(self):
+        axis_table = self.axis_emission_table()
+        return self.Emission.curve_emission_table(axis_table)
         
     def regression_table(self):
         cohort_table = self.cohort_emission_table()
@@ -452,6 +537,45 @@ class AxePop(object):
             damages = damages.drop('delay',axis=1)
         return damages
      
+    def emission_curves(self, include_MS=True):
+        axis_table = self.axis_emission_table()
+        return self.Emission.emission_curves(axis_table, include_MS=include_MS)
+        
+    def regression_curves(self):
+        return self.Regression.regression_curves(self.cohort_emission_table(), self.curve_emission_table(), self.damage_table())
+     
+    def damage_curves(self):
+        """ interpolation function for damages to tilers (number of axes lost) as a function of haun stage
+        """
+        curves = {}
+        cohorts = self.curve_emission_table()
+        damages = self.damage_table()
+        if damages is None:
+            hs = [0,20]
+            damages = [0,0]
+            no_damage = interp1d(hs, damages)       
+            for w in ('primary','other', 'total'):
+                curves[w] = no_damage
+        else:   
+            damages = damages.merge(cohorts)
+            damages = damages.set_index('cohort')
+            for w in ('primary','other', 'total'):
+                # compute curves for each cohort individualy
+                cfits = {}
+                for c in damages.index:
+                    d = damages.loc[c,:]
+                    card = d[w + '_axis'] * d['f_damaged']
+                    hs = [0,d['start_damages'], d['end_damages'],20]
+                    loss = [0] * 2 + [card] * 2
+                    cfits[c] = {'hs':hs,'loss':loss}
+                #merge cohorts
+                hs = [0] + numpy.unique(damages.ix[:,('start_damages','end_damages')].values).tolist() + [20]
+                loss = numpy.array([0] * len(hs))
+                for c in cfits:
+                    loss = loss + numpy.interp(hs,cfits[c]['hs'],cfits[c]['loss'])
+                curves[w] = interp1d(hs, loss)              
+        return curves
+     
     def random_population(self, nplants=1):
         """ Ramdomly generate a population of axes (reproduce plantgen original behavior)
         """
@@ -467,7 +591,37 @@ class AxePop(object):
             # nfff on tillers : random rounding of decimal nff of cohort for that nff
             nff = [random_round(cohort_decimal_nff[nff_MS][c]) for c in id_cohort]
             plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff}))
-        return pandas.concat(plants) 
+        return pandas.concat(plants)
+        
+    def axis_dynamics(self, plant_density = 1, include_MS = True):
+        """ Compute axis density table (growing + stopped but not disapeared) = f (HS_mean_MS)
+        
+            Parameters:
+                - plant_density : plant per square meter or callable returning plant density as a function of haun stage
+        """
+        hs = numpy.arange(0,18,0.1)
+        
+        if not callable(plant_density):
+            plant_density = interp1d([0,20], [plant_density] * 2)
+            
+        emission = self.emission_curves(include_MS=include_MS)
+        regression = self.regression_curves()
+        damages = self.damage_curves()
+        dynamics = {'HS':hs}
+        for w in ('primary','other', 'total'):
+            dynamics[w] = plant_density(hs) * (emission[w](hs) - regression[w](hs) - damages[w](hs))
+
+        #approx nt3F : max = nb axe > 2phyllo at start of regression (stop of dvpt)
+        hs_debreg = self.hs_debreg()
+        max3F = numpy.interp(hs_debreg - 2, hs, dynamics['total'])
+        tt3F = dynamics['total'].copy()
+        tt3F[tt3F > max3F] = max3F
+        tt3F_em = numpy.interp(hs, hs + 2, tt3F)
+        tt3F[hs < hs_debreg + 2] = tt3F_em[hs < hs_debreg + 2]
+        dynamics['3F'] = tt3F
+        
+        return pandas.DataFrame(dynamics)
+
 
     def smart_population(self, nplants=1):
         """ Generate an axe population using deteministic rounding

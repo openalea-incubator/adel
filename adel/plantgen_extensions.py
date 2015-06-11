@@ -430,14 +430,14 @@ class GreenLeaves(object):
         self.n2 = GL_flag
         self.a = curvature
     
-    def fit_a(HS_since_flag, GL):
+    def fit_a(self, HS_since_flag, GL):
         """ Fit curvature coefficient from a HS, GL dataset
         """
         GLpol = pandas.DataFrame({'HS':HS_since_flag, 'GL':GL})
         GLpol = GLpol.ix[GLpol['HS'] > 0,:]
         c = (self.n2 - self.n1) / (self.n_elongated_internode) - 1
         fixed_coefs = [0.0, c, self.n2]
-        a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_start)
+        a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_starting_estimate=self.a)
         self.a = a
         return a,rmse
       

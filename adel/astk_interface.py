@@ -68,13 +68,17 @@ class AdelWheat(object):
         
         self.devT = devT
         
-        self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+        if self.stand.density_curve is None:
+            self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+        else:
+            self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(nplants)
+        self.domain_area = area_m2
         
         self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
         self.leaves = leaves
         self.nsect = nsect
 
-        self.domain_area = area_m2
+        
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
         self.split = split
@@ -99,6 +103,9 @@ class AdelWheat(object):
     
         self.canopy_age = age
         canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
+        if self.stand.density_curve is not None:
+            self.nplants, self.domain, self.positions, self.domain_area = stand.smart_stand(nplants, at=age)
+
         if self.positions is not None:
             stand = [(pos,0) for pos in self.positions]
         else:

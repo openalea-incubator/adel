@@ -6,11 +6,13 @@ from numpy.random import vonmises
 from openalea.core.path import path
 import numpy as np
 import alinea.adel.postprocessing as pp
+from operator import itemgetter
 
 
-def regular(nb_plants, nb_rank, dx, dy):
+def regular(nb_plants, nb_rank, dx, dy, nx=None):
     
-    nx = int(nb_plants/nb_rank)
+    if nx is None:
+        nx = int(nb_plants/nb_rank)
     ny = nb_rank
     domain = ((0,0),(nx*dx, ny*dy))
     return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
@@ -23,6 +25,26 @@ def randomise_position(position, radius):
     x,y,z = position
     return (x + dx, y + dy, z)
 
+def regular_plot(inter_plant, inter_row, nrow, plant_per_row, noise=0, convunit=100, center_scene = True):
+        
+    dx = inter_plant * convunit
+    dy = inter_row * convunit
+    positions, domain = regular(nrow * plant_per_row, int(nrow), dx, dy, int(plant_per_row))
+    domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
+
+    # sorting by ranks
+    positions = sorted(positions,key= itemgetter(1,0))
+    # add noise
+    if noise > 0:
+        positions = map(lambda x: randomise_position(x, noise), positions)
+    if center_scene:
+        xc = float(domain[1][0] + domain[0][0]) / 2
+        yc = float(domain[1][1] + domain[0][1]) / 2
+        positions = [(x - xc, y - yc, z) for x,y,z in positions]
+        domain = ((domain[0][0] - xc,domain[0][1] - yc),(domain[1][0] - xc,domain[1][1] - yc))
+        
+    return positions, domain, domain_area
+    
 def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise = 0,convunit=100,center_scene = True):
     """ Returns the number of plants, the positions, the domain (scene units), the domain area (square meter) and the conversion coefficient for meter to scene unit (1/convunit) of a micro-plot specified with agronomical variables
     length (m) is plot dimension along row direction
@@ -37,28 +59,14 @@ def agronomicplot(length, width, sowing_density, plant_density, inter_row, noise
     Rows are parrallel to x-axis
     Length and Width are adjusted to produce a canopy centered in its domain and compliant with infinitisation
     """
-    from operator import itemgetter
-    
+   
+    # find a (nrow, plant_per_row) sowing design that best match plot dimension
     inter_plant = 1. / inter_row / sowing_density
-    nrow = max(1, int(float(width) / inter_row))
-    dx = inter_plant * convunit
-    dy = inter_row * convunit
-    plant_per_row = max(1,int(float(length) / inter_plant))
-    nplants = nrow * plant_per_row
-    positions, domain = regular(nplants, nrow, dx, dy)
-    n_emerged = int(nplants * plant_density / sowing_density)
+    nrow = max(1, int(round(float(width) / inter_row)))
+    plant_per_row = max(1,int(round(float(length) / inter_plant)))
+    positions, domain, domain_area  = regular_plot(inter_plant, inter_row, nrow, plant_per_row, noise=noise, convunit=convunit, center_scene = center_scene)
+    n_emerged = int(round(len(positions) * plant_density / sowing_density))
     positions = sample(positions, n_emerged)
-    # sorting by ranks
-    positions = sorted(positions,key= itemgetter(1,0))
-    domain_area = abs(domain[1][0] - domain[0][0]) / convunit * abs(domain[1][1] - domain[0][1]) / convunit
-    # add noise
-    if noise > 0:
-        positions = map(lambda x: randomise_position(x, noise), positions)
-    if center_scene:
-        xc = float(domain[1][0] + domain[0][0]) / 2
-        yc = float(domain[1][1] + domain[0][1]) / 2
-        positions = [(x - xc, y - yc, z) for x,y,z in positions]
-        domain = ((domain[0][0] - xc,domain[0][1] - yc),(domain[1][0] - xc,domain[1][1] - yc))
     
     return n_emerged, positions, domain, domain_area, 1. / convunit
 

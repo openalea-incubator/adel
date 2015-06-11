@@ -500,7 +500,7 @@ class AxePop(object):
     """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)
     """
         
-    def __init__(self, MS_leaves_number_probabilities={'11': 0.3, '12': 0.7}, Emission=None, Regression=None, tiller_damages=None, max_order=None):
+    def __init__(self, MS_leaves_number_probabilities={'11': 0.3, '12': 0.7}, Emission=None, Regression=None, tiller_damages=None, max_order=None, std_em=0):
 
         if Regression is None:
             Regression = TillerRegression(ears_per_plant=2.5, n_elongated_internode=4, delta_stop_del= 2)            
@@ -687,7 +687,7 @@ class AxePop(object):
         cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
         
         plants = []
-        TTem = get_normal_dist(nb_plants=nplants, sigma=30.)
+        TTem = get_normal_dist(nb_plants=nplants, sigma=self.std_em)
         for i in range(nplants): 
             id_plant = i + 1
             axes =  plant_axes[i]
@@ -917,7 +917,7 @@ def adelT_to_devT(pgen):
 
   
    
-
+#deprecated
 
  
 def axis_list(TilleringModel,  nplants = 2):

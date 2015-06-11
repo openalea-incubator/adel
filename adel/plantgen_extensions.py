@@ -42,6 +42,26 @@ def random_round(decimal):
     if random.random() <= (decimal - rounded):
         rounded += 1
     return rounded
+    
+def get_normal_dist(nb_plants=10, sigma=30.):
+    """ Calculate the "best possible" sample for a given number of plants 
+    as a function of the standard deviation sigma of a normal centered ditribution. """
+    N = 1000
+    norm_list = numpy.random.normal(scale=sigma, size=N)
+    h = numpy.histogram(norm_list, bins=nb_plants)
+    classes = h[1]
+    distri_plants = h[0]*nb_plants/float(N)
+    round_distri = [numpy.round(d) for d in distri_plants]
+    missing_pl = nb_plants - sum(round_distri)
+    while missing_pl > 0:
+        gap = round_distri - distri_plants
+        round_distri[np.argmin(gap)] += 1
+        missing_pl = nb_plants - sum(round_distri)
+    while missing_pl < 0:
+        gap = distri_plants - round_distri
+        round_distri[np.argmin(gap)] -= 1
+        missing_pl = nb_plants - sum(round_distri)
+    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], d+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
 def _order(axe):
     if axe is 'MS':
@@ -658,10 +678,16 @@ class AxePop(object):
         #find nff per cohort
         cohort_decimal_nff = {int(k):self.Emission.final_leaf_numbers(int(k)) for k in self.MS_probabilities}
         cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.iteritems()} for k,v in cohort_decimal_nff.iteritems()}
-        cohort_nff_cardinalities = {int(nff):{int(c):cardinalities(cohort_nff_modalities[int(nff)][int(c)], int(cardnff.loc[nff,c])) for c in cardnff.loc[nff].index} for nff in nff_MS_cardinalities}
+        cohort_nff_cardinalities = {}
+        for nff in nff_MS_cardinalities:
+            d = {}
+            for c in cardnff.loc[int(nff)].index:
+                d[int(c)] = cardinalities(cohort_nff_modalities[int(nff)][int(c)], int(cardnff.loc[int(nff),c]))
+            cohort_nff_cardinalities[int(nff)] = d
         cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
         
         plants = []
+        TTem = get_normal_dist(nb_plants=nplants, sigma=30.)
         for i in range(nplants): 
             id_plant = i + 1
             axes =  plant_axes[i]
@@ -670,7 +696,7 @@ class AxePop(object):
             nff_p = nff_MS.pop()
             # nfff on tillers
             nff = [cohort_nff[nff_p][c].pop() for c in id_cohort]
-            plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff}))
+            plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff, 'TTem':TTem[i]}))
         df=pandas.concat(plants)
         df= df.sort(['id_plt','id_cohort','id_axis'])
         return df
@@ -809,11 +835,14 @@ class PlantGen(object):
         # include regression
         axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])# use hs of mean plant
         axeT['TT_del_axis'] = self.HSfit.TT(plant['hs_disparition'])
+        for w in ('TT_em_phytomer1','TT_col_phytomer1','TT_sen_phytomer1','TT_del_phytomer1'):
+            axeT[w] = axeT[w] + plant['TTem']
         for i in axeT.index:
             TT_stop = axeT['TT_stop_axis'][i]
+            TTem = plant['TTem'].values[0]
             if not numpy.isnan(TT_stop):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
-                axeT['HS_final'][i] = numpy.interp(TT_stop, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT['HS_final'][i] = numpy.interp(TT_stop + TTem, phen['TT_col_phytomer'], phen['index_phytomer'])
                 axeT['id_ear'][i] = numpy.nan
                 
         # include plant number in ids to allow future concatenation with other plants

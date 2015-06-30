@@ -480,7 +480,7 @@ class WheatDimensions(object):
     """ A dimension generator model based on smart scaling of a reference dataset
     """
     
-    def __init__(self, mean_nff = 12, dHS_nff = 0.25):
+    def __init__(self, mean_nff = 12, dHS_nff = 0.25, scale=1.0):
         """
         dHS_nff : delta haun stage between flag leaf emergence of two consecutive nff
         """
@@ -495,7 +495,7 @@ class WheatDimensions(object):
         self.xn = self.ref['xn'].tolist()
         self.ref = self.ref.drop('xn',axis=1)
         self.predict = {k:interp1d(self.xn, self.ref[k].tolist()) for k in self.ref.columns}
-        self.scales = {k:1.0 for k in self.ref.columns}
+        self.scales = {k:scale for k in self.ref.columns}
         self.dHS_nff = dHS_nff
         self.mean_nff = mean_nff
     

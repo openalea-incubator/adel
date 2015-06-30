@@ -9,13 +9,20 @@ from alinea.adel.stand.stand import agronomicplot, regular_plot
 
 class AgronomicStand(object):
     
-    def __init__(self, sowing_density=10, plant_density=10, inter_row=0.8, noise=0, density_curve=None):
+    def __init__(self, sowing_density=10, plant_density=10, inter_row=0.8, noise=0, density_curve_data=None):
         self.sowing_density = sowing_density
         self.inter_row = inter_row
         self.plant_density = plant_density
         self.inter_plant = 1. / inter_row / sowing_density
         self.noise = noise
-        self.density_curve = density_curve
+        df = density_curve_data
+        if df is None:
+            self.density_curve=None
+        else:
+            #hs_curve = interp1d(df['HS'], df['density'])
+            TT_curve = interp1d(df['TT'], df['density'])
+            #self.density_curve = {'hs_curve':hs_curve,'TT_curve':TT_curve}
+            self.density_curve = TT_curve
      
      
      

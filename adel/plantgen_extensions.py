@@ -504,6 +504,7 @@ class WheatDimensions(object):
 
         df = self.table(nff,scale)
         df = df.rename(columns={'rank':'index_phytomer'})
+        df = df.drop('H_col',axis=1)
         return df
         
     def table(self, nff=None, scale=1.0):
@@ -549,6 +550,7 @@ class AxePop(object):
         self.tiller_damages = tiller_damages
         self.MS_probabilities = MS_leaves_number_probabilities
         self.max_order = max_order
+        self.std_em = std_em
           
     def mean_nff(self):
         return sum([int(k) * v for k,v in self.MS_probabilities.iteritems()])

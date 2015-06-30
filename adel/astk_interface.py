@@ -85,7 +85,7 @@ class AdelWheat(object):
         self.canopy_age = age
         canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
         if self.stand.density_curve is not None:
-            self.nplants, self.domain, self.positions, self.domain_area = stand.smart_stand(nplants, at=age)
+            self.nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
 
         if self.positions is not None:
             stand = [(pos,0) for pos in self.positions]

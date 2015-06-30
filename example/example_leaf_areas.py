@@ -28,13 +28,13 @@ seed(0)
 # Initialize wheat plant
 nsect = 5
 reconst = EchapReconstructions()
-adel = reconst.get_reconstruction(name='Mercia', nplants = 1, nsect = nsect, disc_level = 5, aspect = 'line')
-g = adel.setup_canopy(age=600.)
+adel = reconst.get_reconstruction(name='Tremie12', nplants = 1, nsect = nsect, disc_level = 5, aspect = 'line')
+g = adel.setup_canopy(age=300.)
 
 # Manage weather and time control
-start_date="2011-03-01 12:00:00"
-end_date="2011-08-01 01:00:00"
-weather = Boigneville_2010_2011()
+start_date="2012-03-01 12:00:00"
+end_date="2012-08-01 01:00:00"
+weather = Boigneville_2011_2012()
 weather.check(varnames=['degree_days'], models={'degree_days':linear_degree_days}, start_date=start_date)
 seq = pandas.date_range(start = start_date, end = end_date, freq='H')
 TTmodel = DegreeDayModel(Tbase = 0)

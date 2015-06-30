@@ -285,10 +285,11 @@ def phenology(adel_output_df):
         
         indexes_of_all_null_Lshape = L_shape[L_shape == 0.0].index
         HS_final = group['HS_final'][group.first_valid_index()]
-        if group['hasEar'].nunique() > 1:
-            warnings.warn('Multiple value of hasEar for group {}'.format(name), InputWarning)
-        has_ear = group['hasEar'][group.first_valid_index()]
-              
+        #if group['hasEar'].nunique() > 1:
+        #    warnings.warn('Multiple value of hasEar for group {}'.format(name), InputWarning)
+        #has_ear = group['hasEar'][group.first_valid_index()]
+        has_ear = group['HS_final'][group.first_valid_index()] == group['nff'][group.first_valid_index()] 
+         
         GreenLeaf = HS - SSI
         
         phenology_list.append([TT, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,

@@ -4,6 +4,7 @@ Class interface for stand generation
 
 from math import sqrt
 from random import sample
+from scipy.interpolate import interp1d
 
 from alinea.adel.stand.stand import agronomicplot, regular_plot
 
@@ -50,7 +51,7 @@ class AgronomicStand(object):
         density = self.plant_density
         if at is not None:
             if self.density_curve is not None:
-                density = density_curve(at)
+                density = self.density_curve(at)
                 
         # find a square design for sowing
         nsown = nplants * 1. * self.sowing_density / density

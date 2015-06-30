@@ -29,6 +29,7 @@ from alinea.adel.exception import *
 from alinea.adel.plantgen.plantgen_interface import gen_adel_input_data, plantgen2adel
 from alinea.adel.plantgen import tools, params
 from alinea.adel.AdelR import devCsv
+import alinea.adel.data_samples as adel_data
 
 # some new tools
 
@@ -399,6 +400,9 @@ class HaunStage(object):
     def phyllochron(self, nff=None):
         return 1. / self.a_nff(nff)
         
+    def dHS_nff(self):
+        return self.dTT_nff / self.phyllochron()
+        
     def dTT_MS_cohort(self, cohort=1):
         """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
         """
@@ -473,28 +477,61 @@ class GreenLeaves(object):
             
       
 class WheatDimensions(object):
-    """ A dimension generator model based on simple scaling of a reference dataset
+    """ A dimension generator model based on smart scaling of a reference dataset
     """
     
-    def __init__(self):
-        self.ref = pandas.DataFrame({'index_phytomer': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                                   'L_blade': [9.45, 9.27,8.04, 9.6, 11.26, 12.33, 14.07, 17.25, 17.75, 16.27, 10.74],
-                                   'W_blade': [0.38, 0.37, 0.45, 0.58, 0.75, 0.99, 1.02, 1.06, 1.08, 1.1, 1.2],
-                                   'L_sheath': [2.84, 2.93, 3.24, 3.89, 4.48, 6.81, 8.89, 9.58, 10.12, 11.07, 14.72],
-                                   'W_sheath': [0.16, 0.18, 0.21, 0.23, 0.26, 0.28, 0.31, 0.34, 0.36, 0.39, 0.39],
-                                   'L_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.55, 4.45, 6.43, 11.3, 15.35], 
-                                   'W_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06, 0.13, 0.19, 0.3]})
-                        
-        irel = [0]  + (self.ref['index_phytomer'] / 11.).tolist()
-        self.predict = {k:interp1d(irel,[0] + self.ref[k].tolist()) for k in self.ref.columns}
+    def __init__(self, mean_nff = 12, dHS_nff = 0.25):
+        """
+        dHS_nff : delta haun stage between flag leaf emergence of two consecutive nff
+        """
+        # self.ref = pandas.DataFrame({'index_phytomer': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                                   # 'L_blade': [9.45, 9.27,8.04, 9.6, 11.26, 12.33, 14.07, 17.25, 17.75, 16.27, 10.74],
+                                   # 'W_blade': [0.38, 0.37, 0.45, 0.58, 0.75, 0.99, 1.02, 1.06, 1.08, 1.1, 1.2],
+                                   # 'L_sheath': [2.84, 2.93, 3.24, 3.89, 4.48, 6.81, 8.89, 9.58, 10.12, 11.07, 14.72],
+                                   # 'W_sheath': [0.16, 0.18, 0.21, 0.23, 0.26, 0.28, 0.31, 0.34, 0.36, 0.39, 0.39],
+                                   # 'L_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.55, 4.45, 6.43, 11.3, 15.35], 
+                                   # 'W_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06, 0.13, 0.19, 0.3]})
+        self.ref = adel_data.dimensions_db()
+        self.xn = self.ref['xn'].tolist()
+        self.ref = self.ref.drop('xn',axis=1)
+        self.predict = {k:interp1d(self.xn, self.ref[k].tolist()) for k in self.ref.columns}
+        self.scales = {k:1.0 for k in self.ref.columns}
+        self.dHS_nff = dHS_nff
+        self.mean_nff = mean_nff
     
    
-    def dimT_user_table(self, nff=12, scale=1.):
-        irel = numpy.arange(1, nff + 1) / float(nff)
-        df = pandas.DataFrame({k:self.predict[k](irel) * scale for k in self.predict})
-        df['index_phytomer'] = range(1, nff + 1)
+    def dimT_user_table(self, nff=12, scale=1.0):
+
+        df = self.table(nff,scale)
+        df = df.rename(columns={'rank':'index_phytomer'})
         return df
-    
+        
+    def table(self, nff=None, scale=1.0):
+        
+        if nff is None:
+            nff = self.mean_nff
+            ranks = numpy.linspace(0, nff, 20)
+        else:
+            ranks = numpy.arange(1, nff + 1)
+            
+        scales = {k: v * scale for k,v in self.scales.iteritems()}
+        
+        # xn = TTem_leaf / mean_phyllochron / mean_nff 
+        # xn = TTflag / nff * n  / (TTflag_mean / mean_nff) / mean_nff 
+        # xn = n / nff * TTflag / TTflag_mean 
+        # xn = n / nff * (TTflag_mean + dTT_HS * delta_nff) / TTflag_mean
+        # xn = n / nff * (1 + dTT_HS * delta_nff / TTflag_mean)
+        xn = ranks / float(nff) * (1 + float(self.dHS_nff) * (nff - self.mean_nff) / self.mean_nff)
+        df = pandas.DataFrame({k:self.predict[k](xn) * scales[k] for k in self.predict})
+        df['rank'] = ranks
+        return df
+
+        
+    def fit_scale(self, data, mean_nff = None):
+        """ xn is either computed elsewhere if individual phyllochrone are known, or estimated by the class if nff is in the data
+        """
+        pass
+        
 
 class AxePop(object):
     """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)

@@ -2,8 +2,18 @@
 """
 
 import os
+import pandas
 
 datadir = os.path.dirname(__file__)
+
+def dimensions_db():
+    """ Dimension compiled from Mariem Maxwell reference experiment
+    """
+    fn = datadir + '/data/Maxwell_dimensions.csv'
+    df = pandas.read_csv(fn)
+    df['W_sheath'] = 0.4
+    df['W_internode'] = 0.4
+    return df
 
 def leaves():
     from alinea.adel.geometric_elements import Leaves

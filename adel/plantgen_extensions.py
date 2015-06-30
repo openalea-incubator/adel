@@ -752,7 +752,7 @@ class AxePop(object):
         
         cards = population.groupby('id_cohort').count()['id_axis'].to_dict()
         
-        nreg = {k: round(v * cards[k]) for k,v in fdisp.iteritems()}
+        nreg = {k: round(fdisp[k] * cards[k]) for k in fdisp if k in cards}
         nreg = {k:v for k,v in nreg.iteritems() if v > 0}
         treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.iteritems()}
         

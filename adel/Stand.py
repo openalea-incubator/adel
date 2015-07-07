@@ -63,7 +63,8 @@ class AgronomicStand(object):
         domain_area = nrow * self.inter_row * plant_per_row * self.inter_plant
         # adjust inter_plant spacing so that n_emerged / domain_area match plant density    
         n_emerged = int(round(domain_area * density))
-        assert(n_emerged >= nplants)
+        #assert(n_emerged >= nplants)
+        n_emerged = nplants
         target_domain_area = 1. * n_emerged / density
         inter_plant = target_domain_area / (plant_per_row * nrow * self.inter_row) 
                

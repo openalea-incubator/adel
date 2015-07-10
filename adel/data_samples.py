@@ -6,13 +6,11 @@ import pandas
 
 datadir = os.path.dirname(__file__)
 
-def dimensions_db():
-    """ Dimension compiled from Mariem Maxwell reference experiment
+def wheat_dimension_profiles():
+    """ Dimension profiles compiled using maxwell REF + Echap data (cf Dimension_profile.R in echap/src/data/architecturaldata)
     """
-    fn = datadir + '/data/Maxwell_dimensions.csv'
+    fn = datadir + '/data/Wheat_dimension_profiles.csv'
     df = pandas.read_csv(fn)
-    df['W_sheath'] = 0.4
-    df['W_internode'] = 0.4
     return df
 
 def leaves():

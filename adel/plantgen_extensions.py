@@ -360,7 +360,7 @@ class HaunStage(object):
     """
     # TO DO : add method for thermal time date of leaf emergence/ligulation
     
-    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, std_TT_hs_0 = 0, nff = 12, dTT_nff = 1. / 110. / 4., dTT_cohort={'first': 60, 'increment': 10}):
+    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, std_TT_hs_0 = 0, nff = 12, dTT_nff = 1. / 110. / 4., dTT_cohort={'first': 30, 'increment': 10}):
         self.a_cohort = a_cohort
         self.TT_hs_0 = TT_hs_0
         self.nff = nff# nff of the mean plant
@@ -477,62 +477,82 @@ class GreenLeaves(object):
             
       
 class WheatDimensions(object):
-    """ A dimension generator model based on smart scaling of a reference dataset
+    """ A dimension generator model based on scaling of a reference dataset
     """
     
-    def __init__(self, mean_nff = 12, dHS_nff = 0.25, scale=1.0):
+    def __init__(self, hsfit=None, dHS_max=2.4, nff=12, dHS_flag=0.25, phyllochron=110, scale=1):
         """
-        dHS_nff : delta haun stage between flag leaf emergence of two consecutive nff
+        dHS_flag, phyllochron and nff are read from hsfit when given, or from  explicit arguments if hsfit is None
+        dHS_max : delta Haunstage between ligulation of longest leaf and flag leaf ligulation.
+        scale allows an initial glogal re-scale of the dimensions. If scaleis a dict, then only specified dimensions are scaled
         """
-        # self.ref = pandas.DataFrame({'index_phytomer': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                                   # 'L_blade': [9.45, 9.27,8.04, 9.6, 11.26, 12.33, 14.07, 17.25, 17.75, 16.27, 10.74],
-                                   # 'W_blade': [0.38, 0.37, 0.45, 0.58, 0.75, 0.99, 1.02, 1.06, 1.08, 1.1, 1.2],
-                                   # 'L_sheath': [2.84, 2.93, 3.24, 3.89, 4.48, 6.81, 8.89, 9.58, 10.12, 11.07, 14.72],
-                                   # 'W_sheath': [0.16, 0.18, 0.21, 0.23, 0.26, 0.28, 0.31, 0.34, 0.36, 0.39, 0.39],
-                                   # 'L_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.55, 4.45, 6.43, 11.3, 15.35], 
-                                   # 'W_internode': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06, 0.13, 0.19, 0.3]})
-        self.ref = adel_data.dimensions_db()
-        self.xn = self.ref['xn'].tolist()
-        self.ref = self.ref.drop('xn',axis=1)
-        self.predict = {k:interp1d(self.xn, self.ref[k].tolist()) for k in self.ref.columns}
-        self.scales = {k:scale for k in self.ref.columns}
-        self.dHS_nff = dHS_nff
-        self.mean_nff = mean_nff
-    
-   
-    def dimT_user_table(self, nff=12, scale=1.0):
 
-        df = self.table(nff,scale)
-        df = df.rename(columns={'rank':'index_phytomer'})
-        df = df.drop('H_col',axis=1)
-        return df
+        #defaults
+        if hsfit is None:
+            hsfit = HaunStage(a_cohort=1. / phyllochron, nff=nff, dTT_nff=dHS_flag * 1. / phyllochron)
         
-    def table(self, nff=None, scale=1.0):
+        if not isinstance(scale,dict):
+            scale={}
+        
+        self.hsfit = hsfit
+        self.TTmax = hsfit.TT(hsfit.nff - dHS_max)
+        self.ref = adel_data.wheat_dimension_profiles()
+        self.xnref = self.ref['xn'].tolist()
+        self.ref = self.ref.drop('xn',axis=1)
+        self.predict = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * scale.get(k,1)) for k in self.ref.columns}
+
+    def fit_dimensions(self, data, fit_TTmax = True, fit_nff = True):
+        """ 
+        if fit_max is True, use blade length profile to re-adjust dHS_max
+        if fit_nff is True, use dimension per nff to fit nff scale factors scale = 1 + scale_nff * delta_nff
+        """
+        
+        if (fit_TTmax and 'L_blade' in data.columns):
+            dat = data.dropna(subset=['L_blade'])
+            xn = self.xn(dat['rank'])
+            fit = numpy.polyfit(xn,dat['L_blade'],6)
+            x = numpy.linspace(min(xn), max(xn), 500)
+            y = numpy.polyval(fit,x)
+            xnmax = x[numpy.argmax(y)]
+            self.TTmax = self.TTxn(xnmax)
+            
+        xn = self.xn(data['rank'])   
+        scales = {k: numpy.mean(data[k] / self.predict[k](xn)) for k in self.predict if k in data.columns}
+        for k in scales:
+            self.predict[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * scales[k])
+        return scales
+    
+    def xn(self, ranks, nff=None):
+        """
+        xn = (TTem_leaf - TTem_leafmax) / mean_phyllochron
+        """
+        return (self.hsfit.TT(ranks, nff) - self.TTmax) * self.hsfit.a_cohort
+        
+    def TTxn(self, xn, nff=None):
+        return self.TTmax + xn / self.hsfit.a_cohort
+    
+    def dimT(self, nff=None, scale=1.0):
+    
+        if not isinstance(scale,dict):
+            scale={}
         
         if nff is None:
-            nff = self.mean_nff
+            nff = self.hsfit.nff
             ranks = numpy.linspace(0, nff, 20)
         else:
             ranks = numpy.arange(1, nff + 1)
             
-        scales = {k: v * scale for k,v in self.scales.iteritems()}
-        
-        # xn = TTem_leaf / mean_phyllochron / mean_nff 
-        # xn = TTflag / nff * n  / (TTflag_mean / mean_nff) / mean_nff 
-        # xn = n / nff * TTflag / TTflag_mean 
-        # xn = n / nff * (TTflag_mean + dTT_HS * delta_nff) / TTflag_mean
-        # xn = n / nff * (1 + dTT_HS * delta_nff / TTflag_mean)
-        xn = ranks / float(nff) * (1 + float(self.dHS_nff) * (nff - self.mean_nff) / self.mean_nff)
-        df = pandas.DataFrame({k:self.predict[k](xn) * scales[k] for k in self.predict})
+          
+        xn = self.xn(ranks,nff)        
+        df = pandas.DataFrame({k:self.predict[k](xn) * scale.get(k,1) for k in self.predict})
         df['rank'] = ranks
         return df
 
-        
-    def fit_scale(self, data, mean_nff = None):
-        """ xn is either computed elsewhere if individual phyllochrone are known, or estimated by the class if nff is in the data
-        """
-        pass
-        
+    def dimT_user_table(self, nff=12, scale=1.0):
+        df = self.dimT(nff,scale)
+        df = df.rename(columns={'rank':'index_phytomer'})
+        df = df.drop('H_col',axis=1)
+        return df  
 
 class AxePop(object):
     """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)

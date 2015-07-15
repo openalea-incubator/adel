@@ -360,11 +360,11 @@ class HaunStage(object):
     """
     # TO DO : add method for thermal time date of leaf emergence/ligulation
     
-    def __init__(self, a_cohort = 1. / 110., TT_hs_0 = 0, std_TT_hs_0 = 0, nff = 12, dTT_nff = 1. / 110. / 4., dTT_cohort={'first': 30, 'increment': 10}):
-        self.a_cohort = a_cohort
+    def __init__(self, phyllochron = 110., TT_hs_0 = 0, std_TT_hs_0 = 0, mean_nff = 12, dHS_nff = 0.25, dTT_cohort={'first': 30, 'increment': 10}):
+        self.a_cohort = 1. / phyllochron
         self.TT_hs_0 = TT_hs_0
-        self.nff = nff# nff of the mean plant
-        self.dTT_nff = dTT_nff
+        self.mean_nff = mean_nff# nff of the mean plant
+        self.dTT_nff = dHS_nff * self.a_cohort
         self.dTT_cohort = dTT_cohort
         self.std_TT_hs_0 = std_TT_hs_0
         
@@ -374,28 +374,26 @@ class HaunStage(object):
     def HS(self, TT, nff=None):
         return (numpy.array(TT) - self.TT_hs_0) * self.a_nff(nff)
         
-    def TT(self, HS, nff=None):
+    def TT(self, HS, nff=None):        
         return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
         
     def TTem(self, TT):
-        return numpy.array(TT) - self.TT_hs_0
-        
+        return numpy.array(TT) - self.TT_hs_0      
+   
     def TTflag(self, nff = None, cohort = 1):
-        if nff is None: 
-            nff = self.nff
-        return self.TT_hs_0 + self.nff / self.a_cohort + self.dTT_nff * (nff - self.nff) + self.dTT_MS_cohort(cohort)
+        hsflag = self.HSflag(nff)
+        return self.TT_hs_0 + self.mean_nff / self.a_cohort + self.dTT_nff * (hsflag - self.mean_nff) + self.dTT_MS_cohort(cohort)
     
     def HSflag(self, nff = None):
         if nff is None:
-            return self.nff
-        else:
-            return nff
+            nff= [numpy.nan]
+        return numpy.where(numpy.isnan(nff), self.mean_nff, nff)
     
     def a_nff(self, nff=None):
         if nff is None:
-            return self.a_cohort
-        else:
-            return nff / (self.TTflag(nff) - self.TT_hs_0)
+            nff = numpy.array([numpy.nan])
+        a = nff / (self.TTflag(nff) - self.TT_hs_0)
+        return numpy.where(numpy.isnan(nff), self.a_cohort, a)
     
     def phyllochron(self, nff=None):
         return 1. / self.a_nff(nff)
@@ -406,14 +404,14 @@ class HaunStage(object):
     def dTT_MS_cohort(self, cohort=1):
         """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
         """
-        if cohort == 1:
-            return 0
-        else:
-            return self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
+        cohort = numpy.array(cohort)
+        dTT = self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
+        dTT = numpy.where(cohort == 1, 0, dTT)
+        return dTT 
     
     def curve(self, nff=None):
         if nff is None: 
-            ymax = self.nff
+            ymax = self.mean_nff
         else:
             ymax = nff
         return interp1d([-1000., self.TT_hs_0, self.TTflag(nff), 3000.],[0., 0., ymax, ymax]) 
@@ -424,15 +422,20 @@ class GreenLeaves(object):
     This variant is for GL=f(HS_since_flag_leaf) fits (instead of GL=f(TT)) that allow to predict a curve for different nff
     """
 
-    def __init__(self, GL_start_senescence=4.8, GL_bolting=3.2, GL_flag=5.8, n_elongated_internode= 4, curvature = -0.01):
-        """ n_elongated_internode is the HS interval between bolting and flag leaf ligulation
+    def __init__(self, hsfit=None, GL_start_senescence=4.8, GL_bolting=3.2, GL_flag=5.8, dHS_bolting=4, curvature=-0.01):
+        """ dHS_bolting is the HS interval between bolting and flag leaf ligulation
         """
-        # rename parameters using plantgen terminology
+        if hsfit is None:
+            hsfit = HaunStage()
+        self.hsfit = hsfit
+        
+        self.GL_bolting = GL_bolting
+        self.GL_flag = GL_flag
+        # rename fixed parameters using plantgen terminology
         self.n0 = GL_start_senescence
-        self.n1 = GL_bolting
-        self.n_elongated_internode = n_elongated_internode
-        self.n2 = GL_flag
+        self.n_elongated_internode = dHS_bolting        
         self.a = curvature
+        
     
     def fit_a(self, HS_since_flag, GL):
         """ Fit curvature coefficient from a HS, GL dataset
@@ -444,34 +447,44 @@ class GreenLeaves(object):
         a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_starting_estimate=self.a)
         self.a = a
         return a,rmse
+          
       
-      
-    def hs_t1(self, hs_flag=12):
-        return hs_flag - self.n_elongated_internode
+    def hs_t1(self, nff=None):
+        return self.hsfit.HSflag(nff) - self.n_elongated_internode
+        
+    def dn_nff(self, nff=None):
+        return 0.5 * (self.hs_t2(nff) - self.hs_t2())
+        
+    def n1(self, nff=None):
+        return self.GL_bolting + self.dn_nff(nff)
+        
+    def hs_t2(self, nff=None):
+        return self.hsfit.HSflag(nff)
+        
+    def n2(self, nff=None):
+        return self.GL_flag + self.dn_nff(nff)
     
-    def linear_fit(self, hs_flag=12):
-        hs_t2 = hs_flag
-        return interp1d([0, self.n0, self.hs_t1(hs_flag), hs_t2],[0, self.n0, self.n1, self.n2], bounds_error=False, fill_value=0)
+    def linear_fit(self, nff=None):
+        return interp1d([0, self.n0, self.hs_t1(nff), self.hs_t2(nff)],[0, self.n0, self.n1(nff), self.n2(nff)], bounds_error=False, fill_value=0)
     
-    def polynomial_fit(self, hs_flag=12):
-        hs_t2 = hs_flag
-        c = (self.n2 - self.n1) / (hs_t2 - self.hs_t1(hs_flag)) - 1
-        pol = numpy.poly1d([self.a, 0.0, c, self.n2])
+    def polynomial_fit(self, nff=None):
+        c = (self.n2(nff) - self.n1(nff)) / (self.hs_t2(nff) - self.hs_t1(nff)) - 1 # in fact c is independent of nff
+        pol = numpy.poly1d([self.a, 0.0, c, self.n2(nff)])
         def _fit(hs):
-            gl = numpy.where(hs <= hs_t2, 0, pol(hs - hs_t2))
+            gl = numpy.where(hs <= self.hs_t2(nff), 0, pol(hs - self.hs_t2(nff)))
             return numpy.where(gl >=0, gl, 0)
         return _fit
         
-    def curve(self, hs_flag=12):
-        lin = self.linear_fit(hs_flag)
-        pol = self.polynomial_fit(hs_flag)
+    def curve(self, nff=None):
+        lin = self.linear_fit(nff)
+        pol = self.polynomial_fit(nff)
         def _curve(hs):
             return lin(hs) + pol(hs)            
         return _curve
         
-    def HS_GL_sample(self, hs_flag=12):
-        curve = self.curve(hs_flag)
-        hs = numpy.linspace(hs_flag, 2*hs_flag,20)
+    def HS_GL_sample(self, nff=None):
+        curve = self.curve(nff)
+        hs = numpy.linspace(nff, 2 * nff,20)
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
         return df.loc[df['GL'] > 0,:]
             
@@ -510,13 +523,13 @@ class WheatDimensions(object):
         if (fit_TTmax and 'L_blade' in data.columns):
             dat = data.dropna(subset=['L_blade'])
             xn = self.xn(dat['rank'])
-            fit = numpy.polyfit(xn,dat['L_blade'],6)
+            fit = numpy.polyfit(xn,dat['L_blade'],7)
             x = numpy.linspace(min(xn), max(xn), 500)
             y = numpy.polyval(fit,x)
             xnmax = x[numpy.argmax(y)]
             self.TTmax = self.TTxn(xnmax)
             
-        xn = self.xn(data['rank'])   
+        xn = self.xn(data['rank'], data['nff'])
         scales = {k: numpy.mean(data[k] / self.predict[k](xn)) for k in self.predict if k in data.columns}
         for k in scales:
             self.predict[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * scales[k])
@@ -526,6 +539,7 @@ class WheatDimensions(object):
         """
         xn = (TTem_leaf - TTem_leafmax) / mean_phyllochron
         """
+ 
         return (self.hsfit.TT(ranks, nff) - self.TTmax) * self.hsfit.a_cohort
         
     def TTxn(self, xn, nff=None):
@@ -537,7 +551,7 @@ class WheatDimensions(object):
             scale={}
         
         if nff is None:
-            nff = self.hsfit.nff
+            nff = self.hsfit.mean_nff
             ranks = numpy.linspace(0, nff, 20)
         else:
             ranks = numpy.arange(1, nff + 1)

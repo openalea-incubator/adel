@@ -247,25 +247,14 @@ class TillerRegression(object):
     """ Tiller regression model
     """
         
-    def __init__(self, ears_per_plant = 2.5, n_elongated_internode = 4, delta_stop_del = 2, inner_parameters ={}):
+    def __init__(self, ears_per_plant = 2.5, dHS_reg = 4.36, delta_stop_del = 2):
         self.ears_per_plant = ears_per_plant
-        self.n_elongated_internode = n_elongated_internode
         self.delta_stop_del = delta_stop_del
-        # Express time-delta between tiller regression and bolting in phyllochronic units
-        self.delta_reg = float(inner_parameters.get('DELAIS_REG_MONT', params.DELAIS_REG_MONT)) / 110
-
-    def decimal_elongated_internode_number(self, internode_ranks, internode_lengths):
-        """ estimate the (decimal) number of elongated internode as determined in Plantgen from internode dimension of most frequent axis
-        """
-        df = pandas.DataFrame({'rank':internode_ranks, 'length':internode_lengths})
-        # keep only the non-zero lengths
-        df = df[df['length'] > 0]
-        # Fit a polynomial of degree 2 to, and get the coefficient of degree 0. 
-        n = df['rank'].max() - numpy.polyfit(df['length'].values, df['rank'].values, 2)[2]
-        return n   
+        self.dHS_reg = dHS_reg
+        
 
     def hs_debreg(self, nff):
-        return nff - self.n_elongated_internode + self.delta_reg
+        return nff - self.dHS_reg
         
     def regression_table(self, cohort_emission_table):
         """ compute regression table for the differents cohorts
@@ -482,33 +471,39 @@ class GreenLeaves(object):
             return lin(hs) + pol(hs)            
         return _curve
         
-    def HS_GL_sample(self, nff=None):
+    def GL_number(self, nff=None):
         curve = self.curve(nff)
         hs = numpy.linspace(nff, 2 * nff,20)
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
-        return df.loc[df['GL'] > 0,:]
-            
+        df = df.loc[df['GL'] > 0,:]
+        df['TT'] = self.hsfit.TT(df['HS'], nff)
+        return dict(zip(GL['TT'],GL['GL']))
+     
+    def TT_t1_user(self, nff=None):
+        return self.hsfit.TT(self.hs_t1(nff), nff)
       
 class WheatDimensions(object):
     """ A dimension generator model based on scaling of a reference dataset
     """
     
-    def __init__(self, hsfit=None, dHS_max=2.4, nff=12, dHS_flag=0.25, phyllochron=110, scale=1):
+    def __init__(self, hsfit=None, dHS_max=2.4, lower=6, scale=1, lower_scale=1, nff_scale=1):
         """
-        dHS_flag, phyllochron and nff are read from hsfit when given, or from  explicit arguments if hsfit is None
         dHS_max : delta Haunstage between ligulation of longest leaf and flag leaf ligulation.
         scale allows an initial glogal re-scale of the dimensions. If scaleis a dict, then only specified dimensions are scaled
+        lower indicate the boundary between lower leaves and upper leaves
         """
 
-        #defaults
         if hsfit is None:
-            hsfit = HaunStage(a_cohort=1. / phyllochron, nff=nff, dTT_nff=dHS_flag * 1. / phyllochron)
+            hsfit = HaunStage()
         
         if not isinstance(scale,dict):
             scale={}
         
         self.hsfit = hsfit
-        self.TTmax = hsfit.TT(hsfit.nff - dHS_max)
+        self.TTmax = hsfit.TT(hsfit.mean_nff - dHS_max)
+        self.lower = lower
+        self.lower_scale = lower_scale
+        self.nff_scale = nff_scale
         self.ref = adel_data.wheat_dimension_profiles()
         self.xnref = self.ref['xn'].tolist()
         self.ref = self.ref.drop('xn',axis=1)
@@ -522,6 +517,7 @@ class WheatDimensions(object):
         
         if (fit_TTmax and 'L_blade' in data.columns):
             dat = data.dropna(subset=['L_blade'])
+            dat = dat.ix[dat['rank'] >= self.lower,:]
             xn = self.xn(dat['rank'])
             fit = numpy.polyfit(xn,dat['L_blade'],7)
             x = numpy.linspace(min(xn), max(xn), 500)
@@ -555,10 +551,12 @@ class WheatDimensions(object):
             ranks = numpy.linspace(0, nff, 20)
         else:
             ranks = numpy.arange(1, nff + 1)
-            
-          
+        
+        scale_nff = 1 + (self.nff_scale - 1) * (nff - self.hsfit.mean_nff)
         xn = self.xn(ranks,nff)        
-        df = pandas.DataFrame({k:self.predict[k](xn) * scale.get(k,1) for k in self.predict})
+        df = pandas.DataFrame({k:self.predict[k](xn) * scale.get(k,1) * scale_nff for k in self.predict})
+        low_scale = interp1d([1,self.lower],[self.lower_scale,1], bounds_error=False, fill_value=self.lower_scale)
+        df['L_blade'] = df['L_blade'] * numpy.where(ranks >= self.lower, 1, low_scale(ranks)) 
         df['rank'] = ranks
         return df
 
@@ -567,6 +565,17 @@ class WheatDimensions(object):
         df = df.rename(columns={'rank':'index_phytomer'})
         df = df.drop('H_col',axis=1)
         return df  
+        
+    def decimal_elongated_internode_number(self, nff=None):
+        """ estimate the (decimal) number of elongated internode as determined in Plantgen from internode dimension of most frequent axis
+        """
+        dim = self.dimT(nff)
+        df = pandas.DataFrame({'rank':dim['rank'].values, 'length':dim['L_internode'].values})
+        # keep only the non-zero lengths
+        df = df[df['length'] > 0]
+        # Fit a polynomial of degree 2 to, and get the coefficient of degree 0. 
+        n = df['rank'].max() - numpy.polyfit(df['length'].values, df['rank'].values, 2)[2]
+        return n   
 
 class AxePop(object):
     """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)
@@ -889,15 +898,8 @@ class PlantGen(object):
         
         # Leaf appearance / Green leaves          
         config['dynT_user'] = self.dynT_user_table(plant)
-        
-        hs_flag = nff
-        GL = self.GLfit.HS_GL_sample(hs_flag)
-        GL['TT'] = self.HSfit.TT(GL['HS'], nff)
-        GL = dict(zip(GL['TT'],GL['GL']))
-        config['GL_number'] = GL
-        
-        hs_t1 = self.GLfit.hs_t1(hs_flag)
-        config['TT_t1_user'] = self.HSfit.TT(hs_t1, nff)
+        config['GL_number'] = self.GLfit.GL_number(nff)
+        config['TT_t1_user'] = self.GLfit.TT_t1_user(nff)
         
         return config
 
@@ -959,8 +961,8 @@ class PlantGen(object):
                          'TT_hs_0': self.HSfit.TT_hs_0,
                          'TT_hs_N_phytomer_potential': self.HSfit.TTflag(nff),
                          'n0': self.GLfit.n0,
-                         'n1': self.GLfit.n1,
-                         'n2': self.GLfit.n2}
+                         'n1': self.GLfit.n1(nff),
+                         'n2': self.GLfit.n2(nff)}
         idaxis = plant['id_axis'].values
         df = pandas.DataFrame(index=idaxis,
                               columns=['id_axis','a_cohort','TT_hs_0','TT_hs_N_phytomer_potential','n0','n1','n2'],
@@ -968,8 +970,7 @@ class PlantGen(object):
         df.ix['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
         cohort = plant['id_cohort'].values
-        dTT_MS_cohort = numpy.frompyfunc(self.HSfit.dTT_MS_cohort, 1, 1) # make function operates on 'vectorised' arrays
-        df['TT_hs_N_phytomer_potential'] = self.HSfit.TTflag(nff) + dTT_MS_cohort(cohort)
+        df['TT_hs_N_phytomer_potential'] = self.HSfit.TTflag(nff) + self.HSfit.dTT_MS_cohort(cohort)
         df = df.reset_index(drop=True)
         return df
     

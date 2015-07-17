@@ -1477,38 +1477,42 @@ class _CreatePhenTTmp():
                 a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation = \
                     dynT_row[['a_cohort', 'TT_hs_0', 'TT_hs_break', 'TT_flag_ligulation']]
                 
-                if math.isnan(TT_hs_break): 
-                    TT_hs_break_float = 0.0 # TODO: I think we should compute the TT_* by mode rather than by phase, so that we don't have to set a "magic" value to "TT_hs_break_float" for compatibility matters... 
-                else:
-                    TT_hs_break_float = TT_hs_break
-                    
-                HS_break = a_cohort_before_start_MS_elongation_1 * (TT_hs_break_float - TT_hs_0)
-                a_cohort_before_start_MS_elongation_2 = (N_phytomer_potential - HS_break) / (TT_flag_ligulation - TT_hs_break_float)
-                
                 is_regressive = not bool(int(str(int(id_phen))[-1]))
                 tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col = a_cohort_before_start_MS_elongation_1 * (most_frequent_MS_TT_start_MS_elongation - TT_hs_0)
-                tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col - params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_1  
+                tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col - params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_1
                 
                 if is_regressive:
                     a_cohort_after_start_MS_elongation_1 = a_cohort_before_start_MS_elongation_1 * a_cohort_multiplicative_factor
                     tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col - a_cohort_after_start_MS_elongation_1 * most_frequent_MS_TT_start_MS_elongation
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip - a_cohort_after_start_MS_elongation_1 * most_frequent_MS_TT_start_MS_elongation #TODO: useful ? 
-                    a_cohort_after_start_MS_elongation_2 = a_cohort_before_start_MS_elongation_2 * a_cohort_multiplicative_factor
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col - a_cohort_after_start_MS_elongation_2 * most_frequent_MS_TT_start_MS_elongation
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip - a_cohort_after_start_MS_elongation_2 * most_frequent_MS_TT_start_MS_elongation #TODO: useful ?
+                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip - a_cohort_after_start_MS_elongation_1 * most_frequent_MS_TT_start_MS_elongation #TODO: useful ?
                 else:
                     a_cohort_after_start_MS_elongation_1 = a_cohort_before_start_MS_elongation_1
                     tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col = - a_cohort_before_start_MS_elongation_1 * TT_hs_0
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_tip = tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col * params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_1 #TODO: useful ?
-                    a_cohort_after_start_MS_elongation_2 = a_cohort_before_start_MS_elongation_2
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col = HS_break - a_cohort_before_start_MS_elongation_2 * TT_hs_break_float
-                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_tip = tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col * params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_2 #TODO: useful ?
-                    
+                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_tip = tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col * params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_1 #TODO: useful ? 
+                
+                if math.isnan(TT_hs_break): # linear mode
+                    HS_break = None
+                    a_cohort_before_start_MS_elongation_2 = None
+                    a_cohort_after_start_MS_elongation_2 = None
+                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col = None
+                    tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_tip = None
+                else:
+                    HS_break = a_cohort_before_start_MS_elongation_1 * (TT_hs_break - TT_hs_0)
+                    a_cohort_before_start_MS_elongation_2 = (N_phytomer_potential - HS_break) / (TT_flag_ligulation - TT_hs_break)
+                    if is_regressive:
+                        a_cohort_after_start_MS_elongation_2 = a_cohort_before_start_MS_elongation_2 * a_cohort_multiplicative_factor
+                        tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col - a_cohort_after_start_MS_elongation_2 * most_frequent_MS_TT_start_MS_elongation
+                        tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_tip = tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip - a_cohort_after_start_MS_elongation_2 * most_frequent_MS_TT_start_MS_elongation #TODO: useful ?
+                    else:
+                        a_cohort_after_start_MS_elongation_2 = a_cohort_before_start_MS_elongation_2
+                        tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col = HS_break - a_cohort_before_start_MS_elongation_2 * TT_hs_break
+                        tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_tip = tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col * params.DELAIS_PHYLL_COL_TIP_NTH / a_cohort_before_start_MS_elongation_2 #TODO: useful ?
+
                 # compute TT_col_phytomer
                 self.phenT_tmp.loc[phenT_tmp_group.index, 'TT_col_phytomer']= \
                     phenT_tmp_group.loc[:,'TT_col_phytomer'].values[:] = \
                         phenT_tmp_group['index_phytomer'].apply(_calculate_TT_col_phytomer, 
-                                                                args=(HS_break, TT_hs_0, TT_hs_break_float, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col, 
+                                                                args=(HS_break, TT_hs_0, TT_hs_break, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col, 
                                                                       a_cohort_before_start_MS_elongation_1, a_cohort_after_start_MS_elongation_1, tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col, 
                                                                       a_cohort_before_start_MS_elongation_2, a_cohort_after_start_MS_elongation_2, tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col, 
                                                                       is_regressive))
@@ -1520,7 +1524,7 @@ class _CreatePhenTTmp():
                         phenT_tmp_group.loc[first_leaf_indexes, ['index_phytomer', 'TT_col_phytomer']].apply(
                             _calculate_TT_em_phytomer,
                             axis=1, 
-                            args=(TT_hs_break_float, params.DELAIS_PHYLL_COL_TIP_1ST, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
+                            args=(TT_hs_break, params.DELAIS_PHYLL_COL_TIP_1ST, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
                                   a_cohort_before_start_MS_elongation_1, a_cohort_after_start_MS_elongation_1,  
                                   a_cohort_before_start_MS_elongation_2, a_cohort_after_start_MS_elongation_2, 
                                   is_regressive))
@@ -1535,7 +1539,7 @@ class _CreatePhenTTmp():
                             phenT_tmp_group.loc[other_leaves_indexes, ['index_phytomer', 'TT_col_phytomer']].apply(
                                 _calculate_TT_em_phytomer, 
                                 axis=1,
-                                args=(TT_hs_break_float, params.DELAIS_PHYLL_COL_TIP_NTH, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
+                                args=(TT_hs_break, params.DELAIS_PHYLL_COL_TIP_NTH, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
                                       a_cohort_before_start_MS_elongation_1, a_cohort_after_start_MS_elongation_1,  
                                       a_cohort_before_start_MS_elongation_2, a_cohort_after_start_MS_elongation_2, 
                                       is_regressive))
@@ -1543,7 +1547,7 @@ class _CreatePhenTTmp():
                 # compute TT_sen_phytomer
                 id_axis, n0, n1, n2, t0, t1, a, c = \
                     dynT_row[['id_axis', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
-                HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break_float, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2)
+                HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2)
                 
                 HS_1_before_start_MS_elongation = HS_1_after_start_MS_elongation = HS_1
                 HS_2_before_start_MS_elongation = HS_2_after_start_MS_elongation = HS_2
@@ -1579,49 +1583,49 @@ def _create_phenT_abs(phenT_tmp, axeT_, dimT_):
     return phenT_abs
 
 
-def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_hs_0, TT_hs_break_float, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col, 
+def _calculate_TT_col_phytomer(index_phytomer, HS_break, TT_hs_0, TT_hs_break, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col, 
                                a_cohort_before_start_MS_elongation_1, a_cohort_after_start_MS_elongation_1, tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col, 
                                a_cohort_before_start_MS_elongation_2, a_cohort_after_start_MS_elongation_2, tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col,
                                is_regressive):
-    if (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH) < HS_break: # 1st phase
+    if math.isnan(TT_hs_break) or (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH) < HS_break: # 1st phase
         if index_phytomer <= tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col or not is_regressive: # non regressive
             TT_col_phytomer = (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH) / a_cohort_before_start_MS_elongation_1 + TT_hs_0
         else: # regressive
             TT_col_phytomer = (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH - tiller_index_phytomer_y_intercept_after_start_MS_elongation_1_col) / a_cohort_after_start_MS_elongation_1
-    else: # 2nd phase ; in linear mode, 2nd phase <=> 1st phase
+    else: # 2nd phase: bilinear mode only
         if index_phytomer <= tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_col or not is_regressive: # non regressive
-            TT_col_phytomer = (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH - HS_break) / a_cohort_before_start_MS_elongation_2 + TT_hs_break_float
+            TT_col_phytomer = (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH - HS_break) / a_cohort_before_start_MS_elongation_2 + TT_hs_break
         else: # regressive
             TT_col_phytomer = (index_phytomer + params.DELAIS_PHYLL_HS_COL_NTH - tiller_index_phytomer_y_intercept_after_start_MS_elongation_2_col) / a_cohort_after_start_MS_elongation_2
     return TT_col_phytomer
+    
 
-
-def _calculate_TT_em_phytomer(phenT_subgroup, TT_hs_break_float, delais_phyll_col_tip, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
+def _calculate_TT_em_phytomer(phenT_subgroup, TT_hs_break, delais_phyll_col_tip, tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip,
                               a_cohort_before_start_MS_elongation_1, a_cohort_after_start_MS_elongation_1,  
                               a_cohort_before_start_MS_elongation_2, a_cohort_after_start_MS_elongation_2, 
                               is_regressive):
     index_phytomer, TT_col_phytomer = phenT_subgroup.index_phytomer, phenT_subgroup.TT_col_phytomer
-    if TT_col_phytomer < TT_hs_break_float: # 1st phase
+    if math.isnan(TT_hs_break) or TT_col_phytomer < TT_hs_break: # 1st phase
         if index_phytomer <= tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip or not is_regressive: # non regressive
             TT_em_phytomer = TT_col_phytomer - delais_phyll_col_tip / a_cohort_before_start_MS_elongation_1
         else: # regressive
             TT_em_phytomer = TT_col_phytomer - delais_phyll_col_tip / a_cohort_after_start_MS_elongation_1
-    else: # 2nd phase ; in linear mode, 2nd phase <=> 1st phase
+    else: # 2nd phase: bilinear mode only
         if index_phytomer <= tiller_index_phytomer_at_most_frequent_MS_start_MS_elongation_tip or not is_regressive: # non regressive
             TT_em_phytomer = TT_col_phytomer - delais_phyll_col_tip / a_cohort_before_start_MS_elongation_2
-            if TT_em_phytomer <= TT_hs_break_float:
-                TT_em_phytomer = TT_hs_break_float - (delais_phyll_col_tip - a_cohort_before_start_MS_elongation_2 * (TT_col_phytomer - TT_hs_break_float)) / a_cohort_before_start_MS_elongation_1
+            if TT_em_phytomer <= TT_hs_break:
+                TT_em_phytomer = TT_hs_break - (delais_phyll_col_tip - a_cohort_before_start_MS_elongation_2 * (TT_col_phytomer - TT_hs_break)) / a_cohort_before_start_MS_elongation_1
         else: # regressive
             TT_em_phytomer = TT_col_phytomer - delais_phyll_col_tip / a_cohort_after_start_MS_elongation_2
-            if TT_em_phytomer <= TT_hs_break_float:
+            if TT_em_phytomer <= TT_hs_break:
                 # TODO: to check
-                TT_em_phytomer = TT_hs_break_float - (delais_phyll_col_tip - a_cohort_after_start_MS_elongation_2 * (TT_col_phytomer - TT_hs_break_float)) / a_cohort_after_start_MS_elongation_1
+                TT_em_phytomer = TT_hs_break - (delais_phyll_col_tip - a_cohort_after_start_MS_elongation_2 * (TT_col_phytomer - TT_hs_break)) / a_cohort_after_start_MS_elongation_1
     return TT_em_phytomer
 
 
 def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3, GL_4, t0, t1, TT_flag_ligulation, N_phytomer_potential, is_regressive):  
     # define HS according to index_phytomer
-    if index_phytomer < HS_break: # linear mode
+    if HS_break is None or index_phytomer < HS_break: # linear mode
         HS = HS_1
     else: # bilinear mode
         HS = HS_2
@@ -1692,10 +1696,13 @@ def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3,
     return TT_sen_phytomer
 
 
-def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break_float, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2):
+def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2):
     # define HS(TT)
     HS_1 = np.poly1d([a_cohort_before_start_MS_elongation_1, - a_cohort_before_start_MS_elongation_1 * TT_hs_0]) # index_phytomer < HS_break
-    HS_2 = np.poly1d([a_cohort_before_start_MS_elongation_2, - a_cohort_before_start_MS_elongation_2 * TT_hs_break_float + HS_break]) # index_phytomer >= HS_break
+    if HS_break is None: # linear
+        HS_2 = None # index_phytomer >= HS_break
+    else: # bilinear
+        HS_2 = np.poly1d([a_cohort_before_start_MS_elongation_2, - a_cohort_before_start_MS_elongation_2 * TT_hs_break + HS_break]) # index_phytomer >= HS_break
     
     # define GL(TT) for all phases except TT < t0 (because it depends on index_phytomer)
     if id_axis == 'MS':
@@ -1769,74 +1776,93 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
         id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c = \
             dynT_row[['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_break', 'TT_flag_ligulation', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
         
-        if math.isnan(TT_hs_break):
-            TT_hs_break_float = 0.0 # TODO: I think we should compute the TT_* by mode rather than by phase, so that we don't have to set a "magic" value to "TT_hs_break_float" for compatibility matters...
-        else:
-            TT_hs_break_float = TT_hs_break
+        if math.isnan(TT_hs_break): # linear mode
+            HS_break = None
+            a_cohort_before_start_MS_elongation_2 = None
+        else: # bilinear mode
+            HS_break = a_cohort_before_start_MS_elongation_1 * (TT_hs_break - TT_hs_0)
+            a_cohort_before_start_MS_elongation_2 = (N_phytomer_potential - HS_break) / (TT_flag_ligulation - TT_hs_break)
             
-        HS_break = a_cohort_before_start_MS_elongation_1 * (TT_hs_break_float - TT_hs_0)
-        a_cohort_before_start_MS_elongation_2 = (N_phytomer_potential - HS_break) / (TT_flag_ligulation - TT_hs_break_float)
+        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2)
         
-        HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break_float, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2)
+        t0, t1, TT_flag_ligulation = np.round([t0, t1, TT_flag_ligulation]).astype(int)
         
-        t0, t1, TT_flag_ligulation, TT_hs_break_float = np.round([t0, t1, TT_flag_ligulation, TT_hs_break_float]).astype(int)
-        
-        TT_1_1 = np.arange(0, t0)
-        TT_1_2 = np.arange(t0, t0)
-        TT_2_1 = np.arange(t0, t1)
-        TT_2_2 = np.arange(t1, t1)
-        TT_3_1 = np.arange(t1, TT_flag_ligulation)
-        TT_3_2 = np.arange(TT_flag_ligulation, TT_flag_ligulation)
-        TT_4_1 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
-        TT_4_2 = np.arange(params.TT_DEL_FHAUT, params.TT_DEL_FHAUT)
-        
-        if not math.isnan(TT_hs_break): # bilinear mode
-            if TT_hs_break_float <= t0:
-                TT_1_1 = np.arange(0, TT_hs_break_float)
-                TT_1_2 = np.arange(TT_hs_break_float, t0)
-            elif TT_hs_break_float <= t1:
-                TT_2_1 = np.arange(t0, TT_hs_break_float)
-                TT_2_2 = np.arange(TT_hs_break_float, t1)
-            elif TT_hs_break_float <= TT_flag_ligulation:
-                TT_3_1 = np.arange(t1, TT_hs_break_float)
-                TT_3_2 = np.arange(TT_hs_break_float, TT_flag_ligulation)
+        if math.isnan(TT_hs_break): # linear mode
+            TT_1 = np.arange(0, t0)
+            TT_2 = np.arange(t0, t1)
+            TT_3 = np.arange(t1, TT_flag_ligulation)
+            TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
+            
+            HS_1_TT_1 = np.clip(HS_1(TT_1), 0.0, N_phytomer_potential)
+            HS_1_TT_2 = np.clip(HS_1(TT_2), 0.0, N_phytomer_potential)
+            HS_1_TT_3 = np.clip(HS_1(TT_3), 0.0, N_phytomer_potential)
+            HS_1_TT_4 = np.clip(HS_1(TT_4), 0.0, N_phytomer_potential)
+            
+            GL_1_TT_1 = np.clip(HS_1(TT_1), 0.0, 1000.0)
+            GL_2_TT_2 = np.clip(GL_2(TT_2), 0.0, 1000.0)
+            GL_3_TT_3 = np.clip(GL_3(TT_3), 0.0, 1000.0)
+            GL_4_TT_4 = np.clip(GL_4(TT_4), 0.0, 1000.0)
+            
+            SSI_1_TT_1 = HS_1_TT_1 - GL_1_TT_1
+            SSI_2_TT_2 = HS_1_TT_2 - GL_2_TT_2
+            SSI_3_TT_3 = HS_1_TT_3 - GL_3_TT_3
+            SSI_4_TT_4 = HS_1_TT_4 - GL_4_TT_4
+            
+            HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+            HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+            HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1, TT_2, TT_3, TT_4)))
+            HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1, HS_1_TT_2, HS_1_TT_3, HS_1_TT_4)))
+            HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1, GL_2_TT_2, GL_3_TT_3, GL_4_TT_4)))
+            HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1, SSI_2_TT_2, SSI_3_TT_3, SSI_4_TT_4)))
+       
+        else: # bilinear mode
+            TT_hs_break = int(round(TT_hs_break))
+            if TT_hs_break <= t0:
+                TT_1_1 = np.arange(0, TT_hs_break)
+                TT_1_2 = np.arange(TT_hs_break, t0)
+            elif TT_hs_break <= t1:
+                TT_2_1 = np.arange(t0, TT_hs_break)
+                TT_2_2 = np.arange(TT_hs_break, t1)
+            elif TT_hs_break <= TT_flag_ligulation:
+                TT_3_1 = np.arange(t1, TT_hs_break)
+                TT_3_2 = np.arange(TT_hs_break, TT_flag_ligulation)
             else:
-                TT_4_1 = np.arange(TT_flag_ligulation, TT_hs_break_float)
-                TT_4_2 = np.arange(TT_hs_break_float, params.TT_DEL_FHAUT)
+                TT_4_1 = np.arange(TT_flag_ligulation, TT_hs_break)
+                TT_4_2 = np.arange(TT_hs_break, params.TT_DEL_FHAUT)
+        
+            HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer_potential)
+            HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
+            HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
+            HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
+            HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer_potential)
+            HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
+            HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
+            HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
             
-        HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer_potential)
-        HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
-        HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
-        HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
-        HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer_potential)
-        HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
-        HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
-        HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
+            GL_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, 1000.0)
+            GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)
+            GL_3_TT_3_1 = np.clip(GL_3(TT_3_1), 0.0, 1000.0)
+            GL_4_TT_4_1 = np.clip(GL_4(TT_4_1), 0.0, 1000.0)
+            GL_1_TT_1_2 = np.clip(HS_2(TT_1_2), 0.0, 1000.0)
+            GL_2_TT_2_2 = np.clip(GL_2(TT_2_2), 0.0, 1000.0)
+            GL_3_TT_3_2 = np.clip(GL_3(TT_3_2), 0.0, 1000.0)
+            GL_4_TT_4_2 = np.clip(GL_4(TT_4_2), 0.0, 1000.0)
         
-        GL_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, 1000.0)
-        GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)
-        GL_3_TT_3_1 = np.clip(GL_3(TT_3_1), 0.0, 1000.0)
-        GL_4_TT_4_1 = np.clip(GL_4(TT_4_1), 0.0, 1000.0)
-        GL_1_TT_1_2 = np.clip(HS_2(TT_1_2), 0.0, 1000.0)
-        GL_2_TT_2_2 = np.clip(GL_2(TT_2_2), 0.0, 1000.0)
-        GL_3_TT_3_2 = np.clip(GL_3(TT_3_2), 0.0, 1000.0)
-        GL_4_TT_4_2 = np.clip(GL_4(TT_4_2), 0.0, 1000.0)
-        
-        SSI_1_TT_1_1 = HS_1_TT_1_1 - GL_1_TT_1_1
-        SSI_2_TT_2_1 = HS_1_TT_2_1 - GL_2_TT_2_1
-        SSI_3_TT_3_1 = HS_1_TT_3_1 - GL_3_TT_3_1
-        SSI_4_TT_4_1 = HS_1_TT_4_1 - GL_4_TT_4_1
-        SSI_1_TT_1_2 = HS_1_TT_1_2 - GL_1_TT_1_2
-        SSI_2_TT_2_2 = HS_1_TT_2_2 - GL_2_TT_2_2
-        SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
-        SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
-        
-        HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
-        HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
-        HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1_1, TT_1_2, TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
-        HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1_1, HS_1_TT_1_2, HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
-        HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
-        HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
+            SSI_1_TT_1_1 = HS_1_TT_1_1 - GL_1_TT_1_1
+            SSI_2_TT_2_1 = HS_1_TT_2_1 - GL_2_TT_2_1
+            SSI_3_TT_3_1 = HS_1_TT_3_1 - GL_3_TT_3_1
+            SSI_4_TT_4_1 = HS_1_TT_4_1 - GL_4_TT_4_1
+            SSI_1_TT_1_2 = HS_1_TT_1_2 - GL_1_TT_1_2
+            SSI_2_TT_2_2 = HS_1_TT_2_2 - GL_2_TT_2_2
+            SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
+            SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
+            
+            HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+            HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+            HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1_1, TT_1_2, TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
+            HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1_1, HS_1_TT_1_2, HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
+            HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
+            HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
         
         HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
         

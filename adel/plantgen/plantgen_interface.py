@@ -21,6 +21,7 @@ for additional information.
 Authors: M. Abichou, B. Andrieu, C. Chambon
 '''
 
+import numpy as np
 import pandas as pd
 import warnings
 
@@ -38,7 +39,7 @@ def gen_adel_input_data(dynT_user,
                         ears_density=500,
                         GL_number={1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}, 
                         delais_TT_stop_del_axis=600,
-                        TT_hs_break=0.0,
+                        TT_hs_break=None,
                         inner_params={},
                         axeT_user=None,
                         TT_regression_start_user=None,
@@ -112,7 +113,7 @@ def gen_adel_input_data(dynT_user,
           cob).
         
         - `TT_hs_break` (:class:`float`) - the thermal time when the rate of Haun Stage 
-          is changing. If phyllochron is constant, then *TT_hs_break* is null.
+          is changing. *TT_hs_break* equal `None` (the default) means that the phyllochron is constant. 
           
         - `inner_params` (:class:`dict`) - the values of the inner parameters used 
           for the construction of the input tables. These parameters are the same 
@@ -123,9 +124,9 @@ def gen_adel_input_data(dynT_user,
           
         - axeT_user (:class:`pandas.DataFrame`): a table similar to the axeT_tmp that allows forcing which axis should be reconstructed.
         
-        - TT_regression_start_user (:class: `float`) : thermal time at wich regression start on most frequent MS. If set to none, TT_regression_start is computed by pgen from bolting date of most frequent MS
+        - TT_regression_start_user (:class: `float`) : thermal time at wich regression start on most frequent MS. If set to none, TT_regression_start is computed by pgen from start of MS elongation date of most frequent MS
         
-        - TT_t1_user (:class: `float`) : thermal time at which n1 Green leaves are observed on most frequent MS. If set to none, TT_t1_user is computed by pgen from bolting date of most frequent MS
+        - TT_t1_user (:class: `float`) : thermal time at which n1 Green leaves are observed on most frequent MS. If set to none, TT_t1_user is computed by pgen from start of MS elongation date of most frequent MS
         
     :Returns:
         Return :ref:`axeT <axeT>`, :ref:`dimT <dimT>`, 
@@ -209,11 +210,11 @@ of the MS are documented by the user, then this will lead to an error."
                       tools.InputWarning)
     
     # calculate dynT_user completeness and check its validity
-    #update TT_col_* names with new names
-    dynT_user=dynT_user.rename(columns={'TT_col_0':'TT_hs_0','TT_col_N_phytomer_potential':'TT_hs_N_phytomer_potential'})
+    # update TT_col_* names with new names
+    dynT_user=dynT_user.rename(columns={'TT_col_0':'TT_hs_0','TT_col_N_phytomer_potential':'TT_flag_ligulation'})
     if 'N_phytomer_potential' in dynT_user.columns:
         dynT_user_completeness = plantgen_core.DataCompleteness.FULL
-        expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_flag_ligulation', 'n0', 'n1', 'n2']
         if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         grouped = dynT_user.groupby(['id_axis', 'N_phytomer_potential'])
@@ -236,7 +237,7 @@ of the MS are documented by the user, then this will lead to an error."
             
     elif dynT_user.count().max() == dynT_user.count().min() == dynT_user.index.size:
         dynT_user_completeness = plantgen_core.DataCompleteness.SHORT
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_flag_ligulation', 'n0', 'n1', 'n2']
         if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         if dynT_user['id_axis'].unique().size != dynT_user['id_axis'].size:
@@ -251,7 +252,7 @@ of the MS are documented by the user, then this will lead to an error."
         
     else:
         dynT_user_completeness = plantgen_core.DataCompleteness.MIN
-        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_N_phytomer_potential', 'n0', 'n1', 'n2']
+        expected_dynT_user_columns = ['id_axis', 'a_cohort', 'TT_hs_0', 'TT_flag_ligulation', 'n0', 'n1', 'n2']
         if set(dynT_user.columns.tolist()) != set(expected_dynT_user_columns):
             raise tools.InputError("dynT_user does not have the columns: %s" % ', '.join(expected_dynT_user_columns))
         available_axes = dynT_user['id_axis'].tolist()
@@ -323,7 +324,10 @@ of the MS are documented by the user, then this will lead to an error."
                                                                      'dimT_user',
                                                                      ', '.join([str(max(possible_MS_N_phytomer_potential))])),
                           tools.InputWarning)
-            
+    
+    if TT_hs_break is None:
+        TT_hs_break = np.nan
+    
     # initialize the axes
     cardinalityT = plantgen_core.init_axes(plants_number, 
                                            decide_child_cohort_probabilities, 
@@ -332,7 +336,7 @@ of the MS are documented by the user, then this will lead to an error."
                                            theoretical_axis_cardinalities, axeT_user = axeT_user)
      
     # define phenology functions
-    dynT_ = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
+    dynT_, decimal_elongated_internode_number = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
                                              MS_leaves_number_probabilities, 
                                              dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                              dimT_user_completeness, TT_hs_break, axeT_user = axeT_user, TT_t1_user = TT_t1_user)
@@ -344,7 +348,7 @@ of the MS are documented by the user, then this will lead to an error."
                                                        number_of_ears, plants_density, ears_density, axeT_user=axeT_user, TT_regression_start_user=TT_regression_start_user,
                                                        TT_t1_user = TT_t1_user)
         
-    #calculate organs dimensions
+    # compute organs dimensions
     dimT_ = plantgen_core.organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
                                                       dynT_user, dimT_user, GL_number, dynT_user_completeness, 
                                                       dimT_user_completeness, TT_hs_break, delais_TT_stop_del_axis, 
@@ -397,7 +401,12 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_filepath, dimT_user_filepath
     ears_density = inputs.ears_density
     GL_number = inputs.GL_number
     delais_TT_stop_del_axis = inputs.delais_TT_stop_del_axis
-    TT_hs_break = inputs.TT_hs_break
+    
+    try:
+        TT_hs_break = inputs.TT_hs_break
+    except:
+        TT_hs_break = None
+        
     try:
         inner_params = inputs.inner_params
     except:

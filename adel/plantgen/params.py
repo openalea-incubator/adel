@@ -24,7 +24,7 @@ SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS = {'a_1': 0.9423, 'a_2': 0.555}
 '''The coefficients *a_1* and *a_2* to calculate the final number of leaves on 
 tillers from the final number of leaves on main stem. 
 
-Calculation is done as follow::
+Calculation is done as follows::
     
     tiller_final_leaves_number 
         = a_1 * MS_final_leaves_number - a_2 * cohort_number
@@ -88,8 +88,7 @@ To parameterize the delay between tip appearance and collar appearance for the f
 :attr:`DELAIS_PHYLL_COL_TIP_1ST <alinea.adel.plantgen.params.DELAIS_PHYLL_COL_TIP_1ST>`.   
 '''
 
-#DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5 / 1.6
-DELAIS_PHYLL_HS_COL_NTH = 0.
+DELAIS_PHYLL_HS_COL_NTH = -0.15
 '''Delay between Haun Stage and collar appearance for all leaves. 
 
 The delay is given in phyllochron unit. 
@@ -103,7 +102,7 @@ The delay is given in phyllochron unit.
 '''
 
 DELAIS_REG_MONT = -40.0
-'''The time between the start of the regression and the bolting. 
+'''The time between the start of the regression and the start of MS elongation. 
 
 The delay is given in Degrees.Day. 
 '''
@@ -119,15 +118,40 @@ FIRST_CHILD_DELAY = 2
 '''The delay between a parent cohort and its first possible child cohort. 
 This delay is expressed in number of cohorts.'''
 
-WIDTHS_REDUCTION_FACTORS = { 1: 0.95,
-                             2: 0.95, 
-                             3: 0.95, 
-                             4: 0.95,
-                             5: 0.95,
-                             6: 0.95,
-                             7: 0.95,
-                             8: 0.95,
-                             9: 0.95,
-                            10: 0.95}
-'''The reduction factors of the phytomers widths for each cohort.
+LENGTHS_REDUCTION_FACTOR = -0.115
+'''The reduction factor to apply on the lengths of the most frequent main stem to compute the lengths of the regressive tillers,
+i.e. lengths_regressive_tillers =  lengths_most_frequent_MS * (1 + LENGTHS_REDUCTION_FACTOR)
+'''
+
+WIDTHS_REDUCTION_FACTOR = -0.938
+'''The reduction factor to apply on the widths of the most frequent main stem to compute the widths of the regressive tillers,
+i.e. widths_regressive_tillers =  widths_most_frequent_MS * (1 + WIDTHS_REDUCTION_FACTOR)
+'''
+
+SLOPE_SHIFT_MS_TO_TILLERS = -0.811
+'''Shift to apply on phytomer index for each cohort.
+'''
+
+TILLERS_L_BLADE_1ST = 6.5
+'''The length of the blades of phytomer 1 for every tiller.
+'''
+
+W_INTERNODE_POLYNOMIAL = {'coefficients': {'a0': -2.4527, 'a1': 7.6398, 'a2': -4.207},
+                          'first_point': {'index_relative_to_MS_phytomer_normalized': 0.6, 'W_internode_normalized': 0.6}}
+'''Parameters used to compute the width of the internodes for each tiller:
+    - the coefficients of the polynomial fitted from main stems experimental internode widths,
+    - the first point where the polynomial can be applied.'''
+
+MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY = 0.26
+'''The delay to apply on SSI of the most frequent MS to compute SSI of regressive tillers, 
+i.e. SSI_regressive_tillers = SSI_most_frequent_MS + MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+'''
+
+A_COHORT_REDUCTION_FACTOR = -0.53
+'''The reduction factor to apply on the a_cohort of the most frequent main stem to compute the a_cohort of the regressive tillers,
+i.e. a_cohort_regressive_tillers =  a_cohort_most_frequent_MS * (1 + A_COHORT_REDUCTION_FACTOR)
+'''
+
+RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25
+'''The ratio between the plastochron and the phyllochron. Used to compute the delay at flag ligulation of cohorts with different final leaf number.
 '''

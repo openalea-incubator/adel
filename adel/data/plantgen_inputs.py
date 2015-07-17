@@ -10,5 +10,5 @@ TT_bolting = 584
 ears_density = 344
 GL_number = {1117.0: 5.567, 1212.1:5.312,  1368.7:4.750, 1686.8:2.524, 1818.0:0.0}
 delais_TT_stop_del_axis = 600
-TT_hs_break = 0.0
+TT_hs_break = None
 inner_params = {'DELAIS_REG_MONT': -40.0, 'TT_DEL_FHAUT': 3000}

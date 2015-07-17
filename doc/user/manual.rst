@@ -128,7 +128,7 @@ There is one line per axis. Columns are :
     * - **id_ear**
       - Key (int) linking to :ref:`earT <earT>`. id_ear allows referring to the data that describe the ear of the axis. 
         For the regressive axes, id_ear=NA. For the non-regressive axes, id_ear=1. 
-    * - **TT_app_phytomer1**
+    * - **TT_em_phytomer1**
       - Thermal time (relative to canopy appearance) of tip appearance of the first true leaf (not coleoptile or prophyll)
     * - **TT_col_phytomer1**       
       - Thermal time (relative to canopy appearance) of collar appearance of the first true leaf                              
@@ -233,8 +233,8 @@ Columns are :
       - the index referred to in :ref:`axeT <axeT>`
     * - **index_rel_phytomer** 
       - normalized phytomer position, starting from index_rel_phytomer = 0
-    * - **dTT_app_phytomer** 
-      - Thermal time of the appearance of the tip of leaf out of the whorl made by the older blade; expressed as thermal time since TT_app_phytomer1
+    * - **dTT_em_phytomer** 
+      - Thermal time of the appearance of the tip of leaf out of the whorl made by the older blade; expressed as thermal time since TT_em_phytomer1
     * - **dTT_col_phytomer**
       - Thermal time of the appearance of collar; expressed as thermal time since TT_col_phytomer1
     * - **dTT_sen_phytomer** 
@@ -595,8 +595,8 @@ The arguments to define are:
 * *ears_density*: the number of ears per square meter,
 * *GL_number*: the thermal times of GL measurements and corresponding values of green leaves number, 
 * *delais_TT_stop_del_axis*: the thermal time between an axis stop growing and its disappearance,
-* *TT_col_break*: the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
-  If phyllochron is constant, then *TT_col_break* is 0.0.
+* *TT_hs_break*: the thermal time when the rate of progress Haun Stage vs thermal time is changing. 
+  If phyllochron is constant, then *TT_hs_break* is 0.0.
 * *inner_params*: the values to overwrite the inner parameters with. See 
   :ref:`inner_parameters_for_construction` for more details. 
   
@@ -642,7 +642,7 @@ from a Python interpreter::
                  1368.7:4.9, 1686.8:2.4, 
                  1880.0:0.0}
     delais_TT_stop_del_axis = 600
-    TT_col_break = 0.0
+    TT_hs_break = 0.0
     inner_params = {'DELAIS_PHYLL_COL_TIP_1ST': 1.0,
                     'DELAIS_PHYLL_COL_TIP_NTH': 1.6}
     
@@ -667,7 +667,7 @@ from a Python interpreter::
                                   ears_density, 
                                   GL_number, 
                                   delais_TT_stop_del_axis, 
-                                  TT_col_break, 
+                                  TT_hs_break, 
                                   inner_params)
 
     # write axeT, dimT and phenT to csv files in the working directory, replacing
@@ -697,7 +697,7 @@ the preceding example becomes::
      ears_density, 
      GL_number, 
      delais_TT_stop_del_axis, 
-     TT_col_break,
+     TT_hs_break,
      inner_params) = read_plantgen_inputs('plantgen_inputs_MIN.py')
     
     # launch the construction
@@ -721,7 +721,7 @@ the preceding example becomes::
                                   ears_density, 
                                   GL_number, 
                                   delais_TT_stop_del_axis, 
-                                  TT_col_break, 
+                                  TT_hs_break, 
                                   inner_params)
 
     # write axeT, dimT and phenT to csv files in the working directory, replacing
@@ -825,7 +825,7 @@ These parameters are:
 * :attr:`DELAIS_PHYLL_SEN_DISP <alinea.adel.plantgen.params.DELAIS_PHYLL_SEN_DISP>`: 
   the time during which a fully senesced leaf on a non-elongated internode remains on the plant.
 * :attr:`DELAIS_REG_MONT <alinea.adel.plantgen.params.DELAIS_REG_MONT>`: 
-  the time between the start of the regression and the bolting.   
+  the time between the start of the regression and the start of MS elongation.   
 * :attr:`TT_DEL_FHAUT <alinea.adel.plantgen.params.TT_DEL_FHAUT>`: 
   the thermal time at which leaves on elongated internode disappear.
 * :attr:`FIRST_CHILD_DELAY <alinea.adel.plantgen.params.FIRST_CHILD_DELAY>`: 
@@ -1201,7 +1201,7 @@ a line with the following data:
         first phase in case of bilinear behavior.
     * - **TT_col_0** 
       - the thermal time for Haun Stage equal to 0
-    * - **TT_col_break**
+    * - **TT_hs_break**
       - the thermal time when the rate of phytomers emergence is changing
     * - **TT_col_N_phytomer_potential** 
       - the thermal time when Haun Stage is equal to *N_phytomer_potential*
@@ -1293,7 +1293,7 @@ tilleringT
 
 :ref:`tilleringT` describes the dynamic of tillering. It stores the number of axes 
 per square meter at important thermal times: the start of growth, the thermal time 
-of the bolting, and the thermal time of the flowering.
+of the start of MS elongation, and the thermal time of the flowering.
 
 .. list-table::
     :widths: 10 50

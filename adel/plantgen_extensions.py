@@ -478,7 +478,7 @@ class GreenLeaves(object):
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
         df = df.loc[df['GL'] > 0,:]
         df['TT'] = self.hsfit.TT(df['HS'], nff)
-        return dict(zip(GL['TT'],GL['GL']))
+        return dict(zip(df['TT'],df['GL']))
      
     def TT_t1_user(self, nff=None):
         return self.hsfit.TT(self.hs_t1(nff), nff)

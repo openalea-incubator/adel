@@ -383,6 +383,7 @@ class HaunStage(object):
             nff = numpy.array([numpy.nan])
         a = nff / (self.TTflag(nff) - self.TT_hs_0)
         return numpy.where(numpy.isnan(nff), self.a_cohort, a)
+        
     
     def phyllochron(self, nff=None):
         return 1. / self.a_nff(nff)
@@ -551,13 +552,13 @@ class WheatDimensions(object):
     def predict(self, what, ranks=None, nff=None, scale=1.0):
         
         if ranks is None:
-            if nff is None:
+            if nff is None or numpy.isnan(nff):
                 nff = self.hsfit.mean_nff
                 ranks = numpy.linspace(0, nff, 20)
             else:
                 ranks = numpy.arange(1, nff + 1)
              
-        if nff is None:
+        if nff is None or numpy.isnan(nff) :
             nff = self.hsfit.mean_nff
             
         if not isinstance(scale,dict):

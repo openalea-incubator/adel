@@ -76,6 +76,7 @@ def init_axes(plants_number, decide_child_cohort_probabilities,
         axeT_tmp = _create_axeT_tmp(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities)
     else:
         axeT_tmp = axeT_user
+        _create_axeT_tmp.axeT_tmp = axeT_user
         
     # create cardinalityT
     cardinalityT = _create_cardinalityT(theoretical_cohort_cardinalities, 

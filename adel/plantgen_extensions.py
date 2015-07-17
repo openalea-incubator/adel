@@ -987,12 +987,12 @@ class PlantGen(object):
                          'n2': self.GLfit.n2(nff)}
         idaxis = plant['id_axis'].values
         df = pandas.DataFrame(index=idaxis,
-                              columns=['id_axis','a_cohort','TT_hs_0','TT_hs_N_phytomer_potential','n0','n1','n2'],
+                              columns=['id_axis','a_cohort','TT_hs_0','TT_flag_ligulation','n0','n1','n2'],
                               dtype=float)
         df.ix['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
         cohort = plant['id_cohort'].values
-        df['TT_hs_N_phytomer_potential'] = self.HSfit.TTflag(nff) + self.HSfit.dTT_MS_cohort(cohort)
+        df['TT_flag_ligulation'] = self.HSfit.TTflag(nff) + self.HSfit.dTT_MS_cohort(cohort)
         df = df.reset_index(drop=True)
         return df
     

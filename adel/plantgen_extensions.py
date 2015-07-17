@@ -971,6 +971,7 @@ class PlantGen(object):
         df['id_axis'] = axeT['id_axis']
         df['id_cohort'] = axeT['id_cohort']
         df['N_phytomer_potential'] = axeT['N_phytomer_potential']
+        df['N_phytomer'] = axeT['N_phytomer_potential'] # To be checked that this is correct covention
         df['id_phen'] = (df['id_cohort'] * 100 + df['N_phytomer_potential']) * 10 + 1#id for axe with ear
         
         df= df.sort(['id_plt','id_cohort','id_axis'])

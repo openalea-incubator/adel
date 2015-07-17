@@ -578,7 +578,7 @@ class WheatDimensions(object):
         else:
             ranks = numpy.arange(1, nff + 1)
                
-        df = pandas.DataFrame({k:self.predict(k, ranks, nff, scale) for k in self.scale})
+        df = pandas.DataFrame({k:self.predict(k, ranks, nff, scale) for k in self.ref.columns})
         df['rank'] = ranks
         return df
 

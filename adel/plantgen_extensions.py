@@ -981,7 +981,7 @@ class PlantGen(object):
         nff = plant['N_phytomer_potential'].max()
         MS_parameters = {'a_cohort': self.HSfit.a_nff(nff),
                          'TT_hs_0': self.HSfit.TT_hs_0,
-                         'TT_hs_N_phytomer_potential': self.HSfit.TTflag(nff),
+                         'TT_flag_ligulation': self.HSfit.TTflag(nff),
                          'n0': self.GLfit.n0,
                          'n1': self.GLfit.n1(nff),
                          'n2': self.GLfit.n2(nff)}

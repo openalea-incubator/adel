@@ -509,12 +509,11 @@ class WheatDimensions(object):
         self.xnref = self.ref['xn'].tolist()
         self.ref = self.ref.drop('xn',axis=1)
         self.scale = scale
-        self.predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
-
+        #self.predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
+        #interp1D non picklable
+        
     def set_scale(self, scale={}):
         self.scale.update(scale)
-        for k in self.scale:
-            self.predict_fun[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1))
         
     def fit_dimensions(self, data, fit_TTmax = True, fit_nff = True):
         """ 
@@ -533,10 +532,9 @@ class WheatDimensions(object):
             self.TTmax = self.TTxn(xnmax)
             
         xn = self.xn(data['rank'], data['nff'])
-        self.scale = {k: numpy.mean(data[k] / self.predict_fun[k](xn)) for k in self.predict_fun if k in data.columns}
+        predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
+        self.scale = {k: numpy.mean(data[k] / predict_fun[k](xn)) for k in predict_fun if k in data.columns}
         #TO do : lissage sacle avec rang
-        for k in self.scale:
-            self.predict_fun[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale[k])
         return self.scale
     
     def xn(self, ranks, nff=None):
@@ -565,7 +563,8 @@ class WheatDimensions(object):
             scale={}
         scale_nff = 1 + (self.nff_scale - 1) * (nff - self.hsfit.mean_nff)
         xn = self.xn(ranks,nff)
-        res = self.predict_fun[what](xn) * scale.get(what,1) * scale_nff
+        predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
+        res = predict_fun[what](xn) * scale.get(what,1) * scale_nff
         if what is 'L_blade':
             low_scale = interp1d([1,self.lower],[self.lower_scale,1], bounds_error=False, fill_value=self.lower_scale)
             res = res * numpy.where(ranks >= self.lower, 1, low_scale(ranks)) 
@@ -579,7 +578,7 @@ class WheatDimensions(object):
         else:
             ranks = numpy.arange(1, nff + 1)
                
-        df = pandas.DataFrame({k:self.predict(k, ranks, nff, scale) for k in self.predict_fun})
+        df = pandas.DataFrame({k:self.predict(k, ranks, nff, scale) for k in self.scale})
         df['rank'] = ranks
         return df
 

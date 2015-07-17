@@ -486,7 +486,7 @@ class WheatDimensions(object):
     """ A dimension generator model based on scaling of a reference dataset
     """
     
-    def __init__(self, hsfit=None, dHS_max=2.4, lower=6, scale=1, lower_scale=1, nff_scale=1):
+    def __init__(self, hsfit=None, dHS_max=2.4, lower=8, scale=1, lower_scale=1, nff_scale=1):
         """
         dHS_max : delta Haunstage between ligulation of longest leaf and flag leaf ligulation.
         scale allows an initial glogal re-scale of the dimensions. If scaleis a dict, then only specified dimensions are scaled
@@ -507,8 +507,14 @@ class WheatDimensions(object):
         self.ref = adel_data.wheat_dimension_profiles()
         self.xnref = self.ref['xn'].tolist()
         self.ref = self.ref.drop('xn',axis=1)
-        self.predict = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * scale.get(k,1)) for k in self.ref.columns}
+        self.scale = scale
+        self.predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
 
+    def set_scale(self, scale={}):
+        self.scale.update(scale)
+        for k in self.scale:
+            self.predict_fun[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1))
+        
     def fit_dimensions(self, data, fit_TTmax = True, fit_nff = True):
         """ 
         if fit_max is True, use blade length profile to re-adjust dHS_max
@@ -526,10 +532,11 @@ class WheatDimensions(object):
             self.TTmax = self.TTxn(xnmax)
             
         xn = self.xn(data['rank'], data['nff'])
-        scales = {k: numpy.mean(data[k] / self.predict[k](xn)) for k in self.predict if k in data.columns}
-        for k in scales:
-            self.predict[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * scales[k])
-        return scales
+        self.scale = {k: numpy.mean(data[k] / self.predict_fun[k](xn)) for k in self.predict_fun if k in data.columns}
+        #TO do : lissage sacle avec rang
+        for k in self.scale:
+            self.predict_fun[k] = interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale[k])
+        return self.scale
     
     def xn(self, ranks, nff=None):
         """
@@ -541,22 +548,37 @@ class WheatDimensions(object):
     def TTxn(self, xn, nff=None):
         return self.TTmax + xn / self.hsfit.a_cohort
     
-    def dimT(self, nff=None, scale=1.0):
-    
+    def predict(self, what, ranks=None, nff=None, scale=1.0):
+        
+        if ranks is None:
+            if nff is None:
+                nff = self.hsfit.mean_nff
+                ranks = numpy.linspace(0, nff, 20)
+            else:
+                ranks = numpy.arange(1, nff + 1)
+             
+        if nff is None:
+            nff = self.hsfit.mean_nff
+            
         if not isinstance(scale,dict):
             scale={}
-        
+        scale_nff = 1 + (self.nff_scale - 1) * (nff - self.hsfit.mean_nff)
+        xn = self.xn(ranks,nff)
+        res = self.predict_fun[what](xn) * scale.get(what,1) * scale_nff
+        if what is 'L_blade':
+            low_scale = interp1d([1,self.lower],[self.lower_scale,1], bounds_error=False, fill_value=self.lower_scale)
+            res = res * numpy.where(ranks >= self.lower, 1, low_scale(ranks)) 
+        return res
+    
+    def dimT(self, nff=None, scale=1.0):
+    
         if nff is None:
             nff = self.hsfit.mean_nff
             ranks = numpy.linspace(0, nff, 20)
         else:
             ranks = numpy.arange(1, nff + 1)
-        
-        scale_nff = 1 + (self.nff_scale - 1) * (nff - self.hsfit.mean_nff)
-        xn = self.xn(ranks,nff)        
-        df = pandas.DataFrame({k:self.predict[k](xn) * scale.get(k,1) * scale_nff for k in self.predict})
-        low_scale = interp1d([1,self.lower],[self.lower_scale,1], bounds_error=False, fill_value=self.lower_scale)
-        df['L_blade'] = df['L_blade'] * numpy.where(ranks >= self.lower, 1, low_scale(ranks)) 
+               
+        df = pandas.DataFrame({k:self.predict(k, ranks, nff, scale) for k in self.predict_fun})
         df['rank'] = ranks
         return df
 

@@ -487,56 +487,42 @@ class WheatDimensions(object):
     """ A dimension generator model based on scaling of a reference dataset
     """
     
-    def __init__(self, hsfit=None, dHS_max=2.4, lower=8, scale=1, lower_scale=1, nff_scale=1):
+    def __init__(self, hsfit=None, dHS_max=2.4, scale=1, card_scale=(1,1,1)):
         """
         dHS_max : delta Haunstage between ligulation of longest leaf and flag leaf ligulation.
         scale allows an initial glogal re-scale of the dimensions. If scaleis a dict, then only specified dimensions are scaled
-        lower indicate the boundary between lower leaves and upper leaves
+        card_scale allows to adjust a rank effect by scaling min(xn), xn_max and max(xn)
         """
 
+        ref = adel_data.wheat_dimension_profiles()
+        self.xnref = ref['xn'].tolist()
+        self.ref = ref.drop('xn',axis=1)
+        
+        
         if hsfit is None:
             hsfit = HaunStage()
         
         if not isinstance(scale,dict):
-            scale={}
+            scale = {k:scale for k in self.ref.columns}
+            
+        if card_scale is None:
+            card_scale = {}
+            
+        if not isinstance(card_scale,dict):
+            card_scale = {k:card_scale for k in self.ref.columns}
+           
         
         self.hsfit = hsfit
-        self.TTmax = hsfit.TT(hsfit.mean_nff - dHS_max)
-        self.lower = lower
-        self.lower_scale = lower_scale
-        self.nff_scale = nff_scale
-        self.ref = adel_data.wheat_dimension_profiles()
-        self.xnref = self.ref['xn'].tolist()
-        self.ref = self.ref.drop('xn',axis=1)
         self.scale = scale
-        #self.predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
-        #interp1D non picklable
+        self.card_scale = card_scale
+        self.xnmax = hsfit.mean_nff - dHS_max
+        self.TTmax = hsfit.TT(self.xnmax)
+
         
     def set_scale(self, scale={}):
         self.scale.update(scale)
-        
-    def fit_dimensions(self, data, fit_TTmax = True, fit_nff = True):
-        """ 
-        if fit_max is True, use blade length profile to re-adjust dHS_max
-        if fit_nff is True, use dimension per nff to fit nff scale factors scale = 1 + scale_nff * delta_nff
-        """
-        
-        if (fit_TTmax and 'L_blade' in data.columns):
-            dat = data.dropna(subset=['L_blade'])
-            dat = dat.ix[dat['rank'] >= self.lower,:]
-            xn = self.xn(dat['rank'])
-            fit = numpy.polyfit(xn,dat['L_blade'],7)
-            x = numpy.linspace(min(xn), max(xn), 500)
-            y = numpy.polyval(fit,x)
-            xnmax = x[numpy.argmax(y)]
-            self.TTmax = self.TTxn(xnmax)
-            
-        xn = self.xn(data['rank'], data['nff'])
-        predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
-        self.scale = {k: numpy.mean(data[k] / predict_fun[k](xn)) for k in predict_fun if k in data.columns}
-        #TO do : lissage sacle avec rang
-        return self.scale
-    
+       
+       
     def xn(self, ranks, nff=None):
         """
         xn = (TTem_leaf - TTem_leafmax) / mean_phyllochron
@@ -547,7 +533,7 @@ class WheatDimensions(object):
     def TTxn(self, xn, nff=None):
         return self.TTmax + xn / self.hsfit.a_cohort
     
-    def predict(self, what, ranks=None, nff=None, scale=1.0):
+    def predict(self, what, ranks=None, nff=None, rescale=1.0):
         
         if ranks is None:
             if nff is None or numpy.isnan(nff):
@@ -556,20 +542,32 @@ class WheatDimensions(object):
             else:
                 ranks = numpy.arange(1, nff + 1)
              
-        if nff is None or numpy.isnan(nff) :
-            nff = self.hsfit.mean_nff
-            
-        if not isinstance(scale,dict):
-            scale={}
-        scale_nff = 1 + (self.nff_scale - 1) * (nff - self.hsfit.mean_nff)
+        nff =  numpy.where(numpy.isnan(nff), self.hsfit.mean_nff, nff)           
         xn = self.xn(ranks,nff)
-        predict_fun = {k:interp1d(self.xnref, numpy.array(self.ref[k].tolist()) * self.scale.get(k,1)) for k in self.ref.columns}
-        res = predict_fun[what](xn) * scale.get(what,1) * scale_nff
-        if what is 'L_blade':
-            low_scale = interp1d([1,self.lower],[self.lower_scale,1], bounds_error=False, fill_value=self.lower_scale)
-            res = res * numpy.where(ranks >= self.lower, 1, low_scale(ranks)) 
-        return res
-    
+        predict_fun = interp1d(self.xnref, numpy.array(self.ref[what].tolist()) * self.scale.get(what,1) * rescale)
+        rank_fun = interp1d((min(self.xnref), 0, max(self.xnref)),self.card_scale.get(what,(1,1,1)))
+        return predict_fun(xn) * rank_fun(xn)
+
+        
+    def fit_dimensions(self, data, fit_TTmax = True):
+        """ 
+        if fit_max is True, use blade length profile to adjust dHS_max
+        """
+        
+        if (fit_TTmax and 'L_blade' in data.columns):
+            dat = data.dropna(subset=['L_blade'])
+            xn = self.xn(dat['rank'])
+            fit = numpy.polyfit(xn,dat['L_blade'],7)
+            x = numpy.linspace(min(xn), max(xn), 500)
+            y = numpy.polyval(fit,x)
+            self.xnmax = x[numpy.argmax(y)]
+            self.TTmax = self.TTxn(self.xnmax)
+            
+
+        self.scale = {k: numpy.mean(data[k] / self.predict(k,data['rank'], data['nff'])) for k in data.columns if k in self.ref.columns}
+
+        return self.scale
+        
     def dimT(self, nff=None, scale=1.0):
     
         if nff is None:
@@ -939,8 +937,8 @@ class PlantGen(object):
             TTem = plant['TTem'].values[0]
             if not numpy.isnan(TT_stop):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
-                axeT['HS_final'][i] = numpy.interp(TT_stop + TTem, phen['TT_col_phytomer'], phen['index_phytomer'])
-                axeT['id_ear'][i] = numpy.nan
+                axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + TTem, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT.ix[i,'id_ear'] = numpy.nan
                 
         # include plant number in ids to allow future concatenation with other plants
         id_plt = plant['id_plt'][0]

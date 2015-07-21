@@ -366,6 +366,14 @@ class HaunStage(object):
     def TT(self, HS, nff=None):        
         return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
         
+    def TTligleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5/ 1.6):
+        dhs = DELAIS_PHYLL_HS_COL_NTH
+        return self.TT(numpy.array(rank) + dhs, nff=nff)
+        
+    def TTemleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5/ 1.6):
+        dhs = DELAIS_PHYLL_HS_COL_NTH - 1.6
+        return self.TT(numpy.array(rank) + dhs, nff=nff)
+        
     def TTem(self, TT):
         return numpy.array(TT) - self.TT_hs_0      
    

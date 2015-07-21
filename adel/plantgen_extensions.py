@@ -789,7 +789,7 @@ class AxePop(object):
         cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
         
         plants = []
-        TTem = get_normal_dist(nb_plants=nplants, sigma=self.std_em)
+        dTTem = get_normal_dist(nb_plants=nplants, sigma=self.std_em)
         for i in range(nplants): 
             id_plant = i + 1
             axes =  plant_axes[i]
@@ -798,7 +798,7 @@ class AxePop(object):
             nff_p = nff_MS.pop()
             # nfff on tillers
             nff = [cohort_nff[nff_p][c].pop() for c in id_cohort]
-            plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff, 'TTem':TTem[i]}))
+            plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff, 'dTTem':dTTem[i]}))
         df=pandas.concat(plants)
         df= df.sort(['id_plt','id_cohort','id_axis'])
         return df
@@ -931,13 +931,13 @@ class PlantGen(object):
         axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])# use hs of mean plant
         axeT['TT_del_axis'] = self.HSfit.TT(plant['hs_disparition'])
         for w in ('TT_em_phytomer1','TT_col_phytomer1','TT_sen_phytomer1','TT_del_phytomer1'):
-            axeT[w] = axeT[w] + plant['TTem']
+            axeT[w] = axeT[w] + plant['dTTem']
         for i in axeT.index:
             TT_stop = axeT['TT_stop_axis'][i]
-            TTem = plant['TTem'].values[0]
+            dTTem = plant['dTTem'].values[0]
             if not numpy.isnan(TT_stop):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
-                axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + TTem, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
                 axeT.ix[i,'id_ear'] = numpy.nan
                 
         # include plant number in ids to allow future concatenation with other plants

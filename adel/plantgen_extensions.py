@@ -47,6 +47,8 @@ def random_round(decimal):
 def get_normal_dist(nb_plants=10, sigma=30.):
     """ Calculate the "best possible" sample for a given number of plants 
     as a function of the standard deviation sigma of a normal centered ditribution. """
+    if sigma <= 0:
+        return numpy.zeros(nb_plants)
     N = 1000
     norm_list = numpy.random.normal(scale=sigma, size=N)
     h = numpy.histogram(norm_list, bins=nb_plants)
@@ -155,6 +157,8 @@ class TillerEmission(object):
     def __init__(self, primary_tiller_probabilities = {'T1':0.95, 'T2':0.85, 'T3':0.75, 'T4':0.4}, inner_parameters ={}):
         
         self.primary_tiller_probabilities = {k:v for k,v in primary_tiller_probabilities.iteritems() if v > 0 }
+        if len(self.primary_tiller_probabilities) <= 0:
+            self.primary_tiller_probabilities = {'T1':0.001}
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.primary_tiller_probabilities)
               
         self.child_cohort_delay = inner_parameters.get('FIRST_CHILD_DELAY', params.FIRST_CHILD_DELAY)
@@ -270,6 +274,8 @@ class TillerRegression(object):
         cohorts = cohort_emission_table
         d_deb = cohorts['probability'].sum()
         d_end = self.ears_per_plant
+        if d_end >= d_deb:
+            return None
         regression_rate = (d_end - d_deb) / (hs_end - hs_deb)
         
         # regression parameters per cohort
@@ -612,9 +618,9 @@ class AxePop(object):
     def __init__(self, MS_leaves_number_probabilities={'11': 0.3, '12': 0.7}, Emission=None, Regression=None, tiller_damages=None, max_order=None, std_em=0):
 
         if Regression is None:
-            Regression = TillerRegression(ears_per_plant=2.5, n_elongated_internode=4, delta_stop_del= 2)            
+            Regression = TillerRegression()            
         if Emission is None:
-            Emission = TillerEmission({'T1':0.95, 'T2':0.85, 'T3':0.75, 'T4':0.4})
+            Emission = TillerEmission()
             
         self.Emission = Emission
         self.Regression = Regression
@@ -816,6 +822,8 @@ class AxePop(object):
         """
               
         regression_table = self.regression_table()
+        if regression_table is None:
+            return [numpy.nan] * len(population)
         regression_table.set_index('cohort',inplace=True)
         fdisp = regression_table['f_disp'].to_dict()
         
@@ -920,7 +928,10 @@ class PlantGen(object):
                         'MS_leaves_number_probabilities':{str(nff):1.0},
                         'decide_child_axis_probabilities':{k:1.0 for k in plant['id_axis'] if  0 < _order(k) <= 1}
                         })
-                       
+        if len(config['decide_child_axis_probabilities']) <= 0:
+            # no tiller present
+            config['decide_child_axis_probabilities'] = {'T1':0.001}
+         
         # Dimensions
         config['dimT_user'] = self.Dimfit.dimT_user_table(nff)
         

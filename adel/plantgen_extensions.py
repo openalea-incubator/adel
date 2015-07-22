@@ -879,7 +879,9 @@ class AxePop(object):
     def plant_list(self, nplants=1):
         pop = self.smart_population(nplants)
         pop['hs_disparition'] = self.disparition_times(pop)
-        pop['hs_stop'] = pop['hs_disparition'] - self.Regression.delta_stop_del
+        hs_stop = pop['hs_disparition'] - self.Regression.delta_stop_del
+        # Hack for mimicking "new" plant gen behavior for regressing tillers: hs_stop  = startreg for regressing tillers. may be add one new leaf to be more smooth ?
+        pop['hs_stop'] = numpy.where(numpy.isnan(pop['hs_disparition']),numpy.nan,numpy.minimum(hs_stop,self.hs_debreg()))
         return dict(list(pop.groupby('id_plt'))).values()
         
 
@@ -958,7 +960,7 @@ class PlantGen(object):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
                 axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
                 axeT.ix[i,'id_ear'] = numpy.nan
-                
+        # to do reduce 10%length + 10%width of regressing axes        
         # include plant number in ids to allow future concatenation with other plants
         id_plt = plant['id_plt'][0]
         axeT['id_dim'] = id_plt * 1e5 + axeT['id_dim']

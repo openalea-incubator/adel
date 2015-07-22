@@ -1121,26 +1121,30 @@ def _create_dynT(dynT_tmp,
     
     # get the rows corresponding to the tiller axes
     tiller_axes = dynT_tmp[dynT_tmp['id_axis'] != 'MS']
-    # extract the rows corresponding to the most frequent tiller axes
-    grouped = tiller_axes.groupby('id_axis')
-    most_frequent_tiller_axes = []
-    for id_axis, group_indexes in grouped.groups.iteritems():
-        most_frequent_tiller_axes.append(tiller_axes.ix[group_indexes[0:1]])
-    # concatenate these rows in one dataframe ; 'most_frequent_tiller_axes' is  
-    # now a pd.DataFrame (and is not a list anymore)
-    most_frequent_tiller_axes = pd.concat(most_frequent_tiller_axes)
-    # in this new dataframe, fill the columns referring to the dynamic of Haun Stage
-    most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, leaf_number_delay_MS_cohort)
-    # and fill the columns referring to the dynamic of the green leaves
-    most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axes)
-    # extract the rows corresponding to all tiller axes except the most frequent ones
-    other_tiller_axes = tiller_axes.drop(most_frequent_tiller_axes.index)
-    other_tiller_axes = _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, other_tiller_axes)
-    # and fill the columns referring to the dynamic of the green leaves
-    other_tiller_axes = _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axes, other_tiller_axes)
-    
-    dynT_ = pd.concat([most_frequent_MS, other_MS, most_frequent_tiller_axes, other_tiller_axes])
-    
+    #degenerated case of one plant without tillers
+    if len(tiller_axes) <=0:
+        dynT_ = pd.concat([most_frequent_MS, other_MS])
+    else:
+        # extract the rows corresponding to the most frequent tiller axes
+        grouped = tiller_axes.groupby('id_axis')
+        most_frequent_tiller_axes = []
+        for id_axis, group_indexes in grouped.groups.iteritems():
+            most_frequent_tiller_axes.append(tiller_axes.ix[group_indexes[0:1]])
+        # concatenate these rows in one dataframe ; 'most_frequent_tiller_axes' is  
+        # now a pd.DataFrame (and is not a list anymore)
+        most_frequent_tiller_axes = pd.concat(most_frequent_tiller_axes)
+        # in this new dataframe, fill the columns referring to the dynamic of Haun Stage
+        most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, leaf_number_delay_MS_cohort)
+        # and fill the columns referring to the dynamic of the green leaves
+        most_frequent_tiller_axes = _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axes)
+        # extract the rows corresponding to all tiller axes except the most frequent ones
+        other_tiller_axes = tiller_axes.drop(most_frequent_tiller_axes.index)
+        other_tiller_axes = _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axes, other_tiller_axes)
+        # and fill the columns referring to the dynamic of the green leaves
+        other_tiller_axes = _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axes, other_tiller_axes)
+        
+        dynT_ = pd.concat([most_frequent_MS, other_MS, most_frequent_tiller_axes, other_tiller_axes])
+        
     dynT_.sort(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
     # reinitialize the index
     dynT_.index = range(dynT_.index.size)

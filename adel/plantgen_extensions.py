@@ -880,7 +880,7 @@ class AxePop(object):
         pop = self.smart_population(nplants)
         pop['hs_disparition'] = self.disparition_times(pop)
         hs_stop = pop['hs_disparition'] - self.Regression.delta_stop_del
-        # Hack for mimicking "new" plant gen behavior for regressing tillers: hs_stop  = startreg for regressing tillers. may be add one new leaf to be more smooth ?
+        # Hack for mimicking "new" plant gen behavior for regressing tillers: hs_stop  = startreg (ie the old first axis stop) for all regressing tillers. may be add one new leaf to be more smooth ?
         pop['hs_stop'] = numpy.where(numpy.isnan(pop['hs_disparition']),numpy.nan,numpy.minimum(hs_stop,self.hs_debreg()))
         return dict(list(pop.groupby('id_plt'))).values()
         

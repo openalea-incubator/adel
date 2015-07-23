@@ -17,7 +17,7 @@ from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-
+from alinea.adel.postprocessing import axis_statistics, plot_statistics
     
 
 
@@ -195,6 +195,19 @@ class AdelWheat(object):
             TT = self.canopy_age
         areas['TT'] = TT
         return areas
+        
+    def axis_statistics(self, g):
+        df_lai = self.get_exposed_areas(g, convert=True)
+        axstat = None
+        if not df_lai.empty:
+            axstat, _ = axis_statistics(df_lai, self.domain_area, self.convUnit)
+        return axstat
+        
+    def plot_statistics(self, axstat=None):
+        pstat=None
+        if axstat is not None:
+            pstat = plot_statistics(axstat, self.nplants, self.domain_area)
+        return pstat
         
     def save(self, g, index = 0, dir = './adel_saved'):
         if not os.path.exists(dir):

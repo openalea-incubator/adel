@@ -601,7 +601,7 @@ class _CreateDimTTmp():
             for (id_axis, N_phytomer_potential), axeT_tmp_group in axeT_tmp.groupby(['id_axis', 'N_phytomer_potential']):
                 id_axis_list.extend(np.repeat(id_axis, N_phytomer_potential))
                 N_phytomer_potential_list.extend(np.repeat(N_phytomer_potential, N_phytomer_potential))
-                index_phytomer_list.extend(range(1, N_phytomer_potential + 1))
+                index_phytomer_list.extend(range(1, int(N_phytomer_potential) + 1))
             
             self.dimT_tmp = pd.DataFrame(index=range(len(id_axis_list)),
                                         columns=['id_axis', 'N_phytomer_potential', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode'],

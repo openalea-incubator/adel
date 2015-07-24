@@ -19,13 +19,57 @@ from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
 from alinea.adel.postprocessing import axis_statistics, plot_statistics
     
+from openalea.mtg.algo import union
+import openalea.plantgl.all as pgl
 
+def replicate(g, target=1):
 
+    current = g.nb_vertices(scale=1)
+    if target <= current:
+        return g
+    
+    g0 = g.sub_mtg(g.root)
+    n0 = g.nb_vertices(scale=1)
+    
+    
+    
+    nduplication = int(numpy.log2(1. * target / current))   
+    missing = target - current * numpy.power(2,nduplication)
+    if missing >= n0:
+        g_add = g.sub_mtg(g.root)
+        missing -= n0
+        
+    for i in range(nduplication):
+        g1 = g.sub_mtg(g.root)
+        g = union(g, g1)
+        n = g.nb_vertices(scale=1)
+        if missing >= n and (missing - n) % n0 == 0:
+            g1 = g.sub_mtg(g.root)
+            g_add = union(g_add,g1)
+            missing -= n
+            
+    g = union(g,g_add)
+    
+    if missing > 0:
+        assert missing % n0 == 0
+        nadd = int(missing / n0)
+        for i in range(nadd):    
+            g1 = g0.sub_mtg(g0.root)
+            g = union(g,g1)
+
+    return g
+
+def transform_geom(geom, translation, rotation):
+    if isinstance(geom, pgl.Geometry):
+        geom = pgl.Translated(translation, pgl.AxisRotated((0,0,1),rotation, geom))
+    elif isinstance(geom, pgl.Shape):
+        geom = pgl.Shape(pgl.Translated(translation, pgl.AxisRotated((0,0,1),rotation, geom.geometry)))
+    return geom
 
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
+    def __init__(self, nplants = 1, duplicate=1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'startLeaf' : -0.4, 'endLeaf' : 1.6, 'endLeaf1': 1.6, 'stemLeaf' : 1.2,'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
     
         if devT is None: 
             devT = adel_data.devT()
@@ -50,12 +94,17 @@ class AdelWheat(object):
         self.devT = devT
         
         if self.stand.density_curve is None:
-            self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants, aspect=aspect)
+            self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants * duplicate, aspect=aspect)
         else:
-            self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(nplants)
+            self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(nplants * duplicate)
+
+        self.nplants_base = max(1,(self.nplants - self.nplants % duplicate) / duplicate)
+        if self.nplants % self.nplants_base > 0:
+            self.nplants_base = 1
         self.domain_area = area_m2
+        self.plant_azimuths = numpy.random.random(self.nplants) * 360
         
-        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
+        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants_base, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
         self.leaves = leaves
         self.nsect = nsect
 
@@ -87,12 +136,26 @@ class AdelWheat(object):
         if self.stand.density_curve is not None:
             self.nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
 
-        if self.positions is not None:
-            stand = [(pos,0) for pos in self.positions]
+        if self.positions is not None and self.nplants <= self.nplants_base:
+            stand = zip(self.positions,self.plant_azimuths)
         else:
             stand = None
         g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=stand, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
         g = mtg_interpreter(g, self.leaves, face_up = self.face_up, classic= self.classic)
+        if self.nplants > self.nplants_base:
+            g = replicate(g, self.nplants)
+            pos = g.property('position')
+            az = g.property('azimuth')
+            lab = g.property('label')
+            geom = g.property('geometry')
+            for i,vid in enumerate(g.vertices(1)):
+                lab[vid] = 'plant' + str(i+1)
+                pos[vid] = self.positions[i]
+                az[vid] = self.plant_azimuths[i]
+                for gid in g.components_at_scale(vid, g.max_scale()):
+                    if gid in geom:
+                        geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i] * 1. / 180 *numpy.pi)
+        
         return g
 
     def checkAxeDyn(self, dates=range(0,2000,100), density=None):

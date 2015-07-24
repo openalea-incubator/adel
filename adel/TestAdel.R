@@ -43,6 +43,9 @@ detach()
 #
 #generate a list of plant to simulate from parameters
 pl <- setAdel(devT$axeT,devT$dimT,devT$phenT,devT$earT,devT$ssisenT,geoLeaf,geoAxe,nplants=1,xy_db=xydb,sr_db=srdb)
+#
+# load('adel_pars.RData')
+#pl <- plants
 #run the model as a whole from plant list to AleaChn
 canopy <- runAdel(1200,pl)[[1]]
 #

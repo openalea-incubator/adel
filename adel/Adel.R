@@ -482,11 +482,12 @@ axe_inclination <- function(dat, HS, ht, axename, incBase, dredT, start_incT=1, 
   dat
 }
 #
-getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE, 'HSstart_inclination_tiller' = 1, 'rate_inclination_tiller' = 30),t=1) {
+getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"epsillon" = 1e-6, "dynamic_leaf_angle" = TRUE, 'HSstart_inclination_tiller' = 1, 'rate_inclination_tiller' = 30, 'drop_empty'=TRUE),t=1) {
   epsillon = pars$epsillon
   fshrink = pars$senescence_leaf_shrink
   start_incT = pars$HSstart_inclination_tiller
   incT_rate = pars$rate_inclination_tiller
+  drop_empty = pars$drop_empty
   res <- NULL
   for (p in seq(kinlist)) {
     #print(p)
@@ -577,10 +578,31 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                               dat))
       }
     }
-    if (!is.null(pldesc))
+    if (!is.null(pldesc)) {
+      if (drop_empty) {
+      # option allows filtering non growing metamers,
+        ms <- pldesc[pldesc$axe_id =='MS',]
+        tillers <- pldesc[pldesc$axe_id !='MS',]
+      #keep at least two row of MS to avoid degenerated one-line dataframe in python
+        lmetamer <- apply(na.omit(ms[,c('Ll','El','Gl')]),1,sum)
+        last <- 1
+        if (sum(lmetamer) > 0)
+          last <- max(which(lmetamer > 0))
+        pldesc <- ms[1:max(2,last),]
+        if (nrow(tillers) > 0) {
+          tillers <- do.call('rbind',lapply(split(tillers,tillers$axe_id, drop=TRUE), function(axdesc) {
+            lmetamer <- apply(na.omit(axdesc[,c('Ll','El','Gl')]),1,sum)
+            last <- 1
+            if (sum(lmetamer) > 0)
+              last <- max(which(lmetamer > 0))
+            axdesc[1:last,]
+          }))
+          pldesc <- rbind(pldesc,tillers)
+        }
+      }
       res <- rbind(res,cbind(plant=p,pldesc))
+    }
   }
-  
   res
 }
 #

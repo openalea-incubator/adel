@@ -890,7 +890,7 @@ class PlantGen(object):
     """ A class interface to plantgen
     """
     
-    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, inner_parameters={}):
+    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, base_config={}):
     
         #defaults for fitted models
         if HSfit is None:#HS fit is for the main stem of the plant (or mean plant but then difference for flag leaf emergence should be added in equations)
@@ -899,15 +899,25 @@ class PlantGen(object):
             GLfit = GreenLeaves()        
         if Dimfit is None:
             Dimfit = WheatDimensions()            
-        self.inner_parameters = inner_parameters
         self.HSfit = HSfit
         self.GLfit = GLfit
         self.Dimfit = Dimfit
         
         #setup base configuration for plantgen interface for one plant
-        self.base_config = {}
-        self.base_config['inner_params'] = inner_parameters
-        self.base_config['inner_params']['EMF_1_MS_STANDARD_DEVIATION'] = 0 #strictly respect TT_hs_0. 
+        self.base_config = base_config
+        if not 'inner_params' in base_config:
+            self.base_config['inner_params'] = {}
+        self.base_config['inner_params']['EMF_1_MS_STANDARD_DEVIATION'] = 0 #strictly respect TT_hs_0 as orign
+        # force pgen  to get HS correct
+        # basically we want TThs0 to match  fit of HSfit=f(TT) in the simulation outputs
+        # that is achieved by choosing emergence leaf 1  = TThs0 - 0.4 * phyll (-0.4 = -1 + 1.6 - 0.2, cf testadel.R)
+        # that is emergence leaf 0 = TThs0 - 1.4 * phyll
+        # that is TTcol0 = TThs0 + 0.2 * phyll
+        #DELAIS_PHYLL_HS_COL_NTH is used by pgen as TTcol = TThs0 + delais * phyll+ phyll * n 
+        self.base_config['inner_params']['DELAIS_PHYLL_HS_COL_NTH'] = 0.2 
+        # ensure TTem = TTlig -1.6 at all ranks
+        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_1ST'] = 1.6         
+        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_NTH'] = 1.6
         self.base_config.update({'plants_number': 1,
                             'plants_density': 1.})
                   
@@ -945,8 +955,8 @@ class PlantGen(object):
         return config
 
     def pgen_tables(self, plant):
-        config = self.config(plant)
-        axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**config)
+        conf = self.config(plant)
+        axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**conf)
         axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
         # include regression
         axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])# use hs of mean plant

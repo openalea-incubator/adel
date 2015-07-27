@@ -25,39 +25,39 @@ import openalea.plantgl.all as pgl
 def replicate(g, target=1):
 
     current = g.nb_vertices(scale=1)
+
     if target <= current:
         return g
     
-    g0 = g.sub_mtg(g.root)
-    n0 = g.nb_vertices(scale=1)
-    
-    
+    assert target % current == 0
+    #otherwise use nrem + union
     
     nduplication = int(numpy.log2(1. * target / current))   
     missing = target - current * numpy.power(2,nduplication)
-    if missing >= n0:
-        g_add = g.sub_mtg(g.root)
-        missing -= n0
-        
-    for i in range(nduplication):
-        g1 = g.sub_mtg(g.root)
-        g = union(g, g1)
-        n = g.nb_vertices(scale=1)
-        if missing >= n and (missing - n) % n0 == 0:
-            g1 = g.sub_mtg(g.root)
-            g_add = union(g_add,g1)
-            missing -= n
-            
-    g = union(g,g_add)
+    cards = numpy.power(2, range(nduplication))
+    add_g = [False] * len(cards)
+    for i in reversed(range(len(cards))):
+        if cards[i] <= missing:
+            add_g[i] = True
+            missing -= cards[i]
+    assert missing == 0
     
-    if missing > 0:
-        assert missing % n0 == 0
-        nadd = int(missing / n0)
-        for i in range(nadd):    
-            g1 = g0.sub_mtg(g0.root)
-            g = union(g,g1)
-
-    return g
+    g_add = None
+    g_dup = g.sub_mtg(g.root)
+    for i in range(nduplication):
+        g1 = g_dup.sub_mtg(g_dup.root)
+        g_dup = union(g_dup, g1)
+        if add_g[i]:
+            g1 = g.sub_mtg(g.root)
+            if g_add is None:
+                g_add = g1
+            else:
+                g_add = union(g_add, g1)
+    
+    if g_add is not None:        
+        g_dup = union(g_dup,g_add)
+       
+    return g_dup
 
 def transform_geom(geom, translation, rotation):
     if isinstance(geom, pgl.Geometry):
@@ -98,13 +98,27 @@ class AdelWheat(object):
         else:
             self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(nplants * duplicate)
 
-        self.nplants_base = max(1,(self.nplants - self.nplants % duplicate) / duplicate)
-        if self.nplants % self.nplants_base > 0:
-            self.nplants_base = 1
-        self.domain_area = area_m2
-        self.plant_azimuths = numpy.random.random(self.nplants) * 360
+        #split nplants into nquot and nrem, such that nplants = nquote * duplicate + nrem
+        self.nrem = self.nplants % duplicate
+        self.nquot = (self.nplants - self.nrem) / duplicate
+        self.duplicate = duplicate
+        if self.nquot == 0 and self.duplicate > 0:# degenerated case
+            self.nquot = 1
+            self.nrem = 0
+            self.duplicate = self.nplants
+
+            
         
-        self.pars = setAdel(devT,leaves.geoLeaf,geoAxe,self.nplants_base, seed = seed, sample=sample, xydb = leaves.xydb, srdb=leaves.srdb, ssipars=ssipars)
+        
+        self.domain_area = area_m2
+        self.plant_azimuths = numpy.random.random(self.nplants) * 2 * numpy.pi
+        
+        pars = {'devT':devT, 'RcodegeoLeaf':leaves.geoLeaf, 'RcodegeoAxe':geoAxe,
+                'seed':seed, 'sample':sample, 'xydb':leaves.xydb, 'srdb':leaves.srdb, 'ssipars':ssipars}
+        if self.nquot > 0:
+            self.pars_quot = setAdel(nplants=self.nquot, **pars)
+        if self.nrem > 0:
+            self.pars_rem = setAdel(nplants = self.nrem, **pars)
         self.leaves = leaves
         self.nsect = nsect
 
@@ -132,29 +146,43 @@ class AdelWheat(object):
     def setup_canopy(self, age = 10):
     
         self.canopy_age = age
-        canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
-        if self.stand.density_curve is not None:
-            self.nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
-
-        if self.positions is not None and self.nplants <= self.nplants_base:
-            stand = zip(self.positions,self.plant_azimuths)
+        
+        # produce plants positionned at origin        
+        if self.nrem > 0:
+            canopy = RunAdel(age, self.pars_rem, adelpars=self.run_adel_pars)
+            grem = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=None, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
+            grem = mtg_interpreter(grem, self.leaves, face_up = self.face_up, classic= self.classic)
+        
+        if self.nquot > 0:
+            canopy = RunAdel(age, self.pars_quot, adelpars=self.run_adel_pars)
+            gquot = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=None, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
+            gquot = mtg_interpreter(gquot, self.leaves, face_up = self.face_up, classic= self.classic)
+            gquot = replicate(gquot, self.nquot * self.duplicate)
+            
+        if self.nrem > 0:
+            g = grem
+            if self.nquot > 0:
+                g = union(g, gquot)
         else:
-            stand = None
-        g = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=stand, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-        g = mtg_interpreter(g, self.leaves, face_up = self.face_up, classic= self.classic)
-        if self.nplants > self.nplants_base:
-            g = replicate(g, self.nplants)
-            pos = g.property('position')
-            az = g.property('azimuth')
-            lab = g.property('label')
-            geom = g.property('geometry')
-            for i,vid in enumerate(g.vertices(1)):
-                lab[vid] = 'plant' + str(i+1)
-                pos[vid] = self.positions[i]
-                az[vid] = self.plant_azimuths[i]
-                for gid in g.components_at_scale(vid, g.max_scale()):
-                    if gid in geom:
-                        geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i] * 1. / 180 *numpy.pi)
+            g = gquot
+        
+        #update positions and domain if smart stand is used       
+        if self.stand.density_curve is not None:
+            new_nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
+            assert new_nplants == self.nplants
+
+        # dispose plants and renumber them
+        pos = g.property('position ')
+        az = g.property('azimuth')
+        lab = g.property('label')
+        geom = g.property('geometry')
+        for i,vid in enumerate(g.vertices(1)):
+            lab[vid] = 'plant' + str(i + 1)
+            pos[vid] = self.positions[i]
+            az[vid] = self.plant_azimuths[i]
+            for gid in g.components_at_scale(vid, g.max_scale()):
+                if gid in geom:
+                    geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i])
         
         return g
 

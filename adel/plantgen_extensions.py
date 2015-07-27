@@ -372,11 +372,11 @@ class HaunStage(object):
     def TT(self, HS, nff=None):        
         return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
         
-    def TTligleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5/ 1.6):
+    def TTligleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.2):
         dhs = DELAIS_PHYLL_HS_COL_NTH
         return self.TT(numpy.array(rank) + dhs, nff=nff)
         
-    def TTemleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.6 - 0.5/ 1.6):
+    def TTemleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.2):
         dhs = DELAIS_PHYLL_HS_COL_NTH - 1.6
         return self.TT(numpy.array(rank) + dhs, nff=nff)
         
@@ -956,8 +956,7 @@ class PlantGen(object):
 
     def pgen_tables(self, plant):
         conf = self.config(plant)
-        axeT_, dimT_, phenT_, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**conf)
-        axeT, dimT, phenT = plantgen2adel(axeT_, dimT_, phenT_)
+        axeT, dimT, phenT, phenT_abs, dynT_, phenT_first, HS_GL_SSI_T, tilleringT, cardinalityT, config = gen_adel_input_data(**conf)
         # include regression
         axeT['TT_stop_axis'] = self.HSfit.TT(plant['hs_stop'])# use hs of mean plant
         axeT['TT_del_axis'] = self.HSfit.TT(plant['hs_disparition'])

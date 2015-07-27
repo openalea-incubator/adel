@@ -115,6 +115,7 @@ class AdelWheat(object):
         
         pars = {'devT':devT, 'RcodegeoLeaf':leaves.geoLeaf, 'RcodegeoAxe':geoAxe,
                 'seed':seed, 'sample':sample, 'xydb':leaves.xydb, 'srdb':leaves.srdb, 'ssipars':ssipars}
+        self.pars = setAdel(nplants=self.nquot, **pars)
         if self.nquot > 0:
             self.pars_quot = setAdel(nplants=self.nquot, **pars)
         if self.nrem > 0:

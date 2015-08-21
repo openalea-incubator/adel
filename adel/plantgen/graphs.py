@@ -27,6 +27,8 @@ from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 
+from alinea.adel.plantgen import params
+
 def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, plots_dirpath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
@@ -81,8 +83,8 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
     
         - `dimT` (:class:`pd.DataFrame`) - the table dimT.
         - `MS_id_dim` (:class:`int`) - the id_dim of the main stem. The line corresponding to this id_dim is thicker.
-        - `relative_index_phytomer` (:class:`bool`) - if True: display the relative index of the phytomers in abscissa. 
-          If False (the default), display the absolute index of the phytomers in abscissa.
+        - `relative_index_phytomer` (:class:`bool`) - if True: display the index relative to the phytomers of the main stem. 
+          If False (the default), display the absolute index of the phytomers.
         - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If None (the default), then plot all the dimensions.
         - `id_dim_to_plot` (:class:`list`) - the list of id_dim to plot. If None (the default), then plot all the id_dim.
         - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If None (the default), then plot all the id_cohort.
@@ -152,7 +154,11 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
         for id_dim, group in grouped:
             axis_num += 1
             if relative_index_phytomer:
-                index_phytomer_to_plot = group.index_phytomer / group.index_phytomer[group.last_valid_index()]
+                id_cohort = int(str(int(id_dim))[:-3])
+                if id_cohort == 1: # MS
+                    index_phytomer_to_plot = group.index_phytomer
+                else:
+                    index_phytomer_to_plot = group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
             else:
                 index_phytomer_to_plot = group.index_phytomer
             if id_dim == MS_id_dim:

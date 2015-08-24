@@ -1194,8 +1194,8 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_interno
     GL = np.array([n2_0] + GL_number.values())
     fixed_coefs = [0.0, most_frequent_MS['c'][0], n2_0]
     a_starting_estimate = -4.0e-9
-    most_frequent_MS.loc[0, 'a'], most_frequent_MS.loc[0, 'RMSE_gl'] = \
-    tools.fit_poly(TT, GL, fixed_coefs, a_starting_estimate)
+    a_tmp, RMSE_gl = tools.fit_poly(TT, GL, fixed_coefs, a_starting_estimate)
+    most_frequent_MS.loc[0, 'a'], most_frequent_MS.loc[0, 'RMSE_gl'] = -abs(a_tmp), RMSE_gl # force 'a' to be negative 
     return most_frequent_MS
 
 
@@ -1360,7 +1360,7 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
             most_frequent_tiller_axes['dTT_MS_cohort'][most_frequent_tiller_axis_idx] \
             + (group['N_phytomer_potential'] - most_frequent_tiller_axes['N_phytomer_potential'][most_frequent_tiller_axis_idx]) \
             / most_frequent_MS['a_cohort'][0] * params.RATIO_PLASTOCHRON_PHYLLOCHRON
-        if math.isnan(most_frequent_MS['TT_hs_break'][0]): 
+        if not math.isnan(most_frequent_MS['TT_hs_break'][0]): 
             # calculation of a_cohort in bilinear mode
             other_tiller_axes.loc[group.index, 'a_cohort'] = most_frequent_tiller_axes['a_cohort'][most_frequent_tiller_axis_idx]
     # calculation of TT_flag_ligulation

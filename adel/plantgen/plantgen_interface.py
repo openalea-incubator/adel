@@ -375,14 +375,14 @@ def read_plantgen_inputs(inputs_filepath, dynT_user_filepath, dimT_user_filepath
         - `inputs_filepath` (:class:`str`) - the file path of the Python module 
           which contains the inputs of :func:`gen_adel_input_data`.
           
-        - `dynT_user_filepath` (:class:`pandas.DataFrame`) - the file path of 
+        - `dynT_user_filepath` (:class:`str`) - the file path of 
           the leaf dynamic parameters set by the user.
           
-        - `dimT_user_filepath` (:class:`pandas.DataFrame`) - the file path of 
+        - `dimT_user_filepath` (:class:`str`) - the file path of 
           the dimensions of the organs set by the user. 
           
     :Returns:
-        Return the arguments of :func:`gen_adel_input_data`. 
+        Return the inputs of :func:`gen_adel_input_data`. 
     
     :Returns Type:
         tuple

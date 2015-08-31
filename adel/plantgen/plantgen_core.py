@@ -1792,11 +1792,12 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
         
         t0, t1, TT_flag_ligulation = np.round([t0, t1, TT_flag_ligulation]).astype(int)
         
+        TT_1 = np.arange(0, t0)
+        TT_2 = np.arange(t0, t1)
+        TT_3 = np.arange(t1, TT_flag_ligulation)
+        TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
+        
         if math.isnan(TT_hs_break): # linear mode
-            TT_1 = np.arange(0, t0)
-            TT_2 = np.arange(t0, t1)
-            TT_3 = np.arange(t1, TT_flag_ligulation)
-            TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
             
             HS_1_TT_1 = np.clip(HS_1(TT_1), 0.0, N_phytomer_potential)
             HS_1_TT_2 = np.clip(HS_1(TT_2), 0.0, N_phytomer_potential)
@@ -1821,7 +1822,10 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
             HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1, SSI_2_TT_2, SSI_3_TT_3, SSI_4_TT_4)))
        
         else: # bilinear mode
+            
             TT_hs_break = int(round(TT_hs_break))
+            TT_1_1, TT_2_1, TT_3_1, TT_4_1 = TT_1, TT_2, TT_3, TT_4
+            TT_1_2 = TT_2_2 = TT_3_2 = TT_4_2 = []
             if TT_hs_break <= t0:
                 TT_1_1 = np.arange(0, TT_hs_break)
                 TT_1_2 = np.arange(TT_hs_break, t0)

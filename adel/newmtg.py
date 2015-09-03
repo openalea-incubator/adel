@@ -243,6 +243,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
     exposition = kwargs.get('exposition', 'NA')
     lifetime = kwargs.get('lifetime', 'NA')
     mtype = kwargs.get('m_type','vegetative')
+    age = kwargs.get('age','NA')
 
     if mtype!='vegetative':
         modules = [            
@@ -293,7 +294,8 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
         try:
             exposition = float(exposition)
             lifetime = float(lifetime)
-            modules[2].update({'exposition':exposition, 'lifetime':lifetime})
+            age = float(age)
+            modules[2].update({'exposition':exposition, 'lifetime':lifetime, 'age':age})
         except ValueError:
             pass
             

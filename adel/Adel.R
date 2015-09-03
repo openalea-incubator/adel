@@ -138,7 +138,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,22),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs","exposition","lifetime")))
+    kin <- array(NA,c(nx,nf[a]+3,23),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs","exposition","lifetime", "age")))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
       kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen","Llvis")] <- 0
@@ -152,6 +152,7 @@ kinL <- function(x,plant,pars=list("startLeaf" = -0.4, "endLeaf" = 1.6, "stemLea
       xtip <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$tip,i)
       xssi <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$ssi,i)
       kin[,i,"lifetime"] <- max(0,min(1, (x - xtip) / (xssi - xtip)))
+      kin[,i,"age"] <- x - xtip
      #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
@@ -538,7 +539,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         rhs <- kin[[a]][t,,"rhs"]
         exposition <- kin[[a]][t,,"exposition"]
         lifetime <-  kin[[a]][t,,"lifetime"]
-		mtype <- c(rep('vegetative',nbleaf),'peduncle','ear','awn')
+        age <-  kin[[a]][t,,"age"]
+        mtype <- c(rep('vegetative',nbleaf),'peduncle','ear','awn')
       #
         pldesc <- rbind(pldesc,
                         cbind(data.frame(refplant_id = rep(refp,nbphy),
@@ -573,7 +575,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          rhs=rhs,
                                          exposition=exposition,
                                          lifetime=lifetime,
-	                                 m_type=mtype
+	                                 m_type=mtype,
+                                         age=age
 ),
                               dat))
       }

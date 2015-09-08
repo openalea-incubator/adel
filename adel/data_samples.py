@@ -38,10 +38,14 @@ def devT():
     
     return devCsv(axeT,dimT,phenT,earT,ssisenT)
     
-def srdb():
+def srdb(nlevel=None):
     from alinea.adel.AdelR import R_srdb
     rdata = datadir + '/data/SRSo.RData'
-    return R_srdb(rdata)
+    db = R_srdb(rdata)
+    if nlevel is None:
+        return db
+    else:
+        return {(k + 1):db['1'] for k in range(nlevel)}
     
 def xydb():
     from alinea.adel.AdelR import R_xydb

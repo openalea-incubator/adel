@@ -659,6 +659,7 @@ class _CreateDimT():
             
             # reinitialize the index
             self.dimT_.index = range(self.dimT_.index.size)
+            del self.dimT_['id_cohort']
             del self.dimT_['is_ear']
         return self.dimT_
 
@@ -667,7 +668,7 @@ _create_dimT = _CreateDimT()
 
 def _init_dimT(axeT_, dimT_tmp, dynT_):
     '''Initialize dimT.'''
-    dimT_ = pd.DataFrame(columns=['id_dim', 'index_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'is_ear'])
+    dimT_ = pd.DataFrame(columns=['id_dim', 'id_cohort', 'index_phytomer', 'index_relative_to_MS_phytomer', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode', 'is_ear'])
     dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
     for id_dim, axeT_group in axeT_.groupby('id_dim'):
         axeT_keys = axeT_group.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups.keys()
@@ -683,6 +684,13 @@ def _init_dimT(axeT_, dimT_tmp, dynT_):
         dimT_group['id_dim'] = id_dim
         dimT_group['index_phytomer'] = dimT_group_idx + 1
         
+        id_cohort = axeT_keys[0][1]
+        dimT_group['id_cohort'] = id_cohort
+        if id_cohort == 1: # MS
+            dimT_group['index_relative_to_MS_phytomer'] = dimT_group.index_phytomer
+        else:
+            dimT_group['index_relative_to_MS_phytomer'] = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+        
         is_ear = int(str(int(id_dim))[-1])
         
         if is_ear == 1:
@@ -697,8 +705,8 @@ def _init_dimT(axeT_, dimT_tmp, dynT_):
         
         dimT_ = pd.concat([dimT_, dimT_group], ignore_index=True)
     
-    # force the type of id_dim and is_ear
-    dimT_[['id_dim', 'index_phytomer', 'is_ear']] = dimT_[['id_dim', 'index_phytomer', 'is_ear']].astype(int)
+    # force the type of id_dim, index_phytomer and is_ear
+    dimT_[['id_dim', 'id_cohort', 'index_phytomer', 'is_ear']] = dimT_[['id_dim', 'id_cohort', 'index_phytomer', 'is_ear']].astype(int)
 
     return dimT_
     
@@ -736,7 +744,7 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer,
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -745,7 +753,7 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer,
                                                              index_phytomer_normalized_series.values)
         else: # tiller
             
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             # after start of MS elongation: polynomial phase
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             after_start_MS_elongation_index_relative_to_MS_phytomer_series = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series >= decimal_elongated_internode_number]
@@ -793,7 +801,7 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -802,7 +810,7 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer
                                                              index_phytomer_normalized_series.values)
         else: # tiller
             
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             dimT_.loc[indexes_to_compute, length] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
                                                                index_relative_to_MS_phytomer_series[indexes_to_compute].values)
@@ -838,7 +846,7 @@ def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phyto
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -851,7 +859,7 @@ def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phyto
             dimT_.loc[indexes_to_compute, length] = np.polyval(most_frequent_MS_polynomial_coefficients_array_normalized, 
                                                                index_phytomer_normalized_series[indexes_to_compute].values)
         else: # tiller
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             # threshold
             indexes_to_threshold = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_first_non_null_index_phytomer].index
             dimT_.loc[indexes_to_threshold, length] = 0.0
@@ -902,7 +910,7 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -910,7 +918,7 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
             dimT_.loc[dimT_group.index, width] = np.polyval(most_frequent_MS_polynomial_coefficients_array_normalized, 
                                                              index_phytomer_normalized_series.values)
         else: # tiller
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             # compute
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             dimT_.loc[indexes_to_compute, width] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
@@ -956,8 +964,7 @@ def _fit_W_sheath(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongated_
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -968,7 +975,7 @@ def _fit_W_sheath(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongated_
             before_start_MS_elongation_index_phytomer_series = index_phytomer_series[index_phytomer_series < decimal_elongated_internode_number]
             dimT_.loc[before_start_MS_elongation_index_phytomer_series.index, width] = MS_before_start_MS_elongation_width_series.values
         else: # tiller
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             # compute
             # before start of MS elongation
             before_start_MS_elongation_index_relative_to_MS_phytomer_series = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series < decimal_elongated_internode_number]
@@ -1014,7 +1021,7 @@ def _fit_W_internode(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongat
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
     for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
-        id_cohort = int(str(int(id_dim))[:-3])
+        id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
             index_relative_to_MS_phytomer_normalized = index_phytomer_series / MS_N_phytomer
@@ -1036,7 +1043,7 @@ def _fit_W_internode(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongat
             dimT_.loc[indexes_to_ceil, width] = MS_last_3_widths_mean
             
         else: # tiller
-            index_relative_to_MS_phytomer_series = dimT_group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
+            index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             index_relative_to_MS_phytomer_normalized = index_relative_to_MS_phytomer_series / MS_N_phytomer
             
             # before start of MS elongation: threshold 

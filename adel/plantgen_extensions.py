@@ -372,12 +372,11 @@ class HaunStage(object):
     def TT(self, HS, nff=None):        
         return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
         
-    def TTligleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.2):
-        dhs = DELAIS_PHYLL_HS_COL_NTH
-        return self.TT(numpy.array(rank) + dhs, nff=nff)
+    def TTligleaf(self, rank, nff=None, dHS_col = 0.2):
+        return self.TT(numpy.array(rank) + dHS_col, nff=nff)
         
-    def TTemleaf(self, rank, nff=None, DELAIS_PHYLL_HS_COL_NTH = 0.2):
-        dhs = DELAIS_PHYLL_HS_COL_NTH - 1.6
+    def TTemleaf(self, rank, nff=None, dHS_col = 0.2, dHS_leaf_duration = 2, frac_leaf = 0.2):
+        dhs = dHS_col  - dHS_leaf_duration * (1 - frac_leaf)
         return self.TT(numpy.array(rank) + dhs, nff=nff)
         
     def TTem(self, TT):
@@ -890,8 +889,7 @@ class PlantGen(object):
     """ A class interface to plantgen
     """
     
-    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, base_config={}):
-    
+    def __init__(self, HSfit=None, GLfit=None, Dimfit=None, base_config={}, adel_pars={'leafDuration' : 2, 'fracLeaf' : 0.2, 'dHS_col' : 0.2}):
         #defaults for fitted models
         if HSfit is None:#HS fit is for the main stem of the plant (or mean plant but then difference for flag leaf emergence should be added in equations)
             HSfit = HaunStage()           
@@ -914,10 +912,10 @@ class PlantGen(object):
         # that is emergence leaf 0 = TThs0 - 1.4 * phyll
         # that is TTcol0 = TThs0 + 0.2 * phyll
         #DELAIS_PHYLL_HS_COL_NTH is used by pgen as TTcol = TThs0 + delais * phyll+ phyll * n 
-        self.base_config['inner_params']['DELAIS_PHYLL_HS_COL_NTH'] = 0.2 
-        # ensure TTem = TTlig -1.6 at all ranks
-        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_1ST'] = 1.6         
-        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_NTH'] = 1.6
+        self.base_config['inner_params']['DELAIS_PHYLL_HS_COL_NTH'] = adel_pars['dHS_col'] 
+        # ensure TTem = TTlig - (1-frac_leaf) * leaf_duration at all ranks
+        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_1ST'] = (1 - adel_pars['fracLeaf']) * adel_pars['leafDuration']        
+        self.base_config['inner_params']['DELAIS_PHYLL_COL_TIP_NTH'] = (1 - adel_pars['fracLeaf']) * adel_pars['leafDuration']
         self.base_config.update({'plants_number': 1,
                             'plants_density': 1.})
                   

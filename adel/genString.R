@@ -141,6 +141,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
                  "newAxe")
       nf <- ax$nff[1]
       for (n in ax$numphy[1:min(nrow(ax),nf)]) {
+        #print(n)
         chn <- paste(chn,Metamer(ax[ax$numphy == n,],epsillon,azaxil))
         azaxil = azaxil + ax$Laz[ax$numphy == n]
       }
@@ -155,7 +156,7 @@ Metamer <- function(dat,epsillon,azcum,axil = NULL) {
           chn <- paste(chn,
                  Ear(ax$Ev[nf + 2],min(ax$Esen[nf + 2],ax$Ev[nf + 2]),ax$Ed[nf + 2],ax$Epo[nf + 2],ax$Epos[nf + 2],epsillon))
       #add awn
-      if (nrow(ax) > (nf + 1))
+      if (nrow(ax) > (nf + 2))
         if (ax$Ev[nf + 3] > epsillon)
           chn <- paste(chn,
                  Awn(ax$Ev[nf + 3],min(ax$Esen[nf + 3],ax$Ev[nf + 3]),ax$Ed[nf + 3],ax$Epo[nf + 3],ax$Epos[nf + 3],epsillon))
@@ -215,6 +216,7 @@ genString <- function(can,pars=list("epsillon" = 1e-6)) {
                                         # stringify main stem and delegates to Metamer axilary branches, if any
         nf <- axe$nff[1]
         for (m in axe$numphy[1:min(nrow(axe),nf)]) {
+          #print(m)
           if (m %in% axepos)
             chn <- paste(chn,Metamer(axe[axe$numphy == m,],epsillon,azcum,pl[pl$axe == m,]))
           else

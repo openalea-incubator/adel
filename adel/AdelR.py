@@ -296,7 +296,7 @@ def setCanopy(RcanT,nplants = 1,randomize = True, seed = None):
     can = RsetCanopy(RcanT,nplants,rrand,rseed)
     return can
 
-def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}):
+def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2, 'dHS_en':0, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}):
     """ Run Adel model for each date in datesTT according to parameter list """
     
     if (type(datesTT) is not list):

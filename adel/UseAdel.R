@@ -5,7 +5,7 @@
 #
 #Run adel for several dates and a list of plants. Returns a list of string
 #
-runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5, 'leafDuration' = 2, 'fracLeaf' = 0.2, 'stemDuration' = 2 / 1.2, 'dHS_col'=0.2,'epsillon' = 1e-6, 'HSstart_inclination_tiller' = 1, 'rate_inclination_tiller' = 30,'drop_empty'=TRUE)) {
+runAdel <- function(dates,plants,pars = list('senescence_leaf_shrink' = 0.5, 'leafDuration' = 2, 'fracLeaf' = 0.2, 'stemDuration' = 2 / 1.2, 'dHS_col'=0.2, 'dHS_en'=0.,'epsillon' = 1e-6, 'HSstart_inclination_tiller' = 1, 'rate_inclination_tiller' = 30,'drop_empty'=TRUE)) {
   out <- vector("list",length(dates))
   #deals with python-flatten lists
   if ("axeT" %in% names(plants)) {

@@ -128,7 +128,7 @@ WIDTHS_REDUCTION_FACTOR = -0.938
 i.e. widths_regressive_tillers =  widths_most_frequent_MS * (1 + WIDTHS_REDUCTION_FACTOR)
 '''
 
-SLOPE_SHIFT_MS_TO_TILLERS = -0.811
+SLOPE_SHIFT_MS_TO_TILLERS = -0.6681
 '''Shift to apply on phytomer index for each cohort.
 '''
 

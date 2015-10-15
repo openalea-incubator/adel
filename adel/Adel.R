@@ -163,7 +163,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
       kin[,i,"El"] <- El
       # hidden length of metamer at leaf emergence (depends only on coordination rule)
       Lhem <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=0,rule=2)$y + approx(c(startE,endE),c(0,dim$El[i]),xout=0,rule=2)$y
-      # hidden length of metamer at collar appearance (hypothesis: collar app = time at which blade is completly visible)
+      # hidden length of metamer at collar appearance (hypothesis: collar app = time at which blade is first completly visible)
       xcol <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$col,i)
       rphcol <- openapprox(plant$pheno[[a]]$tip,plant$pheno[[a]]$n,xcol) - i
       LGcol <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rphcol,rule=2)$y

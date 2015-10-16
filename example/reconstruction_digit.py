@@ -44,7 +44,7 @@ df['numphy'] = df_dim.ntop.max() + 1 - df_dim.ntop # odre from base to top
 # add missing mandatory data  (does like adel)                  
 df['Laz'] = [180 + (numpy.random.random() - 0.5) * 30 for i in range(len(df))] #leaf azimuth
 df['LcType'] = df['ntop'] # selector for first level in leaf db
-df['Lc_index'] = 1 # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
+df['LcIndex'] = 1 # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
 # fill other columns
 df['Lv'] = df['Ll']
 df['Lr'] = 0
@@ -70,7 +70,7 @@ nplants, positions, domain, domain_area, convUnit = agronomicplot(length=0.1,
                                                             sowing_density=150, 
                                                             plant_density=150,
                                                             inter_row=0.12)
-assert(nplants == df.plant.max())
+#assert(nplants == df.plant.max())
 stand = [(pos,0) for pos in positions]
 g = mtg_factory(df.to_dict('list'), adel_metamer, leaf_db = db, stand = stand )
 #add geometry

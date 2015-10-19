@@ -197,11 +197,11 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
     phenT_first = _create_phenT_first(phenT_tmp)
     
     # 4. create axeT
-    axeT_, axeT_tmp, phenT_tmp, phenT_first = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
     
     # 5. create tilleringT
     tilleringT = _create_tilleringT(dynT_, phenT_first, axeT_.index.size, plants_number, 
-                                    plants_density, ears_density)
+                                    plants_density, ears_density, TT_regression_start)
     
     return axeT_, tilleringT, phenT_first
 
@@ -236,7 +236,7 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
                                 dimT_user_completeness, TT_hs_break, force=False, axeT_user = axeT_user,TT_t1_user=TT_t1_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
-    axeT_, axeT_tmp, phenT_tmp, phenT_first = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
     
     # 2. create dimT
@@ -285,7 +285,7 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
                                 dimT_user_completeness, TT_hs_break, force=False, axeT_user = axeT_user,TT_t1_user=TT_t1_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
-    axeT_, axeT_tmp, phenT_tmp, phenT_first = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
     dimT_ = _create_dimT(axeT_, dimT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     
@@ -344,23 +344,37 @@ class _CreateAxeT():
     '''
     def __init__(self):
         self.axeT_ = None
+        self.TT_regression_start = None
     
-    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True,TT_regression_start_user=None):
-        if force or self.axeT_ is None:
+    def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True, TT_regression_start_user=None):
+        if force or self.axeT_ is None or self.TT_regression_start is None:
             self.axeT_ = axeT_tmp.copy()
-            TT_hs_flag_leaf = dynT_['TT_flag_ligulation'][dynT_.first_valid_index()]
+            
+            TT_flag_ligulation = dynT_.loc[dynT_.first_valid_index(), 'TT_flag_ligulation']
             
             if TT_regression_start_user is None:
-                t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
-                TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+                TT_hs_break, N_phytomer_potential, a_cohort, TT_hs_0 = dynT_.loc[dynT_.first_valid_index(), ['TT_hs_break', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0']]
+                N_phyt_reduc = N_phytomer_potential - 5
+                if math.isnan(TT_hs_break): # linear mode
+                    self.TT_regression_start = N_phyt_reduc / a_cohort + TT_hs_0
+                else: # bilinear mode
+                    HS_break_0 = a_cohort * (TT_hs_break - TT_hs_0)
+                    if N_phyt_reduc < HS_break_0: # 1rst phase
+                        self.TT_regression_start = N_phyt_reduc / a_cohort + TT_hs_0
+                    else: # 2nd phase
+                        a2_0 = (N_phytomer_potential - HS_break_0) / (TT_flag_ligulation - TT_hs_break)
+                        N_phyt_reduc = a2_0 * (tt - TT_hs_break) + HS_break_0
+                        self.TT_regression_start = (N_phyt_reduc - HS_break_0) / a2_0 + TT_hs_break
             else:
-                TT_regression_start = TT_regression_start_user
+                self.TT_regression_start = TT_regression_start_user
             
             (self.axeT_['TT_em_phytomer1'], 
              self.axeT_['TT_col_phytomer1'], 
              self.axeT_['TT_sen_phytomer1'],
              self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
-            self.axeT_['TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.axeT_['TT_em_phytomer1'].tolist(), TT_regression_start, TT_hs_flag_leaf)
+            self.axeT_.loc[self.axeT_['id_axis'] == 'MS', 'TT_stop_axis'] = np.nan
+            tillers_axeT_index = self.axeT_.loc[self.axeT_['id_axis'] != 'MS'].index
+            self.axeT_.loc[tillers_axeT_index, 'TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.TT_regression_start, TT_flag_ligulation, self.axeT_.loc[tillers_axeT_index, 'TT_em_phytomer1'].tolist())
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
@@ -376,7 +390,7 @@ class _CreateAxeT():
             phenT_tmp = _create_phenT_tmp(self.axeT_, dynT_, phenology_functions.decimal_elongated_internode_number)
             _create_phenT_first(phenT_tmp)
             
-        return self.axeT_, _create_axeT_tmp.axeT_tmp, _create_phenT_tmp.phenT_tmp, _create_phenT_first.phenT_first
+        return self.axeT_, _create_axeT_tmp.axeT_tmp, _create_phenT_tmp.phenT_tmp, _create_phenT_first.phenT_first, self.TT_regression_start
 
 _create_axeT = _CreateAxeT()
 
@@ -525,14 +539,11 @@ def _remove_axes_without_leaf(axeT_, index_to_keep):
 
 
 def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants_density, 
-                      ears_density):
+                      ears_density, TT_regression_start):
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     '''
-    TT_hs_flag_leaf = dynT_['TT_flag_ligulation'][dynT_.first_valid_index()]
-    
-    t1_most_frequent_MS = dynT_['t1'][dynT_.first_valid_index()]
-    TT_regression_start = t1_most_frequent_MS + params.DELAIS_REG_MONT
+    TT_flag_ligulation = dynT_['TT_flag_ligulation'][dynT_.first_valid_index()]
     
     dynT_most_frequent_MS = dynT_.ix[dynT_.first_valid_index()]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
@@ -541,7 +552,7 @@ def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants
     TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     
     axes_density = number_of_axes / float(plants_number) * plants_density 
-    return pd.DataFrame({'TT': [TT_start, TT_regression_start, TT_hs_flag_leaf], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
+    return pd.DataFrame({'TT': [TT_start, TT_regression_start, TT_flag_ligulation], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
 
 
 def _create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, simulated_cohorts_axes):

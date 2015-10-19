@@ -22,6 +22,8 @@ Authors: M. Abichou, B. Andrieu, C. Chambon
 
 import random
 
+import math
+
 import numpy as np
 from scipy.optimize import leastsq
 
@@ -147,19 +149,21 @@ def calculate_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, 
     return a_1* MS_final_leaves_number - a_2 * cohort_number
     
 
-def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_regression_start, TT_hs_flag_leaf):
+def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, TT_regression_end, TT_em_phytomer1):
     '''
     Decide the thermal times (relative to canopy emergence) when the axes stop 
-    growing. Uses a linear function which describes the decay of the global population. 
+    growing. Uses an exponential function which describes the decay of the global population.
 
     :Parameters:
     
         - `max_axes_number` (:class:`int`) - the maximum number of existing axes.
-        - `min_axes_number` (:class:`int`) - the minimum number of existing axes. 
+        - `number_of_ears` (:class:`int`) - the number of ears.
+        - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts, i.e. when the Haun Stage 
+          of the most frequent main stem is equal to (N_phytomer_potential - 5).    
+        - `TT_regression_end` (:class:`float`) - the thermal time at which the regression ends, i.e. when the haun stage 
+         of the most frequent main stem is equal to flag leaf number.
         - `TT_em_phytomer1` (:class:`list`) - Thermal times (relative to canopy appearance) 
-          of tip appearance of the first true leaf (not coleoptile or prophyll)
-        - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts.
-        - `TT_hs_flag_leaf` (:class:`float`) - the thermal time at which haun stage equals flag leaf number.
+          of tip appearance of the first true leaf (not coleoptile nor prophyll)
 
     :Returns: 
         the thermal times (relative to canopy emergence) when the axes stops growing.
@@ -169,51 +173,52 @@ def decide_time_of_death(max_axes_number, min_axes_number, TT_em_phytomer1, TT_r
         
     .. warning:: 
     
-        * *min_axes_number*, *max_axes_number*, *TT_regression_start* and *TT_hs_flag_leaf* 
+        * *number_of_ears*, *max_axes_number*, *TT_regression_start* and *TT_regression_end* 
           must be positive or null.
-        * *TT_regression_start* must be smaller (or equal) than *TT_hs_flag_leaf*.
-        * *min_axes_number* must be smaller (or equal) than *max_axes_number*.
+        * *TT_regression_start* must be smaller (or equal) than *TT_regression_end*.
+        * *number_of_ears* must be smaller (or equal) than *max_axes_number*.
 
     '''
-    if min_axes_number is None:#no regression
+    if number_of_ears is None: # no regression
         return [np.nan] * len(TT_em_phytomer1)
     else:
         if max_axes_number < 0:
             raise InputError("max_axes_number negative")
-        if min_axes_number < 0:
-            raise InputError("min_axes_number negative")
+        if number_of_ears < 0:
+            raise InputError("number_of_ears negative")
         if TT_regression_start < 0:
             raise InputError("TT_regression_start negative")
-        if TT_hs_flag_leaf < 0:
-            raise InputError("TT_hs_flag_leaf negative")
+        if TT_regression_end < 0:
+            raise InputError("TT_regression_end negative")
         
-        if TT_regression_start > TT_hs_flag_leaf:
-            raise InputError("TT_regression_start greater than TT_hs_flag_leaf")
+        if TT_regression_start > TT_regression_end:
+            raise InputError("TT_regression_start greater than TT_regression_end")
         
-        if min_axes_number > max_axes_number:
-            raise InputError("min_axes_number greater than max_axes_number")
+        if number_of_ears > max_axes_number:
+            raise InputError("number_of_ears greater than max_axes_number")
         
-        polynomial_coefficient_array = np.polyfit([TT_hs_flag_leaf, TT_regression_start], [min_axes_number, max_axes_number], 1)
+        def calculate_number_of_active_axes(tt, max_axes_number, number_of_ears, TT_regression_start, TT_regression_end):
+            return (max_axes_number - number_of_ears) * math.exp(-2.05 * (tt - TT_regression_start) / (1.48 * (TT_regression_end - TT_regression_start) - (tt - TT_regression_start))) + number_of_ears
                     
-        remaining_axes_number = max_axes_number
-        T_em_leaf1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
-        T_em_leaf1_tuples.sort()
-        T_stop_axis_tuples = []
-        for tt in range(int(TT_regression_start), int(TT_hs_flag_leaf) + 1):
-            simulated_axes_number = int(np.polyval(polynomial_coefficient_array, tt))
-            axes_to_delete_number = remaining_axes_number - simulated_axes_number
-            while axes_to_delete_number > 0:
-                max_emf_1, axis_row_number = T_em_leaf1_tuples.pop()
-                T_stop_axis_tuples.append((axis_row_number, tt))
-                axes_to_delete_number -= 1
-                remaining_axes_number -= 1
-            if remaining_axes_number == 0:
+        number_of_remaining_axes = max_axes_number
+        TT_em_phytomer1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
+        TT_stop_axis_tuples = []
+        for tt in range(int(TT_regression_start), int(TT_regression_end) + 1):
+            number_of_active_axes = int(calculate_number_of_active_axes(tt, max_axes_number, number_of_ears, TT_regression_start, TT_regression_end))
+            number_of_axes_to_delete = number_of_remaining_axes - number_of_active_axes
+            while number_of_axes_to_delete > 0:
+                index_to_pop = random.randrange(len(TT_em_phytomer1_tuples))
+                _, axis_row_number = TT_em_phytomer1_tuples.pop(index_to_pop)
+                TT_stop_axis_tuples.append((axis_row_number, tt))
+                number_of_axes_to_delete -= 1
+                number_of_remaining_axes -= 1
+            if number_of_remaining_axes == 0:
                 break 
-        T_stop_axis_tuples.sort()
-        T_stop_axis_row_number_list = [T_stop_axis_tuple[0] for T_stop_axis_tuple in T_stop_axis_tuples]
-        TT_stop_axis_list = [T_stop_axis_tuple[1] for T_stop_axis_tuple in T_stop_axis_tuples]
+        TT_stop_axis_tuples.sort()
+        TT_stop_axis_row_number_list = [TT_stop_axis_tuple[0] for TT_stop_axis_tuple in TT_stop_axis_tuples]
+        TT_stop_axis_list = [TT_stop_axis_tuple[1] for TT_stop_axis_tuple in TT_stop_axis_tuples]
         for i in range(len(TT_em_phytomer1)):
-            if i not in T_stop_axis_row_number_list:
+            if i not in TT_stop_axis_row_number_list:
                 TT_stop_axis_list.insert(i, np.nan)
         return TT_stop_axis_list 
 

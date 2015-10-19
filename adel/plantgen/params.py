@@ -155,3 +155,9 @@ i.e. a_cohort_regressive_tillers =  a_cohort_most_frequent_MS * (1 + A_COHORT_RE
 RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25
 '''The ratio between the plastochron and the phyllochron. Used to compute the delay at flag ligulation of cohorts with different final leaf number.
 '''
+
+EMERGENCE_PROBABILITY_REDUCTION_FACTOR = 0.29
+'''The reduction factor of the emergence probability of secondary tiller compared to primary one,
+i.e. probability(secondary tiller)= (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(primary tiller).
+e.g. : probability(T1.0.0) = probability(T1) * (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(T3) * (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(T5) 
+'''

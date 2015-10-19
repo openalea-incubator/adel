@@ -168,7 +168,8 @@ def gen_adel_input_data(dynT_user,
      theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(plants_number, 
                                                                                  decide_child_cohort_probabilities,
                                                                                  decide_child_axis_probabilities,
-                                                                                 params.FIRST_CHILD_DELAY)
+                                                                                 params.FIRST_CHILD_DELAY,
+                                                                                 params.EMERGENCE_PROBABILITY_REDUCTION_FACTOR)
     theoretical_cardinalities_sum = sum(theoretical_cohort_cardinalities.values())
     if ears_density is not None:
         number_of_ears = plants_number * ears_density / float(plants_density)

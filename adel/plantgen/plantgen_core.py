@@ -401,7 +401,7 @@ def _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities):
     '''Generate the columns *id_axis* and *id_cohort* .'''
     all_child_cohorts = []
     for plant_id in plant_ids:
-        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, params.FIRST_CHILD_DELAY)
+        child_cohorts = tools.decide_child_cohorts(decide_child_cohort_probabilities, params.FIRST_CHILD_DELAY, params.EMERGENCE_PROBABILITY_REDUCTION_FACTOR)
         child_cohorts.sort()
         all_child_cohorts.extend(child_cohorts)
     all_child_cohorts_array = np.array(all_child_cohorts)

@@ -25,7 +25,7 @@ import random
 import numpy as np
 from scipy.optimize import leastsq
 
-def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, parent_cohort_index=None, parent_cohort_position=None):
+def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, emergence_probability_reduction_factor, parent_cohort_index=None, parent_cohort_position=None):
     '''
     Decide (recursively) of the child cohorts actually produced by a parent cohort, 
     according to the *decide_child_cohort_probabilities* and the *parent_cohort_index*. 
@@ -37,6 +37,8 @@ def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, p
           child cohorts.
         - `first_child_delay` (:class:`int`) - the delay between the parent cohort and 
           the first child cohort. This delay is expressed in number of cohorts.
+        - `emergence_probability_reduction_factor` (:class:`float`) - The reduction factor 
+          of the emergence probability of secondary tiller compared to primary one.  
         - `parent_cohort_index` (:class:`int`) - the index of the parent cohort. 
           ``None`` (the default) means that there isn't any parent cohort. 
         - `parent_cohort_position` (:class:`str`) - the position of the parent cohort. 
@@ -60,13 +62,18 @@ def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, p
         child_cohorts.append((first_possible_cohort_number, 'MS'))
         child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities, 
                                                   first_child_delay,
+                                                  emergence_probability_reduction_factor,
                                                   first_possible_cohort_number, 
                                                   cohort_position))
     else:
         # Find the children of the secondary stem.
+        emergence_probability_reduction_coefficient = (1.0 - emergence_probability_reduction_factor)
         for cohort_id, cohort_probability in decide_child_cohort_probabilities.iteritems():
             if cohort_id >= first_possible_cohort_number:
-                if cohort_probability >= random.random():
+                reducted_cohort_probability = cohort_probability
+                if parent_cohort_position != 'MS':
+                    reducted_cohort_probability *= emergence_probability_reduction_coefficient # apply a reduction
+                if reducted_cohort_probability >= random.random():
                     child_cohort_position = cohort_id - parent_cohort_index - first_child_delay
                     if parent_cohort_position == 'MS':
                         cohort_position = 'T%s' % child_cohort_position
@@ -74,7 +81,8 @@ def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, p
                         cohort_position = '%s.%s' % (parent_cohort_position, child_cohort_position)
                     child_cohorts.append((cohort_id, cohort_position)) 
                     child_cohorts.extend(decide_child_cohorts(decide_child_cohort_probabilities,
-                                                              first_child_delay, 
+                                                              first_child_delay,
+                                                              emergence_probability_reduction_factor, 
                                                               cohort_id, 
                                                               cohort_position))
     return child_cohorts
@@ -258,7 +266,8 @@ def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):
 def calculate_theoretical_cardinalities(plants_number, 
                                         decide_child_cohort_probabilities, 
                                         decide_child_axis_probabilities,
-                                        first_child_delay):
+                                        first_child_delay,
+                                        emergence_probability_reduction_factor):
     '''
     Calculate the theoretical cardinality of each simulated cohort and each 
     simulated axis. 
@@ -273,6 +282,8 @@ def calculate_theoretical_cardinalities(plants_number,
         - `first_child_delay` (:class:`int`) - The delay between 
           a parent axis and its first possible child axis. This delay is 
           expressed in number of cohorts.
+        - `emergence_probability_reduction_factor` (:class:`float`) - The reduction factor 
+          of the emergence probability of secondary tiller compared to primary one.  
           
     :Returns:
         a 2-tuple of dictionaries: the first dictionary contains the theoretical 
@@ -287,27 +298,29 @@ def calculate_theoretical_cardinalities(plants_number,
                                                  np.ceil(decide_child_cohort_probabilities.values())))
     all_child_cohorts = set()
     for i in range(plants_number):
-        child_cohorts = decide_child_cohorts(child_cohort_probabilities_ceiled, first_child_delay)
-        child_cohorts.sort()
+        child_cohorts = decide_child_cohorts(child_cohort_probabilities_ceiled, first_child_delay, 0.0)
         all_child_cohorts.update(child_cohorts)
+        
+    axis_to_cohort_mapping = dict([(cohort_axis[1], cohort_axis[0]) for cohort_axis in all_child_cohorts])
     
     id_cohort_list = sorted([1] + decide_child_cohort_probabilities.keys())
     theoretical_cohort_cardinalities = dict.fromkeys(id_cohort_list, 0.0)
     id_axis_list = sorted(['MS'] + decide_child_axis_probabilities.keys())
     id_cohort_id_axis_tuples = zip(id_cohort_list, id_axis_list)
     theoretical_axis_cardinalities = dict.fromkeys(id_cohort_id_axis_tuples, 0.0)
+    emergence_probability_reduction_coefficient = (1.0 - emergence_probability_reduction_factor)
     for (id_cohort, id_axis) in all_child_cohorts:
-        if id_axis == 'T0':
-            pass
-        if id_cohort == 1:
-            theoretical_probability = 1.0
-        else:
-            theoretical_probability = decide_child_cohort_probabilities[id_cohort]
-            if '.' in id_axis:
-                id_axis_first_digit = int(id_axis[1:].split('.', 1)[0])
-                id_cohort_from_id_axis_first_digit = id_axis_first_digit + 3
-                theoretical_probability *= decide_child_cohort_probabilities[id_cohort_from_id_axis_first_digit]
-        number_of_axes = theoretical_probability * plants_number
+        if id_cohort == 1: # main stem
+            axis_probability = 1.0
+        else: # tillers
+            axis_probability = decide_child_cohort_probabilities[id_cohort]
+            current_id_axis = id_axis
+            while '.' in current_id_axis:
+                current_parent_axis = current_id_axis.rsplit('.', 1)[0]
+                axis_probability *= decide_child_cohort_probabilities[axis_to_cohort_mapping[current_parent_axis]] * emergence_probability_reduction_coefficient
+                current_id_axis = current_parent_axis
+                
+        number_of_axes = axis_probability * plants_number
         theoretical_cohort_cardinalities[id_cohort] += number_of_axes
         theoretical_axis_cardinalities[(id_cohort, id_axis)] = number_of_axes
         
@@ -370,16 +383,23 @@ def get_primary_axis(id_axis, first_child_delay):
         'T3'
         >>> get_primary_axis('T1.0.0', 2)
         'T5'
+        >>> get_primary_axis('T5', 2)
+        'T5'
+        >>> get_primary_axis('MS', 2)
+        'MS'
         
     '''
-    id_axis = id_axis[1:]
-    while '.' in id_axis:
-        id_axis_split = id_axis.rsplit('.', 2)
-        last_pos = int(id_axis_split.pop())
-        last_but_one_pos = int(id_axis_split.pop())
-        new_last_pos = last_but_one_pos + last_pos + first_child_delay
-        id_axis = '.'.join(id_axis_split + [str(new_last_pos)])
-    primary_id_axis = 'T' + id_axis
+    if id_axis == 'MS':
+        primary_id_axis = id_axis
+    else:
+        id_axis = id_axis[1:]
+        while '.' in id_axis:
+            id_axis_split = id_axis.rsplit('.', 2)
+            last_pos = int(id_axis_split.pop())
+            last_but_one_pos = int(id_axis_split.pop())
+            new_last_pos = last_but_one_pos + last_pos + first_child_delay
+            id_axis = '.'.join(id_axis_split + [str(new_last_pos)])
+        primary_id_axis = 'T' + id_axis
     return primary_id_axis
 
 

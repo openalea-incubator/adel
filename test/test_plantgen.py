@@ -50,7 +50,8 @@ def test_init_axes():
      theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(plants_number, 
                                                                                  decide_child_cohort_probabilities,
                                                                                  decide_child_axis_probabilities,
-                                                                                 params.FIRST_CHILD_DELAY)
+                                                                                 params.FIRST_CHILD_DELAY,
+                                                                                 params.EMERGENCE_PROBABILITY_REDUCTION_FACTOR)
     cardinalityT = plantgen_core.init_axes(plants_number, 
                                            decide_child_cohort_probabilities, 
                                            MS_leaves_number_probabilities, 

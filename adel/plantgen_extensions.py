@@ -470,24 +470,56 @@ class GreenLeaves(object):
     def linear_fit(self, nff=None):
         return interp1d([0, self.n0, self.hs_t1(nff), self.hs_t2(nff)],[0, self.n0, self.n1(nff), self.n2(nff)], bounds_error=False, fill_value=0)
     
-    def polynomial_fit(self, nff=None):
+    def Gl_hs_polynomial(self, nff=None):
         c = (self.n2(nff) - self.n1(nff)) / (self.hs_t2(nff) - self.hs_t1(nff)) - 1 # in fact c is independent of nff
-        pol = numpy.poly1d([self.a, 0.0, c, self.n2(nff)])
+        return numpy.poly1d([self.a, 0.0, c, self.n2(nff)])
+    
+    def polynomial_fit(self, nff=None):
+        pol = self.Gl_hs_polynomial(nff)
         def _fit(hs):
             gl = numpy.where(hs <= self.hs_t2(nff), 0, pol(hs - self.hs_t2(nff)))
             return numpy.where(gl >=0, gl, 0)
         return _fit
         
     def curve(self, nff=None):
+        """ GL = f(HS) curve
+        """
         lin = self.linear_fit(nff)
         pol = self.polynomial_fit(nff)
         def _curve(hs):
             return lin(hs) + pol(hs)            
         return _curve
         
+    def ssi_curve(self, nff=None):
+        """ ssi = f(TT) curve
+        """
+        hs = self.hsfit.curve(nff)
+        gl = self.curve(nff)
+        
+        def _ssi(TT):
+            return hs(TT) - gl(self.hsfit.HS(TT,nff))
+        return _ssi
+        
+    def hs_end(self, nff=None):
+        """ HS at end of flag leaf senescence """
+        pol = self.Gl_hs_polynomial(nff)
+        return self.hs_t2(nff) + max(pol.r).real
+        
+        
+    def TTsen(self, nff=None) :
+        """ TTfull senescence = f(rank)
+        """
+        TT = numpy.arange(self.hsfit.TT(self.n0, nff),round(self.hsfit.TT(self.hs_end(nff), nff)), 1)
+        ssi = self.ssi_curve(nff)
+        nsen = ssi(TT)
+        nsen[0] = 0
+        nmax = self.hsfit.HSflag(nff)
+        nsen[-1] = nmax
+        return interp1d(nsen, TT)
+        
     def GL_number(self, nff=None):
         curve = self.curve(nff)
-        hs = numpy.linspace(nff, 2 * nff,20)
+        hs = numpy.linspace(nff, self.hs_end(nff),20)
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
         df = df.loc[df['GL'] > 0,:]
         df['TT'] = self.hsfit.TT(df['HS'], nff)
@@ -635,6 +667,9 @@ class AxePop(object):
         v = self.MS_probabilities.values()
         nff = self.MS_probabilities.keys()
         return int(nff[v.index(max(v))])
+        
+    def sorted_nff(self):
+        return [int(k) for k in sorted(self.MS_probabilities, key=self.MS_probabilities.get, reverse=True)]
 
     def hs_debreg(self):
         nff = self.mean_nff()

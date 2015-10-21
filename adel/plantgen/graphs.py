@@ -29,7 +29,7 @@ import pandas as pd
 
 from alinea.adel.plantgen import params
 
-def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, plots_dirpath=None):
+def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
     
@@ -37,6 +37,10 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, plots_dirpath=None):
     
         - `HS_GL_SSI_T` (:class:`pd.DataFrame`) - the table HS_GL_SSI_T.
         - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default), then plot all the id_phen. 
+        - `dynamics_to_plot` (:class:`list`) - the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. 
+          If None (the default), then plot all the dynamics.
+        - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
+        - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
           If `None` (the default), do not save the graphs but display them.
           
@@ -49,10 +53,19 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, plots_dirpath=None):
         graphs.plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=[4081, 1111, 1101])
         
     '''
-    if id_phen_to_plot is None:
-        HS_GL_SSI_T_to_plot = HS_GL_SSI_T
-    else:
-        HS_GL_SSI_T_to_plot = HS_GL_SSI_T[HS_GL_SSI_T['id_phen'].isin(id_phen_to_plot)]
+    HS_GL_SSI_T_to_plot = HS_GL_SSI_T.copy()
+    
+    if id_phen_to_plot is not None:
+        HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot['id_phen'].isin(id_phen_to_plot)]
+        
+    if dynamics_to_plot is not None:
+        HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[['id_phen', 'TT'] + dynamics_to_plot]
+    
+    if not plot_non_regressive_tillers:
+        HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot.id_phen.astype(str).str[-1].astype(int) != 1]
+        
+    if not plot_regressive_tillers:
+        HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot.id_phen.astype(str).str[-1].astype(int) != 0]
     
     for id_phen, group in HS_GL_SSI_T_to_plot.groupby('id_phen'):
         group.index = group.TT
@@ -71,7 +84,11 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, plots_dirpath=None):
         if plots_dirpath is None:
             plt.show()
         else:
-            plt.savefig(os.path.join(plots_dirpath, 'HS_GL_SSI_T_{}.png'.format(id_phen)), dpi=200, format='PNG')
+            if dynamics_to_plot is None:
+                dynamics_to_plot_formatted = 'HS_GL_SSI'
+            else:
+                dynamics_to_plot_formatted = '_'.join(dynamics_to_plot)
+            plt.savefig(os.path.join(plots_dirpath, '{}_T_{}.png'.format(dynamics_to_plot_formatted, id_phen)), dpi=200, format='PNG')
             plt.close()
 
 

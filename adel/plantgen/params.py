@@ -123,7 +123,7 @@ LENGTHS_REDUCTION_FACTOR = -0.115
 i.e. lengths_regressive_tillers =  lengths_most_frequent_MS * (1 + LENGTHS_REDUCTION_FACTOR)
 '''
 
-WIDTHS_REDUCTION_FACTOR = -0.938
+WIDTHS_REDUCTION_FACTOR = -0.0938
 '''The reduction factor to apply on the widths of the most frequent main stem to compute the widths of the regressive tillers,
 i.e. widths_regressive_tillers =  widths_most_frequent_MS * (1 + WIDTHS_REDUCTION_FACTOR)
 '''

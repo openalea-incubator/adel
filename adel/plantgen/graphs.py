@@ -29,16 +29,16 @@ import pandas as pd
 
 from alinea.adel.plantgen import params
 
-def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=[], dynamics_to_plot=[], plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
+def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
     
     :Parameters:
     
         - `HS_GL_SSI_T` (:class:`pd.DataFrame`) - the table HS_GL_SSI_T.
-        - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If empty (the default) or None, then plot all the id_phen. 
+        - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default) or empty, then plot all the id_phen. 
         - `dynamics_to_plot` (:class:`list`) - the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. 
-          If empty (the default) or None, then plot all the dynamics.
+          If None (the default) or empty, then plot all the dynamics.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
@@ -92,7 +92,7 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=[], dynamics_to_plot=[], plot_
             plt.close()
 
 
-def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to_plot=[], id_dim_to_plot=[], id_cohort_to_plot=[], plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
+def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to_plot=None, id_dim_to_plot=None, id_cohort_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
     '''
     Plot the dimensions in `dimT` according to filters `dimensions_to_plot`, `id_dim_to_plot`, `id_cohort_to_plot`, `plot_non_regressive_tillers` and `plot_regressive_tillers`.
     
@@ -102,9 +102,9 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
         - `MS_id_dim` (:class:`int`) - the id_dim of the main stem. The line corresponding to this id_dim is thicker.
         - `relative_index_phytomer` (:class:`bool`) - if True: display the index relative to the phytomers of the main stem. 
           If False (the default), display the absolute index of the phytomers.
-        - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If empty (the default) or None, then plot all the dimensions.
-        - `id_dim_to_plot` (:class:`list`) - the list of id_dim to plot. If empty (the default) or None, then plot all the id_dim.
-        - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If empty (the default) or None, then plot all the id_cohort.
+        - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If None (the default) or empty, then plot all the dimensions.
+        - `id_dim_to_plot` (:class:`list`) - the list of id_dim to plot. If None (the default) or empty, then plot all the id_dim.
+        - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If None (the default) or empty, then plot all the id_cohort.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  

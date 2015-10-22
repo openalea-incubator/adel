@@ -212,7 +212,6 @@ of the MS are documented by the user, then this will lead to an error."
     
     # calculate dynT_user completeness and check its validity
     # update TT_col_* names with new names
-    dynT_user=dynT_user.rename(columns={'TT_col_0':'TT_hs_0','TT_col_N_phytomer_potential':'TT_flag_ligulation'})
     if 'N_phytomer_potential' in dynT_user.columns:
         dynT_user_completeness = plantgen_core.DataCompleteness.FULL
         expected_dynT_user_columns = ['id_axis', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_flag_ligulation', 'n0', 'n1', 'n2']

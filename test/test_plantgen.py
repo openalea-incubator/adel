@@ -20,7 +20,7 @@ ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
 TT_hs_break = np.NaN # linear mode
-TT_col_N_phytomer_potential = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
+TT_flag_ligulation = {'MS': 1078.0, 'T1': 1148.0, 'T2': 1158.0, 'T3': 1168.0, 'T4': 1178.0}
 number_of_ears = plants_number * ears_density / float(plants_density)
 
 expected_results_dir = path('data/test_plantgen')

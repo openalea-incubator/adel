@@ -1041,7 +1041,7 @@ the axes which have the most frequent number of phytomers.
 where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`.
     
 Each line contains the following data: *id_axis*, *N_phytomer_potential*, *a_cohort*, 
-*TT_col_0*, *TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
+*TT_hs_0*, *TT_flag_ligulation*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for the meaning of these parameters.
 
 See :download:`an example of dynT_user_FULL <../../test/data/test_plantgen/FULL_FULL/dynT_user.csv>`.
@@ -1059,8 +1059,8 @@ the axes which have the most frequent number of phytomers.
 where *id_axis* and *N_phytomer_potential* are defined in :ref:`axeT <axeT>`. The couples (*id_axis*, **NOT** most frequent *N_phytomer_potential*) 
 are not documented in :ref:`dynT_user_SHORT`.
 
-Each line contains the following data *id_axis*, *a_cohort*, *TT_col_0*, 
-*TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
+Each line contains the following data *id_axis*, *a_cohort*, *TT_hs_0*, 
+*TT_flag_ligulation*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for a description of these parameters.
 
 See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/SHORT_SHORT/dynT_user.csv>`.
@@ -1076,10 +1076,10 @@ main stem which has the most frequent number of phytomers.
 :ref:`dynT_user_MIN` also contains, for each primary axis, 
 the thermal time when Haun Stage is equal to the final number of phytomers.
 
-The first line contains the following data: *id_axis*, *a_cohort*, *TT_col_0*, 
-*TT_col_N_phytomer_potential*, *n0*, *n1* and *n2*. 
-In the other lines, only *id_axis* and *TT_col_N_phytomer_potential* are documented: 
-*a_cohort*, *TT_col_0*, *n0*, *n1* and *n2* are NA (i.e. Not Available). 
+The first line contains the following data: *id_axis*, *a_cohort*, *TT_hs_0*, 
+*TT_flag_ligulation*, *n0*, *n1* and *n2*. 
+In the other lines, only *id_axis* and *TT_flag_ligulation* are documented: 
+*a_cohort*, *TT_hs_0*, *n0*, *n1* and *n2* are NA (i.e. Not Available). 
  
 See :ref:`dynT` for a description of these parameters.
 
@@ -1199,18 +1199,18 @@ a line with the following data:
     * - **a_cohort** 
       - the rate of Haun Stage vs Thermal time. This is the rate of the 
         first phase in case of bilinear behavior.
-    * - **TT_col_0** 
+    * - **TT_hs_0** 
       - the thermal time for Haun Stage equal to 0
     * - **TT_hs_break**
       - the thermal time when the rate of phytomers emergence is changing
-    * - **TT_col_N_phytomer_potential** 
+    * - **TT_flag_ligulation** 
       - the thermal time when Haun Stage is equal to *N_phytomer_potential*
     * - **n0** 
       - number of green leaves at *t0*
     * - **n1** 
       - number of green leaves at *t1*
     * - **n2** 
-      - number of green leaves at *TT_col_N_phytomer_potential*
+      - number of green leaves at *TT_flag_ligulation*
     * - **t0**
       - the thermal time at the start of leaf senescence 
     * - **t1**

@@ -36,9 +36,9 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     :Parameters:
     
         - `HS_GL_SSI_T` (:class:`pd.DataFrame`) - the table HS_GL_SSI_T.
-        - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default), then plot all the id_phen. 
+        - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default) or empty, then plot all the id_phen. 
         - `dynamics_to_plot` (:class:`list`) - the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. 
-          If None (the default), then plot all the dynamics.
+          If None (the default) or empty, then plot all the dynamics.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
@@ -55,10 +55,10 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     '''
     HS_GL_SSI_T_to_plot = HS_GL_SSI_T.copy()
     
-    if id_phen_to_plot is not None:
+    if id_phen_to_plot is not None and len(id_phen_to_plot) != 0:
         HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot['id_phen'].isin(id_phen_to_plot)]
         
-    if dynamics_to_plot is not None:
+    if dynamics_to_plot is not None and len(dynamics_to_plot) != 0:
         HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[['id_phen', 'TT'] + dynamics_to_plot]
     
     if not plot_non_regressive_tillers:
@@ -84,7 +84,7 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
         if plots_dirpath is None:
             plt.show()
         else:
-            if dynamics_to_plot is None:
+            if dynamics_to_plot is None or len(dynamics_to_plot) == 0:
                 dynamics_to_plot_formatted = 'HS_GL_SSI'
             else:
                 dynamics_to_plot_formatted = '_'.join(dynamics_to_plot)
@@ -102,9 +102,9 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
         - `MS_id_dim` (:class:`int`) - the id_dim of the main stem. The line corresponding to this id_dim is thicker.
         - `relative_index_phytomer` (:class:`bool`) - if True: display the index relative to the phytomers of the main stem. 
           If False (the default), display the absolute index of the phytomers.
-        - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If None (the default), then plot all the dimensions.
-        - `id_dim_to_plot` (:class:`list`) - the list of id_dim to plot. If None (the default), then plot all the id_dim.
-        - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If None (the default), then plot all the id_cohort.
+        - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If None (the default) or empty, then plot all the dimensions.
+        - `id_dim_to_plot` (:class:`list`) - the list of id_dim to plot. If None (the default) or empty, then plot all the id_dim.
+        - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If None (the default) or empty, then plot all the id_cohort.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
@@ -138,18 +138,18 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
     
     COLORS = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
     
-    if dimensions_to_plot is None:
+    if dimensions_to_plot is None or len(dimensions_to_plot) == 0:
         dimT_to_plot = dimT
         dimensions_to_plot = dimT.columns.difference(DIM_T_KEY)
     else:
         dimT_to_plot = dimT[DIM_T_KEY + dimensions_to_plot]
     
-    if id_dim_to_plot is None:
+    if id_dim_to_plot is None or len(id_dim_to_plot) == 0:
         dimT_to_plot = dimT_to_plot
     else:
         dimT_to_plot = dimT_to_plot[dimT_to_plot.id_dim.isin(id_dim_to_plot)]
         
-    if id_cohort_to_plot is not None:
+    if id_cohort_to_plot is not None and len(id_cohort_to_plot) != 0:
         dimT_to_plot = dimT_to_plot[dimT_to_plot.id_dim.astype(str).str[0].astype(int).isin(id_cohort_to_plot)]
     
     if not plot_non_regressive_tillers:
@@ -254,7 +254,7 @@ def plot_tillering_dynamic(axeT, plants_density, TT_step=10, plots_dirpath=None)
         number_of_regressive_active_axes = len(axeT_regressive[(TT >= axeT_regressive.TT_em_phytomer1) & (TT < axeT_regressive.TT_stop_axis)])
         total_number_of_active_axes = number_of_non_regressive_active_axes + number_of_regressive_active_axes
         densities_of_active_axes_per_square_meter.append(total_number_of_active_axes / domain_area)
-        densities_of_active_axes_per_plant.append(total_number_of_active_axes / number_of_plants)
+        densities_of_active_axes_per_plant.append(total_number_of_active_axes / float(number_of_plants))
     
     for densities_of_active_axes, type_of_density, file_suffix in ((densities_of_active_axes_per_square_meter, 'per square meter', 'per_square_meter'),
                                                                    (densities_of_active_axes_per_plant, 'per plant', 'per_plant')):

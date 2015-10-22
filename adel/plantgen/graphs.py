@@ -55,10 +55,14 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     '''
     HS_GL_SSI_T_to_plot = HS_GL_SSI_T.copy()
     
-    if id_phen_to_plot is not None and len(id_phen_to_plot) != 0:
+    if id_phen_to_plot is None or len(id_phen_to_plot) == 0:
+        id_phen_to_plot = HS_GL_SSI_T_to_plot.id_phen.unique()
+    else:
         HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot['id_phen'].isin(id_phen_to_plot)]
         
-    if dynamics_to_plot is not None and len(dynamics_to_plot) != 0:
+    if dynamics_to_plot is None or len(dynamics_to_plot) == 0:
+        dynamics_to_plot = ['HS', 'GL', 'SSI']
+    else:
         HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[['id_phen', 'TT'] + dynamics_to_plot]
     
     if not plot_non_regressive_tillers:
@@ -67,29 +71,38 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     if not plot_regressive_tillers:
         HS_GL_SSI_T_to_plot = HS_GL_SSI_T_to_plot[HS_GL_SSI_T_to_plot.id_phen.astype(str).str[-1].astype(int) != 0]
     
+    LINE_STYLES = ["-", "--", "-.", ":"]
+    
+    DYNAMIC_TO_COLOR_MAPPING = {'HS': 'b', 'GL': 'g', 'SSI': 'r'}
+    
+    plt.figure()
+    plot_ = plt.subplot(111)
+    
+    axis_num = 0
     for id_phen, group in HS_GL_SSI_T_to_plot.groupby('id_phen'):
-        group.index = group.TT
-        group = group.drop(['TT', 'id_phen'], axis=1)
-        current_axis = group.plot()
-        current_axis.set_xlabel('Thermal time')
-        current_axis.set_ylabel('Decimal leaf number')
-        current_axis.legend(prop={'size':10}, framealpha=0.5)
-        current_axis.set_title('id_phen = {}'.format(id_phen))
-        xmin, xmax = current_axis.get_xlim()
-        x_margin = (xmax - xmin) / 100.0
-        current_axis.set_xlim(xmin - x_margin, xmax + x_margin)
-        ymin, ymax = current_axis.get_ylim()
-        y_margin = (ymax - ymin) / 100.0
-        current_axis.set_ylim(ymin - y_margin, ymax + y_margin)
-        if plots_dirpath is None:
-            plt.show()
-        else:
-            if dynamics_to_plot is None or len(dynamics_to_plot) == 0:
-                dynamics_to_plot_formatted = 'HS_GL_SSI'
-            else:
-                dynamics_to_plot_formatted = '_'.join(dynamics_to_plot)
-            plt.savefig(os.path.join(plots_dirpath, '{}_T_{}.png'.format(dynamics_to_plot_formatted, id_phen)), dpi=200, format='PNG')
-            plt.close()
+        axis_num += 1
+        
+        line_style = LINE_STYLES[axis_num % len(LINE_STYLES)]
+        
+        for dynamic_to_plot in dynamics_to_plot:
+            plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
+        
+    plot_.set_xlabel('Thermal time')
+    plot_.set_ylabel('Decimal leaf number')
+    plot_.legend(prop={'size':10}, framealpha=0.5)
+    plot_.set_title('{} - {}'.format(tuple(id_phen_to_plot), tuple(dynamics_to_plot)))
+    xmin, xmax = plot_.get_xlim()
+    x_margin = (xmax - xmin) / 100.0
+    plot_.set_xlim(xmin - x_margin, xmax + x_margin)
+    ymin, ymax = plot_.get_ylim()
+    y_margin = (ymax - ymin) / 100.0
+    plot_.set_ylim(ymin - y_margin, ymax + y_margin)
+    if plots_dirpath is None:
+        plt.show()
+    else:
+        dynamics_to_plot_formatted = '_'.join(dynamics_to_plot)
+        plt.savefig(os.path.join(plots_dirpath, '{}_dynamics.png'.format(dynamics_to_plot_formatted)), dpi=200, format='PNG')
+        plt.close()
 
 
 def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to_plot=None, id_dim_to_plot=None, id_cohort_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):

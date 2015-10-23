@@ -31,16 +31,18 @@ import pandas as pd
 
 from alinea.adel.plantgen import params
 
-def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plot_filepath=None):
+def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, id_phen_to_plot=None, dynamics_to_plot=None, plot_most_frequent_main_stem=True, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plot_filepath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
     
     :Parameters:
     
         - `HS_GL_SSI_T` (:class:`pd.DataFrame`) - the table HS_GL_SSI_T.
+        - `dynT` (:class:`pd.DataFrame`) - the table dynT.
         - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default) or empty, then plot all the id_phen. 
         - `dynamics_to_plot` (:class:`list`) - the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. 
           If None (the default) or empty, then plot all the dynamics.
+        - `plot_most_frequent_main_stem` (:class:`bool`) - whether to plot the most frequent main stem or not. If true, dynT must not be `None`. 
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
         - `plot_filepath` (:class:`str`) - the path of the file to save the plot in.  
@@ -56,6 +58,10 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
         
     '''
     HS_GL_SSI_T_to_plot = HS_GL_SSI_T.copy()
+    
+    if plot_most_frequent_main_stem:
+        id_cohort, N_phytomer_potential, t0, t1, TT_flag_ligulation, n0, n1, n2 = dynT.loc[dynT.first_valid_index(), ['id_cohort', 'N_phytomer_potential', 't0', 't1', 'TT_flag_ligulation', 'n0', 'n1', 'n2']]
+        most_frequent_main_stem_id_phen = int(''.join([str(int(id_cohort)), str(int(N_phytomer_potential)).zfill(2), '1']))
     
     if id_phen_to_plot is None or len(id_phen_to_plot) == 0:
         id_phen_to_plot = HS_GL_SSI_T_to_plot.id_phen.unique()
@@ -82,12 +88,13 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     
     axis_num = 0
     for id_phen, group in HS_GL_SSI_T_to_plot.groupby('id_phen'):
-        axis_num += 1
-        
-        line_style = LINE_STYLES[axis_num % len(LINE_STYLES)]
-        
-        for dynamic_to_plot in dynamics_to_plot:
-            plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
+        if plot_most_frequent_main_stem and id_phen == most_frequent_main_stem_id_phen:
+            plot_.plot([t0, t1, TT_flag_ligulation], [n0, n1, n2], linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
+        else:
+            axis_num += 1
+            line_style = LINE_STYLES[axis_num % len(LINE_STYLES)]
+            for dynamic_to_plot in dynamics_to_plot:
+                plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
         
     plot_.set_xlabel('Thermal time')
     plot_.set_ylabel('Decimal leaf number')

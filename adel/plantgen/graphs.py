@@ -31,7 +31,7 @@ import pandas as pd
 
 from alinea.adel.plantgen import params
 
-def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
+def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plot_filepath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
     
@@ -43,8 +43,8 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
           If None (the default) or empty, then plot all the dynamics.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
-        - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
-          If `None` (the default), do not save the graphs but display them.
+        - `plot_filepath` (:class:`str`) - the path of the file to save the plot in.  
+          If `None` (the default), do not save the plot but display it.
           
     :Examples:
         
@@ -99,11 +99,10 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
     ymin, ymax = plot_.get_ylim()
     y_margin = (ymax - ymin) / 100.0
     plot_.set_ylim(ymin - y_margin, ymax + y_margin)
-    if plots_dirpath is None:
+    if plot_filepath is None:
         plt.show()
     else:
-        dynamics_to_plot_formatted = '_'.join(dynamics_to_plot)
-        plt.savefig(os.path.join(plots_dirpath, '{}_dynamics.png'.format(dynamics_to_plot_formatted)), dpi=200, format='PNG')
+        plt.savefig(plot_filepath, dpi=200, format='PNG')
         plt.close()
 
 
@@ -123,8 +122,8 @@ def plot_dimT(dimT, measured_id_dim=None, relative_index_phytomer=False, dimensi
         - `id_cohort_to_plot` (:class:`list`) - the list of id_cohort to plot. If None (the default) or empty, then plot all the id_cohort.
         - `plot_non_regressive_tillers` (:class:`bool`) - whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by '1'. Default is to plot the non regressive tillers.
         - `plot_regressive_tillers` (:class:`bool`) - whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by '0'. Default is to plot the regressive tillers. 
-        - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
-          If `None`, do not save the graphs but display them.
+        - `plots_dirpath` (:class:`str`) - the path of the directory to save the plots in.  
+          If `None`, do not save the plots but display them.
           
     :Examples:
         
@@ -250,8 +249,8 @@ def plot_tillering_dynamic(axeT, plants_density, TT_step=10, plots_dirpath=None)
         - `axeT` (:class:`pd.DataFrame`) - the table axeT.
         - `plants_density` (:class:`int`) - the number of plants per square meter.
         - `TT_step` (:class:`int`) - the thermal time step of the plot. Default is 10.
-        - `plots_dirpath` (:class:`str`) - the path of the directory to save the graphs in.  
-          If `None`, do not save the graphs but display them.
+        - `plots_dirpath` (:class:`str`) - the path of the directory to save the plots in.  
+          If `None`, do not save the plots but display them.
           
     :Examples:
         
@@ -307,4 +306,45 @@ def plot_tillering_dynamic(axeT, plants_density, TT_step=10, plots_dirpath=None)
         else:
             plt.savefig(os.path.join(plots_dirpath, '{}_{}.png'.format('tillering_dynamic', file_suffix)), dpi=200, format='PNG')
             plt.close()
+            
+            
+def plot_tiller_frequencies(dynT, plot_filepath=None):
+    '''
+    Plot the frequency of each tiller.
+    
+    :Parameters:
+    
+        - `dynT` (:class:`pd.DataFrame`) - the table dynT.
+        - `plot_filepath` (:class:`str`) - the path of the file to save the plot in.  
+          If `None` (the default), do not save the plot but display it.
+          
+    :Examples:
+        
+        # plot tiller frequencies
+        import pandas as pd
+        dynT = pd.read_csv('dynT.csv')
+        from alinea.adel.plantgen import graphs
+        graphs.plot_tiller_frequencies(dynT)
+        
+    '''
+    summed_cardinalities = dynT[['id_axis', 'cardinality']].groupby('id_axis').sum()
+    hist = summed_cardinalities.cardinality.values
+    normalized_hist = hist.astype(float) / hist.sum()
+    bin_edges = np.arange(1, len(summed_cardinalities) + 1)
+    width = 0.5
+    plt.bar(bin_edges, normalized_hist, width=width, align='center')
+    plt.title('Axis frequencies')
+    plt.xlabel('id_axis')
+    plt.ylabel('Frequency')
+    ymin, ymax = plt.ylim()
+    y_margin = (ymax - ymin) / 10.0
+    plt.ylim(ymin, ymax + y_margin)
+    plt.xticks(bin_edges, summed_cardinalities.index)
+    if plot_filepath is None:
+        plt.show()
+    else:
+        plt.savefig(plot_filepath, dpi=200, format='PNG')
+        plt.close()
+    
+    
     

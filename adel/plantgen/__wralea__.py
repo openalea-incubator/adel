@@ -17,7 +17,7 @@ __institutes__ = ''
 __icon__ = ''
 
 
-__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'plantgen2adel_plantgen2adel', 'plot_HS_GL_SSI_T_plot_HS_GL_SSI_T', 'plot_dimT_plot_dimT', 'plot_tillering_dynamic_plot_tillering_dynamic']
+__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'plantgen2adel_plantgen2adel', 'plot_HS_GL_SSI_T_plot_HS_GL_SSI_T', 'plot_dimT_plot_dimT', 'plot_tillering_dynamic_plot_tillering_dynamic', 'plot_tiller_frequencies_plot_tiller_frequencies']
 
 
 plantgen_plantgen = Factory(name='plantgen',
@@ -89,7 +89,7 @@ plot_HS_GL_SSI_T_plot_HS_GL_SSI_T = Factory(name='plot_HS_GL_SSI_T',
                         {'interface': ISequence, 'name': 'dynamics_to_plot',  'value': [], 'desc': "the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. If empty (the default) or None, then plot all the dynamics."},
                         {'interface': IBool, 'name': 'plot_non_regressive_tillers', 'value': True, 'desc': 'whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by 1. Default is to plot the non regressive tillers.'},
                         {'interface': IBool, 'name': 'plot_regressive_tillers', 'value': True, 'desc': 'whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by 0. Default is to plot the regressive tillers.'},
-                        {'interface': IDirStr, 'name': 'plots_dirpath', 'value': None, 'desc': 'the path of the directory to save the plot(s) in. If `None` (the default), do not save the plot but display it.'}),
+                        {'interface': IFileStr, 'name': 'plot_filepath', 'value': None, 'desc': 'the path of the file to save the plot in. If `None` (the default), do not save the plot but display it.'}),
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -108,7 +108,7 @@ plot_dimT_plot_dimT = Factory(name='plot_dimT',
                         {'interface': ISequence, 'name': 'id_cohort_to_plot', 'value': [], 'desc': 'the list of id_cohort to plot. If empty (the default) or None, then plot all the id_cohort.'},
                         {'interface': IBool, 'name': 'plot_non_regressive_tillers', 'value': True, 'desc': 'whether to plot the non regressive tillers or not. Non regressive tillers have id_dim ending by 1. Default is to plot the non regressive tillers.'},
                         {'interface': IBool, 'name': 'plot_regressive_tillers', 'value': True, 'desc': 'whether to plot the regressive tillers or not. Regressive tillers have id_dim ending by 0. Default is to plot the regressive tillers.'},
-                        {'interface': IDirStr, 'name': 'plots_dirpath', 'value': None, 'desc': 'the path of the directory to save the plot(s) in.  If `None`, do not save the plot but display it.'}),
+                        {'interface': IDirStr, 'name': 'plots_dirpath', 'value': None, 'desc': 'the path of the directory to save the plot(s) in.  If `None`, do not save the plot but display them.'}),
                 widgetmodule=None,
                 widgetclass=None,
                )
@@ -125,7 +125,20 @@ A regressive axis is active at TT if TT_em_phytomer1 <= TT < TT_stop_axis.''',
                 inputs=({'interface': None, 'name': 'axeT', 'desc': 'the axeT dataframe'},
                         {'interface': IInt, 'name': 'plants_density', 'desc': 'the number of plants per square meter.'},
                         {'interface': IInt, 'name': 'TT_step', 'value': 10, 'desc': 'the thermal time step of the plot. Default is 10.'},
-                        {'interface': IDirStr, 'name': 'plots_dirpath', 'value': None, 'desc': 'the path of the directory to save the graphs in. If `None`, do not save the graphs but display them.'}),
+                        {'interface': IDirStr, 'name': 'plots_dirpath', 'value': None, 'desc': 'the path of the directory to save the plots in. If `None`, do not save the plots but display them.'}),
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+plot_tiller_frequencies_plot_tiller_frequencies = Factory(name='plot_tiller_frequencies',
+                authors='M. Abichou, B. Andrieu, C. Chambon',
+                description='''Plot the frequency of each tiller.''',
+                category='data processing',
+                nodemodule='alinea.adel.plantgen.graphs',
+                nodeclass='plot_tiller_frequencies',
+                inputs=({'interface': None, 'name': 'dynT', 'desc': 'the dynT dataframe'},
+                        {'interface': IFileStr, 'name': 'plot_filepath', 'value': None, 'desc': 'the path of the file to save the plot in. If `None` (the default), do not save the plot but display it.'}),
                 widgetmodule=None,
                 widgetclass=None,
                )

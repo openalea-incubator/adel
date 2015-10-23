@@ -725,14 +725,15 @@ def _gen_lengths(MS_id_dim, row_indexes_to_fit, dimT_, decimal_elongated_interno
     '''Fit the lengths in-place.'''
     index_phytomer_series = dimT_['index_phytomer']
     MS_rows_indexes = dimT_[dimT_['id_dim'] == MS_id_dim].index
+    MS_last_but_one_index_phytomer = index_phytomer_series[MS_rows_indexes[-1] - 1]
     MS_last_index_phytomer = index_phytomer_series[MS_rows_indexes[-1]]
 
-    _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_, decimal_elongated_internode_number)
-    _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_)
-    _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_)
+    _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_, decimal_elongated_internode_number)
+    _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_)
+    _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_)
              
 
-def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_, decimal_elongated_internode_number):
+def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_, decimal_elongated_internode_number):
     
     length = 'L_blade'
     lengths_series = dimT_[length]
@@ -749,7 +750,11 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer,
     MS_length_at_decimal_elongated_internode_number = np.polyval(MS_after_start_MS_elongation_polynomial_coefficients_array, 
                                                                  decimal_elongated_internode_number)
     
+    MS_last_but_one_length = MS_lengths_series[MS_lengths_series.last_valid_index() - 1]
     MS_last_length = MS_lengths_series[MS_lengths_series.last_valid_index()]
+    MS_last_two_lengths_coefficients_array = np.polyfit([MS_last_but_one_index_phytomer, MS_last_index_phytomer], 
+                                                        [MS_last_but_one_length, MS_last_length], 1)
+    
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
@@ -771,9 +776,11 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer,
             indexes_to_compute = indexes_to_compute.intersection(after_start_MS_elongation_index_relative_to_MS_phytomer_series_indexes)
             dimT_.loc[indexes_to_compute, length] = np.polyval(MS_after_start_MS_elongation_polynomial_coefficients_array, 
                                                                after_start_MS_elongation_index_relative_to_MS_phytomer_series[indexes_to_compute].values)
-            # ceiling
-            indexes_to_ceil = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
-            dimT_.loc[indexes_to_ceil, length] = MS_last_length
+            
+            # when index_relative_to_MS_phytomer_series > MS_last_index_phytomer: same slope as MS last two lengths
+            indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
+            dimT_.loc[indexes_to_compute, length] = np.polyval(MS_last_two_lengths_coefficients_array, 
+                                                               index_relative_to_MS_phytomer_series[indexes_to_compute].values)
             
             # before start of MS elongation: linear phase
             x1 = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series.first_valid_index()]
@@ -792,7 +799,7 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer,
                 dimT_.loc[dimT_group.index, length] *= lengths_multiplicative_factor
                 
 
-def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_):
+def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_):
     
     length = 'L_sheath'
     lengths_series = dimT_[length]
@@ -806,7 +813,10 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer
     most_frequent_MS_polynomial_coefficients_array_normalized = np.polyfit(MS_index_phytomer_normalized_series.values, 
                                                                            MS_lengths_series.values, 4)
     
+    MS_last_but_one_length = MS_lengths_series[MS_lengths_series.last_valid_index() - 1]
     MS_last_length = MS_lengths_series[MS_lengths_series.last_valid_index()]
+    MS_last_two_lengths_coefficients_array = np.polyfit([MS_last_but_one_index_phytomer, MS_last_index_phytomer], 
+                                                        [MS_last_but_one_length, MS_last_length], 1)
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
@@ -824,9 +834,11 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             dimT_.loc[indexes_to_compute, length] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
                                                                index_relative_to_MS_phytomer_series[indexes_to_compute].values)
-            # ceiling
-            indexes_to_ceil = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
-            dimT_.loc[indexes_to_ceil, length] = MS_last_length
+            
+            # when index_relative_to_MS_phytomer_series > MS_last_index_phytomer: same slope as MS last two lengths
+            indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
+            dimT_.loc[indexes_to_compute, length] = np.polyval(MS_last_two_lengths_coefficients_array, 
+                                                               index_relative_to_MS_phytomer_series[indexes_to_compute].values)
             
             # reduction of regressive tillers
             is_ear = dimT_group.is_ear[dimT_group.first_valid_index()]
@@ -835,7 +847,7 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer
                 dimT_.loc[dimT_group.index, length] *= lengths_multiplicative_factor
 
 
-def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phytomer, row_indexes_to_fit, dimT_):
+def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_phytomer, MS_last_index_phytomer, row_indexes_to_fit, dimT_):
     
     length = 'L_internode'
     lengths_series = dimT_[length]
@@ -851,7 +863,10 @@ def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phyto
     most_frequent_MS_polynomial_coefficients_array_normalized = np.polyfit(MS_index_phytomer_normalized_series.values, 
                                                                            MS_lengths_series[MS_non_null_lengths_rows_indexes].values, 4)
     
+    MS_last_but_one_length = MS_lengths_series[MS_non_null_lengths_rows_indexes[-1] - 1]
     MS_last_length = MS_lengths_series[MS_non_null_lengths_rows_indexes[-1]]
+    MS_last_two_lengths_coefficients_array = np.polyfit([MS_last_but_one_index_phytomer, MS_last_index_phytomer], 
+                                                        [MS_last_but_one_length, MS_last_length], 1)
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
@@ -878,9 +893,11 @@ def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_index_phyto
             indexes_to_compute = indexes_to_compute.difference(indexes_to_threshold)
             dimT_.loc[indexes_to_compute, length] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
                                                                index_relative_to_MS_phytomer_series[indexes_to_compute].values)
-            # ceiling
-            indexes_to_ceil = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
-            dimT_.loc[indexes_to_ceil, length] = MS_last_length
+            
+            # when index_relative_to_MS_phytomer_series > MS_last_index_phytomer: same slope as MS last two lengths
+            indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
+            dimT_.loc[indexes_to_compute, length] = np.polyval(MS_last_two_lengths_coefficients_array, 
+                                                               index_relative_to_MS_phytomer_series[indexes_to_compute].values)
             
             # reduction of regressive tillers
             is_ear = dimT_group.is_ear[dimT_group.first_valid_index()]

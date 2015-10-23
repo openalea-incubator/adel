@@ -21,6 +21,8 @@ Authors: M. Abichou, B. Andrieu, C. Chambon
 
 import os
 
+from scipy import interpolate
+
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -105,14 +107,15 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=None, dynamics_to_plot=None, p
         plt.close()
 
 
-def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to_plot=None, id_dim_to_plot=None, id_cohort_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
+def plot_dimT(dimT, measured_id_dim=None, relative_index_phytomer=False, dimensions_to_plot=None, id_dim_to_plot=None, id_cohort_to_plot=None, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plots_dirpath=None):
     '''
     Plot the dimensions in `dimT` according to filters `dimensions_to_plot`, `id_dim_to_plot`, `id_cohort_to_plot`, `plot_non_regressive_tillers` and `plot_regressive_tillers`.
     
     :Parameters:
     
         - `dimT` (:class:`pd.DataFrame`) - the table dimT.
-        - `MS_id_dim` (:class:`int`) - the id_dim of the main stem. The line corresponding to this id_dim is thicker.
+        - `measured_id_dim` (:class:`list`) - the list of id_dim for which we have measured data. For these id_dim we plot no line but thick black markers.
+          None (the default) or empty means that we do not represent measured data.
         - `relative_index_phytomer` (:class:`bool`) - if True: display the index relative to the phytomers of the main stem. 
           If False (the default), display the absolute index of the phytomers.
         - `dimensions_to_plot` (:class:`list`) - the list of dimensions to plot. If None (the default) or empty, then plot all the dimensions.
@@ -149,7 +152,7 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
                     r'$\clubsuit$',
                     r'$\checkmark$'])
     
-    COLORS = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    COLORS = ('b', 'g', 'r', 'c', 'm', 'y')
     
     if dimensions_to_plot is None or len(dimensions_to_plot) == 0:
         dimT_to_plot = dimT
@@ -181,6 +184,8 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
         dimension_to_plot = dimT_to_plot[DIM_T_KEY + [dimension]]
         grouped = dimension_to_plot.groupby('id_dim')
         axis_num = 0
+        lines_for_the_legend = []
+        id_dims_for_the_legend = []
         for id_dim, group in grouped:
             axis_num += 1
             if relative_index_phytomer:
@@ -191,20 +196,33 @@ def plot_dimT(dimT, MS_id_dim=None, relative_index_phytomer=False, dimensions_to
                     index_phytomer_to_plot = group.index_phytomer - (params.SLOPE_SHIFT_MS_TO_TILLERS * id_cohort)
             else:
                 index_phytomer_to_plot = group.index_phytomer
-            if id_dim == MS_id_dim:
-                linewidth = 4
+            if measured_id_dim is not None and id_dim in measured_id_dim:
+                color = 'k'
                 markersize = 10
+                linestyle=''
             else:
-                linewidth = 1
+                color = COLORS[axis_num % len(COLORS)]
                 markersize = 7
+                linestyle='-'
                 
-            color = COLORS[axis_num % len(COLORS)]
             marker = MARKERS[axis_num % len(MARKERS)]
-            current_axis.plot(index_phytomer_to_plot, group[dimension], marker=marker, color=color, label=id_dim, linewidth=linewidth, markersize=markersize)
+            dimension_to_plot = group[dimension]
+            
+            current_axis.plot(index_phytomer_to_plot, dimension_to_plot, color=color, linestyle='', marker=marker, markersize=markersize)
+            interpolated_index_phytomer_to_plot = np.linspace(index_phytomer_to_plot.min(), index_phytomer_to_plot.max(), num=1000)
+            index_phytomer_to_plot_length = len(index_phytomer_to_plot)
+            if index_phytomer_to_plot_length == 1:
+                interpolated_dimension_to_plot = dimension_to_plot.repeat(len(interpolated_index_phytomer_to_plot))
+            else:
+                interpolated_dimension_to_plot = interpolate.InterpolatedUnivariateSpline(index_phytomer_to_plot, dimension_to_plot, k=min(index_phytomer_to_plot_length-1, 5))(interpolated_index_phytomer_to_plot)            
+            current_axis.plot(interpolated_index_phytomer_to_plot, interpolated_dimension_to_plot, color=color, linestyle=linestyle)
+            line_for_the_legend = plt.Line2D((0,1),(0,0), color=color, marker=marker, linestyle=linestyle)
+            lines_for_the_legend.append(line_for_the_legend)
+            id_dims_for_the_legend.append(str(int(id_dim)))
         
         current_axis.set_xlabel(xlabel)
         current_axis.set_ylabel(dimension)
-        current_axis.legend(prop={'size':10}, framealpha=0.5)
+        current_axis.legend(lines_for_the_legend, id_dims_for_the_legend, prop={'size':10}, framealpha=0.5)
         current_axis.set_title(dimension)
         xmin, xmax = current_axis.get_xlim()
         x_margin = (xmax - xmin) / 100.0

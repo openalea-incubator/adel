@@ -17,7 +17,7 @@ from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-from alinea.adel.postprocessing import axis_statistics, plot_statistics
+from alinea.adel.postprocessing import axis_statistics, plot_statistics, midrib_statistics
     
 from openalea.mtg.algo import union
 import openalea.plantgl.all as pgl
@@ -365,6 +365,9 @@ class AdelWheat(object):
         
         return pandas.concat(res)
 
+    def midrib_statistics(self, g):
+        data = self.get_midribs(g)
+        return midrib_statistics(data)
 
         
 def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):

@@ -443,3 +443,36 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
                           
     return plot_statistics_df
     
+    
+def midrib_statistics(midribs):
+    """ Compute synthetic statistics on a midrib output table (the one produced by astk_interface.AdelWheat.get_midribs method)
+    """
+    def _curvilinear_abscisse( x, y ):
+        s = np.zeros(len(x))
+        s[1:] = np.sqrt(np.diff(x)**2+np.diff(y)**2)
+        return s.cumsum()
+
+    def _curvature_xys(x,y,s):
+        ds = np.diff(s)
+        dx, dy = np.diff(x), np.diff(y)
+        theta = np.arctan2(dy,dx)
+        dtheta = np.diff(theta) / ds[1:]
+        return (x[0], y[0]), theta[0], s, dtheta
+    
+    def _process(midrib):
+        hins = midrib['hins'][0]
+        x = midrib['x']
+        y = midrib['y']
+        s = _curvilinear_abscisse(x,y)
+        origin, phi0, s, dphi = _curvature_xys(x,y,s)
+        #
+        return pd.DataFrame({'plant':midrib['plant'][0],
+                                 'axe':midrib['axe'][0],
+                                 'insertion_angle': np.degrees(phi0),
+                                 'mean_leaf_angle': np.degrees(np.mean([phi0]+(phi0 + dphi).tolist())),
+                                 'insertion height': hins,
+                                 'maximal height':hins + y.max(),
+                                 'tip_height': hins + y.tolist()[-1]}, index=[midrib['vid'][0]])
+
+    return midribs.groupby('vid', as_index=False).apply(_process)
+    

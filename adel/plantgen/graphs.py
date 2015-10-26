@@ -31,7 +31,7 @@ import pandas as pd
 
 from alinea.adel.plantgen import params
 
-def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, id_phen_to_plot=None, dynamics_to_plot=None, plot_most_frequent_main_stem=True, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plot_filepath=None):
+def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, config, id_phen_to_plot=None, dynamics_to_plot=None, plot_most_frequent_main_stem=True, plot_non_regressive_tillers=True, plot_regressive_tillers=True, plot_filepath=None):
     '''
     Plot the HS, GL and SSI of `id_phen_to_plot`.
     
@@ -39,6 +39,8 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, id_phen_to_plot=None, dynamics_to_plot=N
     
         - `HS_GL_SSI_T` (:class:`pd.DataFrame`) - the table HS_GL_SSI_T.
         - `dynT` (:class:`pd.DataFrame`) - the table dynT.
+        - `config` (:class:`dict`) - a dictionary which stores the configuration used for the construction. `config` must contain at least the GL decimal 
+          numbers measured at several thermal times (including the senescence end).   
         - `id_phen_to_plot` (:class:`list`) - the list of id_phen to plot. If None (the default) or empty, then plot all the id_phen. 
         - `dynamics_to_plot` (:class:`list`) - the list of dynamics to plot. The available dynamic are: 'HS', 'GL' and 'SSI'. 
           If None (the default) or empty, then plot all the dynamics.
@@ -53,15 +55,16 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, id_phen_to_plot=None, dynamics_to_plot=N
         # plot HS, GL and SSI of id_phen 1101, 1111 and 4081
         import pandas as pd
         HS_GL_SSI_T = pd.read_csv('HS_GL_SSI_T.csv')
+        dynT = pd.read_csv('dynT.csv')
+        config = {'GL_number': {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}}
         from alinea.adel.plantgen import graphs
-        graphs.plot_HS_GL_SSI_T(HS_GL_SSI_T, id_phen_to_plot=[4081, 1111, 1101])
+        graphs.plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, config, id_phen_to_plot=[4081, 1111, 1101])
         
     '''
     HS_GL_SSI_T_to_plot = HS_GL_SSI_T.copy()
     
-    if plot_most_frequent_main_stem:
-        id_cohort, N_phytomer_potential, t0, t1, TT_flag_ligulation, n0, n1, n2 = dynT.loc[dynT.first_valid_index(), ['id_cohort', 'N_phytomer_potential', 't0', 't1', 'TT_flag_ligulation', 'n0', 'n1', 'n2']]
-        most_frequent_main_stem_id_phen = int(''.join([str(int(id_cohort)), str(int(N_phytomer_potential)).zfill(2), '1']))
+    id_cohort, N_phytomer_potential, t0, t1, TT_flag_ligulation, n0, n1, n2 = dynT.loc[dynT.first_valid_index(), ['id_cohort', 'N_phytomer_potential', 't0', 't1', 'TT_flag_ligulation', 'n0', 'n1', 'n2']]
+    most_frequent_main_stem_id_phen = int(''.join([str(int(id_cohort)), str(int(N_phytomer_potential)).zfill(2), '1']))
     
     if id_phen_to_plot is None or len(id_phen_to_plot) == 0:
         id_phen_to_plot = HS_GL_SSI_T_to_plot.id_phen.unique()
@@ -88,18 +91,23 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, id_phen_to_plot=None, dynamics_to_plot=N
     
     axis_num = 0
     for id_phen, group in HS_GL_SSI_T_to_plot.groupby('id_phen'):
+        
+        axis_num += 1
+        line_style = LINE_STYLES[axis_num % len(LINE_STYLES)]
+        for dynamic_to_plot in dynamics_to_plot:
+            plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
+        
         if plot_most_frequent_main_stem and id_phen == most_frequent_main_stem_id_phen:
             plot_.plot([t0, t1, TT_flag_ligulation], [n0, n1, n2], linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
-        else:
-            axis_num += 1
-            line_style = LINE_STYLES[axis_num % len(LINE_STYLES)]
-            for dynamic_to_plot in dynamics_to_plot:
-                plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
         
     plot_.set_xlabel('Thermal time')
     plot_.set_ylabel('Decimal leaf number')
     plot_.legend(prop={'size':10}, framealpha=0.5)
-    plot_.set_title('{} - {}'.format(tuple(id_phen_to_plot), tuple(dynamics_to_plot)))
+    
+    plot_.set_title('''{} - {}
+Green Leaves measured data: (t0={},n0={}), (t1={},n1={}), (t2={},n2={})
+GL_number={}'''.format(tuple(id_phen_to_plot), tuple(dynamics_to_plot), t0, n0, t1, n1, TT_flag_ligulation, n2, config['GL_number']))
+    
     xmin, xmax = plot_.get_xlim()
     x_margin = (xmax - xmin) / 100.0
     plot_.set_xlim(xmin - x_margin, xmax + x_margin)

@@ -468,6 +468,7 @@ def midrib_statistics(midribs):
         #
         return pd.DataFrame({'plant':midrib['plant'][0],
                                  'axe':midrib['axe'][0],
+                                 'leaf':midrib['metamer'][0],
                                  'insertion_angle': np.degrees(phi0),
                                  'mean_leaf_angle': np.degrees(np.mean([phi0]+(phi0 + dphi).tolist())),
                                  'insertion height': hins,

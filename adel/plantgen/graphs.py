@@ -323,34 +323,36 @@ def plot_tillering_dynamic(axeT, plants_density, TT_step=10, plots_dirpath=None)
             plt.close()
             
             
-def plot_tiller_frequencies(dynT, plot_filepath=None):
+def plot_tiller_probabilities(dynT, config, plot_filepath=None):
     '''
-    Plot the frequency of each tiller.
+    Plot the probability of each tiller.
     
     :Parameters:
     
         - `dynT` (:class:`pd.DataFrame`) - the table dynT.
+        - `config` (:class:`int`) - `config` (:class:`dict`) - a dictionary which stores the configuration used for the construction. 
+          `config` must contain at least the number of plants. 
         - `plot_filepath` (:class:`str`) - the path of the file to save the plot in.  
           If `None` (the default), do not save the plot but display it.
           
     :Examples:
         
-        # plot tiller frequencies
+        # plot tiller probabilities
         import pandas as pd
         dynT = pd.read_csv('dynT.csv')
         from alinea.adel.plantgen import graphs
-        graphs.plot_tiller_frequencies(dynT)
+        graphs.plot_tiller_probabilities(dynT, config)
         
     '''
     summed_cardinalities = dynT[['id_axis', 'cardinality']].groupby('id_axis').sum()
     hist = summed_cardinalities.cardinality.values
-    normalized_hist = hist.astype(float) / hist.sum()
+    normalized_hist = hist.astype(float) / config['plants_number']
     bin_edges = np.arange(1, len(summed_cardinalities) + 1)
     width = 0.5
     plt.bar(bin_edges, normalized_hist, width=width, align='center')
-    plt.title('Axis frequencies')
+    plt.title('Axis probabilities')
     plt.xlabel('id_axis')
-    plt.ylabel('Frequency')
+    plt.ylabel('Probability')
     ymin, ymax = plt.ylim()
     y_margin = (ymax - ymin) / 10.0
     plt.ylim(ymin, ymax + y_margin)

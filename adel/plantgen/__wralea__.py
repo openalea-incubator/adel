@@ -17,7 +17,7 @@ __institutes__ = ''
 __icon__ = ''
 
 
-__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'plantgen2adel_plantgen2adel', 'plot_HS_GL_SSI_T_plot_HS_GL_SSI_T', 'plot_dimT_plot_dimT', 'plot_tillering_dynamic_plot_tillering_dynamic', 'plot_tiller_frequencies_plot_tiller_frequencies']
+__all__ = ['plantgen_plantgen', 'read_plantgen_inputs_read_plantgen_inputs', 'plantgen2adel_plantgen2adel', 'plot_HS_GL_SSI_T_plot_HS_GL_SSI_T', 'plot_dimT_plot_dimT', 'plot_tillering_dynamic_plot_tillering_dynamic', 'plot_tiller_probabilities_plot_tiller_probabilities']
 
 
 plantgen_plantgen = Factory(name='plantgen',
@@ -134,13 +134,14 @@ A regressive axis is active at TT if TT_em_phytomer1 <= TT < TT_stop_axis.''',
                )
 
 
-plot_tiller_frequencies_plot_tiller_frequencies = Factory(name='plot_tiller_frequencies',
+plot_tiller_probabilities_plot_tiller_probabilities = Factory(name='plot_tiller_probabilities',
                 authors='M. Abichou, B. Andrieu, C. Chambon',
-                description='''Plot the frequency of each tiller.''',
+                description='''Plot the probability of each tiller.''',
                 category='data processing',
                 nodemodule='alinea.adel.plantgen.graphs',
-                nodeclass='plot_tiller_frequencies',
+                nodeclass='plot_tiller_probabilities',
                 inputs=({'interface': None, 'name': 'dynT', 'desc': 'the dynT dataframe'},
+                        {'interface': None, 'name': 'config', 'desc': 'a dictionary which stores the configuration used for the construction. `config` must contain at least the number of plants.'},
                         {'interface': IFileStr, 'name': 'plot_filepath', 'value': None, 'desc': 'the path of the file to save the plot in. If `None` (the default), do not save the plot but display it.'}),
                 widgetmodule=None,
                 widgetclass=None,

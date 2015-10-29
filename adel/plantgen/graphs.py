@@ -98,15 +98,13 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, config, id_phen_to_plot=None, dynamics_t
             plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
         
         if plot_most_frequent_main_stem and id_phen == most_frequent_main_stem_id_phen:
-            plot_.plot([t0, t1, TT_flag_ligulation], [n0, n1, n2], linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
+            plot_.plot([t0, t1, TT_flag_ligulation] + config['GL_number'].keys(), [n0, n1, n2] + config['GL_number'].values(), linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
         
     plot_.set_xlabel('Thermal time')
     plot_.set_ylabel('Decimal leaf number')
     plot_.legend(prop={'size':10}, framealpha=0.5)
     
-    plot_.set_title('''{} - {}
-Green Leaves measured data: (t0={},n0={}), (t1={},n1={}), (t2={},n2={})
-GL_number={}'''.format(tuple(id_phen_to_plot), tuple(dynamics_to_plot), t0, n0, t1, n1, TT_flag_ligulation, n2, config['GL_number']))
+    plot_.set_title('{} - {}'.format(tuple(id_phen_to_plot), tuple(dynamics_to_plot)))
     
     xmin, xmax = plot_.get_xlim()
     x_margin = (xmax - xmin) / 100.0

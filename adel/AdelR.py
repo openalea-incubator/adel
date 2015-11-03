@@ -369,7 +369,7 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5,dazTb=6
        }},
     incT = function(a) {{
        ifelse(a == 'MS',
-              {incBmM:.2f} + (runif(1) - .5) * {dincBm:.2f},
+              {incBmM:.2f}* (sample(c(1,-1),1))  + (runif(1) - .5) * {dincBm:.2f},
               {incT:.2f} + (runif(1) - .5) * {dincT:.2f})
               }},
     dredT = function(a) {{

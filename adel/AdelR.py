@@ -345,15 +345,16 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5,dazTb=6
     """ generate geoAxe R code for Adel 
     
         Parameters:
-            - azM is the azimuth leaf plane change between a tiller and the bearing axis
-            - daz is the random deviation arround azM (azM_true = azM +/- daz/2
+            - azM define the rotation of a tiller around its axe, if azTb_true=0 and azM=90 then leaf1 of tiller is in the same plane as the beaning leaf 
+            - daz is the random deviation around azM (azM_true = azM +/- daz/2)
             - incBm is the main stem inclination
-            - dincBm is the random deviation arround incBm (incBm_true = incBm +/ dincBm/2
+            - dincBm is the random deviation around incBm (incBm_true = incBm +/ dincBm/2)
             - incT is the tiller inclination
-            - dincT is the random deviation arround incT
+            - dincT is the random deviation around incT
             - dredT is the maximal distance at which the tiller will go upward
             - dredMin is the minimal distance at which tiller go upward
-            - dazTb is the azimuth deviation between tiller azimuth and the azimuth of the bearing leaf
+			- azTb is the azimuth angle between tiller axe/stem and the midrib of bearing leaf (azTb = 0)
+            - dazTb is the random deviation around azTb (azTb_true = 0 +/- dazTb/2)
     """
     rcode = """
     geoAxe <- list(

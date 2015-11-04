@@ -349,11 +349,11 @@ def genGeoAxe(azM=75,daz=5,ibmM=2,dibm=2,incT=60,dinT=5,dep=7,depMin=1.5,dazTb=6
             - "dazT": is the random deviation around azM (azM_true = azM +/- daz/2)
             - "MainStem inclination"(incBm): is the  inclination of the main stem
             - "dincBm": is the random deviation around incBm (incBm_true = (incBm +/- dincBm/2)
-            - "tiller inclination"(incT) is the tiller inclination
+            - "tiller inclination"(incT) is the basal inclination of the tiller relative to the main stem position
             - "dincT": is the random deviation around incT
-            - "dredTMax": is the maximal distance at which the tiller will go upward
+            - "dredTMax": is the maximal distance at which the tiller will go upward (the distance at flowering between top of parent axe and top of tiller)
             - "dredMin": is the minimal distance at which tiller go upward
-            - "dazTb"" is the random deviation around "azTb" which is the azimuth angle between tiller axe and the midrib of bearing leaf. we suppose that (azTb = 0), so (azTb_true = 0 +/- dazTb/2)
+            - "dazTb": is the random deviation around "azTb" which is the azimuth angle between tiller axe and the midrib of bearing leaf. we suppose that (azTb = 0), so (azTb_true = 0 +/- dazTb/2)
     """
     rcode = """
     geoAxe <- list(

@@ -205,3 +205,6 @@ class Leaves(object):
 
         return x, y, dy
 
+def leaves_node(xydb = None, srdb = None, geoLeaf = None, dynamic_bins = None, discretisation_level = 9, twist = 0):
+    return Leaves(**locals())
+    

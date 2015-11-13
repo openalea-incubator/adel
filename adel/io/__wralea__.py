@@ -347,4 +347,14 @@ io_select_adel_botanic_data = Factory(name='select_adel_botanic_data',
                 widgetclass='SelectMultipleFiles',
                )
 
+io_R_srdb = Factory(name='R_srdb',
+                nodemodule='alinea.adel.AdelR',
+                nodeclass='R_srdb',
+               )
+__all__.append('io_R_srdb')
 
+io_R_xydb = Factory(name='R_xydb',
+                nodemodule='alinea.adel.AdelR',
+                nodeclass='R_xydb',
+               )
+__all__.append('io_R_xydb')

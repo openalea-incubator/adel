@@ -86,3 +86,7 @@ class AgronomicStand(object):
         
         df = pandas.DataFrame(positions)
         df.plot(0,1,style='o')
+        
+        
+def agronomicStand_node(sowing_density=10, plant_density=10, inter_row=0.8, noise=0, density_curve_data=None):
+    return AgronomicStand(**locals())

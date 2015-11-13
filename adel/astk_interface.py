@@ -69,10 +69,13 @@ def transform_geom(geom, translation, rotation):
     
 class AdelWheat(object):
     
-    def __init__(self, nplants = 1, duplicate=1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, incT=60, dinT=5, dep = 7, run_adel_pars = {'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2,'dHS_en':0, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
+    def __init__(self, nplants = 1, duplicate=1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, geoAxe=None, incT=60, dinT=5, dep = 7, run_adel_pars = None, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
     
         if devT is None: 
             devT = adel_data.devT()
+            
+        if run_adel_pars is None:
+            run_adel_pars = {'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2,'dHS_en':0, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}
             
         if leaf_db is not None:
             print('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead')
@@ -89,7 +92,8 @@ class AdelWheat(object):
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
 
-        geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
+        if geoAxe is None:
+            geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
         
         self.devT = devT
         
@@ -370,10 +374,24 @@ class AdelWheat(object):
         return midrib_statistics(data)
 
         
-def adelwheat_node(nplants = 1, positions = None, nsect = 1, devT = None, leaf_db = None, sample = 'random', seed = None, thermal_time_model = None):
-    model = AdelWheat(nplants = nplants, positions = positions, nsect = nsect, devT = devT, leaf_db = leaf_db, sample = sample, seed = seed, thermal_time_model = thermal_time_model)
+def adelwheat_node(nplants = 1, nsect = 1, devT = None, leaves=None, geoAxe=None, stand=None, run_adel_pars=None, options={}):
+    args = locals()
+    args.update(options)
+    args.pop('options')
+    model = AdelWheat(**args)
     return model
     
+def setup_canopy_node(adel, age=10):
+    return adel.setup_canopy(age)
+    
+def adel_scene_node(g):
+    return plot3d(g)
+    
+def axis_statistics_node(adel, g):
+    return adel.axis_statistics(g),
+    
+def plot_statistics_node(adel, axstat):
+    return adel.plot_statistics(axstat),
         
 #user friendly macros
 from alinea.adel.stand.stand import agronomicplot

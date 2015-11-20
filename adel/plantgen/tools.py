@@ -434,6 +434,51 @@ def get_real_roots(poly):
     real_roots = filter(lambda x: x.imag == 0.0, roots_array)
     real_roots = map(lambda x: x.real, real_roots)
     return np.array(real_roots)
+
+
+def find_lines_intersection(line1, line2):
+    '''
+    Find the intersection of two lines. 
+    Raise an exception if no intersection.
+    
+    :Parameters:
+    
+        - `line1` (:class:`tuple` of 2 :class:`tuple` of :class:`float`) - the coordinates of the two points which define the first line.
+        - `line2` (:class:`tuple` of 2 :class:`tuple` of :class:`float`) - the coordinates of the two points which define the second line.
+          
+    :Returns:
+        the coordinates of the intersection point.
+          
+    :Returns Type:
+        :class:`tuple` of :class:`float`
+        
+    :Examples:
+    
+        >>> find_lines_intersection(((0.5, 0.5), (1.5, 0.5)), ((0.5, 0.5), (1.5, 0.5)))
+        (1.0, 0.5)
+        
+    .. codeauthor:: from http://stackoverflow.com/a/20679579
+    
+    '''
+    def compute_line_equation_coefficients(point1, point2):
+        # Compute coefficients a, b and c of line equation by two points provided.
+        a = (point1[1] - point2[1])
+        b = (point2[0] - point1[0])
+        c = -(point1[0] * point2[1] - point2[0] * point1[1])
+        return a, b, c
+    
+    a1, b1, c1 = compute_line_equation_coefficients(line1[0], line1[1])
+    a2, b2, c2 = compute_line_equation_coefficients(line2[0], line2[1])
+    
+    main_determinant = a1 * b2 - b1 * a2
+    x_determinant = c1 * b2 - b1 * c2
+    y_determinant = a1 * c2 - c1 * a2
+    
+    if main_determinant == 0:
+        raise Exception('Lines do not intersect.')
+    
+    intersection_point = (x_determinant / main_determinant, y_determinant / main_determinant)
+    return intersection_point
             
 
 class InputError(Exception):

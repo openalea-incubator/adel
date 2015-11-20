@@ -161,3 +161,9 @@ EMERGENCE_PROBABILITY_REDUCTION_FACTOR = 0.29
 i.e. probability(secondary tiller)= (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(primary tiller).
 e.g. : probability(T1.0.0) = probability(T1) * (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(T3) * (1 - EMERGENCE_PROBABILITY_REDUCTION_FACTOR) * probability(T5) 
 '''
+
+NUMBER_OF_ELONGATED_INTERNODES = 4
+'''The number of elongated internodes. 
+This number is used to compute the minimum simulated number of green leaves for the main stem.
+'''
+

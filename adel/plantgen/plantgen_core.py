@@ -1196,15 +1196,16 @@ def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_interno
     most_frequent_MS = most_frequent_MS.copy()
     
     if TT_t1_user is None:
+        MS_HS_for_minimum_GL = most_frequent_MS['N_phytomer_potential'][0] - params.NUMBER_OF_ELONGATED_INTERNODES
         if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
-            most_frequent_MS['t1'] = most_frequent_MS['TT_hs_0'] + decimal_elongated_internode_number / most_frequent_MS['a_cohort']
+            most_frequent_MS['t1'] = MS_HS_for_minimum_GL / most_frequent_MS['a_cohort'] + most_frequent_MS['TT_hs_0'] 
         else: # bilinear mode
             HS_break_0 = most_frequent_MS['a_cohort'][0] * (most_frequent_MS['TT_hs_break'][0] - most_frequent_MS['TT_hs_0'][0])
             a2_0 = (most_frequent_MS['N_phytomer_potential'][0] - HS_break_0) / (most_frequent_MS['TT_flag_ligulation'][0] - most_frequent_MS['TT_hs_break'][0])
-            if decimal_elongated_internode_number < HS_break_0:
-                most_frequent_MS['t1'] = most_frequent_MS['TT_hs_0'] + decimal_elongated_internode_number / most_frequent_MS['a_cohort']
+            if MS_HS_for_minimum_GL < HS_break_0:
+                most_frequent_MS['t1'] = most_frequent_MS['TT_hs_0'] + MS_HS_for_minimum_GL / most_frequent_MS['a_cohort']
             else:
-                most_frequent_MS['t1'] = (decimal_elongated_internode_number - HS_break_0) / a2_0 + most_frequent_MS['TT_hs_break']
+                most_frequent_MS['t1'] = (MS_HS_for_minimum_GL - HS_break_0) / a2_0 + most_frequent_MS['TT_hs_break']
     else:
         most_frequent_MS['t1'] = TT_t1_user
     # calculation of hs_t1
@@ -1248,7 +1249,7 @@ def _gen_other_MS_HS_dynamic(most_frequent_MS, other_MS):
         # calculation of dTT_MS_cohort
         other_MS['dTT_MS_cohort'] = most_frequent_MS['dTT_MS_cohort'][0] + (other_MS['N_phytomer_potential'] - most_frequent_MS['N_phytomer_potential'][0]) / most_frequent_MS['a_cohort'][0] * params.RATIO_PLASTOCHRON_PHYLLOCHRON
         # calculation of TT_flag_ligulation
-        other_MS['TT_flag_ligulation'] = other_MS['dTT_MS_cohort'] + most_frequent_MS['TT_flag_ligulation'][0]
+        other_MS['TT_flag_ligulation'] = most_frequent_MS['TT_flag_ligulation'][0] + other_MS['N_phytomer_potential'] / (most_frequent_MS['N_phytomer_potential'][0] * 4 * most_frequent_MS['a_cohort'][0])
         # calculation of a_cohort
         if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
             other_MS['a_cohort'] = other_MS['N_phytomer_potential'] / (other_MS['TT_flag_ligulation'] - other_MS['TT_hs_0'])
@@ -1268,7 +1269,7 @@ def _gen_other_MS_GL_dynamic(most_frequent_MS, other_MS):
     if other_MS['n1'].count() != other_MS['n1'].size:
         other_MS['n1'] = most_frequent_MS['n1'][0] * other_MS['N_phytomer_potential'] / most_frequent_MS['N_phytomer_potential'][0]
     # calculation of t1
-    other_MS['t1'] = most_frequent_MS['t1'][0] + other_MS['dTT_MS_cohort']
+    other_MS['t1'] = (other_MS['N_phytomer_potential'] - params.NUMBER_OF_ELONGATED_INTERNODES) / other_MS['a_cohort'] + other_MS['TT_hs_0']
     # calculation of hs_t1
     other_MS['hs_t1'] = other_MS['a_cohort'] * (other_MS['t1'] - other_MS['TT_hs_0'])
     # calculation of n0 
@@ -1347,21 +1348,35 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
     # calculation of hs_t1
     most_frequent_tiller_axes['hs_t1'] = most_frequent_tiller_axes['a_cohort'] * (most_frequent_tiller_axes['t1'] - most_frequent_tiller_axes['TT_hs_0'])
     # calculation of n0
-    n1_hs_t1 = most_frequent_tiller_axes[['n1', 'hs_t1']].ix[nan_most_frequent_tiller_axis_indexes]
-    if n1_hs_t1.index.size != 0:
-        most_frequent_tiller_axes.loc[nan_most_frequent_tiller_axis_indexes, 'n0'] = n1_hs_t1.apply(np.min, 1)                      
-    # calculation of n2
     most_frequent_tiller_axes.loc[nan_most_frequent_tiller_axis_indexes, 'n2'] = most_frequent_MS['n2'][0] * params.N2_MS_DIV_N2_COHORT
-    # calculation of t0
+    # calculation of t0 and n0
     if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
-        most_frequent_tiller_axes['t0'] = most_frequent_tiller_axes['TT_hs_0'] + most_frequent_tiller_axes['n0'] / most_frequent_tiller_axes['a_cohort']
+        GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
+        for row_index, row in most_frequent_tiller_axes.iterrows():
+            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'] - row['TT_hs_0'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
+            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            if t0_tiller >= most_frequent_MS['t1'][0]:
+                t0_tiller = n0_tiller = np.nan
+                t1_tiller = most_frequent_MS['n1'][0] / row['a_cohort'] + row['TT_hs_0']
+            else:
+                t1_tiller = row['t1']
+            most_frequent_tiller_axes.loc[row_index, ['t0', 'n0', 't1']] = t0_tiller, n0_tiller, t1_tiller
     else: # bilinear mode
+        GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
         HS_break = most_frequent_tiller_axes['a_cohort'] * (most_frequent_tiller_axes['TT_hs_break'] - most_frequent_tiller_axes['TT_hs_0'])
         a2 = (most_frequent_tiller_axes['N_phytomer_potential'] - HS_break) / (most_frequent_tiller_axes['TT_flag_ligulation'] - most_frequent_tiller_axes['TT_hs_break'])
-        n0_smaller_than_HS_break_indexes = most_frequent_tiller_axes[most_frequent_tiller_axes['n0'] < HS_break].index
-        n0_greater_than_HS_break_indexes = most_frequent_tiller_axes[most_frequent_tiller_axes['n0'] >= HS_break].index
-        most_frequent_tiller_axes.loc[n0_smaller_than_HS_break_indexes, 't0'] = most_frequent_tiller_axes['TT_hs_0'][n0_smaller_than_HS_break_indexes] + most_frequent_tiller_axes['n0'][n0_smaller_than_HS_break_indexes] / most_frequent_tiller_axes['a_cohort'][n0_smaller_than_HS_break_indexes]
-        most_frequent_tiller_axes.loc[n0_greater_than_HS_break_indexes, 't0'] = (most_frequent_tiller_axes['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + most_frequent_tiller_axes['TT_hs_break'][n0_greater_than_HS_break_indexes]    
+        for row_index, row in most_frequent_tiller_axes.iterrows():
+            HS_tiller_line = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'] - row['TT_hs_break'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
+            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            if t0_tiller >= most_frequent_MS['t1'][0]:
+                t0_tiller = n0_tiller = np.nan
+                t1_tiller = (most_frequent_MS['n1'][0] - HS_break[row_index]) / a2[row_index] + most_frequent_MS['TT_hs_break'][0]
+            else:
+                t1_tiller = row['t1']
+                if most_frequent_MS['TT_hs_break'][0] > most_frequent_MS['t1'][0]:
+                    n0_tiller = min(n0_tiller, most_frequent_MS['n1'][0])
+            most_frequent_tiller_axes.loc[row_index, ['t0', 'n0', 't1']] = t0_tiller, n0_tiller, t1_tiller
+        
     # calculation of c
     most_frequent_tiller_axes['c'] = most_frequent_MS['c'][0] * most_frequent_tiller_axes['n2'] / most_frequent_MS['n2'][0]
     # calculation of a
@@ -1427,20 +1442,33 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
     other_tiller_axes['t1'] = most_frequent_MS['t1'][0] + other_tiller_axes['dTT_MS_cohort']
     # calculation of hs_t1
     other_tiller_axes['hs_t1'] = other_tiller_axes['a_cohort'] * (other_tiller_axes['t1'] - other_tiller_axes['TT_hs_0'])
-    # calculation of n0
-    n1_hs_t1 = other_tiller_axes[['n1', 'hs_t1']].ix[nan_other_tiller_axis_indexes]
-    if n1_hs_t1.index.size != 0:
-        other_tiller_axes.loc[nan_other_tiller_axis_indexes, 'n0'] = n1_hs_t1.apply(np.min, 1)                      
-    # calculation of t0
+    # calculation of t0 and n0
     if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
-        other_tiller_axes['t0'] = other_tiller_axes['TT_hs_0'] + other_tiller_axes['n0'] / other_tiller_axes['a_cohort']
+        GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
+        for row_index, row in other_tiller_axes.iterrows():
+            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'] - row['TT_hs_0'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
+            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            if t0_tiller >= most_frequent_MS['t1'][0]:
+                t0_tiller = n0_tiller = np.nan
+                t1_tiller = most_frequent_MS['n1'][0] / row['a_cohort'] + row['TT_hs_0']
+            else:
+                t1_tiller = row['t1']
+            other_tiller_axes.loc[row_index, ['t0', 'n0', 't1']] = t0_tiller, n0_tiller, t1_tiller
     else: # bilinear mode
+        GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
         HS_break = other_tiller_axes['a_cohort'] * (other_tiller_axes['TT_hs_break'] - other_tiller_axes['TT_hs_0'])
         a2 = (other_tiller_axes['N_phytomer_potential'] - HS_break) / (other_tiller_axes['TT_flag_ligulation'] - other_tiller_axes['TT_hs_break'])
-        n0_smaller_than_HS_break_indexes = other_tiller_axes[other_tiller_axes['n0'] < HS_break].index
-        n0_greater_than_HS_break_indexes = other_tiller_axes[other_tiller_axes['n0'] >= HS_break].index
-        other_tiller_axes.loc[n0_smaller_than_HS_break_indexes, 't0'] = other_tiller_axes['TT_hs_0'][n0_smaller_than_HS_break_indexes] + other_tiller_axes['n0'][n0_smaller_than_HS_break_indexes] / other_tiller_axes['a_cohort'][n0_smaller_than_HS_break_indexes]
-        other_tiller_axes.loc[n0_greater_than_HS_break_indexes, 't0'] = (other_tiller_axes['n0'][n0_greater_than_HS_break_indexes] - HS_break[n0_greater_than_HS_break_indexes]) / a2[n0_greater_than_HS_break_indexes] + other_tiller_axes['TT_hs_break'][n0_greater_than_HS_break_indexes]    
+        for row_index, row in other_tiller_axes.iterrows():
+            HS_tiller_line = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'] - row['TT_hs_break'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
+            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            if t0_tiller >= most_frequent_MS['t1'][0]:
+                t0_tiller = n0_tiller = np.nan
+                t1_tiller = (most_frequent_MS['n1'][0] - HS_break[row_index]) / a2[row_index] + most_frequent_MS['TT_hs_break'][0]
+            else:
+                t1_tiller = row['t1']
+                if most_frequent_MS['TT_hs_break'][0] > most_frequent_MS['t1'][0]:
+                    n0_tiller = min(n0_tiller, most_frequent_MS['n1'][0])
+            other_tiller_axes.loc[row_index, ['t0', 'n0', 't1']] = t0_tiller, n0_tiller, t1_tiller
     # calculation of c
     other_tiller_axes['c'] = most_frequent_MS['c'][0] * other_tiller_axes['n2'] / most_frequent_MS['n2'][0]
     # calculation of a
@@ -1483,8 +1511,9 @@ class _CreatePhenTTmp():
     
     def __call__(self, axeT_, dynT_, decimal_elongated_internode_number, force=True):
         if force or self.phenT_tmp is None:
-            dynT_without_TT_hs_break = dynT_.ix[:, dynT_.columns != 'TT_hs_break']
-            if not (dynT_without_TT_hs_break.count().max() == dynT_without_TT_hs_break.count().min() == dynT_without_TT_hs_break.index.size):
+            columns_without_nan = [col for col in dynT_.columns if col not in ['TT_hs_break', 'n0', 't0']]
+            dynT_without_nan = dynT_.ix[:, columns_without_nan]
+            if not (dynT_without_nan.count().max() == dynT_without_nan.count().min() == dynT_without_nan.index.size):
                 raise tools.InputError("dynT contains unexpected NA values")
             
             id_phen_list = []
@@ -1657,7 +1686,6 @@ def _calculate_TT_em_phytomer(phenT_subgroup, TT_hs_break, delais_phyll_col_tip,
         else: # regressive
             TT_em_phytomer = TT_col_phytomer - delais_phyll_col_tip / a_cohort_after_start_MS_elongation_2
             if TT_em_phytomer <= TT_hs_break:
-                # TODO: to check
                 TT_em_phytomer = TT_hs_break - (delais_phyll_col_tip - a_cohort_after_start_MS_elongation_2 * (TT_col_phytomer - TT_hs_break)) / a_cohort_after_start_MS_elongation_1
     return TT_em_phytomer
 
@@ -1669,69 +1697,78 @@ def _calculate_TT_sen_phytomer(index_phytomer, HS_break, HS_1, HS_2, GL_2, GL_3,
     else: # bilinear mode
         HS = HS_2
     GL_1 = HS
-    # Suppose we are in the [0,t0] phase.
-    GL = GL_1
-    SSI = HS - GL
-    if is_regressive:
-        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
-    if index_phytomer == 0:
-        TT_sen_phytomer = t0
-    else:
-        # Find (SSI - index_phytomer) real root.
-        SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
-        if SSI_root_array.size == 0 \
-            or (SSI_root_array[0] > t0 \
-                and not np.allclose(SSI_root_array[0], t0)):
-            # Suppose we are in the ]t0,t1] phase.
-            GL = GL_2
-            SSI = HS - GL
-            if is_regressive:
-                SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+    
+    if np.isnan(t0): # 3 phases
+        
+        # Suppose TT_sen_phytomer is in the phase [0,t1].
+        GL = GL_2
+        SSI = HS - GL
+        if is_regressive:
+            SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+        if index_phytomer == 0:
+            return t1
+        else:
             # Find (SSI - index_phytomer) real root.
             SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
-            if SSI_root_array.size == 0 \
-                or (SSI_root_array[0] <= t0 \
-                    and not np.allclose(SSI_root_array[0], t0)) \
-                or (SSI_root_array[0] > t1 \
-                    and not np.allclose(SSI_root_array[0], t1)):
-                # Suppose we are in the ]t1,TT_flag_ligulation] phase.
-                GL = GL_3
+            if SSI_root_array.size != 0 and (SSI_root_array[0] <= t1 or np.allclose(SSI_root_array[0], t1)):
+                return SSI_root_array[0]
+    
+    else: # 4 phases
+        # Suppose TT_sen_phytomer is in the phase [0,t0].
+        GL = GL_1
+        SSI = HS - GL
+        if is_regressive:
+            SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+        if index_phytomer == 0:
+            return t0
+        else:
+            # Find (SSI - index_phytomer) real root.
+            SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
+            if SSI_root_array.size != 0 and (SSI_root_array[0] <= t0 or np.allclose(SSI_root_array[0], t0)):
+                return SSI_root_array[0]
+            else:
+                # Suppose TT_sen_phytomer is in the phase ]t0,t1].
+                GL = GL_2
                 SSI = HS - GL
                 if is_regressive:
                     SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
                 # Find (SSI - index_phytomer) real root.
                 SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
-                if SSI_root_array.size == 0 \
-                    or (SSI_root_array[0] <= t1 \
-                        and not np.allclose(SSI_root_array[0], t1)) \
-                    or (SSI_root_array[0] > TT_flag_ligulation \
-                        and not np.allclose(SSI_root_array[0], TT_flag_ligulation)):
-                    # We must be in the ]TT_flag_ligulation,infinity[ phase.
-                    GL = GL_4
-                    SSI = HS - GL
-                    if is_regressive:
-                        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
-                    # Find (SSI - index_phytomer) real root.
-                    SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
-                    if SSI_root_array.size == 0 \
-                        or (SSI_root_array[0] <= TT_flag_ligulation \
-                            and not np.allclose(SSI_root_array[0], TT_flag_ligulation)):
-                        raise Exception('ERROR !!!!! This shouldn\'t occurred')
-                    if HS(SSI_root_array[0]) > N_phytomer_potential:
-                        HS = np.poly1d([N_phytomer_potential])
-                    if GL(SSI_root_array[0]) < 0.0:
-                        GL = np.poly1d([0.0])
-                    SSI = HS - GL
-                    if is_regressive:
-                        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
-                    # Find (SSI - index_phytomer) real root again.
-                    SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
-                    if SSI_root_array.size == 0 \
-                        or (SSI_root_array[0] <= TT_flag_ligulation \
-                            and not np.allclose(SSI_root_array[0], TT_flag_ligulation)):
-                        raise Exception('ERROR !!!!! This shouldn\'t occurred')
-        TT_sen_phytomer = SSI_root_array[0]
+                if SSI_root_array.size != 0 and (SSI_root_array[0] > t0 or np.allclose(SSI_root_array[0], t0)) and (SSI_root_array[0] <= t1 or np.allclose(SSI_root_array[0], t1)):
+                    return SSI_root_array[0]
+
+    # Suppose TT_sen_phytomer is in the phase ]t1,TT_flag_ligulation].
+    GL = GL_3
+    SSI = HS - GL
+    if is_regressive:
+        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+    # Find (SSI - index_phytomer) real root.
+    SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
+    if SSI_root_array.size != 0 and (SSI_root_array[0] > t1 or np.allclose(SSI_root_array[0], t1)) and (SSI_root_array[0] <= TT_flag_ligulation or np.allclose(SSI_root_array[0], TT_flag_ligulation)):
+        return SSI_root_array[0]
     
+    # TT_sen_phytomer must be in the phase ]TT_flag_ligulation,infinity[.
+    GL = GL_4
+    SSI = HS - GL
+    if is_regressive:
+        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+    # Find (SSI - index_phytomer) real root.
+    SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
+    if SSI_root_array.size == 0 or (SSI_root_array[0] <= TT_flag_ligulation and not np.allclose(SSI_root_array[0], TT_flag_ligulation)):
+        raise Exception('ERROR !!!!! This shouldn\'t occurred')
+    if HS(SSI_root_array[0]) > N_phytomer_potential:
+        HS = np.poly1d([N_phytomer_potential])
+    if GL(SSI_root_array[0]) < 0.0:
+        GL = np.poly1d([0.0])
+    SSI = HS - GL
+    if is_regressive:
+        SSI += params.MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
+    # Find (SSI - index_phytomer) real root again.
+    SSI_root_array = tools.get_real_roots(SSI - index_phytomer)
+    if SSI_root_array.size == 0 or (SSI_root_array[0] <= TT_flag_ligulation and not np.allclose(SSI_root_array[0], TT_flag_ligulation)):
+        raise Exception('ERROR !!!!! This shouldn\'t occurred')
+    TT_sen_phytomer = SSI_root_array[0]
+            
     return TT_sen_phytomer
 
 
@@ -1748,8 +1785,11 @@ def _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elon
         GL_2 = np.poly1d([(n1 - n0) / (t1 - t0), n0 - t0 * (n1 - n0) / (t1 - t0)])
         GL_3 = np.poly1d([(n2 - n1) / (TT_flag_ligulation - t1), n1 - t1 * (n2 - n1) / (TT_flag_ligulation - t1)])
     else: # tillers
-        GL_2 = np.poly1d([n0])
-        GL_3 = np.poly1d([(n2 - n0) / (TT_flag_ligulation - t1), n0 - t1 * (n2 - n0) / (TT_flag_ligulation - t1)])
+        if np.isnan(t0): # only 3 phases
+            GL_2 = np.poly1d([n1 / (t1 - TT_hs_0), n1 * TT_hs_0 / (TT_hs_0 - t1)])
+        else:
+            GL_2 = np.poly1d([(n1 - n0) / (t1 - t0), n1 - t1 * (n1 - n0) / (t1 - t0)])
+        GL_3 = np.poly1d([(n2 - n1) / (TT_flag_ligulation - t1), n2 - TT_flag_ligulation * (n2 - n1) / (TT_flag_ligulation - t1)])
     GL_4 = np.poly1d([a, - 3 * a * TT_flag_ligulation, 3 * a * TT_flag_ligulation**2 + c, - a * TT_flag_ligulation**3 - c * TT_flag_ligulation + n2])
     return HS_1, HS_2, GL_2, GL_3, GL_4
 
@@ -1826,88 +1866,162 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
         
         t0, t1, TT_flag_ligulation = np.round([t0, t1, TT_flag_ligulation]).astype(int)
         
-        TT_1 = np.arange(0, t0)
-        TT_2 = np.arange(t0, t1)
-        TT_3 = np.arange(t1, TT_flag_ligulation)
-        TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
-        
-        if math.isnan(TT_hs_break): # linear mode
+        if np.isnan(t0): # 3 phases
             
-            HS_1_TT_1 = np.clip(HS_1(TT_1), 0.0, N_phytomer_potential)
-            HS_1_TT_2 = np.clip(HS_1(TT_2), 0.0, N_phytomer_potential)
-            HS_1_TT_3 = np.clip(HS_1(TT_3), 0.0, N_phytomer_potential)
-            HS_1_TT_4 = np.clip(HS_1(TT_4), 0.0, N_phytomer_potential)
+            TT_2 = np.arange(0, t1)
+            TT_3 = np.arange(t1, TT_flag_ligulation)
+            TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
             
-            GL_1_TT_1 = np.clip(HS_1(TT_1), 0.0, 1000.0)
-            GL_2_TT_2 = np.clip(GL_2(TT_2), 0.0, 1000.0)
-            GL_3_TT_3 = np.clip(GL_3(TT_3), 0.0, 1000.0)
-            GL_4_TT_4 = np.clip(GL_4(TT_4), 0.0, 1000.0)
+            if math.isnan(TT_hs_break): # linear mode
+                
+                HS_1_TT_2 = np.clip(HS_1(TT_2), 0.0, N_phytomer_potential)
+                HS_1_TT_3 = np.clip(HS_1(TT_3), 0.0, N_phytomer_potential)
+                HS_1_TT_4 = np.clip(HS_1(TT_4), 0.0, N_phytomer_potential)
+                
+                GL_2_TT_2 = np.clip(GL_2(TT_2), 0.0, 1000.0)
+                GL_3_TT_3 = np.clip(GL_3(TT_3), 0.0, 1000.0)
+                GL_4_TT_4 = np.clip(GL_4(TT_4), 0.0, 1000.0)
+                
+                SSI_2_TT_2 = HS_1_TT_2 - GL_2_TT_2
+                SSI_3_TT_3 = HS_1_TT_3 - GL_3_TT_3
+                SSI_4_TT_4 = HS_1_TT_4 - GL_4_TT_4
+                
+                HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+                HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+                HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_2, TT_3, TT_4)))
+                HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_2, HS_1_TT_3, HS_1_TT_4)))
+                HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_2_TT_2, GL_3_TT_3, GL_4_TT_4)))
+                HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_2_TT_2, SSI_3_TT_3, SSI_4_TT_4)))
+           
+            else: # bilinear mode
+                
+                TT_hs_break = int(round(TT_hs_break))
+                TT_2_1, TT_3_1, TT_4_1 = TT_2, TT_3, TT_4
+                TT_2_2 = TT_3_2 = TT_4_2 = []
+                if TT_hs_break <= t1:
+                    TT_2_1 = np.arange(0, TT_hs_break)
+                    TT_2_2 = np.arange(TT_hs_break, t1)
+                elif TT_hs_break <= TT_flag_ligulation:
+                    TT_3_1 = np.arange(t1, TT_hs_break)
+                    TT_3_2 = np.arange(TT_hs_break, TT_flag_ligulation)
+                else:
+                    TT_4_1 = np.arange(TT_flag_ligulation, TT_hs_break)
+                    TT_4_2 = np.arange(TT_hs_break, params.TT_DEL_FHAUT)
             
-            SSI_1_TT_1 = HS_1_TT_1 - GL_1_TT_1
-            SSI_2_TT_2 = HS_1_TT_2 - GL_2_TT_2
-            SSI_3_TT_3 = HS_1_TT_3 - GL_3_TT_3
-            SSI_4_TT_4 = HS_1_TT_4 - GL_4_TT_4
+                HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
+                HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
+                HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
+                HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
+                HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
+                HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
+                
+                GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)
+                GL_3_TT_3_1 = np.clip(GL_3(TT_3_1), 0.0, 1000.0)
+                GL_4_TT_4_1 = np.clip(GL_4(TT_4_1), 0.0, 1000.0)
+                GL_2_TT_2_2 = np.clip(GL_2(TT_2_2), 0.0, 1000.0)
+                GL_3_TT_3_2 = np.clip(GL_3(TT_3_2), 0.0, 1000.0)
+                GL_4_TT_4_2 = np.clip(GL_4(TT_4_2), 0.0, 1000.0)
             
-            HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
-            HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
-            HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1, TT_2, TT_3, TT_4)))
-            HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1, HS_1_TT_2, HS_1_TT_3, HS_1_TT_4)))
-            HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1, GL_2_TT_2, GL_3_TT_3, GL_4_TT_4)))
-            HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1, SSI_2_TT_2, SSI_3_TT_3, SSI_4_TT_4)))
-       
-        else: # bilinear mode
+                SSI_2_TT_2_1 = HS_1_TT_2_1 - GL_2_TT_2_1
+                SSI_3_TT_3_1 = HS_1_TT_3_1 - GL_3_TT_3_1
+                SSI_4_TT_4_1 = HS_1_TT_4_1 - GL_4_TT_4_1
+                SSI_2_TT_2_2 = HS_1_TT_2_2 - GL_2_TT_2_2
+                SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
+                SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
+                
+                HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+                HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+                HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
+                HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
+                HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
+                HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
             
-            TT_hs_break = int(round(TT_hs_break))
-            TT_1_1, TT_2_1, TT_3_1, TT_4_1 = TT_1, TT_2, TT_3, TT_4
-            TT_1_2 = TT_2_2 = TT_3_2 = TT_4_2 = []
-            if TT_hs_break <= t0:
-                TT_1_1 = np.arange(0, TT_hs_break)
-                TT_1_2 = np.arange(TT_hs_break, t0)
-            elif TT_hs_break <= t1:
-                TT_2_1 = np.arange(t0, TT_hs_break)
-                TT_2_2 = np.arange(TT_hs_break, t1)
-            elif TT_hs_break <= TT_flag_ligulation:
-                TT_3_1 = np.arange(t1, TT_hs_break)
-                TT_3_2 = np.arange(TT_hs_break, TT_flag_ligulation)
-            else:
-                TT_4_1 = np.arange(TT_flag_ligulation, TT_hs_break)
-                TT_4_2 = np.arange(TT_hs_break, params.TT_DEL_FHAUT)
-        
-            HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer_potential)
-            HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
-            HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
-            HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
-            HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer_potential)
-            HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
-            HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
-            HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
+            HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
             
-            GL_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, 1000.0)
-            GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)
-            GL_3_TT_3_1 = np.clip(GL_3(TT_3_1), 0.0, 1000.0)
-            GL_4_TT_4_1 = np.clip(GL_4(TT_4_1), 0.0, 1000.0)
-            GL_1_TT_1_2 = np.clip(HS_2(TT_1_2), 0.0, 1000.0)
-            GL_2_TT_2_2 = np.clip(GL_2(TT_2_2), 0.0, 1000.0)
-            GL_3_TT_3_2 = np.clip(GL_3(TT_3_2), 0.0, 1000.0)
-            GL_4_TT_4_2 = np.clip(GL_4(TT_4_2), 0.0, 1000.0)
-        
-            SSI_1_TT_1_1 = HS_1_TT_1_1 - GL_1_TT_1_1
-            SSI_2_TT_2_1 = HS_1_TT_2_1 - GL_2_TT_2_1
-            SSI_3_TT_3_1 = HS_1_TT_3_1 - GL_3_TT_3_1
-            SSI_4_TT_4_1 = HS_1_TT_4_1 - GL_4_TT_4_1
-            SSI_1_TT_1_2 = HS_1_TT_1_2 - GL_1_TT_1_2
-            SSI_2_TT_2_2 = HS_1_TT_2_2 - GL_2_TT_2_2
-            SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
-            SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
+        else:  # 4 phases
             
-            HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
-            HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
-            HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1_1, TT_1_2, TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
-            HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1_1, HS_1_TT_1_2, HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
-            HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
-            HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
-        
-        HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
+            TT_1 = np.arange(0, t0)
+            TT_2 = np.arange(t0, t1)
+            TT_3 = np.arange(t1, TT_flag_ligulation)
+            TT_4 = np.arange(TT_flag_ligulation, params.TT_DEL_FHAUT)
+            
+            if math.isnan(TT_hs_break): # linear mode
+                
+                HS_1_TT_1 = np.clip(HS_1(TT_1), 0.0, N_phytomer_potential)
+                HS_1_TT_2 = np.clip(HS_1(TT_2), 0.0, N_phytomer_potential)
+                HS_1_TT_3 = np.clip(HS_1(TT_3), 0.0, N_phytomer_potential)
+                HS_1_TT_4 = np.clip(HS_1(TT_4), 0.0, N_phytomer_potential)
+                
+                GL_1_TT_1 = np.clip(HS_1(TT_1), 0.0, 1000.0)
+                GL_2_TT_2 = np.clip(GL_2(TT_2), 0.0, 1000.0)
+                GL_3_TT_3 = np.clip(GL_3(TT_3), 0.0, 1000.0)
+                GL_4_TT_4 = np.clip(GL_4(TT_4), 0.0, 1000.0)
+                
+                SSI_1_TT_1 = HS_1_TT_1 - GL_1_TT_1
+                SSI_2_TT_2 = HS_1_TT_2 - GL_2_TT_2
+                SSI_3_TT_3 = HS_1_TT_3 - GL_3_TT_3
+                SSI_4_TT_4 = HS_1_TT_4 - GL_4_TT_4
+                
+                HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+                HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+                HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1, TT_2, TT_3, TT_4)))
+                HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1, HS_1_TT_2, HS_1_TT_3, HS_1_TT_4)))
+                HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1, GL_2_TT_2, GL_3_TT_3, GL_4_TT_4)))
+                HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1, SSI_2_TT_2, SSI_3_TT_3, SSI_4_TT_4)))
+           
+            else: # bilinear mode
+                
+                TT_hs_break = int(round(TT_hs_break))
+                TT_1_1, TT_2_1, TT_3_1, TT_4_1 = TT_1, TT_2, TT_3, TT_4
+                TT_1_2 = TT_2_2 = TT_3_2 = TT_4_2 = []
+                if TT_hs_break <= t0:
+                    TT_1_1 = np.arange(0, TT_hs_break)
+                    TT_1_2 = np.arange(TT_hs_break, t0)
+                elif TT_hs_break <= t1:
+                    TT_2_1 = np.arange(t0, TT_hs_break)
+                    TT_2_2 = np.arange(TT_hs_break, t1)
+                elif TT_hs_break <= TT_flag_ligulation:
+                    TT_3_1 = np.arange(t1, TT_hs_break)
+                    TT_3_2 = np.arange(TT_hs_break, TT_flag_ligulation)
+                else:
+                    TT_4_1 = np.arange(TT_flag_ligulation, TT_hs_break)
+                    TT_4_2 = np.arange(TT_hs_break, params.TT_DEL_FHAUT)
+            
+                HS_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, N_phytomer_potential)
+                HS_1_TT_2_1 = np.clip(HS_1(TT_2_1), 0.0, N_phytomer_potential)
+                HS_1_TT_3_1 = np.clip(HS_1(TT_3_1), 0.0, N_phytomer_potential)
+                HS_1_TT_4_1 = np.clip(HS_1(TT_4_1), 0.0, N_phytomer_potential)
+                HS_1_TT_1_2 = np.clip(HS_1(TT_1_2), 0.0, N_phytomer_potential)
+                HS_1_TT_2_2 = np.clip(HS_1(TT_2_2), 0.0, N_phytomer_potential)
+                HS_1_TT_3_2 = np.clip(HS_1(TT_3_2), 0.0, N_phytomer_potential)
+                HS_1_TT_4_2 = np.clip(HS_1(TT_4_2), 0.0, N_phytomer_potential)
+                
+                GL_1_TT_1_1 = np.clip(HS_1(TT_1_1), 0.0, 1000.0)
+                GL_2_TT_2_1 = np.clip(GL_2(TT_2_1), 0.0, 1000.0)
+                GL_3_TT_3_1 = np.clip(GL_3(TT_3_1), 0.0, 1000.0)
+                GL_4_TT_4_1 = np.clip(GL_4(TT_4_1), 0.0, 1000.0)
+                GL_1_TT_1_2 = np.clip(HS_2(TT_1_2), 0.0, 1000.0)
+                GL_2_TT_2_2 = np.clip(GL_2(TT_2_2), 0.0, 1000.0)
+                GL_3_TT_3_2 = np.clip(GL_3(TT_3_2), 0.0, 1000.0)
+                GL_4_TT_4_2 = np.clip(GL_4(TT_4_2), 0.0, 1000.0)
+            
+                SSI_1_TT_1_1 = HS_1_TT_1_1 - GL_1_TT_1_1
+                SSI_2_TT_2_1 = HS_1_TT_2_1 - GL_2_TT_2_1
+                SSI_3_TT_3_1 = HS_1_TT_3_1 - GL_3_TT_3_1
+                SSI_4_TT_4_1 = HS_1_TT_4_1 - GL_4_TT_4_1
+                SSI_1_TT_1_2 = HS_1_TT_1_2 - GL_1_TT_1_2
+                SSI_2_TT_2_2 = HS_1_TT_2_2 - GL_2_TT_2_2
+                SSI_3_TT_3_2 = HS_1_TT_3_2 - GL_3_TT_3_2
+                SSI_4_TT_4_2 = HS_1_TT_4_2 - GL_4_TT_4_2
+                
+                HS_GL_SSI_dynamic_group = pd.DataFrame(index=np.arange(params.TT_DEL_FHAUT), columns=HS_GL_SSI_dynamic.columns)
+                HS_GL_SSI_dynamic_group['id_phen'] = np.repeat(id_phen, HS_GL_SSI_dynamic_group.index.size)
+                HS_GL_SSI_dynamic_group['TT'] = pd.Series(np.concatenate((TT_1_1, TT_1_2, TT_2_1, TT_2_2, TT_3_1, TT_3_2, TT_4_1, TT_4_2)))
+                HS_GL_SSI_dynamic_group['HS'] = pd.Series(np.concatenate((HS_1_TT_1_1, HS_1_TT_1_2, HS_1_TT_2_1, HS_1_TT_2_2, HS_1_TT_3_1, HS_1_TT_3_2, HS_1_TT_4_1, HS_1_TT_4_2)))
+                HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
+                HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
+            
+            HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
         
     HS_GL_SSI_dynamic[['id_phen', 'TT']] = HS_GL_SSI_dynamic[['id_phen', 'TT']].astype(int)
     

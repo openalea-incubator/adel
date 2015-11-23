@@ -1353,7 +1353,7 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
     if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
         GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
         for row_index, row in most_frequent_tiller_axes.iterrows():
-            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'] - row['TT_hs_0'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
+            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
             t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
             if t0_tiller >= most_frequent_MS['t1'][0]:
                 t0_tiller = n0_tiller = np.nan
@@ -1366,8 +1366,16 @@ def _gen_most_frequent_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_ti
         HS_break = most_frequent_tiller_axes['a_cohort'] * (most_frequent_tiller_axes['TT_hs_break'] - most_frequent_tiller_axes['TT_hs_0'])
         a2 = (most_frequent_tiller_axes['N_phytomer_potential'] - HS_break) / (most_frequent_tiller_axes['TT_flag_ligulation'] - most_frequent_tiller_axes['TT_hs_break'])
         for row_index, row in most_frequent_tiller_axes.iterrows():
-            HS_tiller_line = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'] - row['TT_hs_break'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
-            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            HS_tiller_line_before_TT_hs_break = ((row['TT_hs_0'], 0.0), (row['TT_hs_break'], row['a_cohort'] * (row['TT_hs_break'] - row['TT_hs_0'])))
+            t0_tiller_before_TT_hs_break, n0_tiller_before_TT_hs_break = tools.find_lines_intersection(GL_MS_line, HS_tiller_line_before_TT_hs_break)
+            HS_tiller_line_after_TT_hs_break = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
+            t0_tiller_after_TT_hs_break, n0_tiller_after_TT_hs_break = tools.find_lines_intersection(GL_MS_line, HS_tiller_line_after_TT_hs_break)
+            if t0_tiller_before_TT_hs_break <= t0_tiller_after_TT_hs_break:
+                t0_tiller = t0_tiller_after_TT_hs_break
+                n0_tiller = n0_tiller_after_TT_hs_break
+            else:
+                t0_tiller = t0_tiller_before_TT_hs_break
+                n0_tiller = n0_tiller_before_TT_hs_break
             if t0_tiller >= most_frequent_MS['t1'][0]:
                 t0_tiller = n0_tiller = np.nan
                 t1_tiller = (most_frequent_MS['n1'][0] - HS_break[row_index]) / a2[row_index] + most_frequent_MS['TT_hs_break'][0]
@@ -1446,7 +1454,7 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
     if math.isnan(most_frequent_MS['TT_hs_break'][0]): # linear mode
         GL_MS_line = ((most_frequent_MS['t0'][0], most_frequent_MS['n0'][0]), (most_frequent_MS['t1'][0], most_frequent_MS['n1'][0]))
         for row_index, row in other_tiller_axes.iterrows():
-            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'] - row['TT_hs_0'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
+            HS_tiller_line = ((row['TT_hs_0'], 0.0), (row['TT_flag_ligulation'], row['a_cohort'] * (row['TT_flag_ligulation'] - row['TT_hs_0'])))
             t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
             if t0_tiller >= most_frequent_MS['t1'][0]:
                 t0_tiller = n0_tiller = np.nan
@@ -1459,8 +1467,17 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
         HS_break = other_tiller_axes['a_cohort'] * (other_tiller_axes['TT_hs_break'] - other_tiller_axes['TT_hs_0'])
         a2 = (other_tiller_axes['N_phytomer_potential'] - HS_break) / (other_tiller_axes['TT_flag_ligulation'] - other_tiller_axes['TT_hs_break'])
         for row_index, row in other_tiller_axes.iterrows():
-            HS_tiller_line = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'] - row['TT_hs_break'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
-            t0_tiller, n0_tiller = tools.find_lines_intersection(GL_MS_line, HS_tiller_line)
+            HS_tiller_line_before_TT_hs_break = ((row['TT_hs_0'], 0.0), (row['TT_hs_break'], row['a_cohort'] * (row['TT_hs_break'] - row['TT_hs_0'])))
+            t0_tiller_before_TT_hs_break, n0_tiller_before_TT_hs_break = tools.find_lines_intersection(GL_MS_line, HS_tiller_line_before_TT_hs_break)
+            HS_tiller_line_after_TT_hs_break = ((row['TT_hs_break'], HS_break[row_index]), (row['TT_flag_ligulation'], a2[row_index] * (row['TT_flag_ligulation'] - row['TT_hs_break']) + HS_break[row_index]))
+            t0_tiller_after_TT_hs_break, n0_tiller_after_TT_hs_break = tools.find_lines_intersection(GL_MS_line, HS_tiller_line_after_TT_hs_break)
+            if t0_tiller_before_TT_hs_break <= t0_tiller_after_TT_hs_break:
+                t0_tiller = t0_tiller_after_TT_hs_break
+                n0_tiller = n0_tiller_after_TT_hs_break
+            else:
+                t0_tiller = t0_tiller_before_TT_hs_break
+                n0_tiller = n0_tiller_before_TT_hs_break
+            
             if t0_tiller >= most_frequent_MS['t1'][0]:
                 t0_tiller = n0_tiller = np.nan
                 t1_tiller = (most_frequent_MS['n1'][0] - HS_break[row_index]) / a2[row_index] + most_frequent_MS['TT_hs_break'][0]
@@ -1845,7 +1862,6 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
     '''
     Create the :ref:`HS_GL_SSI_T <HS_GL_SSI_T>` dataframe.
     '''
-    
     HS_GL_SSI_dynamic = pd.DataFrame(columns=['id_phen', 'TT', 'HS', 'GL', 'SSI'])
     
     dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
@@ -1864,7 +1880,8 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
             
         HS_1, HS_2, GL_2, GL_3, GL_4 = _calculate_HS_GL_polynomial(HS_break, id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c, a_cohort_before_start_MS_elongation_2)
         
-        t0, t1, TT_flag_ligulation = np.round([t0, t1, TT_flag_ligulation]).astype(int)
+        t1 = int(round(t1))
+        TT_flag_ligulation = int(round(TT_flag_ligulation))
         
         if np.isnan(t0): # 3 phases
             
@@ -1939,6 +1956,8 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
             HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
             
         else:  # 4 phases
+            
+            t0 = int(round(t0))
             
             TT_1 = np.arange(0, t0)
             TT_2 = np.arange(t0, t1)
@@ -2022,7 +2041,7 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
                 HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
             
             HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
-        
+    
     HS_GL_SSI_dynamic[['id_phen', 'TT']] = HS_GL_SSI_dynamic[['id_phen', 'TT']].astype(int)
     
     return HS_GL_SSI_dynamic

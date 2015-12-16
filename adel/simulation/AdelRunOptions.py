@@ -9,7 +9,7 @@ def AdelRunOptions(leafDuration, fracLeaf, stemDuration, dHS_col, dHS_en, senesc
 		stemDuration= leafDuration/1.2 
 		
 		-dHS_col: the phyllochronic delay between the time when {HS=n} and {the time of collar appearance of leaf n}; dHS_col is used in Adel to compute the HS of tiller required to determine the tiller inclination kinetics.
-		(e.g.when collar of leaf n appear, the HS=n+ dHS_col)
+		(e.g.when collar of leaf n appear, the HS= n - dHS_col)
 		
 		-dHS_en: the phyllochronic delay between the end of leaf extension (blade and sheath) and the start of internode elongation  ; default value =0 phyllochron
 		

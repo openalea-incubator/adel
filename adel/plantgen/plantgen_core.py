@@ -928,8 +928,6 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
     MS_first_width = MS_width_series[MS_width_series.first_valid_index()]
     MS_last_width = MS_width_series[MS_width_series.last_valid_index()]
     
-    most_frequent_MS_polynomial_coefficients_array = np.polyfit(np.array([MS_first_index_phytomer, MS_last_index_phytomer]), np.array([MS_first_width, MS_last_width]), 1)
-    
     MS_index_phytomer_normalized_series = MS_index_phytomer_series / MS_index_phytomer_series.max()
     most_frequent_MS_polynomial_coefficients_array_normalized = np.polyfit(MS_index_phytomer_normalized_series.values, 
                                                                            MS_width_series.values, 4)
@@ -948,8 +946,15 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
             index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
             # compute
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
+            tiller_last_index_phytomer_to_compute = dimT_group.index_phytomer.loc[indexes_to_compute[-1]]
+            most_frequent_MS_polynomial_coefficients_array = np.polyfit(np.array([MS_first_index_phytomer, tiller_last_index_phytomer_to_compute]), 
+                                                                        np.array([MS_first_width, MS_last_width]), 
+                                                                        1)
             dimT_.loc[indexes_to_compute, width] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
                                                               index_relative_to_MS_phytomer_series[indexes_to_compute].values)
+            width_offset = dimT_.loc[indexes_to_compute[0], width] - MS_first_width
+            dimT_.loc[indexes_to_compute, width] -= width_offset
+            
             # ceiling
             indexes_to_ceil = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
             dimT_.loc[indexes_to_ceil, width] = MS_last_width

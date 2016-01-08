@@ -39,11 +39,11 @@ This parameter is used to calculate main stem emf_1 value.'''
 
 
 LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.6, 
-                               'T1': 2.5, 
-                               'T2': 3.4, 
-                               'T3': 4.6, 
-                               'T4': 5.8, 
-                               'T5': 6.7, 
+                               'T1': 2.4, 
+                               'T2': 3.2, 
+                               'T3': 4.2, 
+                               'T4': 5.5, 
+                               'T5': 6.9, 
                                'T6': 7.8, 
                                'T7': 8.8, 
                                'T8': 9.8, 

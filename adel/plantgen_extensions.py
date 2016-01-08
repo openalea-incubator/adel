@@ -148,8 +148,24 @@ def t_death(n, t_start, t_end):
     at_n = numpy.linspace(step / 2., n - step / 2., n)
     return numpy.interp(at_n, [0, n], [t_start, t_end]).round(2).tolist()
     
-#define classes for structuring/handling the different botanical models found in pgen
-                
+def cohort_delays(inner_parameters={}):
+    """ cohort emergence delays foun in Plantgen params or specified in inner_parameters
+    cohort emergence delay = delays HS_0 MS -> HS_0 tillers (HS=0 <=> emergence leaf)
+    """
+    tiller_delays = inner_parameters.get('LEAF_NUMBER_DELAY_MS_COHORT',params.LEAF_NUMBER_DELAY_MS_COHORT)
+    cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.iteritems()}
+    cohort_delays[1] = 0
+    return cohort_delays
+    
+def final_leaf_number(ms_nff=12, cohort=1, inner_parameters={}):
+    """ return the decimal number of leaves of cohort whose mainstem has ms_nff leaf number
+    """
+    a1_a2 = inner_parameters.get('SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS',params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
+    _nff = numpy.vectorize(tools.calculate_tiller_final_leaves_number)
+    return numpy.where(cohort == 1, ms_nff, _nff(ms_nff, cohort, a1_a2))
+
+# define classes for structuring/handling the different botanical models found in pgen
+
 class TillerEmission(object):
     """ A class interface to plantgen tiller emmission model
     """
@@ -163,16 +179,9 @@ class TillerEmission(object):
               
         self.child_cohort_delay = inner_parameters.get('FIRST_CHILD_DELAY', params.FIRST_CHILD_DELAY)
         self.a1_a2 = inner_parameters.get('SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS',params.SECONDARY_STEM_LEAVES_NUMBER_COEFFICIENTS)
-        self.tiller_delays = inner_parameters.get('LEAF_NUMBER_DELAY_MS_COHORT',params.LEAF_NUMBER_DELAY_MS_COHORT)    
+        self.cohort_delays = cohort_delays(inner_parameters)
+        self.secondary_tillers_emission = inner_parameters.get('EMERGENCE_PROBABILITY_REDUCTION_FACTOR',params.EMERGENCE_PROBABILITY_REDUCTION_FACTOR)
 
-        
-    def cohort_delays(self):
-        """ compute cohort emergence delays
-        emergence delay = delays HS_0 MS -> HS_0 tillers HS=0 <=> emergence leaf
-        """
-        cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in self.tiller_delays.iteritems()}
-        cohort_delays[1] = 0
-        return cohort_delays
             
     def theoretical_probabilities(self):
         """ theoretical probability of emergence of tillers/cohorts"""
@@ -180,11 +189,12 @@ class TillerEmission(object):
         _,res = tools.calculate_theoretical_cardinalities(1, 
                                                       self.cohort_probabilities,
                                                       self.primary_tiller_probabilities,
-                                                      self.child_cohort_delay)
+                                                      self.child_cohort_delay,
+                                                      self.secondary_tillers_emission)
         return res
         
     def final_leaf_numbers(self, MS_nff=12.):
-        """ returns the decmal final leaf numbers of cohorts from the decimal number of leaves on main stem
+        """ returns the decimal final leaf numbers of cohorts from the decimal number of leaves on main stem
         """
         ms_nff = [(1,MS_nff)]
         cohort_nff = [(cohort,tools.calculate_tiller_final_leaves_number(MS_nff, cohort, self.a1_a2)) for cohort in self.cohort_probabilities]
@@ -194,7 +204,7 @@ class TillerEmission(object):
         """ Computes cohort number, botanical position and theoretical probabilities of emergence all tillers using botanical position and probabilities of emergence of primary ones
         """
         proba = self.theoretical_probabilities()
-        emergence_delays = self.cohort_delays()
+        emergence_delays = self.cohort_delays
         nff = self.final_leaf_numbers(MS_nff)
         data = zip(*[(k[0],k[1],v) for k,v in proba.iteritems()])
         df = pandas.DataFrame({'axis': data[1],
@@ -353,56 +363,25 @@ class TillerRegression(object):
 class HaunStage(object):
     """ Handle HaunStage = f (ThermalTime) fits for mean plant and its nff modalities
     """
-    # TO DO : add method for thermal time date of leaf emergence/ligulation
     
-    def __init__(self, phyllochron = 110., TT_hs_0 = 0, std_TT_hs_0 = 0, mean_nff = 12, dHS_nff = 0.25, dTT_cohort={'first': 30, 'increment': 10}):
+    def __init__(self, phyllochron = 110., TT_hs_0 = 0, std_TT_hs_0 = 0, mean_nff = 12, dHS_nff = 0.25, dTT_cohort={'first': 30, 'increment': 10}, inner_parameters ={}):
         self.a_cohort = 1. / phyllochron
         self.TT_hs_0 = TT_hs_0
         self.mean_nff = mean_nff# nff of the mean plant
         self.dTT_nff = dHS_nff * self.a_cohort
         self.dTT_cohort = dTT_cohort
         self.std_TT_hs_0 = std_TT_hs_0
+        self.cohort_delays = cohort_delays(inner_parameters)
+        self.inner_parameters = inner_parameters
         
-    def __call__(self, TT, nff=None):
-        return self.HS(TT, nff)
+    def __call__(self, TT, nff=None, cohort=1):
+        return self.HS(TT, nff, cohort)    
         
-    def HS(self, TT, nff=None):
-        return (numpy.array(TT) - self.TT_hs_0) * self.a_nff(nff)
-        
-    def TT(self, HS, nff=None):        
-        return self.TT_hs_0 + numpy.array(HS) / self.a_nff(nff)
-        
-    def TTligleaf(self, rank, nff=None, dHS_col = 0.2):
-        return self.TT(numpy.array(rank) + dHS_col, nff=nff)
-        
-    def TTemleaf(self, rank, nff=None, dHS_col = 0.2, dHS_leaf_duration = 2, frac_leaf = 0.2):
-        dhs = dHS_col  - dHS_leaf_duration * (1 - frac_leaf)
-        return self.TT(numpy.array(rank) + dhs, nff=nff)
-        
-    def TTem(self, TT):
-        return numpy.array(TT) - self.TT_hs_0      
-   
-    def TTflag(self, nff = None, cohort = 1):
-        hsflag = self.HSflag(nff)
-        return self.TT_hs_0 + self.mean_nff / self.a_cohort + self.dTT_nff * (hsflag - self.mean_nff) + self.dTT_MS_cohort(cohort)
-    
-    def HSflag(self, nff = None):
+    def HSflag(self, nff = None, cohort=1):
         if nff is None:
             nff= [numpy.nan]
-        return numpy.where(numpy.isnan(nff), self.mean_nff, nff)
-    
-    def a_nff(self, nff=None):
-        if nff is None:
-            nff = numpy.array([numpy.nan])
-        a = nff / (self.TTflag(nff) - self.TT_hs_0)
-        return numpy.where(numpy.isnan(nff), self.a_cohort, a)
-        
-    
-    def phyllochron(self, nff=None):
-        return 1. / self.a_nff(nff)
-        
-    def dHS_nff(self):
-        return self.dTT_nff / self.phyllochron()
+        ms_nff = numpy.where(numpy.isnan(nff), self.mean_nff, nff) 
+        return final_leaf_number(ms_nff, cohort, self.inner_parameters)
         
     def dTT_MS_cohort(self, cohort=1):
         """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
@@ -412,12 +391,44 @@ class HaunStage(object):
         dTT = numpy.where(cohort == 1, 0, dTT)
         return dTT 
     
-    def curve(self, nff=None):
-        if nff is None: 
-            ymax = self.mean_nff
-        else:
-            ymax = nff
-        return interp1d([-1000., self.TT_hs_0, self.TTflag(nff), 3000.],[0., 0., ymax, ymax]) 
+    def TTflag(self, nff = None, cohort = 1):
+        hsflag = self.HSflag(nff, cohort)
+        return self.TT_hs_0 + self.mean_nff / self.a_cohort + self.dTT_nff * (hsflag - self.mean_nff) + self.dTT_MS_cohort(cohort)
+    
+    def TTfirst(self, cohort=1):
+        return self.TT_hs_0 + self.cohort_delays[cohort]    
+    
+    def a_nff(self, nff=None, cohort=1):
+        return self.HSflag(nff, cohort) / (self.TTflag(nff, cohort) - self.TTfirst(cohort))
+
+    def HS(self, TT, nff=None, cohort=1):
+        return (numpy.array(TT) - self.TTfirst(cohort)) * self.a_nff(nff, cohort)
+        
+    def TT(self, HS, nff=None, cohort=1):        
+        return self.TTfirst(cohort) + numpy.array(HS) / self.a_nff(nff, cohort)
+        
+    def TTligleaf(self, rank, nff=None, dHS_col = 0.2, cohort=1):
+        return self.TT(numpy.array(rank) + dHS_col, nff, cohort)
+        
+    def TTemleaf(self, rank, nff=None, dHS_col=0.2, dHS_leaf_duration=2, frac_leaf=0.2, cohort=1):
+        dhs = dHS_col  - dHS_leaf_duration * (1 - frac_leaf)
+        return self.TT(numpy.array(rank) + dhs, nff, cohort)
+        
+    def TTem(self, TT, cohort=1):
+        return numpy.array(TT) - self.TTfirst(cohort)    
+        
+    
+    def phyllochron(self, nff=None, cohort=1):
+        return 1. / self.a_nff(nff, cohort)
+        
+    def dHS_nff(self):
+        return self.dTT_nff / self.phyllochron()
+        
+    
+    def curve(self, nff=None, cohort=1):
+
+        ymax = self.HSflag(nff, cohort)
+        return interp1d([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort), 3000.],[0., 0., ymax, ymax]) 
 
 class GreenLeaves(object):
     """
@@ -704,7 +715,7 @@ class AxePop(object):
             f_damaged = tools.calculate_decide_child_cohort_probabilities(damages['damage'])# tools function convert 'tiller name' kays into cohort index keys
             damages = pandas.DataFrame({'cohort':f_damaged.keys(), 'f_damaged':f_damaged.values()})
             # compute start/end for the different cohorts
-            delays = pandas.DataFrame({'cohort':self.Emission.cohort_delays().keys(), 'delay':self.Emission.cohort_delays().values()})
+            delays = pandas.DataFrame({'cohort':self.Emission.cohort_delays.keys(), 'delay':self.Emission.cohort_delays.values()})
             damages = damages.merge(delays)
             damages['start_damages'] = numpy.maximum(damages['delay'],when_start)
             damages['end_damages'] = numpy.maximum(damages['delay'], when_end)

@@ -425,7 +425,7 @@ axe_inclination <- function(dat, HS, ht, axename, incBase, dredT, start_incT=1, 
     incT <- incBase
   } else {
     if (HS > start_incT) {
-      incT <- max(3,min(incBase, incT_rate* (HS - start_incT)))
+      incT <- max(3,min(incBase, incT_rate * (HS - start_incT)))
     } else {
       incT <- 3
     }

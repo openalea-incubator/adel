@@ -38,18 +38,18 @@ EMF_1_MS_STANDARD_DEVIATION = 30.0
 This parameter is used to calculate main stem emf_1 value.'''
 
 
-LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.6, 
-                               'T1': 2.4, 
+LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.9, 
+                               'T1': 2.5, 
                                'T2': 3.2, 
-                               'T3': 4.2, 
+                               'T3': 4.3, 
                                'T4': 5.5, 
                                'T5': 6.9, 
-                               'T6': 7.8, 
-                               'T7': 8.8, 
-                               'T8': 9.8, 
-                               'T9': 10.9, 
-                               'T10': 11.9}
-'''Delays between the emergence of the main stem and the emergence of each cohort.
+                               'T6': 9.16, 
+                               'T7': 11.9, 
+                               'T8': 15.4, 
+                               'T9': 20.1, 
+                               'T10': 26.1}
+'''Delays between the emergence of the main stem and the emergence of each cohort. (equation adjasted from data of 16 treatements y = 1.9101e0.2613x ; R² = 0.9991)
 
 The delays are expressed in main stem phyllochron unit.
 One value is given for each cohort. It specifies the delay between a main 
@@ -136,7 +136,7 @@ W_INTERNODE_POLYNOMIAL = {'coefficients': {'a0': -2.4527, 'a1': 7.6398, 'a2': -4
     - the coefficients of the polynomial fitted from main stems experimental internode widths,
     - the first point where the polynomial can be applied.'''
 
-MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY = 0.26
+MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY = 0.0 # 0.26
 '''The delay to apply on SSI of the most frequent MS to compute SSI of regressive tillers, 
 i.e. SSI_regressive_tillers = SSI_most_frequent_MS + MS_TO_REGRESSIVE_TILLERS_SENESCENCE_DELAY
 '''
@@ -146,7 +146,7 @@ A_COHORT_REDUCTION_FACTOR = -0.53
 i.e. a_cohort_regressive_tillers =  a_cohort_most_frequent_MS * (1 + A_COHORT_REDUCTION_FACTOR)
 '''
 
-RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25
+RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25 # or 0.5 to verify
 '''The ratio between the plastochron and the phyllochron. Used to compute the delay at flag ligulation of cohorts with different final leaf number.
 '''
 
@@ -158,6 +158,6 @@ e.g. : probability(T1.0.0) = probability(T1) * (1 - EMERGENCE_PROBABILITY_REDUCT
 
 NUMBER_OF_ELONGATED_INTERNODES = 4
 '''The number of elongated internodes. 
-This number is used to compute the minimum simulated number of green leaves for the main stem.
+This number is used to compute the time (t1) corresponding to the minimum of green leaves number(n1) for the main stem and tillers.
 '''
 

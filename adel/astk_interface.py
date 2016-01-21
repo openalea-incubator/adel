@@ -60,6 +60,7 @@ def replicate(g, target=1):
     return g_dup
 
 def transform_geom(geom, translation, rotation):
+    translation = map(float, translation) # force cast to float (pgl does not accept values extracted from numpy arryas
     if isinstance(geom, pgl.Geometry):
         geom = pgl.Translated(translation, pgl.AxisRotated((0,0,1),rotation, geom))
     elif isinstance(geom, pgl.Shape):

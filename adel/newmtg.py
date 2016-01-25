@@ -100,7 +100,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, 
     Lshape is length of the blade used as a pattern shape
     """
     lrolled=max(0, min(lrolled,lvis))
-    if lrolled < 1e6:
+    if lrolled < 1e-6:
         lrolled = 0
     lhide = None
     lgreen = None
@@ -137,77 +137,78 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, 
     if Lshape is not None:
         ds = float(Lshape) / sectors
     # compute sectors from leafshape bes to leaf shape top
-    for isect in range(sectors):
-        ls_vis= 0
-        ls_rolled = 0
-        ls_rolled_green = 0
-        ls_rolled_sen = 0
-        d_rolled = 0
-        ls_green = 0
-        ls_sen = 0
-        S_green = 0
-        S_sen = 0
-        S_tot = 0
-        srb_green = None
-        srt_green = None
-        srb_sen = None
-        srt_sen = None
-        
-        try:
-            st = (isect + 1) * ds
-            ls_vis = min(ds, max(0., st - s_limvis))
-            if ls_vis > 0:
-                sb = st - ls_vis
-                sb_green = sb
-                st_green = min(st, max(sb_green,s_limsen))
-                sb_sen = st_green
-                st_sen= st
-                ls_green = st_green - sb_green
-                ls_sen = st_sen - sb_sen
-                #print(sb_green,st_green,st_sen)
-                #
-                # Compute area of elements
-                if ls_green > 0:
-                    S_green = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
-                if ls_sen > 0:
-                    S_sen = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
-                # made intergration again for avoiding fluctuations
-                #S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
-                S_tot = S_green + S_sen
-                #
-                # compute position of flat parts of the element
-                ls_flat = min(ls_vis, max(0., st - s_limrolled))
-                if ls_flat > 0:
-                    sb = st - ls_flat
+    if lvis > 1e-6:
+        for isect in range(sectors):
+            ls_vis= 0
+            ls_rolled = 0
+            ls_rolled_green = 0
+            ls_rolled_sen = 0
+            d_rolled = 0
+            ls_green = 0
+            ls_sen = 0
+            S_green = 0
+            S_sen = 0
+            S_tot = 0
+            srb_green = None
+            srt_green = None
+            srb_sen = None
+            srt_sen = None
+            
+            try:
+                st = (isect + 1) * ds
+                ls_vis = min(ds, max(0., st - s_limvis))
+                if ls_vis > 0:
+                    sb = st - ls_vis
                     sb_green = sb
                     st_green = min(st, max(sb_green,s_limsen))
                     sb_sen = st_green
                     st_sen= st
-                    srb_green = (float(sb_green) - s_limvis) / lvis
-                    srt_green = (float(st_green) - s_limvis) / lvis
-                    srb_sen = (float(sb_sen) - s_limvis) / lvis
-                    srt_sen = (float(st_sen) - s_limvis) / lvis
-                #print(srb_green,srt_green,srb_sen,srt_sen)
-                if ls_flat < ls_vis:
-                    ls_rolled = ls_vis - ls_flat
-                    ls_rolled_green = min(ls_rolled, ls_green)
-                    ls_rolled_sen = ls_rolled - ls_rolled_green
-                    S_rolled = S_tot * ls_rolled / ls_vis
-                    d_rolled = float(S_rolled) / numpy.pi / ls_rolled
+                    ls_green = st_green - sb_green
+                    ls_sen = st_sen - sb_sen
+                    #print(sb_green,st_green,st_sen)
+                    #
+                    # Compute area of elements
+                    if ls_green > 0:
+                        S_green = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_green / Lshape, st_green / Lshape)
+                    if ls_sen > 0:
+                        S_sen = leaves.blade_elt_area(shape_key, Lshape, Lwshape, sb_sen / Lshape, st_sen / Lshape)
+                    # made intergration again for avoiding fluctuations
+                    #S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
+                    S_tot = S_green + S_sen
+                    #
+                    # compute position of flat parts of the element
+                    ls_flat = min(ls_vis, max(0., st - s_limrolled))
+                    if ls_flat > 0:
+                        sb = st - ls_flat
+                        sb_green = sb
+                        st_green = min(st, max(sb_green,s_limsen))
+                        sb_sen = st_green
+                        st_sen= st
+                        srb_green = (float(sb_green) - s_limvis) / lvis
+                        srt_green = (float(st_green) - s_limvis) / lvis
+                        srb_sen = (float(sb_sen) - s_limvis) / lvis
+                        srt_sen = (float(st_sen) - s_limvis) / lvis
+                    #print(srb_green,srt_green,srb_sen,srt_sen)
+                    if ls_flat < ls_vis:
+                        ls_rolled = ls_vis - ls_flat
+                        ls_rolled_green = min(ls_rolled, ls_green)
+                        ls_rolled_sen = ls_rolled - ls_rolled_green
+                        S_rolled = S_tot * ls_rolled / ls_vis
+                        d_rolled = float(S_rolled) / numpy.pi / ls_rolled
 
-        except TypeError:# input is None
-        #    print "passing"
-            pass
-        green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g', 'length': ls_green, 'area': S_green, 'is_green': True,
-                'srb': srb_green, 'srt': srt_green,'lrolled':ls_rolled_green, 'd_rolled':d_rolled}
-        sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's', 'length': ls_sen,'area': S_sen, 'is_green': False, 
-                'srb': srb_sen, 'srt': srt_sen,'lrolled':ls_rolled_sen, 'd_rolled':d_rolled}
-        elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_tot, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
-                'srb': srb_green, 'srt': srt_sen, 'lrolled':ls_rolled, 'd_rolled':d_rolled} 
-        if split: 
-            elements.extend([green_elt,sen_elt])
-        else:
-            elements.extend([elt])
+            except TypeError:# input is None
+            #    print "passing"
+                pass
+            green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g', 'length': ls_green, 'area': S_green, 'is_green': True,
+                    'srb': srb_green, 'srt': srt_green,'lrolled':ls_rolled_green, 'd_rolled':d_rolled}
+            sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's', 'length': ls_sen,'area': S_sen, 'is_green': False, 
+                    'srb': srb_sen, 'srt': srt_sen,'lrolled':ls_rolled_sen, 'd_rolled':d_rolled}
+            elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_tot, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
+                    'srb': srb_green, 'srt': srt_sen, 'lrolled':ls_rolled, 'd_rolled':d_rolled} 
+            if split: 
+                elements.extend([green_elt,sen_elt])
+            else:
+                elements.extend([elt])
     return elements
 
         

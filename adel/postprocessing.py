@@ -466,14 +466,15 @@ def midrib_statistics(midribs):
         s = _curvilinear_abscisse(x,y)
         origin, phi0, s, dphi = _curvature_xys(x,y,s)
         #
-        return pd.DataFrame({'plant':midrib['plant'][0],
-                                 'axe':midrib['axe'][0],
-                                 'leaf':midrib['metamer'][0],
+        return pd.Series({'plant':midrib['plant'].values[0],
+                                 'axe':midrib['axe'].values[0],
+                                 'leaf':midrib['metamer'].values[0],
                                  'insertion_angle': np.degrees(phi0),
                                  'mean_leaf_angle': np.degrees(np.mean([phi0]+(phi0 + dphi).tolist())),
                                  'insertion height': hins,
                                  'maximal height':hins + y.max(),
-                                 'tip_height': hins + y.tolist()[-1]}, index=[midrib['vid'][0]])
+                                 'tip_height': hins + y.tolist()[-1],
+                                 'projection': (x.max() - x.min()) / s.max()})
 
     return midribs.groupby('vid', as_index=False).apply(_process)
     

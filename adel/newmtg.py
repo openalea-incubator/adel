@@ -203,7 +203,8 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key, 
                     'srb': srb_green, 'srt': srt_green,'lrolled':ls_rolled_green, 'd_rolled':d_rolled}
             sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's', 'length': ls_sen,'area': S_sen, 'is_green': False, 
                     'srb': srb_sen, 'srt': srt_sen,'lrolled':ls_rolled_sen, 'd_rolled':d_rolled}
-            elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_tot, 'green_length': ls_green, 'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
+            elt = {'label': 'LeafElement' + str(isect + 1), 'length': ls_sen + ls_green,'area': S_tot, 'green_length': ls_green,
+            'green_area' : S_green, 'senesced_length': ls_sen, 'senesced_area': S_sen, 'is_green': (ls_green > ls_sen), 
                     'srb': srb_green, 'srt': srt_sen, 'lrolled':ls_rolled, 'd_rolled':d_rolled} 
             if split: 
                 elements.extend([green_elt,sen_elt])

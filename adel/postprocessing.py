@@ -471,10 +471,10 @@ def midrib_statistics(midribs):
                                  'leaf':midrib['metamer'].values[0],
                                  'insertion_angle': np.degrees(phi0),
                                  'mean_leaf_angle': np.degrees(np.mean([phi0]+(phi0 + dphi).tolist())),
-                                 'insertion height': hins,
-                                 'maximal height':hins + y.max(),
+                                 'insertion_height': hins,
+                                 'maximal_height':hins + y.max(),
                                  'tip_height': hins + y.tolist()[-1],
-                                 'projection': (x.max() - x.min()) / s.max()})
+                                 'h_projection': (x.max() - x.min()) / s.max()})
 
     return midribs.groupby('vid', as_index=False).apply(_process)
     

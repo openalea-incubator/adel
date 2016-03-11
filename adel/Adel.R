@@ -138,7 +138,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
     disp <- openapprox(plant$pheno[[a]]$disp,plant$pheno[[a]]$n,x)
     dim <- data.frame(plant$phytoT[,,a])
     ped <- plant$pedT[[a]]
-    kin <- array(NA,c(nx,nf[a]+3,23),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs","exposition","lifetime", "age")))
+    kin <- array(NA,c(nx,nf[a]+3,24),list(1:nx,1:(nf[a]+3),c("Ll","Gl","El","Lhem","Lhcol","xh","Lh","ht","Llvis","Glvis","Elvis","Llrolled","Glopen","Llsen","Glsen","Elsen","ntop", "rph", "rssi", "rhs","exposition","lifetime", "age",'is_ligulated')))
     nfa <- nf[a]
     for (i in 1:(nfa+3))
       kin[,i,c("Ll","Gl","El","Llsen","Glsen","Elsen","Llvis")] <- 0
@@ -153,6 +153,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
       xssi <- openapprox(plant$pheno[[a]]$n,plant$pheno[[a]]$ssi,i)
       kin[,i,"lifetime"] <- max(0,min(1, (x - xtip) / (xssi - xtip)))
       kin[,i,"age"] <- x - xtip
+      kin[,i,"is_ligulated"] <- ifelse(rph > apparentLeafDuration, 1, 0)
      #longueur blade+sheath
       LGl <- approx(c(startLeaf,endLeaf),c(0,dim$Ll[i]+dim$Gl[i]),xout=rph,rule=2)$y
       if (i ==1)
@@ -540,6 +541,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         exposition <- kin[[a]][t,,"exposition"]
         lifetime <-  kin[[a]][t,,"lifetime"]
         age <-  kin[[a]][t,,"age"]
+        is_ligulated <-  kin[[a]][t,,"is_ligulated"]
         mtype <- c(rep('vegetative',nbleaf),'peduncle','ear','awn')
       #
         pldesc <- rbind(pldesc,
@@ -576,7 +578,8 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          exposition=exposition,
                                          lifetime=lifetime,
 	                                 m_type=mtype,
-                                         age=age
+                                         age=age,
+                                         is_ligulated = is_ligulated
 ),
                               dat))
       }

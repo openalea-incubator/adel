@@ -624,7 +624,7 @@ def _create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_card
                                                                  'simulated_cohort_cardinality',
                                                                  'simulated_axis_cardinality']].astype(float)
     cardinalityT[['id_cohort', 'simulated_cohort_cardinality', 'simulated_axis_cardinality']] = cardinalityT[['id_cohort', 'simulated_cohort_cardinality', 'simulated_axis_cardinality']].astype(int)
-    cardinalityT.sort(['id_cohort', 'id_axis'], inplace=True)
+    cardinalityT.sort_values(['id_cohort', 'id_axis'], inplace=True)
     cardinalityT.index = range(len(cardinalityT))
     return cardinalityT
     
@@ -699,7 +699,7 @@ class _CreateDimT():
             
             _gen_widths(MS_id_dim, row_indexes_to_fit, self.dimT_, decimal_elongated_internode_number)
             
-            self.dimT_.sort(['is_ear', 'id_dim'], ascending=[False, True], inplace=True)
+            self.dimT_.sort_values(['is_ear', 'id_dim'], ascending=[False, True], inplace=True)
             
             # reinitialize the index
             self.dimT_.index = range(self.dimT_.index.size)
@@ -1157,7 +1157,7 @@ def _create_dynT_tmp(axeT_tmp):
     
     # nested sort of dynT_tmp: first by 'id_axis' in ascending order, second 
     # by 'cardinality' in descending order.
-    dynT_tmp.sort(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
+    dynT_tmp.sort_values(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
     # reinitialize the index
     dynT_tmp.index = range(dynT_tmp.index.size)
     return dynT_tmp
@@ -1219,7 +1219,7 @@ def _create_dynT(dynT_tmp,
         
         dynT_ = pd.concat([most_frequent_MS, other_MS, most_frequent_tiller_axes, other_tiller_axes])
         
-    dynT_.sort(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
+    dynT_.sort_values(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
     # reinitialize the index
     dynT_.index = range(dynT_.index.size)
     

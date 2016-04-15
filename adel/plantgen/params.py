@@ -141,8 +141,8 @@ A_COHORT_REDUCTION_FACTOR = -0.53
 i.e. a_cohort_regressive_tillers =  a_cohort_most_frequent_MS * (1 + A_COHORT_REDUCTION_FACTOR)
 '''
 
-RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25 # or 0.5 to verify
-'''The ratio between the plastochron and the phyllochron. Used to compute the delay at flag ligulation of cohorts with different final leaf number.
+FLAG_LIGULATION_DELAY = 20
+'''The ligulation delay of the flag. Used to compute dTT_MS_cohort.
 '''
 
 EMERGENCE_PROBABILITY_REDUCTION_FACTOR = 0.29
@@ -163,3 +163,12 @@ K1 = 0.854
 K2 = 0.91
 '''Proportional factor of blade width relative to the last leaf of each tiller.
 '''
+
+START_MS_HS_MORTALITY_VS_N_PHYTOMER = {'as': 0.2411, 'bs': 4.2546}
+'''Correlation between the start of Haun stage mortality of the main stem and N_phytomer of the main stem.
+'''
+
+END_MS_HS_MORTALITY_VS_N_PHYTOMER = {'ae': 1.0247}
+'''Correlation between the end of Haun stage mortality of the main stem and N_phytomer of the main stem.
+'''
+

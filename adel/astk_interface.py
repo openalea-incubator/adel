@@ -373,6 +373,40 @@ class AdelWheat(object):
     def midrib_statistics(self, g):
         data = self.get_midribs(g)
         return midrib_statistics(data)
+        
+    def update_geometry(self, g):
+    
+        for pid in g.component_roots_at_scale_iter(g.root, scale=1):
+            p = g.node(pid)
+            for a in p.components_at_scale(2):
+                for organ in a.components_at_scale(4):
+                    if organ.label.startswith('blade'):
+                        vid_organ = organ.index()
+                        vid_elt = g.parent(g.components(vid_organ)[0])
+                        for vid in reversed(g.components(vid_organ)):
+                            g.remove_vertex(vid)
+                        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, organ.rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_key, self.leaves)
+                        element = elements[0]
+                        if organ.label == 'sheath':
+                            edge_type = '+'
+                        else:
+                            edge_type = '<'
+                        new_elt = g.add_component(vid_organ, edge_type='/', **element)
+                        vid_elt = g.add_child(vid_elt, child=new_elt, edge_type=edge_type)
+                        for j in range(1,len(elements)):
+                            element = elements[j]
+                            vid_elt = g.add_child(vid_elt, edge_type='<',**element)
+        g = mtg_interpreter(g, self.leaves, face_up = self.face_up, classic= self.classic)
+        pos = g.property('position ')
+        az = g.property('azimuth')
+        geom = g.property('geometry')
+        for i,vid in enumerate(g.vertices(1)):
+            pos[vid] = self.positions[i]
+            az[vid] = self.plant_azimuths[i]
+            for gid in g.components_at_scale(vid, g.max_scale()):
+                if gid in geom:
+                    geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i])
+        return g
 
         
 def adelwheat_node(nplants = 1, nsect = 1, devT = None, leaves=None, geoAxe=None, stand=None, run_adel_pars=None, options={}):

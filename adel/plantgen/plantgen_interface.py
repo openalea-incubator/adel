@@ -201,12 +201,12 @@ are not documented by the user. After the generation of the phytomers of the MS,
 of the MS are documented by the user, then this will lead to an error."
 
     
-    # check the consistency of decide_child_axis_probabilities and params.MS_HS_AT_TILLER_EMERGENCE
-    available_axes = params.MS_HS_AT_TILLER_EMERGENCE.keys()
+    # check the consistency of decide_child_axis_probabilities and params.LEAF_NUMBER_DELAY_MS_COHORT
+    available_axes = params.LEAF_NUMBER_DELAY_MS_COHORT.keys()
     if not possible_axes.issubset(set(available_axes)):
         warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
                                                         available_axes,
-                                                        'params.MS_HS_AT_TILLER_EMERGENCE',
+                                                        'params.LEAF_NUMBER_DELAY_MS_COHORT',
                                                         list(possible_axes)),
                       tools.InputWarning)
     

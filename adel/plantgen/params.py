@@ -49,7 +49,7 @@ LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.9,
                                'T8': 15.4, 
                                'T9': 20.1, 
                                'T10': 26.1}
-'''Delays between the emergence of the main stem and the emergence of each cohort. (equation adjasted from data of 16 treatements y = 1.9101e0.2613x ; R2 = 0.9991)
+'''Delays between the emergence of the main stem and the emergence of each cohort. (equation adjasted from data of 16 treatements y = 1.9101e0.2613x ; R² = 0.9991)
 
 The delays are expressed in main stem phyllochron unit.
 One value is given for each cohort. It specifies the delay between a main 

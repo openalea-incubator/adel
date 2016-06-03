@@ -1,4 +1,4 @@
-# -*- python -*-
+-2.05 # -*- python -*-
 #
 #       Adel.PlantGen
 #
@@ -198,7 +198,7 @@ def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, T
             raise InputError("number_of_ears greater than max_axes_number")
         
         def calculate_number_of_active_axes(tt, max_axes_number, number_of_ears, TT_regression_start, TT_regression_end):
-            return (max_axes_number - number_of_ears) * math.exp(-2.59861720216721* (tt - TT_regression_start) / (1.65412664908155* (TT_regression_end - TT_regression_start) - (tt - TT_regression_start))) + number_of_ears ## les constantes sont a mettre dans params
+            return (max_axes_number - number_of_ears) * math.exp(-2.59861720216721* (tt - TT_regression_start) / (1.65412664908155* (TT_regression_end - TT_regression_start) - (tt - TT_regression_start))) + number_of_ears ## les constantes sont à mettre dans params
                     
         number_of_remaining_axes = max_axes_number
         TT_em_phytomer1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))

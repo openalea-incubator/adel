@@ -944,6 +944,7 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
                                                              index_phytomer_normalized_series.values)
         else: # tiller
             index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
+            index_relative_to_MS_phytomer_series_normalised = index_relative_to_MS_phytomer_series / index_relative_to_MS_phytomer_series.max()
             # compute
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             tiller_last_index_phytomer_to_compute = dimT_group.index_phytomer.loc[indexes_to_compute[-1]]
@@ -951,7 +952,7 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
                                                                         np.array([MS_first_width, MS_last_width]), 
                                                                         1)
             dimT_.loc[indexes_to_compute, width] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
-                                                              index_relative_to_MS_phytomer_series[indexes_to_compute].values)
+                                                              index_relative_to_MS_phytomer_series_normalised[indexes_to_compute].values) * 1.0
             width_offset = dimT_.loc[indexes_to_compute[0], width] - MS_first_width
             dimT_.loc[indexes_to_compute, width] -= width_offset
             

@@ -509,9 +509,10 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
     return fat_mtg(g)
 
 
-def update_elements(organ, leaves=None):
+def update_elements(organ):
     if organ.label.startswith('blade'):
-        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, organ.rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_key, leaves=leaves)
+        rolled_length = 0
+        elements =  blade_elements(organ.n_sect, organ.length, organ.visible_length, rolled_length, organ.senesced_length, organ.shape_mature_length, organ.shape_max_width, organ.shape_xysr)
         for i,e in enumerate(organ.components()):
             for k in elements[i]:
                 exec "e.%s = elements[i]['%s']"%(k,k)

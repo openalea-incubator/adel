@@ -12,7 +12,10 @@
 #import openalea.adel as my_package
 #my_path = os.path.dirname(my_package.__file__) 
 
+import os
 import pandas
+
+
 #
 #create AdelR functions into rpy2 environment
 from math import sqrt
@@ -32,22 +35,29 @@ except:
     pass
 
 
+dir = os.path.dirname(__file__)
+    
 #content of rfiles using setuptools pkg_resources utility
-from pkg_resources import resource_string
+#from pkg_resources import resource_string
 
 # Set Numeric Locale value 
 r('Sys.setlocale(category="LC_NUMERIC",locale="C")')
 
+def get_rcode(file_name):
+    with open(os.path.join(dir,file_name), 'r') as content_file:
+        content = content_file.read()
+    return content
+    
 #r.source(os.path.join(path,'Adel.R')) : code qui suit plutot a laisser au niveau des fonctions
-rcode = resource_string(__name__, 'Adel.R')
+rcode = get_rcode('Adel.R')
 r(rcode)
-rcode = resource_string(__name__, 'setAdel.R')
+rcode = get_rcode('setAdel.R')
 r(rcode)
-rcode = resource_string(__name__, 'UseAdel.R')
+rcode = get_rcode('UseAdel.R')
 r(rcode)
-rcode = resource_string(__name__, 'ArvalisToAdel.R')
+rcode = get_rcode('ArvalisToAdel.R')
 r(rcode)
-rcode = resource_string(__name__, 'genString.R')
+rcode = get_rcode('genString.R')
 r(rcode)
 #r.source(os.path.join(path,'ArvalisToAdel.R'))
 RrunAdel = robj.globalEnv['runAdel']

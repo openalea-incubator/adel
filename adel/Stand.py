@@ -38,7 +38,7 @@ class AgronomicStand(object):
             return plot_length, plot_width
         elif aspect == 'line':
             plot_width = self.inter_row    
-            plot_length = (nplants + 1) * self.inter_plant * self.sowing_density / float(self.plant_density) if self.plant_density > 0. else 0.
+            plot_length = nplants * self.inter_plant * self.sowing_density / float(self.plant_density) if self.plant_density > 0. else 0.
             return plot_length, plot_width  
         else:
             return 0.5, 0.5

@@ -8,6 +8,7 @@ except:
 import os
 
 import numpy
+import warnings
 
 
 from alinea.adel.AdelR import setAdel,RunAdel,genGeoAxe, checkAxeDyn, getAxeT, getPhenT, getPhytoT, saveRData
@@ -79,9 +80,10 @@ class AdelWheat(object):
             run_adel_pars = {'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2,'dHS_en':0, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}
             
         if leaf_db is not None:
-            print('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead')
+            warnings.warn('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead', DeprecationWarning)
         if positions is not None:
-            print('!!!!Warning!!!! positions argument is deprecated, use stand = adel.Stand class instead')
+            warnings.warn('!!!!Warning!!!! positions argument is deprecated, use stand = adel.Stand class instead', DeprecationWarning)
+            print('coucou')
             
         if leaves is None:
             leaves = Leaves()

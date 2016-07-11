@@ -28,39 +28,34 @@ Calculation is done as follows::
     
     tiller_final_leaves_number 
         = a_1 * MS_final_leaves_number - a_2 * cohort_number
-    
 '''
 
+MS_EMERGENCE_STANDARD_DEVIATION = 0.3
+'''the standard deviation on the date of emergence of the main stems in the plot (in number of phyllochrons units).
 
-EMF_1_MS_STANDARD_DEVIATION = 30.0
-'''the standard deviation in the thermal of emergence of plants in the plot.
+This parameter is used to calculate the TT_*_phytomer1 value of the main stems.'''
 
-This parameter is used to calculate main stem emf_1 value.'''
+TILLERS_EMERGENCE_STANDARD_DEVIATION = 0.2
+'''the standard deviation on the date of emergence of the tillers in the plot (in phyllochron units).
 
+This parameter is used to calculate the TT_*_phytomer1 value of the tillers.'''
 
-LEAF_NUMBER_DELAY_MS_COHORT = {'T0': 1.9, 
-                               'T1': 2.5, 
-                               'T2': 3.2, 
-                               'T3': 4.3, 
-                               'T4': 5.5, 
-                               'T5': 6.9, 
-                               'T6': 9.16, 
-                               'T7': 11.9, 
-                               'T8': 15.4, 
-                               'T9': 20.1, 
-                               'T10': 26.1}
-'''Delays between the emergence of the main stem and the emergence of each cohort. (equation adjasted from data of 16 treatements y = 1.9101e0.2613x ; R2 = 0.9991)
-
-The delays are expressed in main stem phyllochron unit.
-One value is given for each cohort. It specifies the delay between a main 
-stem having the most frequent number of leaves (for a main stem) and a tiller having the most 
-frequent number of leaves (for that cohort).
+MS_HS_AT_TILLER_EMERGENCE = {'T0': 1.9, 
+                             'T1': 2.5, 
+                             'T2': 3.2, 
+                             'T3': 4.3, 
+                             'T4': 5.5, 
+                             'T5': 6.9, 
+                             'T6': 9.16, 
+                             'T7': 11.9, 
+                             'T8': 15.4, 
+                             'T9': 20.1, 
+                             'T10': 26.1}
+'''The haunstage of the most frequent main stem at the emergence of each tiller (in phyllochron units).
 
 This parameter is a Python dictionary. 
-The keys represent the cohort indexes and the values represent the delays. 
-The keys are integers ans the values are floats.
+The keys represent the cohort indexes and the values represent the phyllochronic delay. 
 '''
-
 
 N2_MS_DIV_N2_COHORT = 0.85
 '''Ratio between the maximum number of green leaves on the tillers and the 
@@ -146,8 +141,8 @@ A_COHORT_REDUCTION_FACTOR = -0.53
 i.e. a_cohort_regressive_tillers =  a_cohort_most_frequent_MS * (1 + A_COHORT_REDUCTION_FACTOR)
 '''
 
-RATIO_PLASTOCHRON_PHYLLOCHRON = 0.25 # or 0.5 to verify
-'''The ratio between the plastochron and the phyllochron. Used to compute the delay at flag ligulation of cohorts with different final leaf number.
+FLAG_LIGULATION_DELAY = 20
+'''The ligulation delay of the flag. Used to compute dTT_MS_cohort.
 '''
 
 EMERGENCE_PROBABILITY_REDUCTION_FACTOR = 0.29
@@ -159,5 +154,21 @@ e.g. : probability(T1.0.0) = probability(T1) * (1 - EMERGENCE_PROBABILITY_REDUCT
 NUMBER_OF_ELONGATED_INTERNODES = 4
 '''The number of elongated internodes. 
 This number is used to compute the time (t1) corresponding to the minimum of green leaves number(n1) for the main stem and tillers.
+'''
+
+K1 = 0.854
+'''Proportional factor of blade width relative to the first leaf of each tiller.
+'''
+
+K2 = 0.91
+'''Proportional factor of blade width relative to the last leaf of each tiller.
+'''
+
+START_MS_HS_MORTALITY_VS_N_PHYTOMER = {'as': 0.2411, 'bs': 4.2546}
+'''Correlation between the start of Haun stage mortality of the main stem and N_phytomer of the main stem.
+'''
+
+END_MS_HS_MORTALITY_VS_N_PHYTOMER = {'ae': 1.0247}
+'''Correlation between the end of Haun stage mortality of the main stem and N_phytomer of the main stem.
 '''
 

@@ -152,7 +152,7 @@ def cohort_delays(inner_parameters={}):
     """ cohort emergence delays foun in Plantgen params or specified in inner_parameters
     cohort emergence delay = delays HS_0 MS -> HS_0 tillers (HS=0 <=> emergence leaf)
     """
-    tiller_delays = inner_parameters.get('LEAF_NUMBER_DELAY_MS_COHORT',params.LEAF_NUMBER_DELAY_MS_COHORT)
+    tiller_delays = inner_parameters.get('MS_HS_AT_TILLER_EMERGENCE',params.MS_HS_AT_TILLER_EMERGENCE)
     cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.iteritems()}
     cohort_delays[1] = 0
     return cohort_delays
@@ -416,6 +416,8 @@ class HaunStage(object):
         
     def dTT_MS_cohort(self, cohort=1):
         """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
+        
+        Note : compatibility with plantgen changes of 15/04/2016 is to be checked
         """
         cohort = numpy.array(cohort)
         dTT = self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
@@ -979,7 +981,10 @@ class PlantGen(object):
         self.base_config = base_config
         if not 'inner_params' in base_config:
             self.base_config['inner_params'] = {}
-        self.base_config['inner_params']['EMF_1_MS_STANDARD_DEVIATION'] = 0 #strictly respect TT_hs_0 as orign
+        self.base_config['inner_params']['MS_EMERGENCE_STANDARD_DEVIATION'] = 0 #strictly respect TT_hs_0 as orign
+        # TODO: this setting is for backward compatibility (this parameter did not exist before). 
+        # Should be included/controled by the tillering model instead
+        self.base_config['inner_params']['TILLERS_EMERGENCE_STANDARD_DEVIATION'] = 0
         # force pgen  to get HS correct
         # basically we want TThs0 to match  fit of HSfit=f(TT) in the simulation outputs
         # that is achieved by choosing emergence leaf 1  = TThs0 - 0.4 * phyll (-0.4 = -1 + 1.6 - 0.2, cf testadel.R)

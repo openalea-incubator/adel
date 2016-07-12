@@ -845,7 +845,7 @@ def update_plant(plant, time):
 def update_axe(axe):
     """ update phenology on axes """
     if 'timetable' in axe.properties():
-        axe.phyllochronic_time = np.interp(axe.complex().time,
+        axe.phyllochronic_time = numpy.interp(axe.complex().time,
                                            axe.timetable['tip'],
                                            axe.timetable['n'])
         # print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
@@ -858,7 +858,7 @@ def update_organ(organ, h_whorl=0):
     length = organ.length
     vlength = organ.visible_length
     if 'elongation_curve' in organ.properties():
-        organ.length = np.interp(rph, organ.elongation_curve['x'],
+        organ.length = numpy.interp(rph, organ.elongation_curve['x'],
                                  organ.elongation_curve['y'])
     organ.visible_length = organ.length - h_whorl
     update_elements(organ)

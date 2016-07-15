@@ -759,7 +759,7 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
 
             add_plant(g, plant_number=plant, plant_properties=plant_properties,
                       axis_properties=mainstem_properties)
-
+            prev_plant = plant
         # Add axis
         if axe != prev_axe and axe != 'MS':
             timetable = None
@@ -771,7 +771,7 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
                                   hasEar=args.get('hasEar'),
                                   azimuth=args.get('az_insertion'))
             add_axe(g, axe, plant, axis_properties=axe_properties)
-
+            prev_axe = axe
         # Add metamer
         assert num_metamer > 0
         # args are added to metamers only if metamer_factory is none,

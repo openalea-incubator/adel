@@ -197,16 +197,40 @@ class AdelWheat(object):
         df = self.phytoT(axe)
         m = df.loc[df['n'] == num_metamer,:].to_dict('list')
         metamer_properties = {'L_shape': m['Ll'][0]}
-        internode_properties = {'ntop': nff - num_metamer + 1,
-                                'length': m['El'][0],
-                                'visible_length':0,
+        ntop = nff - num_metamer + 1
+        shape_key = None
+        lctype = int(m['Lindex'][0])
+        lcindex = int(m['Lseed'][0])
+        if lctype != -999 and lcindex != -999:
+            shape_key = self.leaves.get_leaf_key(lctype, lcindex, age=None)
+
+        internode_properties = {'ntop': ntop,
+                                'length': 0,
+                                'visible_length': 0,
                                 'senesced_length': 0,
                                 'diameter': m['Ed'][0],
-                                'azimuth': 0,  # TODO
-                                'inclination': 0,  # TODO
-                                }
+                                'azimuth': m['Azim'][0],
+                                'inclination': 0}
+        sheath_properties = {'ntop': ntop,
+                             'length': 0,
+                             'visible_length': 0,
+                             'senesced_length': 0,
+                             'diameter': m['Gd'][0],
+                             'azimuth': 0,
+                             'inclination': 0}
+        blade_properties = {'ntop': ntop,
+                             'length': 0,
+                             'visible_length': 0,
+                            'rolled_length': 0,
+                             'senesced_length': 0,
+                            'n_sect': self.nsect,
+                            'shape_mature_length': m['Ll'][0],
+                            'shape_max_width': m['Lw'][0],
+                             'shape_key': shape_key,
+                             'inclination': 0}
         return add_vegetative_metamer(g, plant, axe, metamer_properties,
-                                      internode_properties)
+                                      internode_properties, sheath_properties,
+                                      blade_properties)
 
     def setup_canopy(self, age=10):
 

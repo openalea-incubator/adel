@@ -1,6 +1,6 @@
 from openalea.mtg import MTG
 from alinea.adel.newmtg import add_plant, add_axe, add_vegetative_metamer, find_plants, \
-    find_metamers
+    find_metamers, find_label, insert_elements
 
 
 def test_add_plant():
@@ -46,3 +46,15 @@ def test_add_axe():
     assert labels[g.parent(vid_axe)] == 'T1'
     vid_metamer0 = g.component_roots_at_scale(vid_axe, 3)[0]
     assert labels[g.parent(vid_metamer0)] == "metamer3"
+
+
+def test_insert_elements():
+    g = MTG()
+    labels = g.property('label')
+    add_plant(g)
+    elts = [{'label':'elt1'},{'label':'elt2'}]
+    collar = find_label('collar', g)[0]
+    insert_elements(g, collar, elts)
+    elt1 = find_label('elt1', g)[0]
+    assert labels[g.parent(elt1)] == 'baseElement'
+    assert labels[g.children(elt1)[0]] == 'elt2'

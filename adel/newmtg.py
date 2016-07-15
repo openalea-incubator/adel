@@ -152,13 +152,13 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
     # hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': 0, 'green_length': lrolled, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
     hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': S_hide,
                   'is_green': True}
-    elements = [hidden_elt]
-    # elements=[]
+    elements = []
     ds = 0
     if Lshape is not None:
         ds = float(Lshape) / sectors
     # compute sectors from leafshape bes to leaf shape top
     if lvis > 1e-6:
+        elements = [hidden_elt]
         for isect in range(sectors):
             ls_vis = 0
             ls_rolled = 0
@@ -359,7 +359,10 @@ def find_label(label, g, constrained_in=0):
     if ci == 0:
         return [k for k in g.vertices_iter() if labels.get(k, '') == label]
     else:
-        return [k for k in iter_mtg(g, ci) if labels.get(k, '') == label]
+        # Hack car iter_mtg peut recycler sur le reste du mtg
+        cscale = g.scale(ci)
+        return [k for k in iter_mtg(g, ci) if (labels.get(k, '') == label) and (
+        g.complex_at_scale(k, cscale) == ci)]
 
 
 def find_plants(g):
@@ -399,8 +402,7 @@ def find_metamers(g, plant_number=1, axe_label='MS'):
     if len(vid_plant) > 0:
         vid_plant = vid_plant[0]
     else:
-        raise ValueError(
-            'plant ' + plant_label + ' not found in g')
+        raise ValueError('plant ' + plant_label + ' not found in g')
 
     plant_axes = g.components(vid_plant)
     vid_axe = [vid for vid in find_label(axe_label, g) if vid in plant_axes]
@@ -466,7 +468,8 @@ def add_plant(g, plant_number=None, plant_properties=None, axis_properties=None,
                                       **metamer_properties)
         vid_organ = g.add_component(vid_metamer, edge_type='/', label='collar',
                                     **collar_properties)
-        vid_base = g.add_component(vid_organ, edge_type='/', label='baseElement')
+        vid_base = g.add_component(vid_organ, edge_type='/',
+                                   label='baseElement')
         vid_top = g.add_component(vid_organ, edge_type='/', label='topElement')
         g.add_child(vid_base, child=vid_top, edge_type='<')
         return vid_plant
@@ -558,7 +561,6 @@ def insert_elements(g, vid_organ, elements):
     return inserted
 
 
-
 def add_axe(g, label, plant_number=1, axis_properties=None,
             metamer_properties=None, collar_properties=None):
     """ Add an axe identified by its label to a plant identifed by its number.
@@ -583,8 +585,7 @@ def add_axe(g, label, plant_number=1, axis_properties=None,
     if len(vid_plant) > 0:
         vid_plant = vid_plant[0]
     else:
-        raise ValueError(
-            'plant ' + plant_label + ' not found in g')
+        raise ValueError('plant ' + plant_label + ' not found in g')
 
     axes = g.components(vid_plant)
     found = [vid for vid in find_label(label, g) if vid in axes]
@@ -614,17 +615,18 @@ def add_axe(g, label, plant_number=1, axis_properties=None,
                                   **metamer_properties)
     vid_organ = g.add_component(vid_metamer, edge_type='/', label='collar',
                                 **collar_properties)
-    vid_base_elt = g.add_component(vid_organ, edge_type='/', label='baseElement')
+    vid_base_elt = g.add_component(vid_organ, edge_type='/',
+                                   label='baseElement')
     vid_top_elt = g.add_component(vid_organ, edge_type='/', label='topElement')
 
     vid_plant, vid_parent_axe, parent_metamers = find_metamers(g, plant_number,
-                                                 parent_axe_label)
+                                                               parent_axe_label)
     bearing_metamer = int(axe_code[-1])
     last_metamer = len(parent_metamers) - 1
     if bearing_metamer > last_metamer:
         for i in range(last_metamer + 1, bearing_metamer + 1):
             new = add_vegetative_metamer(g, plant_number,
-                                   labels[vid_parent_axe])
+                                         labels[vid_parent_axe])
             parent_metamers.append(new)
 
     vid_parent_metamer = sorted(parent_metamers)[bearing_metamer]
@@ -641,10 +643,71 @@ def add_axe(g, label, plant_number=1, axis_properties=None,
 
     return vid_axe
 
-def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves=None,
-                stand=None, axis_dynamics=None, add_elongation=False,
-                topology=['plant', 'axe_id', 'numphy'], split=False,
-                aborting_tiller_reduction=1.0, leaf_db=None):
+
+def update_organ_elements(g, leaves=None, split=False):
+    """ Set / update organ elements
+
+    Args:
+        g: an adel mtg
+        leaves: a leaf shape database
+        split: (bool) flag trigering the separation between senescent and green
+        part of an organ
+
+    Returns:
+
+    """
+    labels = g.property('label')
+    length = g.property('length')
+    visible_length = g.property('visible_length')
+    rolled_length = g.property('rolled_length')
+    senesced_length = g.property('senesced_length')
+    azimuth = g.property('azimuth')
+    inclination = g.property('inclination')
+    diameter = g.property('diameter')
+    sectors = g.property('n_sect')
+    shape_mature_length = g.property('shape_mature_length')
+    shape_max_width = g.property('shape_max_width')
+    shape_key = g.property('shape_key')
+
+    for organ in g.vertices(scale=4):
+        if labels[organ].startswith('internode'):
+            elts = internode_elements(length[organ], visible_length[organ],
+                                      senesced_length[organ], azimuth[organ],
+                                      inclination[organ], diameter[organ],
+                                      split=split)
+        elif labels[organ].startswith('sheath'):
+            elts = sheath_elements(length[organ], visible_length[organ],
+                                   senesced_length[organ], azimuth[organ],
+                                   inclination[organ], diameter[organ],
+                                   split=split)
+        elif labels[organ].startswith('blade'):
+            elts = blade_elements(sectors[organ], length[organ],
+                                  visible_length[organ], rolled_length[organ],
+                                  senesced_length[organ],
+                                  shape_mature_length[organ],
+                                  shape_max_width[organ], shape_key[organ],
+                                  leaves=leaves, split=split)
+        else:
+            elts = []
+
+        if len(elts) > 0:
+            if len(g.components(organ)) == 2:
+                insert_elements(g, organ, elts)
+            else:
+                for elt in elts:
+                    label = elt.pop('label')
+                    vid_elt = find_label(label, g, organ)[0]
+                    for k in elt:
+                        g.property(k)[vid_elt] = elt[k]
+
+    return g
+
+
+def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
+                    leaves=None, stand=None, axis_dynamics=None,
+                    add_elongation=False,
+                    topology=('plant', 'axe_id', 'numphy'), split=False,
+                    aborting_tiller_reduction=1.0, leaf_db=None):
     """A 'clone' of mtg_factory that uses mtg_edition functions
     """
 
@@ -663,21 +726,6 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves=Non
     # for detection of newplant/newaxe
     prev_plant = 0
     prev_axe = -1
-    # current vid
-    vid_plant = -1
-    vid_axe = -1
-    vid_metamer = -1
-    vid_node = -1
-    vid_elt = -1
-    # vid of top of stem nodes and elements
-    vid_topstem_node = -1
-    vid_topstem_element = -1
-    # vid of plant main stem (axe0)
-    vid_main_stem = -1
-    # buffer for the vid of main stem anchor points for the first metamer, node and element of tillers
-    metamers = []
-    nodes = []
-    elts = []
 
     dp = parameters
     nrow = len(dp['plant'])
@@ -686,56 +734,48 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves=Non
         plant, num_metamer = [int(convert(dp.get(x)[i], undef=None)) for x in
                               [topology[e] for e in [0, 2]]]
         axe = dp.get(topology[1])[i]
-        mspos = int(convert(dp.get('ms_insertion')[i], undef=None))
         args = properties_from_dict(dp, i, exclude=topology)
+
         # Add plant if new
         if plant != prev_plant:
-            label = 'plant' + str(plant)
-            position = (0, 0, 0)
-            azimuth = 0
+            if axe != 'MS':
+                raise ValueError('Main stem is expected first when a new plant '
+                                 'is declared')
+
+            position, azimuth = (0, 0, 0), 0
             if stand and len(stand) >= plant:
                 position, azimuth = stand[plant - 1]
-            vid_plant = g.add_component(g.root, label=label, edge_type='/',
-                                        position=position, azimuth=azimuth,
-                                        refplant_id=args.get('refplant_id'))
-            # reset buffers
-            prev_axe = -1
-            vid_axe = -1
-            vid_metamer = -1
-            vid_node = -1
-            vid_elt = -1
-            vid_topstem_node = -1
-            vid_topstem_element = -1
-            vid_main_stem = -1
-            metamers = []
-            nodes = []
-            elts = []
+            plant_properties = {'position': position, 'azimuth': azimuth,
+                'refplant_id': args.get('refplant_id')}
 
-        # Add axis
-        if axe != prev_axe:
-            label = ''.join(axe.split('.'))
             timetable = None
             if axis_dynamics:
                 timetable = axis_dynamics[str(plant)][str(axe)]
-            if axe == 'MS':
-                vid_axe = g.add_component(vid_plant, edge_type='/', label=label,
-                                          timetable=timetable,
-                                          HS_final=args.get('HS_final'),
-                                          nff=args.get('nff'),
-                                          hasEar=args.get('hasEar'),
-                                          azimuth=args.get('az_insertion'))
-                vid_main_stem = vid_axe
-            else:
-                vid_axe = g.add_child(vid_main_stem, edge_type='+', label=label,
-                                      timetable=timetable,
-                                      HS_final=args.get('HS_final'),
-                                      nff=args.get('nff'),
-                                      hasEar=args.get('hasEar'),
-                                      azimuth=args.get('az_insertion'))
+            mainstem_properties = dict(timetable=timetable,
+                                       HS_final=args.get('HS_final'),
+                                       nff=args.get('nff'),
+                                       hasEar=args.get('hasEar'),
+                                       azimuth=args.get('az_insertion'))
+
+            add_plant(g, plant_number=plant, plant_properties=plant_properties,
+                      axis_properties=mainstem_properties)
+
+        # Add axis
+        if axe != prev_axe and axe != 'MS':
+            timetable = None
+            if axis_dynamics:
+                timetable = axis_dynamics[str(plant)][str(axe)]
+            axe_properties = dict(timetable=timetable,
+                                  HS_final=args.get('HS_final'),
+                                  nff=args.get('nff'),
+                                  hasEar=args.get('hasEar'),
+                                  azimuth=args.get('az_insertion'))
+            add_axe(g, axe, plant, axis_properties=axe_properties)
 
         # Add metamer
         assert num_metamer > 0
-        # args are added to metamers only if metamer_factory is none, otherwise compute metamer components
+        # args are added to metamers only if metamer_factory is none,
+        # otherwise compute metamer components
         components = []
         if metamer_factory:
             xysr_key = None
@@ -779,72 +819,27 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves=Non
                                          **args)
             args = {'L_shape': args.get('L_shape')}
         #
-        label = 'metamer' + str(num_metamer)
-        new_metamer = g.add_component(vid_axe, edge_type='/', label=label,
-                                      **args)
-        if axe == 'MS' and num_metamer == 1:
-            vid_metamer = new_metamer
-        elif num_metamer == 1:
-            # add the edge with the bearing metamer on main stem
-            vid_metamer = metamers[mspos - 1]
-            vid_metamer = g.add_child(vid_metamer, child=new_metamer,
-                                      edge_type='+')
-        else:
-            vid_metamer = g.add_child(vid_metamer, child=new_metamer,
-                                      edge_type='<')
-
-        # add metamer components, if any
+        metamer_properties = args
+        internode, sheath, blade = None, None, None
+        elts = {k: [] for k in ('internode', 'sheath', 'blade')}
         if len(components) > 0:
-            # deals with first component (internode) and first element
-            node, elements = get_component(components, 0)
-            element = elements[0]
-            new_node = g.add_component(vid_metamer, edge_type='/', **node)
-            new_elt = g.add_component(new_node, edge_type='/', **element)
-            if axe == 'MS' and num_metamer == 1:  # root of main stem
-                vid_node = new_node
-                vid_elt = new_elt
-            elif num_metamer == 1:  # root of tiller
-                vid_node = nodes[mspos - 1]
-                vid_node = g.add_child(vid_node, child=new_node, edge_type='+')
-                vid_elt = elts[mspos - 1]
-                vid_elt = g.add_child(vid_elt, child=new_elt, edge_type='+')
-            else:
-                vid_node = g.add_child(vid_topstem_node, child=new_node,
-                                       edge_type='<')
-                vid_elt = g.add_child(vid_topstem_element, child=new_elt,
-                                      edge_type='<')
-            # add other elements of first component (the internode)
-            for i in range(1, len(elements)):
-                element = elements[i]
-                vid_elt = g.add_child(vid_elt, edge_type='<', **element)
-            vid_topstem_node = vid_node
-            vid_topstem_element = vid_elt  # last element of internode
+            internode, sheath, blade = components
+            internode.pop('label')
+            sheath.pop('label')
+            blade.pop('label')
+            elts['internode'] = internode.pop('elements')
+            elts['sheath'] = sheath.pop('elements')
+            elts['blade'] = blade.pop('elements')
 
-            # add other components
-            for i in range(1, len(components)):
-                node, elements = get_component(components, i)
-                if node['label'] == 'sheath':
-                    edge_type = '+'
-                else:
-                    edge_type = '<'
-                vid_node = g.add_child(vid_node, edge_type=edge_type, **node)
-                element = elements[0]
-                new_elt = g.add_component(vid_node, edge_type='/', **element)
-                vid_elt = g.add_child(vid_elt, child=new_elt,
-                                      edge_type=edge_type)
-                for j in range(1, len(elements)):
-                    element = elements[j]
-                    vid_elt = g.add_child(vid_elt, edge_type='<', **element)
-
-                    # update buffers
-        if axe == 'MS':
-            metamers.append(vid_metamer)
-            if len(components) > 0:
-                nodes.append(vid_topstem_node)
-                elts.append(vid_topstem_element)
-        prev_plant = plant
-        prev_axe = axe
-
+        vid_metamer = add_vegetative_metamer(g, plant, axe,
+                                             metamer_properties=metamer_properties,
+                                             internode_properties=internode,
+                                             sheath_properties=sheath,
+                                             blade_properties=blade)
+        for organ in g.components(vid_metamer):
+            label = g.property('label')[organ]
+            if label in elts and len(elts[label]) > 0:
+                insert_elements(g, organ, elts[label])
     return fat_mtg(g)
 
 
@@ -1089,8 +1084,8 @@ def update_axe(axe):
     """ update phenology on axes """
     if 'timetable' in axe.properties():
         axe.phyllochronic_time = numpy.interp(axe.complex().time,
-                                           axe.timetable['tip'],
-                                           axe.timetable['n'])
+                                              axe.timetable['tip'],
+                                              axe.timetable['n'])
         # print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
 
 
@@ -1102,7 +1097,7 @@ def update_organ(organ, h_whorl=0):
     vlength = organ.visible_length
     if 'elongation_curve' in organ.properties():
         organ.length = numpy.interp(rph, organ.elongation_curve['x'],
-                                 organ.elongation_curve['y'])
+                                    organ.elongation_curve['y'])
     organ.visible_length = organ.length - h_whorl
     update_elements(organ)
     organ.dl = organ.length - length
@@ -1175,7 +1170,7 @@ def mtg_update_from_table(g, cantable, old_cantable):
                     df['numphy'] == numphy)]
                 old_dm = old_df[(old_df['plant'] == nump) & (
                     old_df['axe_id'] == ax.label) & (
-                                old_df['numphy'] == numphy)]
+                                    old_df['numphy'] == numphy)]
                 # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict(

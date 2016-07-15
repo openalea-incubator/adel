@@ -190,12 +190,12 @@ class AdelWheat(object):
                       axis_properties=ms_properties)
         return g
 
-    def add_metamer(self, g,  plant=1, axe='MS'):
+    def add_metamer(self, g, plant=1, axe='MS'):
         vid_plant, vid_axe, metamers = find_metamers(g, plant, axe)
         nff = g.property('nff')[vid_axe]
         num_metamer = len(metamers)
         df = self.phytoT(axe)
-        m = df.loc[df['n'] == num_metamer,:].to_dict('list')
+        m = df.loc[df['n'] == num_metamer, :].to_dict('list')
         metamer_properties = {'L_shape': m['Ll'][0]}
         ntop = nff - num_metamer + 1
         shape_key = None
@@ -204,53 +204,57 @@ class AdelWheat(object):
         if lctype != -999 and lcindex != -999:
             shape_key = self.leaves.get_leaf_key(lctype, lcindex, age=None)
 
-        internode_properties = {'ntop': ntop,
-                                'length': 0,
-                                'visible_length': 0,
-                                'senesced_length': 0,
-                                'diameter': m['Ed'][0],
-                                'azimuth': m['Azim'][0],
-                                'inclination': 0}
-        sheath_properties = {'ntop': ntop,
-                             'length': 0,
-                             'visible_length': 0,
-                             'senesced_length': 0,
-                             'diameter': m['Gd'][0],
-                             'azimuth': 0,
-                             'inclination': 0}
-        blade_properties = {'ntop': ntop,
-                             'length': 0,
-                             'visible_length': 0,
-                            'rolled_length': 0,
-                             'senesced_length': 0,
+        internode_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
+                                'senesced_length': 0, 'diameter': m['Ed'][0],
+                                'azimuth': m['Azim'][0], 'inclination': 0}
+        sheath_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
+                             'senesced_length': 0, 'diameter': m['Gd'][0],
+                             'azimuth': 0, 'inclination': 0}
+        blade_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
+                            'rolled_length': 0, 'senesced_length': 0,
                             'n_sect': self.nsect,
                             'shape_mature_length': m['Ll'][0],
                             'shape_max_width': m['Lw'][0],
-                             'shape_key': shape_key,
-                             'inclination': 0}
+                            'shape_key': shape_key, 'inclination': 0}
+
         return add_vegetative_metamer(g, plant, axe, metamer_properties,
                                       internode_properties, sheath_properties,
                                       blade_properties)
 
-    def setup_canopy(self, age=10):
+    def setup_canopy(self, age=10, new=False):
 
         self.canopy_age = age
 
         # produce plants positionned at origin        
         if self.nrem > 0:
             canopy = RunAdel(age, self.pars_rem, adelpars=self.run_adel_pars)
-            grem = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
-                               leaves=self.leaves, stand=None, split=self.split,
-                               aborting_tiller_reduction=self.aborting_tiller_reduction)
+            if new:
+                grem = new_mtg_factory(canopy, adel_metamer,
+                                       leaf_sectors=self.nsect,
+                                       leaves=self.leaves, stand=None,
+                                       split=self.split,
+                                       aborting_tiller_reduction=self.aborting_tiller_reduction)
+            else:
+                grem = mtg_factory(canopy, adel_metamer,
+                                   leaf_sectors=self.nsect, leaves=self.leaves,
+                                   stand=None, split=self.split,
+                                   aborting_tiller_reduction=self.aborting_tiller_reduction)
             grem = mtg_interpreter(grem, self.leaves, face_up=self.face_up,
                                    classic=self.classic)
 
         if self.nquot > 0:
             canopy = RunAdel(age, self.pars_quot, adelpars=self.run_adel_pars)
-            gquot = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
-                                leaves=self.leaves, stand=None,
-                                split=self.split,
-                                aborting_tiller_reduction=self.aborting_tiller_reduction)
+            if new:
+                gquot = new_mtg_factory(canopy, adel_metamer,
+                                        leaf_sectors=self.nsect,
+                                        leaves=self.leaves, stand=None,
+                                        split=self.split,
+                                        aborting_tiller_reduction=self.aborting_tiller_reduction)
+            else:
+                gquot = mtg_factory(canopy, adel_metamer,
+                                    leaf_sectors=self.nsect, leaves=self.leaves,
+                                    stand=None, split=self.split,
+                                    aborting_tiller_reduction=self.aborting_tiller_reduction)
             gquot = mtg_interpreter(gquot, self.leaves, face_up=self.face_up,
                                     classic=self.classic)
             gquot = replicate(gquot, self.nquot * self.duplicate)
@@ -366,8 +370,8 @@ class AdelWheat(object):
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
             colors = {
-            vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0])) for
-            vid in g.vertices(scale=g.max_scale())}
+                vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0]))
+                for vid in g.vertices(scale=g.max_scale())}
         else:
             colors = None
         s = plot3d(g,
@@ -448,8 +452,8 @@ class AdelWheat(object):
         #
         anchor = g.property('anchor_point')
         midribs_anchor = {
-        vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for vid
-        in midribs}
+            vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for
+            vid in midribs}
         hins = {k: v[0][2] + midribs[k][2] for k, v in
                 midribs_anchor.iteritems() if len(v) > 0}
 
@@ -474,35 +478,8 @@ class AdelWheat(object):
 
     def update_geometry(self, g):
 
-        for pid in g.component_roots_at_scale_iter(g.root, scale=1):
-            p = g.node(pid)
-            for a in p.components_at_scale(2):
-                for organ in a.components_at_scale(4):
-                    if organ.label.startswith('blade'):
-                        vid_organ = organ.index()
-                        vid_elt = g.parent(g.components(vid_organ)[0])
-                        for vid in reversed(g.components(vid_organ)):
-                            g.remove_vertex(vid)
-                        elements = blade_elements(organ.n_sect, organ.length,
-                                                  organ.visible_length,
-                                                  organ.rolled_length,
-                                                  organ.senesced_length,
-                                                  organ.shape_mature_length,
-                                                  organ.shape_max_width,
-                                                  organ.shape_key, self.leaves)
-                        element = elements[0]
-                        if organ.label == 'sheath':
-                            edge_type = '+'
-                        else:
-                            edge_type = '<'
-                        new_elt = g.add_component(vid_organ, edge_type='/',
-                                                  **element)
-                        vid_elt = g.add_child(vid_elt, child=new_elt,
-                                              edge_type=edge_type)
-                        for j in range(1, len(elements)):
-                            element = elements[j]
-                            vid_elt = g.add_child(vid_elt, edge_type='<',
-                                                  **element)
+        # update elements
+        g = update_organ_elements(g, self.leaves, self.split)
         g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
                             classic=self.classic)
         pos = g.property('position ')

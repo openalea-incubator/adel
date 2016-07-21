@@ -1,8 +1,7 @@
-
 # This file has been generated at Fri Nov 13 11:59:03 2015
 
+from openalea.core import Factory as Fa
 from openalea.core import *
-
 
 __name__ = 'alinea.adel.astk_interfaces'
 
@@ -16,113 +15,125 @@ __authors__ = 'Christian Fournier'
 __institutes__ = 'INRA'
 __icon__ = ''
 
+__all__ = ['alinea_adel_astk_interface_plot_statistics_node',
+           'alinea_adel_astk_interface_axis_statistics_node',
+           'alinea_adel_astk_interface_adelwheat_node',
+           'alinea_adel_geometric_elements_leaves_node',
+           'alinea_adel_astk_interface_adel_scene_node',
+           'alinea_adel_Stand_agronomicStand_node',
+           'alinea_adel_astk_interface_setup_canopy_node']
 
-__all__ = ['alinea_adel_astk_interface_plot_statistics_node', 'alinea_adel_astk_interface_axis_statistics_node', 'alinea_adel_astk_interface_adelwheat_node', 'alinea_adel_geometric_elements_leaves_node', 'alinea_adel_astk_interface_adel_scene_node', 'alinea_adel_Stand_agronomicStand_node', 'alinea_adel_astk_interface_setup_canopy_node']
+alinea_adel_astk_interface_plot_statistics_node = Fa(
+    uid="1faaba114f2011e6b469d4bed973e64a",
+    name='plot_statistics',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.astk_interface',
+    nodeclass='plot_statistics_node',
+    inputs=[{'interface': None, 'name': 'adel', 'value': None},
+            {'interface': None, 'name': 'Axis statistics', 'value': None}],
+    outputs=({'interface': None, 'name': 'out'},),
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
+alinea_adel_astk_interface_axis_statistics_node = Fa(
+    uid="1faaba124f2011e6b469d4bed973e64a",
+    name='axis_statistics',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.astk_interface',
+    nodeclass='axis_statistics_node',
+    inputs=[{'interface': None, 'name': 'adel', 'value': None},
+            {'interface': None, 'name': 'g', 'value': None}],
+    outputs=({'interface': None, 'name': 'out'},),
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
+alinea_adel_astk_interface_adelwheat_node = Fa(
+    uid="1faaba134f2011e6b469d4bed973e64a",
+    name='AdelWheat',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.astk_interface',
+    nodeclass='adelwheat_node',
+    inputs=[{'interface': IInt, 'name': 'nplants', 'value': 1},
+            {'interface': IInt, 'name': 'nsect', 'value': 1},
+            {'interface': None, 'name': 'devT', 'value': None},
+            {'interface': None, 'name': 'leaves', 'value': None},
+            {'interface': None, 'name': 'geoAxe', 'value': None},
+            {'interface': None, 'name': 'stand', 'value': None},
+            {'interface': None, 'name': 'run_adel_pars', 'value': None},
+            {'interface': IDict, 'name': 'options', 'value': {}}],
+    outputs=({'interface': None, 'name': 'out'},),
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
-alinea_adel_astk_interface_plot_statistics_node = Factory(name='plot_statistics',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.astk_interface',
-                nodeclass='plot_statistics_node',
-                inputs=[{'interface': None, 'name': 'adel', 'value': None}, {'interface': None, 'name': 'Axis statistics', 'value': None}],
-                outputs=({'interface': None, 'name': 'out'},),
-                widgetmodule=None,
-                widgetclass=None,
-               )
+alinea_adel_geometric_elements_leaves_node = Fa(
+    uid="1faaba144f2011e6b469d4bed973e64a",
+    name='Leaves',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.geometric_elements',
+    nodeclass='leaves_node',
+    inputs=[{'interface': None, 'name': 'xydb', 'value': None, 'desc': ''},
+            {'interface': None, 'name': 'srdb', 'value': None, 'desc': ''},
+            {'interface': None, 'name': 'geoLeaf', 'value': None, 'desc': ''},
+            {'interface': None, 'name': 'dynamic_bins', 'value': None,
+             'desc': ''},
+            {'interface': IInt, 'name': 'discretisation_level', 'value': 9,
+             'desc': ''},
+            {'interface': IInt, 'name': 'twist', 'value': 0, 'desc': ''}],
+    outputs=[{'interface': None, 'name': 'out', 'desc': ''}],
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
+alinea_adel_astk_interface_adel_scene_node = Fa(
+    uid="1faaba154f2011e6b469d4bed973e64a",
+    name='adel_scene',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.astk_interface',
+    nodeclass='adel_scene_node',
+    inputs=[{'interface': None, 'name': 'g', 'value': None}],
+    outputs=({'interface': None, 'name': 'out'},),
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
+alinea_adel_Stand_agronomicStand_node = Fa(
+    uid="1faaba164f2011e6b469d4bed973e64a",
+    name='AgronomicStand',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.Stand',
+    nodeclass='agronomicStand_node',
+    inputs=None,
+    outputs=None,
+    widgetmodule=None,
+    widgetclass=None,
+    )
 
-
-alinea_adel_astk_interface_axis_statistics_node = Factory(name='axis_statistics',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.astk_interface',
-                nodeclass='axis_statistics_node',
-                inputs=[{'interface': None, 'name': 'adel', 'value': None}, {'interface': None, 'name': 'g', 'value': None}],
-                outputs=({'interface': None, 'name': 'out'},),
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-alinea_adel_astk_interface_adelwheat_node = Factory(name='AdelWheat',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.astk_interface',
-                nodeclass='adelwheat_node',
-                inputs=[{'interface': IInt, 'name': 'nplants', 'value': 1}, {'interface': IInt, 'name': 'nsect', 'value': 1}, {'interface': None, 'name': 'devT', 'value': None}, {'interface': None, 'name': 'leaves', 'value': None}, {'interface': None, 'name': 'geoAxe', 'value': None}, {'interface': None, 'name': 'stand', 'value': None}, {'interface': None, 'name': 'run_adel_pars', 'value': None}, {'interface': IDict, 'name': 'options', 'value': {}}],
-                outputs=({'interface': None, 'name': 'out'},),
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-alinea_adel_geometric_elements_leaves_node = Factory(name='Leaves',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.geometric_elements',
-                nodeclass='leaves_node',
-                inputs=[{'interface': None, 'name': 'xydb', 'value': None, 'desc': ''}, {'interface': None, 'name': 'srdb', 'value': None, 'desc': ''}, {'interface': None, 'name': 'geoLeaf', 'value': None, 'desc': ''}, {'interface': None, 'name': 'dynamic_bins', 'value': None, 'desc': ''}, {'interface': IInt, 'name': 'discretisation_level', 'value': 9, 'desc': ''}, {'interface': IInt, 'name': 'twist', 'value': 0, 'desc': ''}],
-                outputs=[{'interface': None, 'name': 'out', 'desc': ''}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-alinea_adel_astk_interface_adel_scene_node = Factory(name='adel_scene',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.astk_interface',
-                nodeclass='adel_scene_node',
-                inputs=[{'interface': None, 'name': 'g', 'value': None}],
-                outputs=({'interface': None, 'name': 'out'},),
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-alinea_adel_Stand_agronomicStand_node = Factory(name='AgronomicStand',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.Stand',
-                nodeclass='agronomicStand_node',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-alinea_adel_astk_interface_setup_canopy_node = Factory(name='setup_canopy',
-                authors='Christian Fournier (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='alinea.adel.astk_interface',
-                nodeclass='setup_canopy_node',
-                inputs=[{'interface': None, 'name': 'adel', 'value': None}, {'interface': IInt, 'name': 'age', 'value': 10}],
-                outputs=({'interface': None, 'name': 'out'},),
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
+alinea_adel_astk_interface_setup_canopy_node = Fa(
+    uid="1faaba174f2011e6b469d4bed973e64a",
+    name='setup_canopy',
+    authors='Christian Fournier (wralea authors)',
+    description='',
+    category='Unclassified',
+    nodemodule='alinea.adel.astk_interface',
+    nodeclass='setup_canopy_node',
+    inputs=[{'interface': None, 'name': 'adel', 'value': None},
+            {'interface': IInt, 'name': 'age', 'value': 10}],
+    outputs=({'interface': None, 'name': 'out'},),
+    widgetmodule=None,
+    widgetclass=None,
+    )

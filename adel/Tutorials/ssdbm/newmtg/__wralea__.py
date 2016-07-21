@@ -1,8 +1,6 @@
-
 # This file has been generated at Tue Mar 17 09:57:44 2015
 
-from openalea.core import *
-
+from openalea.core import Factory as Fa
 
 __name__ = 'alinea.adel.tutorials.ssdbm.mtg'
 
@@ -16,20 +14,18 @@ __authors__ = 'C. Pradal, C. Fournier, S. Cohen-Boulakia'
 __institutes__ = 'INRIA'
 __icon__ = ''
 
+__all__ = ['openalea_mtg_algo_union', ]
 
-__all__ = ['openalea_mtg_algo_union',]
-
-
-openalea_mtg_algo_union = Factory(name='union',
-                authors='C. Pradal, C. Fournier, S. Cohen-Boulakia (wralea authors)',
-                description='',
-                category='Unclassified',
-                nodemodule='openalea.mtg.algo',
-                nodeclass='union',
-                inputs=[{'name': 'g1', 'desc': 'MTG'}, {'name': 'g2', 'desc': 'MTG'}],
-                outputs=[{'name': 'g', 'desc': 'MTG'}],
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
+openalea_mtg_algo_union = Fa(uid="1c21fd6b4f2011e6b469d4bed973e64a",
+                             name='union',
+                             authors='C. Pradal, C. Fournier, S. Cohen-Boulakia (wralea authors)',
+                             description='',
+                             category='Unclassified',
+                             nodemodule='openalea.mtg.algo',
+                             nodeclass='union',
+                             inputs=[{'name': 'g1', 'desc': 'MTG'},
+                                     {'name': 'g2', 'desc': 'MTG'}],
+                             outputs=[{'name': 'g', 'desc': 'MTG'}],
+                             widgetmodule=None,
+                             widgetclass=None,
+                             )

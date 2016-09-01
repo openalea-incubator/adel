@@ -130,9 +130,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
     # s(on mature shape) at which leaf becomes rolled
     s_limrolled = Lshape
     # compute partitioning of visible length
+    S_hide = 0
     try:
         lhide = max(l - lvis, 0.)
-        S_hide = 0
         if lhide > 0:
             S_hide = leaves.blade_elt_area(shape_key, Lshape, Lwshape,
                                            (Lshape - l) / Lshape,

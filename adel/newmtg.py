@@ -170,6 +170,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
             S_green = 0
             S_sen = 0
             S_tot = 0
+            w_green = 0
+            w_sen = 0
+            w_tot = 0
             srb_green = None
             srt_green = None
             srb_sen = None
@@ -194,13 +197,21 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
                                                         Lwshape,
                                                         sb_green / Lshape,
                                                         st_green / Lshape)
+                        w_green = leaves.blade_elt_width(shape_key, Lshape,
+                                                        Lwshape,
+                                                        sb_green / Lshape,
+                                                        st_green / Lshape)
                     if ls_sen > 0:
                         S_sen = leaves.blade_elt_area(shape_key, Lshape,
                                                       Lwshape, sb_sen / Lshape,
                                                       st_sen / Lshape)
+                        w_sen = leaves.blade_elt_width(shape_key, Lshape, Lwshape,
+                                                  sb_sen / Lshape,
+                                                  st_sen / Lshape)
                     # made intergration again for avoiding fluctuations
                     # S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
                     S_tot = S_green + S_sen
+                    w_tot = max(w_green, w_sen)
                     #
                     # compute position of flat parts of the element
                     ls_flat = min(ls_vis, max(0., st - s_limrolled))
@@ -228,17 +239,17 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
             green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g',
                          'length': ls_green, 'area': S_green, 'is_green': True,
                          'srb': srb_green, 'srt': srt_green,
-                         'lrolled': ls_rolled_green, 'd_rolled': d_rolled}
+                         'lrolled': ls_rolled_green, 'd_rolled': d_rolled, 'width': w_green}
             sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's',
                        'length': ls_sen, 'area': S_sen, 'is_green': False,
                        'srb': srb_sen, 'srt': srt_sen, 'lrolled': ls_rolled_sen,
-                       'd_rolled': d_rolled}
+                       'd_rolled': d_rolled, 'width': w_sen}
             elt = {'label': 'LeafElement' + str(isect + 1),
                    'length': ls_sen + ls_green, 'area': S_tot,
                    'green_length': ls_green, 'green_area': S_green,
                    'senesced_length': ls_sen, 'senesced_area': S_sen,
                    'is_green': (ls_green > ls_sen), 'srb': srb_green,
-                   'srt': srt_sen, 'lrolled': ls_rolled, 'd_rolled': d_rolled}
+                   'srt': srt_sen, 'lrolled': ls_rolled, 'd_rolled': d_rolled, 'width': w_tot}
             if split:
                 elements.extend([green_elt, sen_elt])
             else:
@@ -673,6 +684,7 @@ def update_organ_elements(g, leaves=None, split=False):
     shape_mature_length = g.property('shape_mature_length')
     shape_max_width = g.property('shape_max_width')
     shape_key = g.property('shape_key')
+    area = g.property('area')
 
     for organ in g.vertices(scale=4):
         if labels[organ].startswith('internode'):
@@ -696,6 +708,17 @@ def update_organ_elements(g, leaves=None, split=False):
             elts = []
 
         if len(elts) > 0:
+            # update area
+            if labels[organ].startswith('blade'):
+                area[organ] = sum(
+                    [elt['area'] for elt in elts if
+                     elt['label'].startswith('LeafElement')])
+            else:
+                area[organ] = sum(
+                    [elt['area'] for elt in elts if
+                     elt['label'].startswith('StemElement')])
+
+            # insert elts
             if len(g.components(organ)) == 2:
                 insert_elements(g, organ, elts)
             else:
@@ -704,6 +727,7 @@ def update_organ_elements(g, leaves=None, split=False):
                     vid_elt = find_label(label, g, organ)[0]
                     for k in elt:
                         g.property(k)[vid_elt] = elt[k]
+
 
     return g
 

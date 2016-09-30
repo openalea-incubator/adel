@@ -142,6 +142,28 @@ class Leaves(object):
 
         return S
 
+    def blade_elt_width(self, leaf_key, Lshape, Lwshape, sr_base, sr_top):
+        """ width of a blade element, positioned with two relative curvilinear absisca"""
+
+        w = 0
+        sr_base = min([1, max([0, sr_base])])
+        sr_top = min([1, max([sr_base, sr_top])])
+        if leaf_key is not None:
+            s, r = self.get_sr(leaf_key)
+            sre = [sr for sr in zip(s, r) if (sr_base < sr[0] < sr_top)]
+            if len(sre) > 0:
+                se, re = zip(*sre)
+                snew = [sr_base] + list(se) + [sr_top]
+                rnew = [numpy.interp(sr_base, s, r)] + list(re) + [
+                    numpy.interp(sr_top, s, r)]
+            else:
+                snew = [sr_base, sr_top]
+                rnew = [numpy.interp(sr_base, s, r), numpy.interp(sr_top, s, r)]
+
+            w = numpy.mean(rnew) * Lwshape
+
+        return w
+
     def mesh(self, leaf_key, L_shape, Lw_shape, length, s_base, s_top, incline=1, flipx = False):
         """ Compute mesh for a leaf element.
             - shape is a x,y,s,r tuple descriibing leaf shape

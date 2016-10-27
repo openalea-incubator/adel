@@ -398,6 +398,7 @@ class HaunStage(object):
     def load(file_path):
         with open(file_path, 'r') as input_file:
             saved = json.load(input_file)
+            saved['cohort_delays'] = {int(k):v for k, v in saved['cohort_delays'].iteritems()}
         return HaunStage(phyllochron = saved['phyllochron'], TT_hs_0 = saved['TT_hs_0'],
                          std_TT_hs_0 = saved['std_TT_hs_0'], mean_nff = saved['mean_nff'],
                          dHS_nff = saved['dHS_nff'], dTT_cohort=saved['dTT_cohort'],

@@ -19,7 +19,7 @@ Extensions of plantgen module developed for reconstructing echap canopies
 
 import pandas
 import numpy
-import random
+import json
 import operator
 from itertools import chain
 from scipy.interpolate import interp1d
@@ -364,16 +364,46 @@ class HaunStage(object):
     """ Handle HaunStage = f (ThermalTime) fits for mean plant and its nff modalities
     """
     
-    def __init__(self, phyllochron = 110., TT_hs_0 = 0, std_TT_hs_0 = 0, mean_nff = 12, dHS_nff = 0.25, dTT_cohort={'first': 30, 'increment': 10}, inner_parameters ={}):
+    def __init__(self, phyllochron = 110., TT_hs_0 = 0, std_TT_hs_0 = 0, mean_nff = 12, dHS_nff = 0.25, dTT_cohort={'first': 30, 'increment': 10}, inner_parameters ={}, user_cohort_delays = None):
+        self._phyllochron = phyllochron
         self.a_cohort = 1. / phyllochron
         self.TT_hs_0 = TT_hs_0
         self.mean_nff = mean_nff# nff of the mean plant
+        self._dHS_nff= dHS_nff
         self.dTT_nff = dHS_nff * self.a_cohort
         self.dTT_cohort = dTT_cohort
         self.std_TT_hs_0 = std_TT_hs_0
-        self.cohort_delays = cohort_delays(inner_parameters)
+        if user_cohort_delays is None:
+            self.cohort_delays = cohort_delays(inner_parameters)
+        else:
+            self.cohort_delays = user_cohort_delays
         self.inner_parameters = inner_parameters
-        
+
+    def dump(self, file_path):
+        saved = dict()
+        saved['phyllochron'] = self._phyllochron
+        saved['TT_hs_0'] = self.TT_hs_0
+        saved['mean_nff'] = self.mean_nff
+        saved['dHS_nff'] = self._dHS_nff
+        saved['dTT_cohort'] = self.dTT_cohort
+        saved['std_TT_hs_0'] = self.std_TT_hs_0
+        saved['cohort_delays'] = self.cohort_delays
+        saved['inner_parameters'] = self.inner_parameters
+
+        with open(file_path, 'w') as output_file:
+            json.dump(saved, output_file, sort_keys=True, indent=4,
+                      separators=(',', ': '))
+
+    @staticmethod
+    def load(file_path):
+        with open(file_path, 'r') as input_file:
+            saved = json.load(input_file)
+        return HaunStage(phyllochron = saved['phyllochron'], TT_hs_0 = saved['TT_hs_0'],
+                         std_TT_hs_0 = saved['std_TT_hs_0'], mean_nff = saved['mean_nff'],
+                         dHS_nff = saved['dHS_nff'], dTT_cohort=saved['dTT_cohort'],
+                         inner_parameters =saved['inner_parameters'],
+                         user_cohort_delays = saved['cohort_delays'])
+
     def __call__(self, TT, nff=None, cohort=1):
         return self.HS(TT, nff, cohort)    
         
@@ -389,7 +419,7 @@ class HaunStage(object):
         cohort = numpy.array(cohort)
         dTT = self.dTT_cohort['first'] + self.dTT_cohort['increment'] * (cohort - 3)
         dTT = numpy.where(cohort == 1, 0, dTT)
-        return dTT 
+        return dTT
     
     def TTflag(self, nff = None, cohort = 1):
         hsflag = self.HSflag(nff, cohort)
@@ -416,17 +446,14 @@ class HaunStage(object):
         
     def TTem(self, TT, cohort=1):
         return numpy.array(TT) - self.TTfirst(cohort)    
-        
-    
+
     def phyllochron(self, nff=None, cohort=1):
         return 1. / self.a_nff(nff, cohort)
         
     def dHS_nff(self):
         return self.dTT_nff / self.phyllochron()
-        
-    
-    def curve(self, nff=None, cohort=1):
 
+    def curve(self, nff=None, cohort=1):
         ymax = self.HSflag(nff, cohort)
         return interp1d([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort), 3000.],[0., 0., ymax, ymax]) 
 

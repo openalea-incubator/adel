@@ -308,41 +308,51 @@ class AdelWheat(object):
             pstat = plot_statistics(axstat, self.nplants, self.domain_area)
         return pstat
         
-    def save(self, g, index = 0, dir = './adel_saved'):
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+    def save(self, g, index = 0, dir='./adel_saved', basename=None):
+        if basename is None:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            basename_geom = dir + '/scene%04d' %(index)
+            basename_adel = dir + '/adel%04d' %(index)
+        else:
+            basename_adel = basename_geom = str(basename)
         s = self.scene(g)
         geom = {sh.id:sh.geometry for sh in s}
         g.remove_property('geometry')
-        fgeom = dir + '/scene%04d.bgeom'%(index)
-        fg = dir+'/adel%04d.pckl'%(index)
+        fgeom = basename_geom + '.bgeom'
+        fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
-        f = open(fg, 'w')
-        pickle.dump([g,self.canopy_age], f)
-        f.close()
+        with open(fg, 'w') as output:
+            pickle.dump([g,self.canopy_age], output)
         #restore geometry
         g.add_property('geometry')
         g.property('geometry').update(geom)
-        return fgeom,fg
+        return fgeom, fg
         
-    def load(self, index=0, dir = './adel_saved'):
-        from openalea.plantgl.all import Scene
-        
-        fgeom = dir + '/scene%04d.bgeom'%(index)
-        fg = dir + '/adel%04d.pckl'%(index)
-        
-        s = Scene()
-        s.read(fgeom, 'BGEOM')
-        geom = {sh.id:sh.geometry for sh in s}
-    
+    def load(self, index=0, dir = './adel_saved', basename=None,load_geom=True):
+        if basename is None:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            basename_geom = dir + '/scene%04d' %(index)
+            basename_adel = dir + '/adel%04d' %(index)
+        else:
+            basename_adel = basename_geom = basename
+        fgeom = basename_geom + '.bgeom'
+        fg = basename_adel + '.pckl'
+        if not os.path.exists(fgeom) or not os.path.exists(fg):
+            raise IOError('adel cannot find saved files')
+
         f = open(fg)
         g, TT = pickle.load(f)
         f.close()
         
         self.canopy_age = TT
-        
-        g.add_property('geometry')
-        g.property('geometry').update(geom)
+        if load_geom:
+            s = pgl.Scene()
+            s.read(fgeom, 'BGEOM')
+            geom = {sh.id:sh.geometry for sh in s}
+            g.add_property('geometry')
+            g.property('geometry').update(geom)
         
         return g, TT
         

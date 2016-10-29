@@ -91,6 +91,11 @@ class AdelWheat(object):
         if stand is None:
             stand = AgronomicStand(sowing_density = 250, plant_density=250, inter_row=0.15)
         self.stand=stand
+        stand_parameters = {'sowing_density':stand.sowing_density,
+                                 'plant_density': stand.plant_density,
+                                  'inter_row': stand.inter_row,
+                                 'noise': stand.noise,
+                                 'density_curve_data': stand.density_curve_data}
             
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
@@ -138,8 +143,16 @@ class AdelWheat(object):
         self.aborting_tiller_reduction = aborting_tiller_reduction
         self.classic = classic
         self.convUnit = convUnit
-    
-    def timing(self, delay, steps, weather, start_date):
+        self.meta = {'stand': stand_parameters, 'nplants': self.nplants,
+                     'domain':self.domain, 'domain_area':self.domain_area,
+                     'nsect':self.nsect, 'convUnit': self.convUnit, 'split':self.split}
+
+    @staticmethod
+    def meta_informations(g):
+        return g.property('meta').values()[0]
+
+    @staticmethod
+    def timing(delay, steps, weather, start_date):
         """ compute timing and time_control_sets for a simulation between start and stop. 
 
         Return 0 when there is no rain
@@ -150,7 +163,6 @@ class AdelWheat(object):
        
         return (TimeControlSet(Tair = temp[i / int(delay)], dt = delay) if not i % delay  else TimeControlSet(dt=0) for i in range(steps))
 
-    
     def setup_canopy(self, age = 10):
     
         self.canopy_age = age
@@ -177,6 +189,7 @@ class AdelWheat(object):
         #update positions and domain if smart stand is used       
         if self.stand.density_curve is not None:
             new_nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
+            self.meta.update({'domain':self.domain, 'domain_area':self.domain_area})
             assert new_nplants == self.nplants
 
         # dispose plants and renumber them
@@ -191,7 +204,10 @@ class AdelWheat(object):
             for gid in g.components_at_scale(vid, g.max_scale()):
                 if gid in geom:
                     geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i])
-        
+        # add meta
+        root = g.node(0)
+        self.meta.update({'canopy_age': age})
+        root.meta = self.meta
         return g
 
     def checkAxeDyn(self, dates=range(0,2000,100), density=None):
@@ -267,8 +283,9 @@ class AdelWheat(object):
         p = [vid for vid in g.vertices(scale=1) if g.label(vid) == plant][0]
         ax = [vid for vid in g.components(p) if g.label(vid) == axe][0]
         return g.sub_mtg(ax,copy=True)
-   
-    def plot(self, g, property=None):
+
+    @staticmethod
+    def plot(g, property=None):
         from openalea.plantgl.all import Viewer
         from openalea.mtg.plantframe.color import colormap
         
@@ -282,33 +299,41 @@ class AdelWheat(object):
         s = plot3d(g, colors=colors)  # use the one of openalea.plantframe.color instead ?
         Viewer.display(s)
         return s
-        
-    def scene(self, g):
+
+    @staticmethod
+    def scene(g):
         return plot3d(g)
-        
-    def get_exposed_areas(self, g, convert=False, TT=None):
+
+    @staticmethod
+    def get_exposed_areas(g, convert=False, TT=None):
         areas = exposed_areas(g)
         if convert:
             areas = exposed_areas2canS(areas)
         if TT is None:
-            TT = self.canopy_age
+            TT = AdelWheat.meta_informations(g)['canopy_age']
         areas['TT'] = TT
         return areas
-        
-    def axis_statistics(self, g):
-        df_lai = self.get_exposed_areas(g, convert=True)
+
+    @staticmethod
+    def axis_statistics(g):
+        meta = AdelWheat.meta_informations(g)
+        df_lai = AdelWheat.get_exposed_areas(g, convert=True)
         axstat = None
         if not df_lai.empty:
-            axstat, _ = axis_statistics(df_lai, self.domain_area, self.convUnit)
+            axstat, _ = axis_statistics(df_lai, meta['domain_area'], meta['convUnit'])
         return axstat
-        
-    def plot_statistics(self, axstat=None):
+
+    @staticmethod
+    def plot_statistics(g, axstat=None):
         pstat=None
-        if axstat is not None:
-            pstat = plot_statistics(axstat, self.nplants, self.domain_area)
+        meta = AdelWheat.meta_informations(g)
+        if axstat is None:
+            axstat = AdelWheat.axis_statistics(g)
+        pstat = plot_statistics(axstat, meta['nplants'], meta['domain_area'])
         return pstat
-        
-    def save(self, g, index = 0, dir='./adel_saved', basename=None):
+
+    @staticmethod
+    def save(g, index = 0, dir='./adel_saved', basename=None):
         if basename is None:
             if not os.path.exists(dir):
                 os.mkdir(dir)
@@ -316,20 +341,21 @@ class AdelWheat(object):
             basename_adel = dir + '/adel%04d' %(index)
         else:
             basename_adel = basename_geom = str(basename)
-        s = self.scene(g)
+        s = AdelWheat.scene(g)
         geom = {sh.id:sh.geometry for sh in s}
         g.remove_property('geometry')
         fgeom = basename_geom + '.bgeom'
         fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
         with open(fg, 'w') as output:
-            pickle.dump([g,self.canopy_age], output)
+            pickle.dump(g, output)
         #restore geometry
         g.add_property('geometry')
         g.property('geometry').update(geom)
         return fgeom, fg
-        
-    def load(self, index=0, dir = './adel_saved', basename=None,load_geom=True):
+
+    @staticmethod
+    def load(index=0, dir = './adel_saved', basename=None,load_geom=True):
         if basename is None:
             if not os.path.exists(dir):
                 os.mkdir(dir)
@@ -343,10 +369,9 @@ class AdelWheat(object):
             raise IOError('adel cannot find saved files')
 
         f = open(fg)
-        g, TT = pickle.load(f)
+        g = pickle.load(f)
         f.close()
-        
-        self.canopy_age = TT
+
         if load_geom:
             s = pgl.Scene()
             s.read(fgeom, 'BGEOM')
@@ -354,7 +379,7 @@ class AdelWheat(object):
             g.add_property('geometry')
             g.property('geometry').update(geom)
         
-        return g, TT
+        return g
         
     def get_midribs(self,g, resample = False):
         

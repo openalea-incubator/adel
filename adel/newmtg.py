@@ -152,13 +152,12 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
     # hidden_elt = {'label': 'StemElement', 'offset': lhide, 'length': lrolled, 'area': 0, 'green_length': lrolled, 'green_area': 0, 'senesced_length' : 0, 'senesced_area':0,'is_green': True, 'azimuth': 0, 'inclination':0}
     hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': S_hide,
                   'is_green': True}
-    elements = []
+    elements = [hidden_elt]
     ds = 0
     if Lshape is not None:
         ds = float(Lshape) / sectors
     # compute sectors from leafshape bes to leaf shape top
     if lvis > 1e-6:
-        elements = [hidden_elt]
         for isect in range(sectors):
             ls_vis = 0
             ls_rolled = 0

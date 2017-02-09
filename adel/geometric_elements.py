@@ -175,8 +175,11 @@ class Leaves(object):
         """
         return form factor for each key in sr_db
         """
-        
-        return {k:simps(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
+        try:
+            return {k:simps(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
+        except TypeError:
+            return {k: simps(self.srdb[k][1], self.srdb[k][0]) for k in
+                    self.srdb}
         
     def midrib(self, blade, resample=False):
         """ Compute visible midrib x,y coordinates  and vertical distance to insertion point due to rollingfrom a blade node

@@ -229,16 +229,16 @@ class AdelDress(object):
     conv_units = {'mm': 0.001, 'cm': 0.01, 'dm': 0.1, 'm': 1, 'dam': 10, 'hm': 100,
              'km': 1000}
     def __init__(self, scene_unit='cm', dim_unit='cm', dimT=None, leaves=None, nsect=1, classic=False, stand=None):
-        """
+        """ Instantiate a dresser
 
         Args:
-            scene_unit:
-            dim_unit:
-            dimT:
-            leaves:
-            nsect:
-            classic:
-            stand:
+            scene_unit: (string) desired length unit for the output mtg
+            dim_unit: (string) length unit used in the dimension table
+            dimT: (panda.dataFrame) a table with organ adimensions
+            leaves: (object) a Leaves class instance pointing to leaf shape database
+            nsect: (int) the number of sectors on leaves
+            classic: (bool) should stem cylinders be classical pgl cylinders ?
+            stand: (object) a Stand class instance
         """
 
         if leaves is None:
@@ -261,52 +261,82 @@ class AdelDress(object):
         self.classic = classic
 
 
-    def canopy_table(self, nplants=1):
-        if nplants > 1:
-            raise NotImplementedError()
+
+    def canopy_table(self, nplants=1, azimuth=None, seed=None):
+
+        numpy.random.seed(seed)
+
+        if azimuth is None:
+            def azimuth(n,ntop,axe):
+                return 180 + (numpy.random.random() - 0.5) * 30
+
         df = self.dimT.loc[:,
              ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]
         df.rename(
             columns={'L_blade': 'Ll', 'W_blade': 'Lw_shape',
                      'L_sheath': 'Gl', 'W_sheath': 'Gd',
                      'L_internode': 'El', 'W_internode': 'Ed'}, inplace=True)
+        conv = self.conv_units[self.dim_unit] / self.conv_units[self.scene_unit]
+        df.loc[:,('Ll','Lw_shape', 'Gl', 'Gd', 'El', 'Ed')] *= conv
         # add mandatory topological info and sort from base to top
         df.loc[:, 'axe_id'] = 'MS'
         df.loc[:, 'ms_insertion'] = 0
         df.loc[:,
         'numphy'] = df.ntop.max() + 1 - df.ntop
         df = df.sort_values(['plant', 'numphy'])
-        # compute visibility
-        ht0 = 0
-        hbase = df['El'].cumsum() - df['El']
-        hcol = hbase + df['Gl'] + df['El']
-        h_hide = [max([ht0] + hcol[:i].tolist()) for i in range(len(hcol))]
-        htube = numpy.maximum(0, h_hide - hbase)
-        df['Lv'] = numpy.minimum(df['Ll'], numpy.maximum(0, df['Ll'] + df['Gl'] + df['El']- htube))
-        df['Gv'] = numpy.minimum(df['Gl'], numpy.maximum(0, df['Gl'] + df['El'] - htube))
-        df['Ev'] = numpy.minimum(df['El'], numpy.maximum(0, df['El'] - htube))
-        # add missing mandatory data  (does like adel)
-        df.loc[:, 'Laz'] = [180 + (numpy.random.random() - 0.5) * 30 for i in
-                            range(len(df))]  # leaf azimuth
-        df.loc[:, 'LcType'] = numpy.where(df['ntop'] > 0, df['ntop'],
-                                          1)  # selector for first level in leaf db
-        df.loc[:,
-        'LcIndex'] = 1  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
-        # fill other columns
-        df.loc[:, 'Lr'] = 0
-        df.loc[:, 'Lsen'] = 0
-        df.loc[:, 'L_shape'] = df['Ll']
-        df.loc[:, 'Linc'] = 1
-        df.loc[:, 'Gsen'] = 0
-        df.loc[:, 'Ginc'] = 0
-        df.loc[:, 'Esen'] = 0
-        df.loc[:, 'Einc'] = 0
-        return df
 
-    def canopy(self, nplants=1):
-        df = self.canopy_table(nplants=nplants)
-        nplants, domain, positions, domain_area = self.stand.smart_stand(nplants=nplants)
-        stand = [(pos, 0) for pos in positions]
+        ref_plant = numpy.random.choice(list(set(df['plant'])), nplants)
+        dfl = []
+        for i, p in enumerate(ref_plant):
+            dfp = df.loc[df['plant'] == p, :]
+            dfp['refplant_id'] = p
+            dfp.loc[:,'plant'] = i + 1
+            # compute visibility
+            ht0 = 0
+            hbase = dfp['El'].cumsum() - dfp['El']
+            hcol = hbase + dfp['Gl'] + dfp['El']
+            h_hide = [max([ht0] + hcol[:i].tolist()) for i in range(len(hcol))]
+            htube = numpy.maximum(0, h_hide - hbase)
+            dfp['Lv'] = numpy.minimum(dfp['Ll'], numpy.maximum(0, dfp['Ll'] + dfp['Gl'] + dfp['El']- htube))
+            dfp['Gv'] = numpy.minimum(dfp['Gl'], numpy.maximum(0, dfp['Gl'] + dfp['El'] - htube))
+            dfp['Ev'] = numpy.minimum(dfp['El'], numpy.maximum(0, dfp['El'] - htube))
+            # add missing mandatory data  (does like adel)
+            dfp.loc[:, 'Laz'] = [azimuth(*arg) for arg in
+                                zip(dfp['numphy'], dfp['ntop'], dfp['axe_id'])]  # leaf azimuth
+            dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'],
+                                              1)  # selector for first level in leaf db
+            dfp.loc[:,
+            'LcIndex'] = 1 + numpy.array(map(lambda t: numpy.random.choice(range(len(self.leaves.xydb[str(t)]))), dfp['LcType']))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
+            # fill other columns
+            dfp.loc[:, 'Lr'] = 0
+            dfp.loc[:, 'Lsen'] = 0
+            dfp.loc[:, 'L_shape'] = dfp['Ll']
+            dfp.loc[:, 'Linc'] = 1
+            dfp.loc[:, 'Gsen'] = 0
+            dfp.loc[:, 'Ginc'] = 0
+            dfp.loc[:, 'Esen'] = 0
+            dfp.loc[:, 'Einc'] = 0
+            dfl.append(dfp)
+
+        return pandas.concat(dfl)
+
+    def canopy(self, nplants=1, azimuth=None, seed=None):
+        """ Generate a mtg encoding the canopy
+
+        Args:
+            nplants: the number of plants in the canopy
+            azimuth: a callable returning leaf azimuth as a function of leaf rank,
+             leaf rank from top and axe_id. If None
+            seed: (int) a value to initialize random number generator
+
+        Returns:
+
+        """
+        df = self.canopy_table(nplants=nplants, azimuth=azimuth, seed=seed)
+        nplants, domain, positions, domain_area = self.stand.smart_stand(nplants=nplants, convunit = 1. / self.conv_units[self.scene_unit])
+        numpy.random.seed(seed)
+        plant_azimuths = numpy.random.random(nplants) * 360
+        stand = zip(positions, plant_azimuths)
         g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect, leaves=self.leaves, stand=stand)
         # add geometry
         g = mtg_interpreter(g, self.leaves, classic=self.classic)

@@ -36,7 +36,7 @@ def regular_plot(inter_plant, inter_row, nrow, plant_per_row, noise=0, convunit=
     positions = sorted(positions,key= itemgetter(1,0))
     # add noise
     if noise > 0:
-        positions = map(lambda x: randomise_position(x, noise), positions)
+        positions = map(lambda x: randomise_position(x, noise * convunit), positions)
     if center_scene:
         xc = float(domain[1][0] + domain[0][0]) / 2
         yc = float(domain[1][1] + domain[0][1]) / 2

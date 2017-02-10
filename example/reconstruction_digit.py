@@ -4,6 +4,8 @@ import numpy
 
 from alinea.adel.dresser import blade_dimension, stem_dimension, ear_dimension, \
     dimension_table, AdelDress
+from alinea.adel.geometric_elements import Leaves
+from alinea.adel.Stand import AgronomicStand
 
 #input camille
 
@@ -28,6 +30,9 @@ adel.plot(g)
 
 # input Romain
 #
+
+
+
 blades = blade_dimension(length=[18.2, 21.1, 22.7, 17.4],
                          area=[16, 22.8, 34, 34.6],
                          ntop=[4, 3, 2, 1]
@@ -38,16 +43,9 @@ stem = stem_dimension(ntop=[4, 3, 2, 1], sheath=[11, 12.5, 14, 14.5],
                       d_internode=[0.2, 0.3, 0.3, 0.3])
 ear = ear_dimension(peduncle=21.9, ear=9, projected_area_ear=15, d_peduncle=0.3)
 dimT = dimension_table(blades, stem, ear)
-
-adel = AdelDress(dimT=dimT)
-g = adel.canopy(nplants=1)
+# leaf shape database
+leaves = Leaves()
+stand = AgronomicStand(sowing_density=500, plant_density=500, inter_row=0.15, noise=0.03)
+adel = AdelDress(dimT=dimT, leaves=leaves, stand=stand)
+g = adel.canopy(nplants=50)
 adel.plot(g)
-
-
-
-# #call caribu
-# from alinea.caribu.caribu_star import caribu_star
-# geom = g.property('geometry')
-# star, exposed_area = caribu_star(geom, directions = 16, domain = domain, convUnit = convUnit)#cf caribu_star doc for output interpretation
-# res = pandas.DataFrame([(adel_label(g,vid), star[vid], exposed_area[vid]) for vid in star])
-

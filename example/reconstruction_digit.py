@@ -1,87 +1,53 @@
 """ Tutorial Reconstructing canopy from digitised data """
 
-import pandas
 import numpy
 
-#input
-L_ear = 7.2
-L_ped = 14.8
-W_ped = 0.2
-A_ear = 10.28
-L_spike = 8.8
-df_dim = pandas.DataFrame({ 'id_plt' : [1] * 9,
-                        'ntop' : [6,5,4,3,2,1, 0, -1, -2],
-                        'L_blade' : [0] * 3 + [17.07,12.1,8.87] + 3 * [0],
-                        'W_blade' : [0] * 3 + [1,1.23,1.01] + 3 * [0],
-                        'L_sheath' : [0] * 3 + [11.21,12.55,13.59] + 3 * [0],
-                        'W_sheath' : [0] * 3 + [0.39,.49,.36] + [W_ped, A_ear / L_ear, A_ear / L_ear],
-                        'L_internode' : [0.55,4.97,8.28,13.06,13.36,18.32] + [L_ped, L_ear, L_spike - L_ear], 
-                        'W_internode' : [0] * 3 + [0.34, 0.44, 0.31] + [W_ped, A_ear / L_ear, A_ear / L_ear] # 
-                    })
-        
-#geometry (to be replaced by calling fit_leaves on your data)
-#from alinea.adel.data_samples import leaves_db 
-#db = leaves_db()
-from alinea.adel.wheat import extract_wheat
-db = extract_wheat.extract_leaf_info('laminaCurv.RData', 'lamina2D.RData')
-from alinea.adel.fit import fit
-db, discard = fit.fit_leaves(db, 7)
-       
-# compute insertion height of leaves
-df_dim['h_insertion'] = df_dim['L_internode'].cumsum() + df_dim['L_sheath']
-#keep only uper metamer
-df_dim = df_dim[df_dim.ntop <= 3]
-# create pseudo-stem element (spacer between leaves)
-df_dim['pstem'] = numpy.diff([0] + df_dim['h_insertion'].tolist())
+from alinea.adel.dresser import blade_dimension, stem_dimension, ear_dimension, \
+    dimension_table, AdelDress
 
-# construction of canopy table
-df = df_dim[['id_plt', 'ntop', 'L_blade', 'W_blade', 'pstem', 'W_sheath']]
-df.rename(columns={'id_plt':'plant', 'L_blade':'Ll', 'W_blade':'Lw_shape', 'pstem': 'El', 'W_sheath': 'Ed'}, inplace=True)
-# add mandatory topological info
-df['axe_id'] = 'MS'
-df['ms_insertion'] = 0
-df['numphy'] = df_dim.ntop.max() + 1 - df_dim.ntop # odre from base to top
-# add missing mandatory data  (does like adel)                  
-df['Laz'] = [180 + (numpy.random.random() - 0.5) * 30 for i in range(len(df))] #leaf azimuth
-df['LcType'] = df['ntop'] # selector for first level in leaf db
-df['LcIndex'] = 1 # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
-# fill other columns
-df['Lv'] = df['Ll']
-df['Lr'] = 0
-df['Lsen'] = 0
-df['L_shape'] = df['Ll']
-df['Linc'] = 1
-df['Gv'] = 0
-df['Gsen'] = 0
-df['Ginc'] = 0
-df['Ev'] = df['El']
-df['Esen'] = 0
-df['Einc'] = 0
+#input camille
 
-#create mtg
-from alinea.adel.stand.stand import agronomicplot
-from alinea.adel.newmtg import mtg_factory, adel_metamer, adel_label
-from alinea.adel.mtg_interpreter import mtg_interpreter, plot3d
-from openalea.plantgl.all import Viewer
+blades = blade_dimension(length=[0] * 3 + [17.07,12.1,8.87],
+                         width=[0] * 3 + [1, 1.23, 1.01],
+                         ntop=[6, 5, 4, 3, 2, 1]
+                         )
+sheath = [0] * 3 + [11.21, 12.55, 13.59]
+en = [0.55, 4.97, 8.28, 13.06, 13.36, 18.32]
+h_ins = numpy.array(en).cumsum() + numpy.array(sheath)
+stem = stem_dimension(ntop=[6, 5, 4, 3, 2, 1], h_ins=h_ins,
+                      d_internode=[0] * 3 + [0.34, 0.44, 0.31])
+ear = ear_dimension(peduncle=14.8, ear=7.2, spike=8.8, projected_area_ear=10.28,
+                    d_peduncle=0.2)
+dimT = dimension_table(blades, stem, ear)
 
-# create a canopy with the same number of plants as in the canopy table (play with width, length)
-nplants, positions, domain, domain_area, convUnit = agronomicplot(length=0.1, 
-                                                            width=0.2, 
-                                                            sowing_density=150, 
-                                                            plant_density=150,
-                                                            inter_row=0.12)
-#assert(nplants == df.plant.max())
-stand = [(pos,0) for pos in positions]
-g = mtg_factory(df.to_dict('list'), adel_metamer, leaf_db = db, stand = stand )
-#add geometry
-g = mtg_interpreter(g)
-# plot
-scene = plot3d(g)
-Viewer.display(scene)
+adel = AdelDress(dimT=dimT)
+g = adel.canopy(nplants=1)
+adel.plot(g)
 
-#call caribu
-from alinea.caribu.caribu_star import caribu_star
-geom = g.property('geometry')
-star, exposed_area = caribu_star(geom, directions = 16, domain = domain, convUnit = convUnit)#cf caribu_star doc for output interpretation
-res = pandas.DataFrame([(adel_label(g,vid), star[vid], exposed_area[vid]) for vid in star])
+
+
+# input Romain
+#
+blades = blade_dimension(length=[18.2, 21.1, 22.7, 17.4],
+                         area=[16, 22.8, 34, 34.6],
+                         ntop=[4, 3, 2, 1]
+                         )
+stem = stem_dimension(ntop=[4, 3, 2, 1], sheath=[11, 12.5, 14, 14.5],
+                      d_sheath=[0.2,.3,.4, .4],
+                      internode=[5, 8.6, 12.8, 18.6],
+                      d_internode=[0.2, 0.3, 0.3, 0.3])
+ear = ear_dimension(peduncle=21.9, ear=9, projected_area_ear=15, d_peduncle=0.3)
+dimT = dimension_table(blades, stem, ear)
+
+adel = AdelDress(dimT=dimT)
+g = adel.canopy(nplants=1)
+adel.plot(g)
+
+
+
+# #call caribu
+# from alinea.caribu.caribu_star import caribu_star
+# geom = g.property('geometry')
+# star, exposed_area = caribu_star(geom, directions = 16, domain = domain, convUnit = convUnit)#cf caribu_star doc for output interpretation
+# res = pandas.DataFrame([(adel_label(g,vid), star[vid], exposed_area[vid]) for vid in star])
 

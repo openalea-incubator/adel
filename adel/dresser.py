@@ -109,28 +109,27 @@ def stem_dimension(h_ins=None, d_stem=None, internode=None, sheath=None,
     if h_ins is None and h_ins == internode == sheath:
         h_ins = (60, 50, 40)
 
-    if d_stem == d_internode == d_sheath == None:
+    if d_stem is None and d_stem == d_internode == d_sheath:
         d_stem = 0.3
 
     if h_ins is None:
         if sheath is None:
-            internode = numpy.array(internode)
             sheath = numpy.array([0] * len(internode))
         else:
             sheath = numpy.array(sheath)
+        if internode is None:
             internode = numpy.array([0] * len(sheath))
-
+        else:
+            internode = numpy.array(internode)
         if ntop is None:
             ntop = numpy.arange(1, len(h_ins) + 1)
         else:
             ntop = numpy.array(ntop)
         order = numpy.argsort(-ntop)
         reorder = numpy.argsort(order)
-
         h_ins = (internode[order].cumsum() + sheath[order])[reorder]
     else:
         h_ins = numpy.array(h_ins)
-
         if ntop is None:
             ntop = numpy.arange(1, len(h_ins) + 1)
         else:
@@ -149,7 +148,6 @@ def stem_dimension(h_ins=None, d_stem=None, internode=None, sheath=None,
         else:
             sheath = numpy.array(sheath)
             internode = numpy.diff([0] + (h_ins[order] - sheath[order]).tolist())[reorder]
-
 
     if d_internode is None:
         if d_sheath is None:
@@ -255,7 +253,7 @@ class AdelDress(object):
 
         self.scene_unit = scene_unit
         self.dim_unit = dim_unit
-        self.dimT = dimT
+        self.dimT = dimT.fillna(0)
         self.nsect = nsect
         self.leaves = leaves
         self.stand = stand
@@ -272,11 +270,21 @@ class AdelDress(object):
             columns={'L_blade': 'Ll', 'W_blade': 'Lw_shape',
                      'L_sheath': 'Gl', 'W_sheath': 'Gd',
                      'L_internode': 'El', 'W_internode': 'Ed'}, inplace=True)
-        # add mandatory topological info
+        # add mandatory topological info and sort from base to top
         df.loc[:, 'axe_id'] = 'MS'
         df.loc[:, 'ms_insertion'] = 0
         df.loc[:,
-        'numphy'] = df.ntop.max() + 1 - df.ntop  # odre from base to top
+        'numphy'] = df.ntop.max() + 1 - df.ntop
+        df = df.sort_values(['plant', 'numphy'])
+        # compute visibility
+        ht0 = 0
+        hbase = df['El'].cumsum() - df['El']
+        hcol = hbase + df['Gl'] + df['El']
+        h_hide = [max([ht0] + hcol[:i].tolist()) for i in range(len(hcol))]
+        htube = numpy.maximum(0, h_hide - hbase)
+        df['Lv'] = numpy.minimum(df['Ll'], numpy.maximum(0, df['Ll'] + df['Gl'] + df['El']- htube))
+        df['Gv'] = numpy.minimum(df['Gl'], numpy.maximum(0, df['Gl'] + df['El'] - htube))
+        df['Ev'] = numpy.minimum(df['El'], numpy.maximum(0, df['El'] - htube))
         # add missing mandatory data  (does like adel)
         df.loc[:, 'Laz'] = [180 + (numpy.random.random() - 0.5) * 30 for i in
                             range(len(df))]  # leaf azimuth
@@ -285,18 +293,15 @@ class AdelDress(object):
         df.loc[:,
         'LcIndex'] = 1  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
         # fill other columns
-        df.loc[:, 'Lv'] = df['Ll']
         df.loc[:, 'Lr'] = 0
         df.loc[:, 'Lsen'] = 0
         df.loc[:, 'L_shape'] = df['Ll']
         df.loc[:, 'Linc'] = 1
-        df.loc[:, 'Gv'] = 0
         df.loc[:, 'Gsen'] = 0
         df.loc[:, 'Ginc'] = 0
-        df.loc[:, 'Ev'] = df['El']
         df.loc[:, 'Esen'] = 0
         df.loc[:, 'Einc'] = 0
-        return df.sort_values(['plant','numphy'])
+        return df
 
     def canopy(self, nplants=1):
         df = self.canopy_table(nplants=nplants)

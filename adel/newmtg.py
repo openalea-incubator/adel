@@ -318,7 +318,7 @@ def get_component(components, index):
     return properties, elements
 
     
-def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], split=False, aborting_tiller_reduction = 1.0, leaf_db =None):
+def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves = None, stand = None, axis_dynamics = None, add_elongation = False, topology = ['plant','axe_id','numphy'], split=False, aborting_tiller_reduction = 1.0, leaf_db =None):
     """ Construct a MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
@@ -341,7 +341,8 @@ def mtg_factory(parameters, metamer_factory=None, leaf_sectors=1, leaves = None,
         dynamic_leaf_db = False
     else:
         dynamic_leaf_db = leaves.dynamic
-    
+
+
     g = MTG()
 
     # buffers

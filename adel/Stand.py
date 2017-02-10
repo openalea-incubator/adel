@@ -43,7 +43,7 @@ class AgronomicStand(object):
         else:
             return 0.5, 0.5
      
-    def smart_stand(self, nplants=1, at=None):
+    def smart_stand(self, nplants=1, at=None, convunit=100):
         """ return an (almost) square stand that match inter-row, current density and nplants in the stand, 
              but (dynamicaly) adjusting inter-plant to solve the problem
         """
@@ -68,7 +68,7 @@ class AgronomicStand(object):
         target_domain_area = 1. * n_emerged / density
         inter_plant = target_domain_area / (plant_per_row * nrow * self.inter_row) 
                
-        positions, domain, domain_area = regular_plot(inter_plant, self.inter_row, nrow, plant_per_row, noise=self.noise)
+        positions, domain, domain_area = regular_plot(inter_plant, self.inter_row, nrow, plant_per_row, noise=self.noise, convunit=convunit)
 
         positions = sample(positions, nplants)
         return nplants, domain, positions, domain_area

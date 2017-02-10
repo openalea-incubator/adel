@@ -118,7 +118,7 @@ class AdelWheat(object):
         
         
         self.domain_area = area_m2
-        self.plant_azimuths = numpy.random.random(self.nplants) * 2 * numpy.pi
+        self.plant_azimuths = numpy.random.random(self.nplants) * 360
         
         pars = {'devT':devT, 'RcodegeoLeaf':leaves.geoLeaf, 'RcodegeoAxe':geoAxe,
                 'seed':seed, 'sample':sample, 'xydb':leaves.xydb, 'srdb':leaves.srdb, 'ssipars':ssipars}

@@ -139,7 +139,7 @@ class PhenologyFunctions():
             self.decimal_elongated_internode_number = _calculate_decimal_elongated_internode_number(dimT_tmp_merged, dynT_tmp_merged) 
             
             # 5. create dynT
-            self.dynT_ = _create_dynT(dynT_tmp_merged, GL_number, self.decimal_elongated_internode_number, TT_t1_user = TT_t1_user)
+            self.dynT_ = _create_dynT(dynT_tmp_merged, GL_number, TT_t1_user = TT_t1_user)
             
         return self.dynT_, self.decimal_elongated_internode_number
 
@@ -196,11 +196,11 @@ def plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves
     phenT_first = _create_phenT_first(phenT_tmp)
     
     # 4. create axeT
-    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start, TT_regression_end = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, TT_regression_start_user=TT_regression_start_user)
     
     # 5. create tilleringT
     tilleringT = _create_tilleringT(dynT_, phenT_first, axeT_.index.size, plants_number, 
-                                    plants_density, ears_density, TT_regression_start)
+                                    plants_density, ears_density, TT_regression_start, TT_regression_end)
     
     return axeT_, tilleringT, phenT_first
 
@@ -235,7 +235,7 @@ def organs_dimensions(plants_number, decide_child_cohort_probabilities, MS_leave
                                 dimT_user_completeness, TT_hs_break, force=False, axeT_user = axeT_user,TT_t1_user=TT_t1_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
-    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start, TT_regression_end = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
     
     # 2. create dimT
@@ -284,7 +284,7 @@ def axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_n
                                 dimT_user_completeness, TT_hs_break, force=False, axeT_user = axeT_user,TT_t1_user=TT_t1_user)
     phenT_tmp = _create_phenT_tmp(axeT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     phenT_first = _create_phenT_first(phenT_tmp, force=False)
-    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
+    axeT_, axeT_tmp, phenT_tmp, phenT_first, TT_regression_start, TT_regression_end = _create_axeT(axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=False)
     dimT_tmp = _create_dimT_tmp(axeT_tmp, force=False)
     dimT_ = _create_dimT(axeT_, dimT_tmp, dynT_, decimal_elongated_internode_number, force=False)
     
@@ -344,36 +344,50 @@ class _CreateAxeT():
     def __init__(self):
         self.axeT_ = None
         self.TT_regression_start = None
+        self.TT_regression_end = None
     
     def __call__(self, axeT_tmp, phenT_first, dynT_, delais_TT_stop_del_axis, number_of_ears, force=True, TT_regression_start_user=None):
-        if force or self.axeT_ is None or self.TT_regression_start is None:
+        if force or self.axeT_ is None or self.TT_regression_start is None or self.TT_regression_end is None:
+            
             self.axeT_ = axeT_tmp.copy()
             
-            TT_flag_ligulation = dynT_.loc[dynT_.first_valid_index(), 'TT_flag_ligulation']
+            TT_hs_break, N_phytomer_potential, a_cohort, TT_hs_0, TT_flag_ligulation = dynT_.loc[dynT_.first_valid_index(), ['TT_hs_break', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_flag_ligulation']]
             
             if TT_regression_start_user is None:
-                TT_hs_break, N_phytomer_potential, a_cohort, TT_hs_0 = dynT_.loc[dynT_.first_valid_index(), ['TT_hs_break', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0']]
-                N_phyt_reduc = N_phytomer_potential - 5
+                as_ = params.START_MS_HS_MORTALITY_VS_N_PHYTOMER['as']
+                bs_ = params.START_MS_HS_MORTALITY_VS_N_PHYTOMER['bs']
+                MS_HS_tillering_mortality_start = as_ * N_phytomer_potential + bs_
                 if math.isnan(TT_hs_break): # linear mode
-                    self.TT_regression_start = N_phyt_reduc / a_cohort + TT_hs_0
+                    self.TT_regression_start = MS_HS_tillering_mortality_start / a_cohort + TT_hs_0
                 else: # bilinear mode
                     HS_break_0 = a_cohort * (TT_hs_break - TT_hs_0)
-                    if N_phyt_reduc < HS_break_0: # 1rst phase
-                        self.TT_regression_start = N_phyt_reduc / a_cohort + TT_hs_0
+                    if MS_HS_tillering_mortality_start < HS_break_0: # 1rst phase
+                        self.TT_regression_start = MS_HS_tillering_mortality_start / a_cohort + TT_hs_0
                     else: # 2nd phase
                         a2_0 = (N_phytomer_potential - HS_break_0) / (TT_flag_ligulation - TT_hs_break)
-                        N_phyt_reduc = a2_0 * (tt - TT_hs_break) + HS_break_0
-                        self.TT_regression_start = (N_phyt_reduc - HS_break_0) / a2_0 + TT_hs_break
+                        self.TT_regression_start = (MS_HS_tillering_mortality_start - HS_break_0) / a2_0 + TT_hs_break
             else:
                 self.TT_regression_start = TT_regression_start_user
+                
+            ae_ = params.END_MS_HS_MORTALITY_VS_N_PHYTOMER['ae']
+            MS_HS_tillering_mortality_end = ae_ * N_phytomer_potential
+            if math.isnan(TT_hs_break): # linear mode
+                self.TT_regression_end = MS_HS_tillering_mortality_end / a_cohort + TT_hs_0
+            else: # bilinear mode 
+                HS_break_0 = a_cohort * (TT_hs_break - TT_hs_0)
+                if MS_HS_tillering_mortality_end < HS_break_0: # 1rst phase
+                    self.TT_regression_end = MS_HS_tillering_mortality_end / a_cohort + TT_hs_0
+                else: # 2nd phase
+                    a2_0 = (N_phytomer_potential - HS_break_0) / (TT_flag_ligulation - TT_hs_break)
+                    self.TT_regression_end = (MS_HS_tillering_mortality_end - HS_break_0) / a2_0 + TT_hs_break
             
             (self.axeT_['TT_em_phytomer1'], 
              self.axeT_['TT_col_phytomer1'], 
              self.axeT_['TT_sen_phytomer1'],
-             self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, params.EMF_1_MS_STANDARD_DEVIATION, phenT_first)
+             self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, phenT_first, dynT_)
             self.axeT_.loc[self.axeT_['id_axis'] == 'MS', 'TT_stop_axis'] = np.nan
             tillers_axeT_index = self.axeT_.loc[self.axeT_['id_axis'] != 'MS'].index
-            self.axeT_.loc[tillers_axeT_index, 'TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.TT_regression_start, TT_flag_ligulation, self.axeT_.loc[tillers_axeT_index, 'TT_em_phytomer1'].tolist())
+            self.axeT_.loc[tillers_axeT_index, 'TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.TT_regression_start, self.TT_regression_end, self.axeT_.loc[tillers_axeT_index, 'TT_em_phytomer1'].tolist())
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
@@ -389,7 +403,7 @@ class _CreateAxeT():
             phenT_tmp = _create_phenT_tmp(self.axeT_, dynT_, phenology_functions.decimal_elongated_internode_number)
             _create_phenT_first(phenT_tmp)
             
-        return self.axeT_, _create_axeT_tmp.axeT_tmp, _create_phenT_tmp.phenT_tmp, _create_phenT_first.phenT_first, self.TT_regression_start
+        return self.axeT_, _create_axeT_tmp.axeT_tmp, _create_phenT_tmp.phenT_tmp, _create_phenT_first.phenT_first, self.TT_regression_start, self.TT_regression_end
 
 _create_axeT = _CreateAxeT()
 
@@ -456,27 +470,49 @@ def _gen_N_phytomer(HS_final_series):
     return np.ceil(HS_final_series).astype(int)
     
 
-def _gen_all_TT_phytomer1_list(axeT_tmp, emf_1_MS_standard_deviation, phenT_first):
+def _gen_all_TT_phytomer1_list(axeT_tmp, phenT_first, dynT):
     '''Generate the *TT_em_phytomer1*, *TT_col_phytomer1*, *TT_sen_phytomer1* and *TT_del_phytomer1* columns.
     For each plant, define a delay of appearance, and for each axis add this delay to the first leaf development schedule.'''
-    sigma = emf_1_MS_standard_deviation
-    sigma_div_2 = sigma / 2.0
+    MS_sigma = params.MS_EMERGENCE_STANDARD_DEVIATION
+    MS_sigma_div_2 = MS_sigma / 2.0
+    tillers_sigma = params.TILLERS_EMERGENCE_STANDARD_DEVIATION
+    tillers_sigma_div_2 = tillers_sigma / 2.0
+    
     TT_em_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_col_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_sen_phytomer1_series = pd.Series(index=axeT_tmp.index)
     TT_del_phytomer1_series = pd.Series(index=axeT_tmp.index)
 
     for id_plt, axeT_tmp_grouped_by_id_plt in axeT_tmp.groupby('id_plt'):
-        normal_distribution = random.normalvariate(0.0, sigma)
-        while abs(normal_distribution) > sigma_div_2:
-            normal_distribution = random.normalvariate(0.0, sigma)
-        for id_phen, axeT_tmp_grouped_by_id_plt_and_id_phen in axeT_tmp_grouped_by_id_plt.groupby('id_phen'):
+        for (id_phen, N_phytomer_potential, id_cohort), axeT_tmp_grouped_by_id_plt_and_id_phen in axeT_tmp_grouped_by_id_plt.groupby(['id_phen', 'N_phytomer_potential', 'id_cohort']):
+            primary_axis = tools.get_primary_axis(max(axeT_tmp_grouped_by_id_plt_and_id_phen.id_axis), params.FIRST_CHILD_DELAY)
+
+            if primary_axis == 'MS': 
+                sigma = MS_sigma
+                sigma_div_2 = MS_sigma_div_2
+                mu = 0.0
+            else: # tillers
+                sigma = tillers_sigma
+                sigma_div_2 = tillers_sigma_div_2
+                mu = params.MS_HS_AT_TILLER_EMERGENCE[primary_axis]
+            
+            infimum = mu - sigma_div_2
+            supremum = mu + sigma_div_2
+                
+            normal_distribution = random.normalvariate(mu, sigma)
+            while normal_distribution < infimum or normal_distribution > supremum:
+                normal_distribution = random.normalvariate(mu, sigma)
+            
+            dynT_group = dynT.loc[(dynT.id_cohort == id_cohort) & (dynT.N_phytomer_potential == N_phytomer_potential)]
+            a_cohort = dynT_group.loc[dynT_group.first_valid_index(), 'a_cohort']
+            normal_distribution_in_growing_degree_days = normal_distribution / a_cohort
+                
             current_row = phenT_first[phenT_first['id_phen']==id_phen]
             first_valid_index = current_row.first_valid_index()
-            TT_em_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_em_phytomer'][first_valid_index]
-            TT_col_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_col_phytomer'][first_valid_index]
-            TT_sen_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_sen_phytomer'][first_valid_index]
-            TT_del_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution + current_row['TT_del_phytomer'][first_valid_index]
+            TT_em_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution_in_growing_degree_days + current_row['TT_em_phytomer'][first_valid_index]
+            TT_col_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution_in_growing_degree_days + current_row['TT_col_phytomer'][first_valid_index]
+            TT_sen_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution_in_growing_degree_days + current_row['TT_sen_phytomer'][first_valid_index]
+            TT_del_phytomer1_series[axeT_tmp_grouped_by_id_plt_and_id_phen.index] = normal_distribution_in_growing_degree_days + current_row['TT_del_phytomer'][first_valid_index]
                 
     return TT_em_phytomer1_series, TT_col_phytomer1_series, TT_sen_phytomer1_series, TT_del_phytomer1_series  
 
@@ -538,12 +574,10 @@ def _remove_axes_without_leaf(axeT_, index_to_keep):
 
 
 def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants_density, 
-                      ears_density, TT_regression_start):
+                      ears_density, TT_regression_start, TT_regression_end):
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     '''
-    TT_flag_ligulation = dynT_['TT_flag_ligulation'][dynT_.first_valid_index()]
-    
     dynT_most_frequent_MS = dynT_.ix[dynT_.first_valid_index()]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential']).zfill(2) # we use N_phytomer_potential because N_phytomer_potential == N_phytomer for the most frequent MS
@@ -551,7 +585,7 @@ def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants
     TT_start = phenT_first['TT_em_phytomer'][phenT_first[phenT_first['id_phen'] == id_phen_most_frequent_MS].index[0]]
     
     axes_density = number_of_axes / float(plants_number) * plants_density 
-    return pd.DataFrame({'TT': [TT_start, TT_regression_start, TT_flag_ligulation], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
+    return pd.DataFrame({'TT': [TT_start, TT_regression_start, TT_regression_end], 'axes_density': [plants_density, axes_density, ears_density]}, columns=['TT', 'axes_density'])
 
 
 def _create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_cardinalities, simulated_cohorts_axes):
@@ -590,7 +624,7 @@ def _create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_card
                                                                  'simulated_cohort_cardinality',
                                                                  'simulated_axis_cardinality']].astype(float)
     cardinalityT[['id_cohort', 'simulated_cohort_cardinality', 'simulated_axis_cardinality']] = cardinalityT[['id_cohort', 'simulated_cohort_cardinality', 'simulated_axis_cardinality']].astype(int)
-    cardinalityT.sort(['id_cohort', 'id_axis'], inplace=True)
+    cardinalityT.sort_values(['id_cohort', 'id_axis'], inplace=True)
     cardinalityT.index = range(len(cardinalityT))
     return cardinalityT
     
@@ -665,7 +699,7 @@ class _CreateDimT():
             
             _gen_widths(MS_id_dim, row_indexes_to_fit, self.dimT_, decimal_elongated_internode_number)
             
-            self.dimT_.sort(['is_ear', 'id_dim'], ascending=[False, True], inplace=True)
+            self.dimT_.sort_values(['is_ear', 'id_dim'], ascending=[False, True], inplace=True)
             
             # reinitialize the index
             self.dimT_.index = range(self.dimT_.index.size)
@@ -926,7 +960,9 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
     current_width_series = dimT_[width]
     MS_width_series = current_width_series[MS_rows_indexes]
     MS_first_width = MS_width_series[MS_width_series.first_valid_index()]
+    tiller_first_width = MS_first_width * params.K1
     MS_last_width = MS_width_series[MS_width_series.last_valid_index()]
+    tiller_last_width = MS_last_width * params.K2
     
     MS_index_phytomer_normalized_series = MS_index_phytomer_series / MS_index_phytomer_series.max()
     most_frequent_MS_polynomial_coefficients_array_normalized = np.polyfit(MS_index_phytomer_normalized_series.values, 
@@ -944,21 +980,20 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
                                                              index_phytomer_normalized_series.values)
         else: # tiller
             index_relative_to_MS_phytomer_series = dimT_group.index_relative_to_MS_phytomer
-            index_relative_to_MS_phytomer_series_normalised = index_relative_to_MS_phytomer_series / index_relative_to_MS_phytomer_series.max()
             # compute
             indexes_to_compute = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series <= MS_last_index_phytomer].index
             tiller_last_index_phytomer_to_compute = dimT_group.index_phytomer.loc[indexes_to_compute[-1]]
             most_frequent_MS_polynomial_coefficients_array = np.polyfit(np.array([MS_first_index_phytomer, tiller_last_index_phytomer_to_compute]), 
-                                                                        np.array([MS_first_width, MS_last_width]), 
+                                                                        np.array([tiller_first_width, tiller_last_width]), 
                                                                         1)
             dimT_.loc[indexes_to_compute, width] = np.polyval(most_frequent_MS_polynomial_coefficients_array, 
-                                                              index_relative_to_MS_phytomer_series_normalised[indexes_to_compute].values) * 1.0
+                                                              index_relative_to_MS_phytomer_series[indexes_to_compute].values)
             width_offset = dimT_.loc[indexes_to_compute[0], width] - MS_first_width
             dimT_.loc[indexes_to_compute, width] -= width_offset
             
             # ceiling
             indexes_to_ceil = index_relative_to_MS_phytomer_series[index_relative_to_MS_phytomer_series > MS_last_index_phytomer].index
-            dimT_.loc[indexes_to_ceil, width] = MS_last_width
+            dimT_.loc[indexes_to_ceil, width] = tiller_last_width
             
             # reduction of regressive tillers
             is_ear = dimT_group.is_ear[dimT_group.first_valid_index()]
@@ -1122,7 +1157,7 @@ def _create_dynT_tmp(axeT_tmp):
     
     # nested sort of dynT_tmp: first by 'id_axis' in ascending order, second 
     # by 'cardinality' in descending order.
-    dynT_tmp.sort(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
+    dynT_tmp.sort_values(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
     # reinitialize the index
     dynT_tmp.index = range(dynT_tmp.index.size)
     return dynT_tmp
@@ -1130,8 +1165,7 @@ def _create_dynT_tmp(axeT_tmp):
 
 def _create_dynT(dynT_tmp, 
                 GL_number, 
-                decimal_elongated_internode_number,
-                leaf_number_delay_MS_cohort=params.LEAF_NUMBER_DELAY_MS_COHORT,
+                leaf_number_delay_MS_cohort=params.MS_HS_AT_TILLER_EMERGENCE,
                 TT_t1_user = None):
     '''
     Create the :ref:`dynT <dynT>` dataframe.
@@ -1150,7 +1184,7 @@ def _create_dynT(dynT_tmp,
     # get the row of the most frequent main stem
     most_frequent_MS = MS.ix[0:0]
     # for this row, fill the columns referring to the dynamic of the green leaves
-    most_frequent_MS = _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_internode_number, GL_number, TT_t1_user)
+    most_frequent_MS = _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, GL_number, TT_t1_user)
     
     # get the rows of all main stems except the most frequent one
     other_MS = MS.ix[1:]
@@ -1185,14 +1219,14 @@ def _create_dynT(dynT_tmp,
         
         dynT_ = pd.concat([most_frequent_MS, other_MS, most_frequent_tiller_axes, other_tiller_axes])
         
-    dynT_.sort(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
+    dynT_.sort_values(['id_axis', 'cardinality'], ascending=[1, 0], inplace=True)
     # reinitialize the index
     dynT_.index = range(dynT_.index.size)
     
     return dynT_
     
 
-def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, decimal_elongated_internode_number, GL_number, TT_t1_user = None):
+def _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, GL_number, TT_t1_user = None):
     '''
     Create a copy of *most_frequent_MS*, fill this copy by calculating the 
     parameters which describe the dynamic of the green leaves, and return this 
@@ -1253,7 +1287,7 @@ def _gen_other_MS_HS_dynamic(most_frequent_MS, other_MS):
         # calculation of TT_hs_break
         other_MS['TT_hs_break'] = most_frequent_MS['TT_hs_break'][0]
         # calculation of dTT_MS_cohort
-        other_MS['dTT_MS_cohort'] = most_frequent_MS['dTT_MS_cohort'][0] + (other_MS['N_phytomer_potential'] - most_frequent_MS['N_phytomer_potential'][0]) / most_frequent_MS['a_cohort'][0] * params.RATIO_PLASTOCHRON_PHYLLOCHRON
+        other_MS['dTT_MS_cohort'] = most_frequent_MS['dTT_MS_cohort'][0] + (other_MS['N_phytomer_potential'] - most_frequent_MS['N_phytomer_potential'][0]) * params.FLAG_LIGULATION_DELAY
         # calculation of TT_flag_ligulation
         other_MS['TT_flag_ligulation'] = most_frequent_MS['TT_flag_ligulation'][0] + other_MS['N_phytomer_potential'] / (most_frequent_MS['N_phytomer_potential'][0] * 4 * most_frequent_MS['a_cohort'][0])
         # calculation of a_cohort
@@ -1422,7 +1456,7 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
         other_tiller_axes.loc[group.index, 'dTT_MS_cohort'] = \
             most_frequent_tiller_axes['dTT_MS_cohort'][most_frequent_tiller_axis_idx] \
             + (group['N_phytomer_potential'] - most_frequent_tiller_axes['N_phytomer_potential'][most_frequent_tiller_axis_idx]) \
-            / most_frequent_MS['a_cohort'][0] * params.RATIO_PLASTOCHRON_PHYLLOCHRON
+            * params.FLAG_LIGULATION_DELAY
         if not math.isnan(most_frequent_MS['TT_hs_break'][0]): 
             # calculation of a_cohort in bilinear mode
             other_tiller_axes.loc[group.index, 'a_cohort'] = most_frequent_tiller_axes['a_cohort'][most_frequent_tiller_axis_idx]

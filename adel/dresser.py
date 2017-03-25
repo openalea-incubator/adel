@@ -3,12 +3,12 @@
 import numpy
 import pandas
 
-import openalea.plantgl.all as pgl
 
 from alinea.adel.geometric_elements import Leaves
-from alinea.adel.Stand import AgronomicStand
 from alinea.adel.newmtg import mtg_factory
-from alinea.adel.mtg_interpreter import mtg_interpreter, plot3d
+from alinea.adel.mtg_interpreter import mtg_interpreter
+from alinea.adel.adel import Adel
+
 
 def blade_dimension(area = None, length=None , width=None, ntop=None, leaves=None,
                     plant=1, wl=0.1):
@@ -196,7 +196,7 @@ def ear_dimension(peduncle=None, ear=None, spike=None, d_peduncle=0.3, projected
         if projected_area_ear is None:
             w_ear = wl_ear * ear
         else:
-            w_ear = projected_area_ear / ear
+            w_ear = float(projected_area_ear) / ear
         dfl.append(pandas.DataFrame(
             {'plant': plant, 'ntop': pos, 'L_internode': ear,
              'W_internode': w_ear}, index=[pos]))
@@ -224,11 +224,10 @@ def dimension_table(blades=None, stem=None, ear=None):
         return pandas.concat([stemear, blades.set_index(['plant','ntop'])], axis=1).reset_index()
 
 
-class AdelDress(object):
+class AdelDress(Adel):
     """A class interface to Adel for static reconstruction"""
-    conv_units = {'mm': 0.001, 'cm': 0.01, 'dm': 0.1, 'm': 1, 'dam': 10, 'hm': 100,
-             'km': 1000}
-    def __init__(self, scene_unit='cm', dim_unit='cm', dimT=None, leaves=None, nsect=1, classic=False, stand=None):
+
+    def __init__(self, nplants=1, scene_unit='cm', dim_unit='cm', dimT=None, leaves=None, nsect=1, classic=False, stand=None, seed=None):
         """ Instantiate a dresser
 
         Args:
@@ -240,31 +239,21 @@ class AdelDress(object):
             classic: (bool) should stem cylinders be classical pgl cylinders ?
             stand: (object) a Stand class instance
         """
+        super(AdelDress, self).__init__(nplants=nplants, nsect=nsect, leaves=leaves, stand=stand,
+                 classic=classic, scene_unit=scene_unit, seed=seed)
 
-        if leaves is None:
-            leaves = Leaves()
-
-        if stand is None:
-            stand = AgronomicStand(sowing_density=250, plant_density=250,
-                                   inter_row=0.15)
 
         if dimT is None:
             dimT = dimension_table()
 
-        self.scene_unit = scene_unit
         self.dim_unit = dim_unit
         self.dimT = dimT.fillna(0)
-        self.nsect = nsect
-        self.leaves = leaves
-        self.stand = stand
         self.dimT = dimT
-        self.classic = classic
 
+    def canopy_table(self, nplants=None, azimuth=None):
 
-
-    def canopy_table(self, nplants=1, azimuth=None, seed=None):
-
-        numpy.random.seed(seed)
+        if nplants is None:
+            nplants=self.nplants
 
         if azimuth is None:
             def azimuth(n,ntop,axe):
@@ -320,7 +309,7 @@ class AdelDress(object):
 
         return pandas.concat(dfl)
 
-    def canopy(self, nplants=1, azimuth=None, seed=None):
+    def canopy(self, nplants=None, azimuth=None, seed=None, age=None):
         """ Generate a mtg encoding the canopy
 
         Args:
@@ -332,16 +321,17 @@ class AdelDress(object):
         Returns:
 
         """
-        df = self.canopy_table(nplants=nplants, azimuth=azimuth, seed=seed)
-        nplants, domain, positions, domain_area = self.stand.smart_stand(nplants=nplants, convunit = 1. / self.conv_units[self.scene_unit])
-        numpy.random.seed(seed)
-        plant_azimuths = numpy.random.random(nplants) * 360
-        stand = zip(positions, plant_azimuths)
-        g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect, leaves=self.leaves, stand=stand)
-        # add geometry
-        g = mtg_interpreter(g, self.leaves, classic=self.classic)
-        return g
+        if age is not None:
+            self.canopy_age = age
+        self.new_stand(nplants, seed)
+        df = self.canopy_table(azimuth=azimuth)
 
-    def plot(self, g):
-        scene = plot3d(g)
-        pgl.Viewer.display(scene)
+        numpy.random.seed(self.seed)
+        plant_azimuths = numpy.random.random(self.nplants) * 360
+        stand = zip(self.positions, plant_azimuths)
+        g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,
+                        leaves=self.leaves, stand=stand)
+        # add geometry
+        g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                            face_up=self.face_up)
+        return g

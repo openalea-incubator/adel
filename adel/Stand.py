@@ -16,6 +16,7 @@ class AgronomicStand(object):
         self.plant_density = plant_density
         self.inter_plant = 1. / inter_row / sowing_density
         self.noise = noise
+        self.density_curve_data = density_curve_data
         df = density_curve_data
         if df is None:
             self.density_curve=None

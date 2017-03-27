@@ -63,14 +63,19 @@ from alinea.adel.newmtg import mtg_factory, adel_metamer
 from alinea.adel.mtg_interpreter import mtg_interpreter
 from alinea.adel.stand.stand import regular
 
-def adel_two_metamers(leaf_sectors = 1):
+
+def adel_two_metamers(leaf_sectors=1):
     """ create a very simple adel mtg """
     l = leaves()
-    d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
-         'Laz': [0,90], 'Ll' :[3,3], 'Lv' :[3,3] ,'Lr':[0,0], 'Lsen':[0,0], 'L_shape':[3,3], 'Lw_shape':[.3,.3], 'Linc':[0,0],
-         'Einc':[0,45],'El':[1,1],'Ev':[1,1],'Esen':[0,0],'Ed': [0.1,0.1], 'Gv': [1, 1], 'Gd': [0.1,0.1]}
-    g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=leaf_sectors)
-    g=mtg_interpreter(g,leaves=l)
+    d = {'plant': [1, 1], 'axe_id': ['MS', 'T1'], 'refplant_id':[1,1], 'nff': [10, 8], 'HS_final': [10, 8],
+         'ms_insertion': [0, 1], 'az_insertion': [0, 0], 'numphy': [1, 1],
+         'Laz': [0, 90], 'Ll': [3, 3], 'Lv': [3, 3], 'Lr': [0, 0],
+         'Lsen': [0, 0], 'L_shape': [3, 3], 'Lw_shape': [.3, .3],
+         'Linc': [0, 0],
+         'Einc': [0, 45], 'El': [1, 1], 'Ev': [1, 1], 'Esen': [0, 0],
+         'Ed': [0.1, 0.1], 'Gv': [1, 1], 'Gl': [1,1], 'Gd': [0.1, 0.1], 'Gsen':[0,0],'LcType':[1,1], 'LcIndex':[1,1]}
+    g = mtg_factory(d, adel_metamer, leaves=leaves(), leaf_sectors=leaf_sectors)
+    g = mtg_interpreter(g, leaves=l)
     return g
     
 def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, convunit=100, 

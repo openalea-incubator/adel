@@ -322,13 +322,11 @@ class AdelDress(Adel):
 
         """
         if age is not None:
-            self.canopy_age = age
+            self.new_age(age)
         self.new_stand(nplants, seed)
         df = self.canopy_table(azimuth=azimuth)
 
-        numpy.random.seed(self.seed)
-        plant_azimuths = numpy.random.random(self.nplants) * 360
-        stand = zip(self.positions, plant_azimuths)
+        stand = zip(self.positions, self.plant_azimuths)
         g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,
                         leaves=self.leaves, stand=stand)
         # add geometry

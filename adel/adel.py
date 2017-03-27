@@ -3,6 +3,7 @@ import os
 import pandas
 import numpy
 import warnings
+
 try:
     import cPickle as pickle
 except:
@@ -24,9 +25,10 @@ class Adel(object):
                   'hm': 100,
                   'km': 1000}
 
-    def __init__(self, nplants=1, nsect=1, seed=None, leaves=None, stand=None, split=False,
+    def __init__(self, nplants=1, nsect=1, seed=None, leaves=None, stand=None,
+                 split=False,
                  face_up=False, classic=False, scene_unit='cm',
-                 leaf_db=None, positions=None):
+                 leaf_db=None, positions=None, age=0):
 
         if leaf_db is not None:
             warnings.warn(
@@ -45,6 +47,7 @@ class Adel(object):
         if stand is None:
             stand = AgronomicStand(sowing_density=250, plant_density=250,
                                    inter_row=0.15)
+
         self.stand = stand
         self.leaves = leaves
         self.scene_unit = scene_unit
@@ -53,10 +56,11 @@ class Adel(object):
         self.split = split
         self.face_up = face_up
         self.classic = classic
-        self.canopy_age = 0
         self.seed = seed
+        self.meta = {}
 
         self.new_stand(nplants, seed)
+        self.new_age(age)
 
     def new_stand(self, nplants=None, seed=None):
         if seed is not None:
@@ -66,27 +70,52 @@ class Adel(object):
             self.nplants, self.domain, self.positions, \
             self.domain_area = self.stand.smart_stand(
                 nplants, convunit=1. / self.convUnit)
+            self.plant_azimuths = numpy.random.random(self.nplants) * 360
+            stand_parameters = {'sowing_density': self.stand.sowing_density,
+                                'plant_density': self.stand.plant_density,
+                                'inter_row': self.stand.inter_row,
+                                'noise': self.stand.noise,
+                                'density_curve_data': self.stand.density_curve_data}
+            self.meta.update(
+                {'stand': stand_parameters, 'nplants': self.nplants,
+                 'domain': self.domain, 'domain_area': self.domain_area,
+                 'nsect': self.nsect, 'scene_unit': self.scene_unit,
+                 'convUnit': self.convUnit,
+                 'split': self.split})
 
+    def new_age(self, age):
+        self.canopy_age = age
+        self.meta.update({'canopy_age': age})
 
-    def get_axis(self, g, plant='plant1', axe='MS'):
+    def meta_informations(self, g):
+        if 'meta' in g.property_names():
+            return g.property('meta').values()[0]
+        else:
+            return self.meta
+
+    @staticmethod
+    def get_axis(g, plant='plant1', axe='MS'):
         """ return a new mtg representing an axe
         """
         p = [vid for vid in g.vertices(scale=1) if g.label(vid) == plant][0]
         ax = [vid for vid in g.components(p) if g.label(vid) == axe][0]
         return g.sub_mtg(ax, copy=True)
 
-    def plot(self, g, property=None):
-        s = self.scene(g,property)
+    @staticmethod
+    def plot(g, property=None):
+        s = Adel.scene(g, property)
         Viewer.display(s)
         return s
 
-    def scene(self, g, property=None):
+    @staticmethod
+    def scene(g, property=None):
         if property:
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
             colors = {
-            vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0])) for
-            vid in g.vertices(scale=g.max_scale())}
+                vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0]))
+                for
+                vid in g.vertices(scale=g.max_scale())}
         else:
             colors = None
         s = plot3d(g,
@@ -98,58 +127,79 @@ class Adel(object):
         if convert:
             areas = exposed_areas2canS(areas)
         if TT is None:
-            TT = self.canopy_age
+            TT = self.meta_informations(g)['canopy_age']
         areas['TT'] = TT
         return areas
 
     def axis_statistics(self, g):
+        meta = self.meta_informations(g)
         df_lai = self.get_exposed_areas(g, convert=True)
         axstat = None
         if not df_lai.empty:
-            axstat, _ = axis_statistics(df_lai, self.domain_area, self.convUnit)
+            axstat, _ = axis_statistics(df_lai, meta['domain_area'],
+                                        meta['convUnit'])
         return axstat
 
-    def plot_statistics(self, axstat=None):
+    def plot_statistics(self, g=None, axstat=None):
+        meta = self.meta_informations(g)
         pstat = None
-        if axstat is not None:
-            pstat = plot_statistics(axstat, self.nplants, self.domain_area)
+        if axstat is None:
+            axstat = self.axis_statistics(g)
+        pstat = plot_statistics(axstat, meta['nplants'], meta['domain_area'])
         return pstat
 
-    def save(self, g, index=0, dir='./adel_saved'):
-        if not os.path.exists(dir):
-            os.mkdir(dir)
-        s = self.scene(g)
+    def save(self, g, index=0, dir='./adel_saved', basename=None,
+             check_meta=True):
+        if check_meta:
+            if 'meta' not in g.property_names():
+                root = g.node(0)
+                root.meta = self.meta
+        if basename is None:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            basename_geom = dir + '/scene%04d' % (index)
+            basename_adel = dir + '/adel%04d' % (index)
+        else:
+            basename_adel = basename_geom = str(basename)
+        s = Adel.scene(g)
         geom = {sh.id: sh.geometry for sh in s}
         g.remove_property('geometry')
-        fgeom = dir + '/scene%04d.bgeom' % (index)
-        fg = dir + '/adel%04d.pckl' % (index)
+        fgeom = basename_geom + '.bgeom'
+        fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
-        f = open(fg, 'w')
-        pickle.dump([g, self.canopy_age], f)
-        f.close()
+        with open(fg, 'w') as output:
+            pickle.dump(g, output)
         # restore geometry
         g.add_property('geometry')
         g.property('geometry').update(geom)
         return fgeom, fg
 
-    def load(self, index=0, dir='./adel_saved'):
-        fgeom = dir + '/scene%04d.bgeom' % (index)
-        fg = dir + '/adel%04d.pckl' % (index)
-
-        s = Scene()
-        s.read(fgeom, 'BGEOM')
-        geom = {sh.id: sh.geometry for sh in s}
+    @staticmethod
+    def load(index=0, dir='./adel_saved', basename=None, load_geom=True):
+        if basename is None:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            basename_geom = dir + '/scene%04d' % (index)
+            basename_adel = dir + '/adel%04d' % (index)
+        else:
+            basename_adel = basename_geom = basename
+        fgeom = basename_geom + '.bgeom'
+        fg = basename_adel + '.pckl'
+        if not os.path.exists(fgeom) or not os.path.exists(fg):
+            raise IOError('adel cannot find saved files')
 
         f = open(fg)
-        g, TT = pickle.load(f)
+        g = pickle.load(f)
         f.close()
 
-        self.canopy_age = TT
+        if load_geom:
+            s = Scene()
+            s.read(fgeom, 'BGEOM')
+            geom = {sh.id: sh.geometry for sh in s}
+            g.add_property('geometry')
+            g.property('geometry').update(geom)
 
-        g.add_property('geometry')
-        g.property('geometry').update(geom)
-
-        return g, TT
+        return g
 
     def get_midribs(self, g, resample=False):
 
@@ -161,8 +211,9 @@ class Adel(object):
         #
         anchor = g.property('anchor_point')
         midribs_anchor = {
-        vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for vid
-        in midribs}
+            vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for
+            vid
+            in midribs}
         hins = {k: v[0][2] + midribs[k][2] for k, v in
                 midribs_anchor.iteritems() if len(v) > 0}
 

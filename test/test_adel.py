@@ -24,7 +24,7 @@ def test_get_axis():
 
 def test_scene():
     s = adel.scene(g)
-    assert len(s) == 4
+    assert len(s) == 6
 
 
 def test_statistics():
@@ -33,7 +33,7 @@ def test_statistics():
     assert round(areas['green_area'].values[0],2) == 0.31
     axstats = adel.axis_statistics(g)
     assert axstats['LAI totale'].round(2).values[0] == 0.02
-    pstats = adel.plot_statistics(axstats)
+    pstats = adel.plot_statistics(g, axstats)
     assert pstats['Nbr.axe.tot.m2'][0] == 500
 
 
@@ -45,7 +45,7 @@ def test_midribs():
 
 def test_save_and_load():
     fgeom, fg = adel.save(g)
-    gg, TT = adel.load()
+    gg = adel.load()
     assert len(gg) == len(g)
     if os.path.exists(fgeom):
         os.remove(fgeom)

@@ -53,7 +53,7 @@ class Adel(object):
         self.split = split
         self.face_up = face_up
         self.classic = classic
-        self.canopy_age = numpy.nan
+        self.canopy_age = 0
         self.seed = seed
 
         self.new_stand(nplants, seed)
@@ -76,7 +76,11 @@ class Adel(object):
         return g.sub_mtg(ax, copy=True)
 
     def plot(self, g, property=None):
+        s = self.scene(g,property)
+        Viewer.display(s)
+        return s
 
+    def scene(self, g, property=None):
         if property:
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
@@ -87,11 +91,7 @@ class Adel(object):
             colors = None
         s = plot3d(g,
                    colors=colors)  # use the one of openalea.plantframe.color instead ?
-        Viewer.display(s)
         return s
-
-    def scene(self, g):
-        return plot3d(g)
 
     def get_exposed_areas(self, g, convert=False, TT=None):
         areas = exposed_areas(g)

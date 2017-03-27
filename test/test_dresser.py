@@ -16,4 +16,4 @@ def test_dresser():
     assert len(s) == 6
     stats = adel.midrib_statistics(g)
     assert all(stats['insertion_height'].values ==(40, 50, 60))
-    
+

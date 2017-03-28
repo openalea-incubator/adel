@@ -30,7 +30,14 @@ def test_scene():
 def test_statistics():
     areas = adel.get_exposed_areas(g)
     assert 'green_area' in areas
+    assert 'species' in areas
     assert round(areas['green_area'].values[0],2) == 0.31
+    species = g.property('species')
+    g.remove_property('species')
+    areas = adel.get_exposed_areas(g)
+    assert 'species' in areas
+    g.add_property('species')
+    g.property('species').update(species)
     axstats = adel.axis_statistics(g)
     assert axstats['LAI totale'].round(2).values[0] == 0.02
     pstats = adel.plot_statistics(g, axstats)

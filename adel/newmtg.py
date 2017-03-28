@@ -378,9 +378,12 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
             label = 'plant' + str(plant)
             position = (0,0,0)
             azimuth = 0
+            species = 0
+            if species in args:
+                species = args['species']
             if stand and len(stand) >= plant:
                 position,azimuth = stand[plant-1]
-            vid_plant = g.add_component(g.root, label=label, edge_type='/', position = position, azimuth = azimuth, refplant_id = args.get('refplant_id'))
+            vid_plant = g.add_component(g.root, label=label, edge_type='/', position = position, azimuth = azimuth, refplant_id = args.get('refplant_id'), species=species)
             #reset buffers
             prev_axe = -1            
             vid_axe = -1
@@ -723,23 +726,31 @@ def exposed_areas(g):
     for vid in g.vertices_iter(scale=g.max_scale()):
         n = g.node(vid)
         if n.length > 0 and not n.label.startswith('Hidden'):
-            numphy = int(''.join(list(n.complex().complex().label)[7:]))
-            nf = n.complex().complex().complex().nff
+            organ = n.complex()
+            metamer = organ.complex()
+            axe = metamer.complex()
+            plant = axe.complex()
+            numphy = int(''.join(list(metamer.label)[7:]))
+            nf = axe.nff
             node_data = {
-                      'plant' : n.complex().complex().complex().complex().label,
-                      'axe' : n.complex().complex().complex().label,
+                      'plant' : plant.label,
+                      'axe' : axe.label,
                       'metamer' : numphy,
-                      'organ' : n.complex().label,
+                      'organ' : organ.label,
                       'vid' : vid,
                       'ntop' : nf - numphy + 1,
                       'element' : n.label,
-                      'refplant_id': n.complex().complex().complex().complex().refplant_id,
+                      'refplant_id': plant.refplant_id,
                       'nff': nf,
-                      'HS_final':n.complex().complex().complex().HS_final,
-                      'L_shape':n.complex().complex().L_shape
+                      'HS_final':axe.HS_final,
+                      'L_shape':metamer.L_shape
                          }
             properties = n.properties()
             node_data.update({k:properties[k]  for k in what})
+            if 'species' in plant.properties():
+                node_data.update({'species': plant.species})
+            else:
+                node_data.update({'species': 0})
             data[vid] = node_data
     df =  pandas.DataFrame(data).T
     #hack
@@ -750,9 +761,10 @@ def exposed_areas2canS(exposed_areas):
     """ adaptor to convert new adel output to old adel output (canS-like) dataframe """
     d = exposed_areas
     if len(d) > 0:
-        grouped = d.groupby(['plant', 'axe', 'metamer'], group_keys=False)
+        grouped = d.groupby(['species', 'plant', 'axe', 'metamer'], group_keys=False)
         def _metamer(sub):
-            met = {'plant': sub.plant.values[0],
+            met = {'species': sub.species.values[0],
+                   'plant': sub.plant.values[0],
                    'refplant_id': sub.refplant_id.values[0],
                    'axe_id' : sub.axe.values[0],
                    'nff' : sub.nff.values[0],

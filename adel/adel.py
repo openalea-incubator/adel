@@ -220,6 +220,7 @@ class Adel(object):
         metamer = {vid: g.complex(vid) for vid in midribs}
         axe = {vid: g.complex(metamer[vid]) for vid in midribs}
         plant = {vid: g.complex(axe[vid]) for vid in midribs}
+        species = g.property('species')
         ntop = g.property('ntop')
 
         res = [pandas.DataFrame({'vid': vid,
@@ -229,6 +230,7 @@ class Adel(object):
                                  'axe': g.label(axe[vid]),
                                  'plant': int(
                                      g.label(plant[vid]).split('plant')[1]),
+                                 'species': species.get(plant[vid], 0),
                                  'x': midribs[vid][0],
                                  'y': midribs[vid][1],
                                  'hins': hins[vid]}) for vid in

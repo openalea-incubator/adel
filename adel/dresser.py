@@ -243,6 +243,7 @@ class AdelDress(Adel):
             dim_unit: (string) length unit used in the dimension table
             dimT: (panda.dataFrame) a table with organ adimensions
             leaves: (object) a Leaves class instance pointing to leaf shape database
+             or a {species:leaf_db} dict referencing distinct database per species
             nsect: (int) the number of sectors on leaves
             classic: (bool) should stem cylinders be classical pgl cylinders ?
             stand: (object) a Stand class instance
@@ -289,7 +290,7 @@ class AdelDress(Adel):
         for i, p in enumerate(ref_plant):
             dfp = df.loc[df['plant'] == p, :]
             dfp['refplant_id'] = p
-            dfp['species'] = 1
+            dfp['species'] = 0
             dfp.loc[:, 'plant'] = i + 1
             # compute visibility
             ht0 = 0
@@ -313,9 +314,9 @@ class AdelDress(Adel):
             dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'],
                                                1)  # selector for first level in leaf db
             dfp.loc[:,
-            'LcIndex'] = 1 + numpy.array(map(lambda t: numpy.random.choice(
-                range(len(self.leaves.xydb[str(t)]))), dfp[
-                                                 'LcType']))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
+            'LcIndex'] = 1 + numpy.array(map(lambda (s,t): numpy.random.choice(
+                range(len(self.leaves[s].xydb[str(t)]))), zip(dfp['species'], dfp[
+                                                 'LcType'])))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
             # fill other columns
             dfp.loc[:, 'Lr'] = 0
             dfp.loc[:, 'Lsen'] = 0

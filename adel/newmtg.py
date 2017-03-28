@@ -247,6 +247,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
     lifetime = kwargs.get('lifetime', 'NA')
     mtype = kwargs.get('m_type','vegetative')
     age = kwargs.get('age','NA')
+    species = kwargs.get('species', 0)
 
     if mtype!='vegetative':
         modules = [            
@@ -289,9 +290,10 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None, Lw_shape=No
             'n_sect': Lsect,
             'shape_mature_length': L_shape,
             'shape_max_width' : Lw_shape,
+             'species': species,
             'shape_key': shape_key,
             'inclination' : Linc,
-            'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)} 
+            'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape, Lw_shape, shape_key,leaves,  split = split)}
         ]
 
         try:
@@ -324,7 +326,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
     metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
     leaf_sectors is an integer giving the number of LeafElements per Leaf blade
-    leaves is an instance of adel.geometric_elements.Leaves class
+    leaves is a {species:adel.geometric_elements.Leaves} dict
     stand is a list of tuple (xy_position_tuple, azimuth) of plant positions
     axis_dynamics is a 3 levels dict describing axis dynamic. 1st key level is plant number, 2nd key level is axis number, and third ky level are labels of values (n, tip, ssi, disp)
     topology is the list of key names used in parameters dict for plant number, axe number and metamer number
@@ -338,9 +340,9 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
         raise AdelDeprecationError('leaf_db argument is deprecated, use leaves argument instead')
     
     if leaves is None:
-        dynamic_leaf_db = False
+        dynamic_leaf_db = {0: False}
     else:
-        dynamic_leaf_db = leaves.dynamic
+        dynamic_leaf_db = {k:leaves[k].dynamic for k in leaves}
 
 
     g = MTG()
@@ -415,16 +417,16 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
         components = []
         if metamer_factory:
             xysr_key = None
-            if leaves is not None and 'LcType' in args and 'LcIndex' in args:
+            if leaves[species] is not None and 'LcType' in args and 'LcIndex' in args:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:
                     age = None
-                    if dynamic_leaf_db:
+                    if dynamic_leaf_db[species]:
                         age = float(args['rph']) - 0.3 # age_db = HS - rank + 1 = ph - 1.3 - rank +1 = rph - .3
                         if age != 'NA':
                             age = max(0,int(float(age)))
-                    xysr_key = leaves.get_leaf_key(lctype, lcindex, age)
+                    xysr_key = leaves[species].get_leaf_key(lctype, lcindex, age)
             
             elongation = None
             if add_elongation:
@@ -445,7 +447,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
             if args.get('HS_final') < args.get('nff'):
                 for what in ('Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv', 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
                     args.update({what:args.get(what) * aborting_tiller_reduction})
-            components = metamer_factory(Lsect = leaf_sectors, shape_key = xysr_key, elongation = elongation, leaves = leaves, **args)
+            components = metamer_factory(Lsect = leaf_sectors, shape_key = xysr_key, elongation = elongation, leaves = leaves[species], **args)
             args={'L_shape':args.get('L_shape')}
         #
         label = 'metamer'+str(num_metamer)

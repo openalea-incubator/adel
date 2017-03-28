@@ -4,7 +4,7 @@ import os
 
 def test_instantiate():
     adel = Adel()
-    assert len(adel.leaves.xydb) == 6
+    assert len(adel.leaves[0].xydb) == 6
     assert adel.stand.plant_density == 250
     assert adel.convUnit == 0.01
     assert adel.nplants == 1

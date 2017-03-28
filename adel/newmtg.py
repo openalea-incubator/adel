@@ -381,7 +381,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1, leaves
             position = (0,0,0)
             azimuth = 0
             species = 0
-            if species in args:
+            if 'species' in args:
                 species = args['species']
             if stand and len(stand) >= plant:
                 position,azimuth = stand[plant-1]

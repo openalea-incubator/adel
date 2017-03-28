@@ -260,7 +260,7 @@ class AdelDress(Adel):
         self.dimT = dimT.fillna(0)
         self.dimT = dimT
 
-    def canopy_table(self, nplants=None, azimuth=None):
+    def canopy_table(self, nplants=None, azimuth=None, species=None):
 
         if nplants is None:
             nplants = self.nplants
@@ -268,6 +268,9 @@ class AdelDress(Adel):
         if azimuth is None:
             def azimuth(n, ntop, axe):
                 return 180 + (numpy.random.random() - 0.5) * 30
+
+        if species is None:
+            species = {0: 1}
 
         df = self.dimT.loc[:,
              ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath',
@@ -286,11 +289,15 @@ class AdelDress(Adel):
         df = df.sort_values(['plant', 'numphy'])
 
         ref_plant = numpy.random.choice(list(set(df['plant'])), nplants)
+        labels = species.keys()
+        nbspec = len(labels)
+        spec = [labels[k] for k in
+         numpy.random.choice(nbspec, nplants, p=species.values())]
         dfl = []
         for i, p in enumerate(ref_plant):
             dfp = df.loc[df['plant'] == p, :]
             dfp['refplant_id'] = p
-            dfp['species'] = 0
+            dfp['species'] = spec[i]
             dfp.loc[:, 'plant'] = i + 1
             # compute visibility
             ht0 = 0
@@ -330,13 +337,15 @@ class AdelDress(Adel):
 
         return pandas.concat(dfl)
 
-    def canopy(self, nplants=None, azimuth=None, seed=None, age=None):
+    def canopy(self, nplants=None, azimuth=None, species=None, seed=None, age=None):
         """ Generate a mtg encoding the canopy
 
         Args:
             nplants: the number of plants in the canopy
             azimuth: a callable returning leaf azimuth as a function of leaf rank,
              leaf rank from top and axe_id. If None
+            species : a {species: frequency} dict indicating the composition of
+            the canopy. If None, a monospecific canopy of species '0' is generated
             seed: (int) a value to initialize random number generator
 
         Returns:
@@ -345,7 +354,7 @@ class AdelDress(Adel):
         if age is not None:
             self.new_age(age)
         self.new_stand(nplants, seed)
-        df = self.canopy_table(azimuth=azimuth)
+        df = self.canopy_table(azimuth=azimuth, species=species)
 
         stand = zip(self.positions, self.plant_azimuths)
         g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,

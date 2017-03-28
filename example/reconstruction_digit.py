@@ -58,4 +58,5 @@ stand = AgronomicStand(sowing_density=500, plant_density=500, inter_row=0.15, no
 adel = AdelDress(dimT=dimT, leaves=leaves, stand=stand)
 g = adel.canopy(nplants=10, species = {'soissons':0.5, 'cap_horn':0.5})
 print [v for k, v in g.property('species').iteritems() if k in g.vertices(1)]
+print adel.plot_statistics(g)
 

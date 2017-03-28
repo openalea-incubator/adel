@@ -284,8 +284,10 @@ class AdelDress(Adel):
         # add mandatory topological info and sort from base to top
         df.loc[:, 'axe_id'] = 'MS'
         df.loc[:, 'ms_insertion'] = 0
-        df.loc[:,
-        'numphy'] = df.ntop.max() + 1 - df.ntop
+        df.loc[:, 'numphy'] = df.ntop.max() + 1 - df.ntop
+        # additions for statistics
+        df.loc[:, 'nff'] = df['numphy'].max()
+        df.loc[:, 'HS_final'] = df['numphy'].max()
         df = df.sort_values(['plant', 'numphy'])
 
         ref_plant = numpy.random.choice(list(set(df['plant'])), nplants)

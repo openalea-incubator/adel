@@ -1,5 +1,5 @@
 from openalea.mtg import MTG
-from alinea.adel.newmtg import add_plant, add_axe, add_vegetative_metamer, find_plants, \
+from alinea.adel.mtg_editions import add_plant, add_axe, add_vegetative_metamer, find_plants, \
     find_metamers, find_label, insert_elements
 
 

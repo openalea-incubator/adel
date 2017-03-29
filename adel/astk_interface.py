@@ -12,7 +12,7 @@ import warnings
 
 
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
-    getPhenT, getPhytoT, saveRData, plantSample
+    getPhenT, getPhytoT, saveRData
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *

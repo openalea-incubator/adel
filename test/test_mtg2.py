@@ -18,6 +18,7 @@ def adel_mtg():
     
 
     return g
+
 def leaves_db():
     import cPickle as Pickle
     fn = r'../adel/data/leaves_simple.db'
@@ -26,7 +27,7 @@ def leaves_db():
     f.close()
     leaves = fitting.fit_leaves(leaves, 9)
     
-    db = leaves
+    db = leaves[0]
     functions = build_symbols(db)
     return functions
 
@@ -51,7 +52,7 @@ def test_dynamic_mtg():
 
     g = adel_mtg()
 
-    v = g.component_roots_at_scale(g.root, scale=3).next()
+    v = g.component_roots_at_scale_iter(g.root, scale=3).next()
     tt = 0
     dtt = 10.
     for metamer in pre_order2(g, v):

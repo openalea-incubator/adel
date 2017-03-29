@@ -212,7 +212,7 @@ class TillerEmission(object):
                                'nff': [nff[c] for c in data[0]],
                                'delay':[emergence_delays[c] for c in data[0]],
                                'probability':data[2]})
-        df = df.sort(['cohort','axis'])
+        df = df.sort_values(['cohort','axis'])
         
         if max_order != None:
             df = df[map(lambda x: _order(x) <= max_order,df['axis'])]
@@ -887,7 +887,7 @@ class AxePop(object):
             nff = [cohort_nff[nff_p][c].pop() for c in id_cohort]
             plants.append(pandas.DataFrame({'id_plt': id_plant, 'id_cohort': id_cohort, 'id_axis' : id_axis, 'N_phytomer_potential': nff, 'dTTem':dTTem[i]}))
         df=pandas.concat(plants)
-        df= df.sort(['id_plt','id_cohort','id_axis'])
+        df= df.sort_values(['id_plt','id_cohort','id_axis'])
         return df
 
     def disparition_times(self, population):
@@ -1074,7 +1074,7 @@ class PlantGen(object):
         df['N_phytomer'] = axeT['N_phytomer_potential'] # To be checked that this is correct covention
         df['id_phen'] = (df['id_cohort'] * 100 + df['N_phytomer_potential']) * 10 + 1#id for axe with ear
         
-        df= df.sort(['id_plt','id_cohort','id_axis'])
+        df= df.sort_values(['id_plt','id_cohort','id_axis'])
         return df
       
     def dynT_user_table(self, plant):

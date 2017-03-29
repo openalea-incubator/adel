@@ -2,7 +2,7 @@ from numpy import *
 from scipy.interpolate import *
 import openalea.plantgl.all as pgl
 from openalea.plantgl.all import Viewer
-import fitting
+import alinea.adel.fitting as fitting
 import cPickle as Pickle
 from pylab import plot, show,clf
 

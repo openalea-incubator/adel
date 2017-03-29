@@ -291,7 +291,7 @@ class TillerRegression(object):
         # regression parameters per cohort
         # time of disparition of cohorts in case of complete regression
         # hypothesis : disparition of cohorts is sequential from last appeared to first
-        reverse_cohorts = cohorts.sort_index(by=['delay'], ascending = False)
+        reverse_cohorts = cohorts.sort_values(by=['delay'], ascending = False)
         loss_acc = reverse_cohorts['probability'].cumsum().values
         t_disp = hs_deb + loss_acc / abs(regression_rate)
         #actual fraction lost at t_disp

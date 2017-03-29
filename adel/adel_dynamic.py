@@ -115,7 +115,21 @@ class AdelWheatDyn(AdelWheat):
         root.meta = self.meta
         return g
 
-    def update_geometry(self, g):
+    def update_geometry(self, g, SI_units=False, properties_to_convert={'lengths':[], 'areas':[]}):
+        """Update MTG geometry.
+
+        :Parameters:
+            - `g` (:class:`openalea.mtg.mtg.MTG`) - The MTG to update the geometry.
+            - `SI_units` (:class:`bool`) - A boolean indicating whether the MTG properties are expressed in SI units.
+            - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
+        :Returns:
+            MTG with updated geometry
+        :Returns Type:
+            :class:`openalea.mtg.mtg.MTG`
+        """
+
+        if SI_units:
+            self.convert_to_ADEL_units(g, properties_to_convert)
 
         # update elements
         g = update_organ_elements(g, self.leaves, self.split)
@@ -132,3 +146,33 @@ class AdelWheatDyn(AdelWheat):
                     geom[gid] = transform_geom(geom[gid], self.positions[i],
                                                self.plant_azimuths[i])
         return g
+
+    def convert_to_ADEL_units(self, g, properties_to_convert):
+        """Converts the MTG to ADEL units. From m to cm for length properties and from m2 to cm2 for area properties.
+
+        :Parameters:
+            - `g` (:class:`openalea.mtg.mtg.MTG`) - The MTG to update.
+            - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
+        """
+        for length_property in properties_to_convert['lengths']:
+            for vid, length in g.properties()[length_property].iteritems():
+                g.properties()[length_property][vid] = length * 100 # Converts m to cm
+
+        for area_property in properties_to_convert['areas']:
+            for vid, area in g.properties()[area_property].iteritems():
+                g.properties()[area_property][vid] = area * 10000 # Converts m2 to cm2
+
+    def convert_to_SI_units(self, g, properties_to_convert):
+        """Converts the MTG to SI units from ADEL. From cm to m for length properties and from cm2 to m2 for area properties.
+
+        :Parameters:
+            - `g` (:class:`openalea.mtg.mtg.MTG`) - The MTG to update.
+            - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
+        """
+        for length_property in properties_to_convert['lengths']:
+            for vid, length in g.properties()[length_property].iteritems():
+                g.properties()[length_property][vid] = length / 100 # Converts cm to m
+
+        for area_property in properties_to_convert['areas']:
+            for vid, area in g.properties()[area_property].iteritems():
+                g.properties()[area_property][vid] = area / 10000 # Converts cm2 to m2

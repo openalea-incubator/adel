@@ -35,6 +35,7 @@ class Adel(object):
                 '!!!!Warning!!!! leaf_db argument is deprecated, '
                 'use adel.geometric_elements.Leaves class instead',
                 DeprecationWarning)
+
         if positions is not None:
             warnings.warn(
                 '!!!!Warning!!!! positions argument is deprecated,'
@@ -42,7 +43,10 @@ class Adel(object):
                 DeprecationWarning)
 
         if leaves is None:
-            leaves = Leaves()
+            leaves = {0: Leaves()}
+
+        if not isinstance(leaves, dict):
+            leaves = {0: leaves}
 
         if stand is None:
             stand = AgronomicStand(sowing_density=250, plant_density=250,
@@ -202,12 +206,18 @@ class Adel(object):
         return g
 
     def get_midribs(self, g, resample=False):
-
-        vids = [vid for vid in g.vertices(scale=g.max_scale() - 1) if
-                g.label(vid).startswith('blade')]
         visible_length = g.property('visible_length')
-        midribs = {vid: self.leaves.midrib(g.node(vid), resample=resample) for
-                   vid in vids if visible_length[vid] > 0}
+        blades = (vid for vid in g.vertices(scale=g.max_scale() - 1) if
+                g.label(vid).startswith('blade'))
+        vids = (vid for vid in blades if visible_length[vid] > 0)
+        metamer = {vid: g.complex(vid) for vid in vids}
+        axe = {vid: g.complex(metamer[vid]) for vid in metamer}
+        plant = {vid: g.complex(axe[vid]) for vid in axe}
+        p = g.property('species')
+        species = {vid: p.get(plant[vid], 0) for vid in plant}
+
+        midribs = {vid: self.leaves[species[vid]].midrib(g.node(vid), resample=resample) for
+                   vid in species}
         #
         anchor = g.property('anchor_point')
         midribs_anchor = {
@@ -217,11 +227,7 @@ class Adel(object):
         hins = {k: v[0][2] + midribs[k][2] for k, v in
                 midribs_anchor.iteritems() if len(v) > 0}
 
-        metamer = {vid: g.complex(vid) for vid in midribs}
-        axe = {vid: g.complex(metamer[vid]) for vid in midribs}
-        plant = {vid: g.complex(axe[vid]) for vid in midribs}
         ntop = g.property('ntop')
-
         res = [pandas.DataFrame({'vid': vid,
                                  'ntop': ntop[vid],
                                  'metamer': int(
@@ -229,6 +235,7 @@ class Adel(object):
                                  'axe': g.label(axe[vid]),
                                  'plant': int(
                                      g.label(plant[vid]).split('plant')[1]),
+                                 'species': species[vid],
                                  'x': midribs[vid][0],
                                  'y': midribs[vid][1],
                                  'hins': hins[vid]}) for vid in

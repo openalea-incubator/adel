@@ -3,14 +3,13 @@
 import numpy
 import pandas
 
-
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.newmtg import mtg_factory
 from alinea.adel.mtg_interpreter import mtg_interpreter
 from alinea.adel.adel import Adel
 
 
-def blade_dimension(area = None, length=None , width=None, ntop=None, leaves=None,
+def blade_dimension(area=None, length=None, width=None, ntop=None, leaves=None,
                     plant=1, wl=0.1):
     """Estimate blade dimension and/or compatibility with leaf shapes form factors
 
@@ -53,7 +52,7 @@ def blade_dimension(area = None, length=None , width=None, ntop=None, leaves=Non
             length = numpy.array(length)
             width = numpy.array(width)
         if ntop is None:
-            ntop = numpy.arange(1,len(length) + 1)
+            ntop = numpy.arange(1, len(length) + 1)
         else:
             ntop = numpy.array(ntop)
         ffn = numpy.array([ff[k] for k in ntop])
@@ -61,7 +60,7 @@ def blade_dimension(area = None, length=None , width=None, ntop=None, leaves=Non
     else:
         area = numpy.array(area)
         if ntop is None:
-            ntop = numpy.arange(1,len(area) + 1)
+            ntop = numpy.arange(1, len(area) + 1)
         else:
             ntop = numpy.array(ntop)
         ffn = numpy.array([ff[k] for k in ntop])
@@ -82,6 +81,7 @@ def blade_dimension(area = None, length=None , width=None, ntop=None, leaves=Non
 
     return pandas.DataFrame({'plant': plant, 'ntop': ntop, 'L_blade': length,
                              'W_blade': width, 'S_blade': area})
+
 
 def stem_dimension(h_ins=None, d_stem=None, internode=None, sheath=None,
                    d_internode=None, d_sheath=None, ntop=None, plant=1):
@@ -143,11 +143,16 @@ def stem_dimension(h_ins=None, d_stem=None, internode=None, sheath=None,
                 internode = numpy.diff([0] + list(h_ins[order]))[reorder]
             else:
                 internode = numpy.array(internode)
-                sheath = numpy.maximum(0, h_ins[order] - internode[order].cumsum())[reorder]
-                internode = numpy.diff([0] + (h_ins[order] - sheath[order]).tolist())[reorder]
+                sheath = \
+                numpy.maximum(0, h_ins[order] - internode[order].cumsum())[
+                    reorder]
+                internode = \
+                numpy.diff([0] + (h_ins[order] - sheath[order]).tolist())[
+                    reorder]
         else:
             sheath = numpy.array(sheath)
-            internode = numpy.diff([0] + (h_ins[order] - sheath[order]).tolist())[reorder]
+            internode = \
+            numpy.diff([0] + (h_ins[order] - sheath[order]).tolist())[reorder]
 
     if d_internode is None:
         if d_sheath is None:
@@ -162,10 +167,12 @@ def stem_dimension(h_ins=None, d_stem=None, internode=None, sheath=None,
 
     return pandas.DataFrame({'plant': plant, 'ntop': ntop, 'h_ins': h_ins,
                              'L_sheath': sheath, 'W_sheath': d_sheath,
-                             'L_internode': internode, 'W_internode': d_internode})
+                             'L_internode': internode,
+                             'W_internode': d_internode})
 
 
-def ear_dimension(peduncle=None, ear=None, spike=None, d_peduncle=0.3, projected_area_ear=None, wl_ear=0.1, plant=1):
+def ear_dimension(peduncle=None, ear=None, spike=None, d_peduncle=0.3,
+                  projected_area_ear=None, wl_ear=0.1, plant=1):
     """Estimate dimensions of ear cylinders from ear measuremenst
 
     Args:
@@ -187,8 +194,8 @@ def ear_dimension(peduncle=None, ear=None, spike=None, d_peduncle=0.3, projected
     pos = 0
 
     if peduncle is not None:
-        dfl.append(pandas.DataFrame({'plant': plant, 'ntop':pos,
-                                     'L_internode':peduncle,
+        dfl.append(pandas.DataFrame({'plant': plant, 'ntop': pos,
+                                     'L_internode': peduncle,
                                      'W_internode': d_peduncle}, index=[pos]))
         pos -= 1
 
@@ -207,8 +214,7 @@ def ear_dimension(peduncle=None, ear=None, spike=None, d_peduncle=0.3, projected
                 {'plant': plant, 'ntop': pos, 'L_internode': spike - ear,
                  'W_internode': w_ear}, index=[pos]))
 
-    return pandas.concat(dfl,axis=0)
-
+    return pandas.concat(dfl, axis=0)
 
 
 def dimension_table(blades=None, stem=None, ear=None):
@@ -220,14 +226,16 @@ def dimension_table(blades=None, stem=None, ear=None):
     if ear is None:
         return blades.merge(stem)
     else:
-        stemear = pandas.concat([stem, ear]).set_index(['plant','ntop'])
-        return pandas.concat([stemear, blades.set_index(['plant','ntop'])], axis=1).reset_index()
+        stemear = pandas.concat([stem, ear]).set_index(['plant', 'ntop'])
+        return pandas.concat([stemear, blades.set_index(['plant', 'ntop'])],
+                             axis=1).reset_index()
 
 
 class AdelDress(Adel):
     """A class interface to Adel for static reconstruction"""
 
-    def __init__(self, nplants=1, scene_unit='cm', dim_unit='cm', dimT=None, leaves=None, nsect=1, classic=False, stand=None, seed=None):
+    def __init__(self, nplants=1, scene_unit='cm', dim_unit='cm', dimT=None,
+                 leaves=None, nsect=1, classic=False, stand=None, seed=None):
         """ Instantiate a dresser
 
         Args:
@@ -235,13 +243,15 @@ class AdelDress(Adel):
             dim_unit: (string) length unit used in the dimension table
             dimT: (panda.dataFrame) a table with organ adimensions
             leaves: (object) a Leaves class instance pointing to leaf shape database
+             or a {species:leaf_db} dict referencing distinct database per species
             nsect: (int) the number of sectors on leaves
             classic: (bool) should stem cylinders be classical pgl cylinders ?
             stand: (object) a Stand class instance
         """
-        super(AdelDress, self).__init__(nplants=nplants, nsect=nsect, leaves=leaves, stand=stand,
-                 classic=classic, scene_unit=scene_unit, seed=seed)
-
+        super(AdelDress, self).__init__(nplants=nplants, nsect=nsect,
+                                        leaves=leaves, stand=stand,
+                                        classic=classic, scene_unit=scene_unit,
+                                        seed=seed)
 
         if dimT is None:
             dimT = dimension_table()
@@ -250,52 +260,72 @@ class AdelDress(Adel):
         self.dimT = dimT.fillna(0)
         self.dimT = dimT
 
-    def canopy_table(self, nplants=None, azimuth=None):
+    def canopy_table(self, nplants=None, azimuth=None, species=None):
 
         if nplants is None:
-            nplants=self.nplants
+            nplants = self.nplants
 
         if azimuth is None:
-            def azimuth(n,ntop,axe):
+            def azimuth(n, ntop, axe):
                 return 180 + (numpy.random.random() - 0.5) * 30
 
+        if species is None:
+            species = {0: 1}
+
         df = self.dimT.loc[:,
-             ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath', 'L_internode', 'W_internode']]
+             ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath',
+              'L_internode', 'W_internode']]
         df.rename(
             columns={'L_blade': 'Ll', 'W_blade': 'Lw_shape',
                      'L_sheath': 'Gl', 'W_sheath': 'Gd',
                      'L_internode': 'El', 'W_internode': 'Ed'}, inplace=True)
         conv = self.conv_units[self.dim_unit] / self.conv_units[self.scene_unit]
-        df.loc[:,('Ll','Lw_shape', 'Gl', 'Gd', 'El', 'Ed')] *= conv
+        df.loc[:, ('Ll', 'Lw_shape', 'Gl', 'Gd', 'El', 'Ed')] *= conv
         # add mandatory topological info and sort from base to top
         df.loc[:, 'axe_id'] = 'MS'
         df.loc[:, 'ms_insertion'] = 0
-        df.loc[:,
-        'numphy'] = df.ntop.max() + 1 - df.ntop
+        df.loc[:, 'numphy'] = df.ntop.max() + 1 - df.ntop
+        # additions for statistics
+        df.loc[:, 'nff'] = df['numphy'].max()
+        df.loc[:, 'HS_final'] = df['numphy'].max()
         df = df.sort_values(['plant', 'numphy'])
 
         ref_plant = numpy.random.choice(list(set(df['plant'])), nplants)
+        labels = species.keys()
+        nbspec = len(labels)
+        spec = [labels[k] for k in
+         numpy.random.choice(nbspec, nplants, p=species.values())]
         dfl = []
         for i, p in enumerate(ref_plant):
             dfp = df.loc[df['plant'] == p, :]
             dfp['refplant_id'] = p
-            dfp.loc[:,'plant'] = i + 1
+            dfp['species'] = spec[i]
+            dfp.loc[:, 'plant'] = i + 1
             # compute visibility
             ht0 = 0
             hbase = dfp['El'].cumsum() - dfp['El']
             hcol = hbase + dfp['Gl'] + dfp['El']
             h_hide = [max([ht0] + hcol[:i].tolist()) for i in range(len(hcol))]
             htube = numpy.maximum(0, h_hide - hbase)
-            dfp['Lv'] = numpy.minimum(dfp['Ll'], numpy.maximum(0, dfp['Ll'] + dfp['Gl'] + dfp['El']- htube))
-            dfp['Gv'] = numpy.minimum(dfp['Gl'], numpy.maximum(0, dfp['Gl'] + dfp['El'] - htube))
-            dfp['Ev'] = numpy.minimum(dfp['El'], numpy.maximum(0, dfp['El'] - htube))
+            dfp['Lv'] = numpy.minimum(dfp['Ll'], numpy.maximum(0,
+                                                               dfp['Ll'] + dfp[
+                                                                   'Gl'] + dfp[
+                                                                   'El'] - htube))
+            dfp['Gv'] = numpy.minimum(dfp['Gl'], numpy.maximum(0,
+                                                               dfp['Gl'] + dfp[
+                                                                   'El'] - htube))
+            dfp['Ev'] = numpy.minimum(dfp['El'],
+                                      numpy.maximum(0, dfp['El'] - htube))
             # add missing mandatory data  (does like adel)
             dfp.loc[:, 'Laz'] = [azimuth(*arg) for arg in
-                                zip(dfp['numphy'], dfp['ntop'], dfp['axe_id'])]  # leaf azimuth
+                                 zip(dfp['numphy'], dfp['ntop'],
+                                     dfp['axe_id'])]  # leaf azimuth
             dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'],
-                                              1)  # selector for first level in leaf db
+                                               1)  # selector for first level in leaf db
             dfp.loc[:,
-            'LcIndex'] = 1 + numpy.array(map(lambda t: numpy.random.choice(range(len(self.leaves.xydb[str(t)]))), dfp['LcType']))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
+            'LcIndex'] = 1 + numpy.array(map(lambda (s,t): numpy.random.choice(
+                range(len(self.leaves[s].xydb[str(t)]))), zip(dfp['species'], dfp[
+                                                 'LcType'])))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
             # fill other columns
             dfp.loc[:, 'Lr'] = 0
             dfp.loc[:, 'Lsen'] = 0
@@ -309,13 +339,15 @@ class AdelDress(Adel):
 
         return pandas.concat(dfl)
 
-    def canopy(self, nplants=None, azimuth=None, seed=None, age=None):
+    def canopy(self, nplants=None, azimuth=None, species=None, seed=None, age=None):
         """ Generate a mtg encoding the canopy
 
         Args:
             nplants: the number of plants in the canopy
             azimuth: a callable returning leaf azimuth as a function of leaf rank,
              leaf rank from top and axe_id. If None
+            species : a {species: frequency} dict indicating the composition of
+            the canopy. If None, a monospecific canopy of species '0' is generated
             seed: (int) a value to initialize random number generator
 
         Returns:
@@ -324,7 +356,7 @@ class AdelDress(Adel):
         if age is not None:
             self.new_age(age)
         self.new_stand(nplants, seed)
-        df = self.canopy_table(azimuth=azimuth)
+        df = self.canopy_table(azimuth=azimuth, species=species)
 
         stand = zip(self.positions, self.plant_azimuths)
         g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,

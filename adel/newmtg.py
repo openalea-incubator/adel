@@ -1,3 +1,14 @@
+# -*- python -*-
+#
+#       Copyright 2015 INRIA - CIRAD - INRA
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       WebSite : https://github.com/openalea-incubator/adel
+#
+# ==============================================================================
 """
 A place to develop candidates methods for mtg.py / topological builder
 
@@ -10,6 +21,7 @@ from alinea.adel.mtg import convert, properties_from_dict
 # import csv
 
 from openalea.mtg import MTG, fat_mtg
+
 
 import numpy
 import pandas
@@ -117,9 +129,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
     # s(on mature shape) at which leaf becomes rolled
     s_limrolled = Lshape
     # compute partitioning of visible length
+    S_hide = 0
     try:
         lhide = max(l - lvis, 0.)
-        S_hide = 0
         if lhide > 0:
             S_hide = leaves.blade_elt_area(shape_key, Lshape, Lwshape,
                                            (Lshape - l) / Lshape,
@@ -140,7 +152,6 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
     hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': S_hide,
                   'is_green': True}
     elements = [hidden_elt]
-    # elements=[]
     ds = 0
     if Lshape is not None:
         ds = float(Lshape) / sectors
@@ -157,6 +168,9 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
             S_green = 0
             S_sen = 0
             S_tot = 0
+            w_green = 0
+            w_sen = 0
+            w_tot = 0
             srb_green = None
             srt_green = None
             srb_sen = None
@@ -181,13 +195,21 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
                                                         Lwshape,
                                                         sb_green / Lshape,
                                                         st_green / Lshape)
+                        w_green = leaves.blade_elt_width(shape_key, Lshape,
+                                                        Lwshape,
+                                                        sb_green / Lshape,
+                                                        st_green / Lshape)
                     if ls_sen > 0:
                         S_sen = leaves.blade_elt_area(shape_key, Lshape,
                                                       Lwshape, sb_sen / Lshape,
                                                       st_sen / Lshape)
+                        w_sen = leaves.blade_elt_width(shape_key, Lshape, Lwshape,
+                                                  sb_sen / Lshape,
+                                                  st_sen / Lshape)
                     # made intergration again for avoiding fluctuations
                     # S_tot = blade_elt_area(xysr_shape, Lshape, Lwshape, sb / Lshape, st / Lshape)
                     S_tot = S_green + S_sen
+                    w_tot = max(w_green, w_sen)
                     #
                     # compute position of flat parts of the element
                     ls_flat = min(ls_vis, max(0., st - s_limrolled))
@@ -215,18 +237,17 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
             green_elt = {'label': 'LeafElement' + str(isect + 1) + 'g',
                          'length': ls_green, 'area': S_green, 'is_green': True,
                          'srb': srb_green, 'srt': srt_green,
-                         'lrolled': ls_rolled_green, 'd_rolled': d_rolled}
+                         'lrolled': ls_rolled_green, 'd_rolled': d_rolled, 'width': w_green}
             sen_elt = {'label': 'LeafElement' + str(isect + 1) + 's',
                        'length': ls_sen, 'area': S_sen, 'is_green': False,
                        'srb': srb_sen, 'srt': srt_sen, 'lrolled': ls_rolled_sen,
-                       'd_rolled': d_rolled}
+                       'd_rolled': d_rolled, 'width': w_sen}
             elt = {'label': 'LeafElement' + str(isect + 1),
                    'length': ls_sen + ls_green, 'area': S_tot,
-                   'green_length': ls_green,
-                   'green_area': S_green, 'senesced_length': ls_sen,
-                   'senesced_area': S_sen, 'is_green': (ls_green > ls_sen),
-                   'srb': srb_green, 'srt': srt_sen, 'lrolled': ls_rolled,
-                   'd_rolled': d_rolled}
+                   'green_length': ls_green, 'green_area': S_green,
+                   'senesced_length': ls_sen, 'senesced_area': S_sen,
+                   'is_green': (ls_green > ls_sen), 'srb': srb_green,
+                   'srt': srt_sen, 'lrolled': ls_rolled, 'd_rolled': d_rolled, 'width': w_tot}
             if split:
                 elements.extend([green_elt, sen_elt])
             else:
@@ -254,7 +275,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
        - Gl : length of the sheath (hidden + visible)
        - Gv : emerged length of the sheath
        - Gsen : senescent length of the sheath (hidden + visible)
-       - Gd : apparent diameter of the sheath
+       - Gd : apparent diameter of the sheaths
        - Ginc : relative inclination of the sheath
        - El: length of the internode (hidden + visible)
        - Ev: emerged length of the internode 
@@ -271,19 +292,14 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
     lifetime = kwargs.get('lifetime', 'NA')
     mtype = kwargs.get('m_type', 'vegetative')
     age = kwargs.get('age', 'NA')
+    is_ligulated = kwargs.get('is_ligulated', 'NA')
 
     if mtype != 'vegetative':
         modules = [
-            {'label': mtype,
-             'ntop': ntop,
-             'length': El,
-             'visible_length': Ev,
-             'senesced_length': Esen,
-             'diameter': Ed,
-             'azimuth': Eaz,
+            {'label': mtype, 'ntop': ntop, 'length': El, 'visible_length': Ev,
+             'senesced_length': Esen, 'diameter': Ed, 'azimuth': Eaz,
              'inclination': Einc,
-             'elements': internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}
-        ]
+             'elements': internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}]
     else:
         modules = [
             {'label': 'internode',
@@ -320,12 +336,20 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
                                         split=split)}
         ]
 
+        # add organ area
+        for i in range(1):
+            modules[i]['area'] = sum([elt['area'] for elt in modules[i]['elements'] if elt['label'].startswith('StemElement')])
+        modules[2]['area'] = sum(
+            [elt['area'] for elt in modules[2]['elements'] if
+
         try:
             exposition = float(exposition)
             lifetime = float(lifetime)
             age = float(age)
+            is_ligulated = int(is_ligulated)
             modules[2].update(
-                {'exposition': exposition, 'lifetime': lifetime, 'age': age})
+                {'exposition': exposition, 'lifetime': lifetime, 'age': age,
+                 'is_ligulated': is_ligulated})
         except ValueError:
             pass
 
@@ -491,8 +515,8 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             args.update({'split': split})
             if args.get('HS_final') < args.get('nff'):
                 for what in (
-                'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
-                'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
+                        'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl',
+                        'Gv', 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
                     args.update(
                         {what: args.get(what) * aborting_tiller_reduction})
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
@@ -569,14 +593,14 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
     return fat_mtg(g)
 
 
-def update_elements(organ):
+def update_elements(organ, leaves=None):
     if organ.label.startswith('blade'):
-        rolled_length = 0
         elements = blade_elements(organ.n_sect, organ.length,
-                                  organ.visible_length, rolled_length,
+                                  organ.visible_length, organ.rolled_length,
                                   organ.senesced_length,
                                   organ.shape_mature_length,
-                                  organ.shape_max_width, organ.shape_xysr)
+                                  organ.shape_max_width, organ.shape_key,
+                                  leaves=leaves)
         for i, e in enumerate(organ.components()):
             for k in elements[i]:
                 exec "e.%s = elements[i]['%s']" % (k, k)
@@ -590,9 +614,9 @@ def update_plant(plant, time):
 def update_axe(axe):
     """ update phenology on axes """
     if 'timetable' in axe.properties():
-        axe.phyllochronic_time = np.interp(axe.complex().time,
-                                           axe.timetable['tip'],
-                                           axe.timetable['n'])
+        axe.phyllochronic_time = numpy.interp(axe.complex().time,
+                                              axe.timetable['tip'],
+                                              axe.timetable['n'])
         # print 'axe %s phyllochronic time:%f'%(axe.label,axe.phyllochronic_time)
 
 
@@ -603,8 +627,8 @@ def update_organ(organ, h_whorl=0):
     length = organ.length
     vlength = organ.visible_length
     if 'elongation_curve' in organ.properties():
-        organ.length = np.interp(rph, organ.elongation_curve['x'],
-                                 organ.elongation_curve['y'])
+        organ.length = numpy.interp(rph, organ.elongation_curve['x'],
+                                    organ.elongation_curve['y'])
     organ.visible_length = organ.length - h_whorl
     update_elements(organ)
     organ.dl = organ.length - length
@@ -624,7 +648,7 @@ def update_organ_from_table(organ, metamer, oldmetamer):
         for k in new_elts[i]:
             if k in ['area', 'green_area', 'senesced_area']:
                 exec "e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])" % (
-                k, k, k)
+                    k, k, k)
                 has_area = True
             else:
                 exec "e.%s = new_elts[i]['%s']" % (k, k)
@@ -674,9 +698,10 @@ def mtg_update_from_table(g, cantable, old_cantable):
                 nump = int(''.join(list(p.label)[5:]))
                 numphy = int(''.join(list(m.label)[7:]))
                 dm = df[(df['plant'] == nump) & (df['axe_id'] == ax.label) & (
-                df['numphy'] == numphy)]
+                    df['numphy'] == numphy)]
                 old_dm = old_df[(old_df['plant'] == nump) & (
-                old_df['axe_id'] == ax.label) & (old_df['numphy'] == numphy)]
+                    old_df['axe_id'] == ax.label) & (
+                                    old_df['numphy'] == numphy)]
                 # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict(

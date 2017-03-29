@@ -7,8 +7,9 @@ except:
     import pickle
 import os
 
-import numpy
+
 import warnings
+
 
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
     getPhenT, getPhytoT, saveRData
@@ -190,7 +191,7 @@ class AdelWheat(object):
 
         self.canopy_age = age
 
-        # produce plants positionned at origin        
+        # produce plants positionned at origin
         if self.nrem > 0:
             canopy = RunAdel(age, self.pars_rem, adelpars=self.run_adel_pars)
             grem = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
@@ -326,8 +327,8 @@ class AdelWheat(object):
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
             colors = {
-            vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0])) for
-            vid in g.vertices(scale=g.max_scale())}
+                vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0]))
+                for vid in g.vertices(scale=g.max_scale())}
         else:
             colors = None
         s = plot3d(g,
@@ -427,8 +428,8 @@ class AdelWheat(object):
         #
         anchor = g.property('anchor_point')
         midribs_anchor = {
-        vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for vid
-        in midribs}
+            vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for
+            vid in midribs}
         hins = {k: v[0][2] + midribs[k][2] for k, v in
                 midribs_anchor.iteritems() if len(v) > 0}
 

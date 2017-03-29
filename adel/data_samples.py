@@ -108,7 +108,7 @@ def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     l = leaves()
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
-         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}
+         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
     g=mtg_factory(d,adel_metamer,leaves=leaves(),leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g,leaves=l)
     return g
@@ -117,7 +117,7 @@ def adel_one_leaf_element():
     """ create a very simple adel mtg """
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[3], 'Lw_shape':[.3], 'Linc':[0],
-         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1]}
+         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
     g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=1)
     g=mtg_interpreter(g)
     g.remove_vertex(13)

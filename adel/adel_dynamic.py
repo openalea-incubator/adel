@@ -3,7 +3,7 @@ from openalea.mtg import MTG
 from alinea.adel.AdelR import RunAdel
 from openalea.mtg.algo import union
 from alinea.adel.astk_interface import AdelWheat, replicate, transform_geom, mtg_interpreter, adel_metamer
-from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory
+from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
 from alinea.adel.AdelR import plantSample
 
 
@@ -113,4 +113,22 @@ class AdelWheatDyn(AdelWheat):
         root = g.node(0)
         self.meta.update({'canopy_age': age})
         root.meta = self.meta
+        return g
+
+    def update_geometry(self, g):
+
+        # update elements
+        g = update_organ_elements(g, self.leaves, self.split)
+        g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
+                            classic=self.classic)
+        pos = g.property('position ')
+        az = g.property('azimuth')
+        geom = g.property('geometry')
+        for i, vid in enumerate(g.vertices(1)):
+            pos[vid] = self.positions[i]
+            az[vid] = self.plant_azimuths[i]
+            for gid in g.components_at_scale(vid, g.max_scale()):
+                if gid in geom:
+                    geom[gid] = transform_geom(geom[gid], self.positions[i],
+                                               self.plant_azimuths[i])
         return g

@@ -27,7 +27,7 @@ translation = pgl.Vector3(0,0,0)
 zt = 6
 yt = 13 
 
-def test1(leaf, scene = None):
+def test1(leaf=leaf, scene = None):
     """
     Fit the leaf, create a mesh and draw it with plantGL.
     """
@@ -44,7 +44,7 @@ def test1(leaf, scene = None):
     Viewer.update()
 
 #test1(leaf)
-def test2(leaves):
+def test2(leaves=leaves):
     """
     Visualize all the leaves in the database in the same scene.
     """
@@ -66,7 +66,7 @@ def test2(leaves):
         translation.y = -60 + yt*int(k)
         translation.z = 0
             
-def test3(leaf, scene = None):
+def test3(leaf=leaf, scene = None):
     """
     Obtain a leaf at different time.
     """
@@ -87,16 +87,16 @@ def test3(leaf, scene = None):
 
     Viewer.display(scene)
 
-def test4(leaves,rank):
-    # try with rank=7
-    index = 0
-    if rank in leaves:
-        for leaf in leaves[rank]:
-            test3(leaf)
-            raw_input('rank %s index %d'%(rank,index))
-            index += 1
+# def test4(leaves=leaves,rank=rank):
+#     # try with rank=7
+#     index = 0
+#     if rank in leaves:
+#         for leaf in leaves[rank]:
+#             test3(leaf)
+#             raw_input('rank %s index %d'%(rank,index))
+#             index += 1
 
-def test5(leaf):
+def test5(leaf=leaf):
     """
     Fit the leaf, create a mesh and draw it with plantGL.
     """
@@ -111,18 +111,18 @@ def test5(leaf):
     plot(x,y,'.')
     plot(xp, yp)
     
-def test6(leaves,rank):
-    # try with rank=7
-    index = 0
-    if rank in leaves:
-        for leaf in leaves[rank]:
-            test5(leaf)
-            q=raw_input('rank %s index %d'%(rank,index))
-            if q=='q':
-                break
-            index += 1
+# def test6(leaves=leaves,rank=rank):
+#     # try with rank=7
+#     index = 0
+#     if rank in leaves:
+#         for leaf in leaves[rank]:
+#             test5(leaf)
+#             q=raw_input('rank %s index %d'%(rank,index))
+#             if q=='q':
+#                 break
+#             index += 1
 
-def test7(leaf, scene = None):
+def test7(leaf=leaf, scene = None):
 
     if scene is None:
         scene = pgl.Scene()
@@ -135,7 +135,7 @@ def test7(leaf, scene = None):
     Viewer.display(fitting.plantgl_shape(pts, ind))
     
 
-def test8(leaf, scene = None):
+def test8(leaf=leaf, scene = None):
     global translation, zt
     if scene is None:
         scene = pgl.Scene()
@@ -158,7 +158,7 @@ def test8(leaf, scene = None):
     
     Viewer.update()
 
-def test81(leaf, scene = None):
+def test81(leaf=leaf, scene = None):
     global translation, yt, zt
     if scene is None:
         scene = pgl.Scene()
@@ -170,32 +170,32 @@ def test81(leaf, scene = None):
     
     Viewer.update()
 
-def test9(leaves):
-    """
-    Visualize all the leaves in the database in the same scene.
-    """
-    global translation, yt, zt
-    translation = pgl.Vector3(0,0,0)
-    scene= pgl.Scene()
-    Viewer.display(scene)
-    for k in leaves:
-        print "Rank number: ", k
-        index = 0
-        for leaf in leaves[k]:
-            try:
-                test8(leaf,scene)
-                test81(leaf, scene)
-            except:
-                print "problem with leaf %d in rank %s"%(index,k)
-            index += 1
-            translation.y += yt
-            #raw_input('Enter something for next leaf...')
-        translation.z = -60 + zt*int(k)
-        translation.y = 0
-
-
-def test10():
-    pass
+# def test9(leaves=leaves):
+#     """
+#     Visualize all the leaves in the database in the same scene.
+#     """
+#     global translation, yt, zt
+#     translation = pgl.Vector3(0,0,0)
+#     scene= pgl.Scene()
+#     Viewer.display(scene)
+#     for k in leaves:
+#         print "Rank number: ", k
+#         index = 0
+#         for leaf in leaves[k]:
+#             try:
+#                 test8(leaf,scene)
+#                 test81(leaf, scene)
+#             except:
+#                 print "problem with leaf %d in rank %s"%(index,k)
+#             index += 1
+#             translation.y += yt
+#             #raw_input('Enter something for next leaf...')
+#         translation.z = -60 + zt*int(k)
+#         translation.y = 0
+#
+#
+# def test10():
+#     pass
 #sc=pgl.SurfComputer(pgl.Discretizer())
 #m=pgl_shape mesh2 
 #m2=pgl_shape qslim

@@ -287,10 +287,10 @@ class AdelDress(Adel):
         self.dimT = dimT
 
         self.dim_unit = dim_unit
-        convert = self.conv_units[self.dim_unit] / self.conv_units[self.scene_unit]
+        convert = self.conv_units[dim_unit] / self.conv_units[scene_unit]
         self.plant_table = plant_table(dimT, convert)
 
-        self.ref_plants = list(set(plant_table['plant']))
+        self.ref_plants = list(set(self.plant_table['plant']))
         super(AdelDress, self).__init__(nref_plants=len(self.ref_plants),
                                         nplants=nplants, duplicate=duplicate,
                                         species=species, nsect=nsect,
@@ -319,7 +319,8 @@ class AdelDress(Adel):
 
         dfl = []
         # TO DO compute only on set(ref_plant_id) in a dict then create the list
-        for i, p in enumerate(plant_references):
+        for i, ip in enumerate(plant_references):
+            p = self.ref_plants[ip]
             dfp = self.plant_table.loc[self.plant_table['plant'] == p, :]
             dfp['refplant_id'] = p
             dfp['species'] = plant_species[i]

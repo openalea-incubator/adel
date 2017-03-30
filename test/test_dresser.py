@@ -20,11 +20,12 @@ def test_dresser():
 
 
 def test_mixture():
-    adel = AdelDress(leaves={0:leaves(), 1:leaves()})
-    df = adel.canopy_table(nplants=10, species={0:0.1, 1:0.9})
-    assert df['species'].sum() * 1. / df['species'].size > 0.7
-    g = adel.canopy(nplants=10, species={0:0.1, 1:0.9})
+    l = leaves()
+    adel = AdelDress(nplants=10, leaves={0:l[0], 1:l[0]}, species={0:0.1, 1:0.9})
+    df = adel.canopy_table(adel.plant_references, adel.plant_species)
+    assert 0.91 > df['species'].sum() * 1. / df['species'].size > 0.89
+    g = adel.canopy()
     spec = [v for k,v in g.property('species').iteritems() if k in g.vertices(1)]
-    assert sum(spec) > 7
+    assert sum(spec) == 9
 
 

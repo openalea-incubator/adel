@@ -20,15 +20,15 @@ def test_stand():
     assert adel.aspect == 'smart'
     assert adel.domain_area == 0.004
     assert adel.nplants == 1
-    adel.new_stand(nplants=4, aspect='smart')
-    assert adel.domain_area == 0.016
-    assert adel.nplants == 4
     adel.new_stand(nplants=4, aspect='line')
     assert adel.domain_area == 0.016
     assert adel.nplants == 4
     adel.new_stand(nplants=4, aspect='square')
     assert adel.domain_area == adel.nplants * 1. / adel.stand.plant_density
     assert adel.nplants == 5
+    adel.new_stand(nplants=4, aspect='smart')
+    assert adel.domain_area == 0.016
+    assert adel.nplants == 4
 
 
 def test_get_axis():
@@ -83,3 +83,9 @@ def test_duplicated():
     adel.new_stand(nplants=2, duplicate=2)
     gg = adel.duplicated(g)
     assert gg.nb_vertices() == 1 + 2 * (g.nb_vertices() - 1)
+
+
+def test_build_mtg():
+    pars = test_data.canopy_two_metamers()
+    gg = adel.build_mtg(pars, stand=None)
+    assert gg.nb_vertices() == g.nb_vertices()

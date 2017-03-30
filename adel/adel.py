@@ -3,6 +3,8 @@ import os
 import pandas
 import numpy
 import warnings
+import operator
+from itertools import chain
 
 try:
     import cPickle as pickle
@@ -18,6 +20,29 @@ from alinea.adel.postprocessing import axis_statistics, plot_statistics, \
     midrib_statistics
 from alinea.adel.newmtg import exposed_areas, exposed_areas2canS, duplicate, \
     mtg_factory
+
+
+def flat_list(nested_list):
+    return list(chain.from_iterable(nested_list))
+
+
+def balanced_sample(n, proba):
+    """ return a list of n keys found in proba, repecting probalities of proba values"""
+    card = {k: int(v * n) for k, v in proba.iteritems()}
+    missing = int(n - sum(card.values()))
+    while (missing > 0):
+        # current frequencies
+        freq = {k: float(v) / n for k, v in card.iteritems()}
+        # diff with probabilities
+        dp = {k: abs(freq[k] - proba[k]) for k in freq}
+        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        k = sorted_p[0][0]
+        card[k] += 1
+        missing -= 1
+    card = {k: v for k, v in card.iteritems() if v > 0}
+    items = flat_list([[int(key)] * val for key, val in card.iteritems()])
+    numpy.random.shuffle(items)
+    return items
 
 
 class Adel(object):
@@ -91,6 +116,9 @@ class Adel(object):
             stand = AgronomicStand(sowing_density=250, plant_density=250,
                                    inter_row=0.15)
 
+        self.nref_plants = nref_plants
+        self.nplants = nplants
+        self.duplicate = duplicate
         self.stand = stand
         self.species = species
         self.leaves = leaves
@@ -103,7 +131,8 @@ class Adel(object):
         self.seed = seed
         self.meta = {}
 
-        self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
+        self.new_stand(nref_plants=nref_plants, nplants=nplants,
+                       duplicate=duplicate, seed=seed,
                        aspect=aspect, age=age, species=species)
 
     def new_stand(self, nref_plants=None, nplants=None, duplicate=None,
@@ -122,7 +151,7 @@ class Adel(object):
 
         if age is None:
             self.canopy_age = -999
-            self.meta.update({'canopy_age': self.canopy_age})
+        self.meta.update({'canopy_age': self.canopy_age})
 
         if species is not None:
             self.species = species
@@ -136,19 +165,16 @@ class Adel(object):
         if self.aspect is 'smart':
             self.nplants, self.domain, self.positions, \
             self.domain_area = self.stand.smart_stand(
-                nplants, at=age, convunit=1. / self.convUnit)
+                self.nplants, at=age, convunit=1. / self.convUnit)
         else:
             self.nplants, self.domain, self.positions, \
             self.domain_area = self.stand.stand(
-                nplants, aspect=self.aspect, convunit=1. / self.convUnit)
+                self.nplants, aspect=self.aspect, convunit=1. / self.convUnit)
 
-
-        labels = species.keys()
-        nbspec = len(labels)
         self.plant_azimuths = numpy.random.random(self.nplants) * 360
-        self.plant_species = [labels[k] for k in
-         numpy.random.choice(nbspec, nplants, p=species.values())]
-        self.plant_references = numpy.random.choice(range(nref_plants), nplants)
+        self.plant_species = balanced_sample(self.nplants, self.species)
+        self.plant_references = numpy.random.choice(range(self.nref_plants),
+                                                    self.nplants)
 
         stand_parameters = {'sowing_density': self.stand.sowing_density,
                             'plant_density': self.stand.plant_density,

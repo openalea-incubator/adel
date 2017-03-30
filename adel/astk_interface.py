@@ -10,7 +10,7 @@ from alinea.adel.mtg_interpreter import plot3d
 from alinea.astk.TimeControl import *
 
 
-from alinea.phenoarch.adel import Adel
+from alinea.adel.adel import Adel
 
 
 class AdelWheat(Adel):

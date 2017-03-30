@@ -13,10 +13,11 @@ from openalea.mtg.plantframe.color import colormap
 
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-from alinea.adel.mtg_interpreter import plot3d, transform_geom
+from alinea.adel.mtg_interpreter import plot3d, transform_geom, mtg_interpreter
 from alinea.adel.postprocessing import axis_statistics, plot_statistics, \
     midrib_statistics
-from alinea.adel.newmtg import exposed_areas, exposed_areas2canS, duplicate
+from alinea.adel.newmtg import exposed_areas, exposed_areas2canS, duplicate, \
+    mtg_factory
 
 
 class Adel(object):
@@ -25,10 +26,38 @@ class Adel(object):
                   'hm': 100,
                   'km': 1000}
 
-    def __init__(self, nplants=1, duplicate=None, nsect=1, leaves=None, stand=None,
+    def __init__(self, nref_plants=1, nplants=1, duplicate=None, species=None,
+                 nsect=1,
+                 leaves=None, stand=None,
                  aspect='smart', split=False,
                  face_up=False, classic=False, scene_unit='cm',
-                 leaf_db=None, positions=None, age=None, seed=None):
+                 age=None, seed=None, leaf_db=None, positions=None,
+                 convUnit=None):
+        """
+
+        Args:
+            nref_plants: the number of reference plants in the database
+            nplants: the number of plants in the canopy
+            duplicate:
+            species: a {species: frequency} dict indicating the composition of
+             the canopy. If None (default), a monospecific canopy of species '0'
+             is generated
+            nsect: (int) the number of sectors on leaves
+            leaves: (object) a Leaves class instance pointing to leaf shape
+             database or a {species:leaf_db} dict referencing distinct database
+             per species
+            stand: (object) a Stand class instance
+            aspect: (str) the aspect of the stand (square, line or smart)
+            split:
+            face_up:
+            classic: (bool) should stem cylinders be classical pgl cylinders ?
+            scene_unit: (string) desired length unit for the output mtg
+            age: (optional) the age of the canopy
+            seed: (int) a seed for the random number generator
+            leaf_db: deprecated, use leaves
+            positions: deprecated, use stand
+            convUnit: deprecated, use scene_unit
+        """
 
         if leaf_db is not None:
             warnings.warn(
@@ -42,6 +71,16 @@ class Adel(object):
                 ' use stand = adel.Stand class instead',
                 DeprecationWarning)
 
+        if convUnit is not None:
+            warnings.warn(
+                "!!!!Warning!!!! convUnit argument is deprecated,"
+                " use scene_unit=unit_name (" + ','.join(self.conv_units) +
+                ") instead",
+                DeprecationWarning)
+
+        if species is None:
+            species = {0: 1}
+
         if leaves is None:
             leaves = {0: Leaves()}
 
@@ -53,6 +92,7 @@ class Adel(object):
                                    inter_row=0.15)
 
         self.stand = stand
+        self.species = species
         self.leaves = leaves
         self.scene_unit = scene_unit
         self.convUnit = self.conv_units[self.scene_unit]
@@ -64,10 +104,18 @@ class Adel(object):
         self.meta = {}
 
         self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
-                       aspect=aspect, age=age)
+                       aspect=aspect, age=age, species=species)
 
-    def new_stand(self, nplants=None, duplicate=None, seed=None, aspect='smart',
-                  age=None):
+    def new_stand(self, nref_plants=None, nplants=None, duplicate=None,
+                  seed=None, aspect=None,
+                  age=None, species=None):
+
+        if nref_plants is not None:
+            self.nref_plants = nref_plants
+
+        if nplants is not None:
+            self.nplants = nplants
+
         if seed is not None:
             self.seed = seed
             numpy.random.seed(self.seed)
@@ -76,40 +124,54 @@ class Adel(object):
             self.canopy_age = -999
             self.meta.update({'canopy_age': self.canopy_age})
 
-        if nplants is not None:
-            self.aspect = aspect
-            if aspect is 'smart' or self.stand.density_curve is not None:
-                self.nplants, self.domain, self.positions, \
-                self.domain_area = self.stand.smart_stand(
-                    nplants, at=age, convunit=1. / self.convUnit)
-            else:
-                self.nplants, self.domain, self.positions, \
-                self.domain_area = self.stand.stand(
-                    nplants, aspect=aspect, convunit=1. / self.convUnit)
-            self.plant_azimuths = numpy.random.random(self.nplants) * 360
-            stand_parameters = {'sowing_density': self.stand.sowing_density,
-                                'plant_density': self.stand.plant_density,
-                                'inter_row': self.stand.inter_row,
-                                'noise': self.stand.noise,
-                                'density_curve_data': self.stand.density_curve_data}
-            self.meta.update(
-                {'stand': stand_parameters, 'aspect': self.aspect,
-                 'nplants': self.nplants,
-                 'domain': self.domain, 'domain_area': self.domain_area,
-                 'nsect': self.nsect, 'scene_unit': self.scene_unit,
-                 'convUnit': self.convUnit,
-                 'split': self.split})
+        if species is not None:
+            self.species = species
 
+        if aspect is not None:
+            self.aspect = aspect
+
+        if duplicate is not None:
             self.duplicate = duplicate
-            if duplicate is not None:
-                # split nplants into nquot and nrem, so that
-                # nplants = nquote * duplicate + nrem
-                self.nrem = self.nplants % duplicate
-                self.nquot = (self.nplants - self.nrem) / duplicate
-                if self.nquot == 0 and self.duplicate > 0:  # degenerated case
-                    self.nquot = 1
-                    self.nrem = 0
-                    self.duplicate = self.nplants
+
+        if self.aspect is 'smart':
+            self.nplants, self.domain, self.positions, \
+            self.domain_area = self.stand.smart_stand(
+                nplants, at=age, convunit=1. / self.convUnit)
+        else:
+            self.nplants, self.domain, self.positions, \
+            self.domain_area = self.stand.stand(
+                nplants, aspect=self.aspect, convunit=1. / self.convUnit)
+
+
+        labels = species.keys()
+        nbspec = len(labels)
+        self.plant_azimuths = numpy.random.random(self.nplants) * 360
+        self.plant_species = [labels[k] for k in
+         numpy.random.choice(nbspec, nplants, p=species.values())]
+        self.plant_references = numpy.random.choice(range(nref_plants), nplants)
+
+        stand_parameters = {'sowing_density': self.stand.sowing_density,
+                            'plant_density': self.stand.plant_density,
+                            'inter_row': self.stand.inter_row,
+                            'noise': self.stand.noise,
+                            'density_curve_data': self.stand.density_curve_data}
+        self.meta.update(
+            {'stand': stand_parameters, 'aspect': self.aspect,
+             'nplants': self.nplants,
+             'domain': self.domain, 'domain_area': self.domain_area,
+             'nsect': self.nsect, 'scene_unit': self.scene_unit,
+             'convUnit': self.convUnit,
+             'split': self.split})
+
+        if duplicate is not None:
+            # split nplants into nquot and nrem, so that
+            # nplants = nquote * duplicate + nrem
+            self.nrem = self.nplants % duplicate
+            self.nquot = (self.nplants - self.nrem) / duplicate
+            if self.nquot == 0 and self.duplicate > 0:  # degenerated case
+                self.nquot = 1
+                self.nrem = 0
+                self.duplicate = self.nplants
 
     def duplicated(self, gquot, grem=None):
         """Construct g using duplications"""
@@ -130,6 +192,15 @@ class Adel(object):
                     geom[gid] = transform_geom(geom[gid], self.positions[i],
                                                self.plant_azimuths[i])
         return g
+
+
+    def build_mtg(self, parameters, stand, **kwds):
+        g = mtg_factory(parameters, stand=stand, leaf_sectors=self.nsect,
+                        leaves=self.leaves, split=self.split, **kwds)
+        g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                            face_up=self.face_up)
+        return g
+
 
     def meta_informations(self, g):
         if 'meta' in g.property_names():

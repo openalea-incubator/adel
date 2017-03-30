@@ -4,8 +4,6 @@ import numpy
 import pandas
 
 from alinea.adel.geometric_elements import Leaves
-from alinea.adel.newmtg import mtg_factory
-from alinea.adel.mtg_interpreter import mtg_interpreter
 from alinea.adel.adel import Adel
 
 
@@ -230,11 +228,31 @@ def dimension_table(blades=None, stem=None, ear=None):
         return pandas.concat([stemear, blades.set_index(['plant', 'ntop'])],
                              axis=1).reset_index()
 
+def plant_table(dimT, convert=None):
+    df = dimT.loc[:,
+         ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath',
+          'L_internode', 'W_internode']]
+    df.rename(
+        columns={'L_blade': 'Ll', 'W_blade': 'Lw_shape',
+                 'L_sheath': 'Gl', 'W_sheath': 'Gd',
+                 'L_internode': 'El', 'W_internode': 'Ed'}, inplace=True)
+    if convert is not None:
+        df.loc[:, ('Ll', 'Lw_shape', 'Gl', 'Gd', 'El', 'Ed')] *= convert
+    # add mandatory topological info and sort from base to top
+    df.loc[:, 'axe_id'] = 'MS'
+    df.loc[:, 'ms_insertion'] = 0
+    df.loc[:, 'numphy'] = df.ntop.max() + 1 - df.ntop
+    # additions for statistics
+    df.loc[:, 'nff'] = df['numphy'].max()
+    df.loc[:, 'HS_final'] = df['numphy'].max()
+    return df.sort_values(['plant', 'numphy'])
+
 
 class AdelDress(Adel):
     """A class interface to Adel for static reconstruction"""
 
     def __init__(self, dimT=None, dim_unit='cm', nplants=1, duplicate=None,
+                 species=None,
                  nsect=1,
                  leaves=None, stand=None,
                  aspect='smart', split=False,
@@ -245,18 +263,37 @@ class AdelDress(Adel):
         Args:
             dimT: (panda.dataFrame) a table with organ dimensions
             dim_unit: (string) length unit used in the dimension table
+            nplants:
+            duplicate:
+            species: a {species: frequency} dict indicating the composition of
+             the canopy. If None (default), a monospecific canopy of species '0'
+             is generated
             nsect: (int) the number of sectors on leaves
             leaves: (object) a Leaves class instance pointing to leaf shape
              database or a {species:leaf_db} dict referencing distinct database
              per species
             stand: (object) a Stand class instance
             aspect: (str) the aspect of the stand (square, line or smart)
+            split:
+            face_up:
             classic: (bool) should stem cylinders be classical pgl cylinders ?
             scene_unit: (string) desired length unit for the output mtg
             age: (optional) the age of the canopy
+            seed: (int) a seed for the random number generator
         """
-        super(AdelDress, self).__init__(nplants=nplants, duplicate=duplicate,
-                                        nsect=nsect,
+        if dimT is None:
+            dimT = dimension_table()
+        dimT = dimT.fillna(0)
+        self.dimT = dimT
+
+        self.dim_unit = dim_unit
+        convert = self.conv_units[self.dim_unit] / self.conv_units[self.scene_unit]
+        self.plant_table = plant_table(dimT, convert)
+
+        self.ref_plants = list(set(plant_table['plant']))
+        super(AdelDress, self).__init__(nref_plants=len(self.ref_plants),
+                                        nplants=nplants, duplicate=duplicate,
+                                        species=species, nsect=nsect,
                                         leaves=leaves, stand=stand,
                                         aspect=aspect,
                                         split=split, face_up=face_up,
@@ -264,53 +301,28 @@ class AdelDress(Adel):
                                         age=age,
                                         seed=seed)
 
-        if dimT is None:
-            dimT = dimension_table()
+    def canopy_table(self, plant_references, plant_species, azimuth=None):
+        """Compute adel canopy table
 
-        self.dim_unit = dim_unit
-        self.dimT = dimT.fillna(0)
-        self.dimT = dimT
+        Args:
+            plants: a list of int identyfying reference plant indices
+            plant_species: a list of species to be associated to each plant
+            azimuth: a function for computing leaf azimuth
 
-    def canopy_table(self, nplants=None, azimuth=None, species=None):
+        Returns:
 
-        if nplants is None:
-            nplants = self.nplants
+        """
 
         if azimuth is None:
             def azimuth(n, ntop, axe):
                 return 180 + (numpy.random.random() - 0.5) * 30
 
-        if species is None:
-            species = {0: 1}
-
-        df = self.dimT.loc[:,
-             ['plant', 'ntop', 'L_blade', 'W_blade', 'L_sheath', 'W_sheath',
-              'L_internode', 'W_internode']]
-        df.rename(
-            columns={'L_blade': 'Ll', 'W_blade': 'Lw_shape',
-                     'L_sheath': 'Gl', 'W_sheath': 'Gd',
-                     'L_internode': 'El', 'W_internode': 'Ed'}, inplace=True)
-        conv = self.conv_units[self.dim_unit] / self.conv_units[self.scene_unit]
-        df.loc[:, ('Ll', 'Lw_shape', 'Gl', 'Gd', 'El', 'Ed')] *= conv
-        # add mandatory topological info and sort from base to top
-        df.loc[:, 'axe_id'] = 'MS'
-        df.loc[:, 'ms_insertion'] = 0
-        df.loc[:, 'numphy'] = df.ntop.max() + 1 - df.ntop
-        # additions for statistics
-        df.loc[:, 'nff'] = df['numphy'].max()
-        df.loc[:, 'HS_final'] = df['numphy'].max()
-        df = df.sort_values(['plant', 'numphy'])
-
-        ref_plant = numpy.random.choice(list(set(df['plant'])), nplants)
-        labels = species.keys()
-        nbspec = len(labels)
-        spec = [labels[k] for k in
-         numpy.random.choice(nbspec, nplants, p=species.values())]
         dfl = []
-        for i, p in enumerate(ref_plant):
-            dfp = df.loc[df['plant'] == p, :]
+        # TO DO compute only on set(ref_plant_id) in a dict then create the list
+        for i, p in enumerate(plant_references):
+            dfp = self.plant_table.loc[self.plant_table['plant'] == p, :]
             dfp['refplant_id'] = p
-            dfp['species'] = spec[i]
+            dfp['species'] = plant_species[i]
             dfp.loc[:, 'plant'] = i + 1
             # compute visibility
             ht0 = 0
@@ -328,15 +340,18 @@ class AdelDress(Adel):
             dfp['Ev'] = numpy.minimum(dfp['El'],
                                       numpy.maximum(0, dfp['El'] - htube))
             # add missing mandatory data  (does like adel)
+            # leaf azimuth
             dfp.loc[:, 'Laz'] = [azimuth(*arg) for arg in
                                  zip(dfp['numphy'], dfp['ntop'],
-                                     dfp['axe_id'])]  # leaf azimuth
-            dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'],
-                                               1)  # selector for first level in leaf db
+                                     dfp['axe_id'])]
+            # selector for first level in leaf db
+            dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'], 1)
+            # selector for second level (ranging 1:max_nb_leaf_per_level)
             dfp.loc[:,
-            'LcIndex'] = 1 + numpy.array(map(lambda (s,t): numpy.random.choice(
-                range(len(self.leaves[s].xydb[str(t)]))), zip(dfp['species'], dfp[
-                                                 'LcType'])))  # selector for second level in leaf_db (ranging 1:max_nb_leaf_per_level)
+            'LcIndex'] = 1 + numpy.array(map(lambda (s, t): numpy.random.choice(
+                range(len(self.leaves[s].xydb[str(t)]))),
+                                             zip(dfp['species'], dfp[
+                                                 'LcType'])))
             # fill other columns
             dfp.loc[:, 'Lr'] = 0
             dfp.loc[:, 'Lsen'] = 0
@@ -367,19 +382,15 @@ class AdelDress(Adel):
         Returns:
 
         """
-
-        self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
-                       aspect=aspect, age=age)
-        df = self.canopy_table(azimuth=azimuth, species=species)
-
-        stand = zip(self.positions, self.plant_azimuths)
-
         if self.duplicate is None:
-            g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,
-                            leaves=self.leaves, stand=stand)
-            g = mtg_interpreter(g, self.leaves, classic=self.classic,
-                                face_up=self.face_up)
+            self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
+                           aspect=aspect, age=age, species=species)
+            df = self.canopy_table(self.plant_references, self.plant_species,
+                                   azimuth=azimuth)
+            stand = zip(self.positions, self.plant_azimuths)
+            g = self.build_mtg(df.to_dict('list'), stand)
         else:
-            raise NotImplementedError("duplication not yet implemented for dresser")
+            raise NotImplementedError(
+                "duplication not yet implemented for dresser")
 
         return g

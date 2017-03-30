@@ -37,7 +37,7 @@ import random
 import numpy as np
 import pandas as pd
 
-from adel.plantgen import tools, params
+from alinea.adel.plantgen import tools, params
 
 
 class DataCompleteness:

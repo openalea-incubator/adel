@@ -349,7 +349,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
             modules[i]['area'] = sum([elt['area'] for elt in modules[i]['elements'] if elt['label'].startswith('StemElement')])
         modules[2]['area'] = sum(
             [elt['area'] for elt in modules[2]['elements'] if
-
+             elt['label'].startswith('LeafElement')])
         try:
             exposition = float(exposition)
             lifetime = float(lifetime)

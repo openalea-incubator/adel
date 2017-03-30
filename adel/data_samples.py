@@ -82,7 +82,7 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
                             interleaf = 1, leaf_length = 3, leaf_width = .3, Einc=45):
     """ create a very simple adel mtg """
 
-    d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1],'numphy':[1,1], 
+    d = {'plant':[1,1],'axe_id':['MS','T1'],'ms_insertion':[0,1], 'az_insertion': [0, 0],'numphy':[1,1],
          'Laz': [0,90], 'Ll' :[leaf_length, leaf_length], 'Lv' :[leaf_length, leaf_length] ,'Lr':[0,0],
          'Lsen':[0,0], 'L_shape':[leaf_length, leaf_length], 'Lw_shape':[leaf_width, leaf_width], 'Linc':[0,0],
          'Einc':[0, Einc],'El':[1,interleaf],'Ev':[1,interleaf],'Esen':[0,0],'Ed': [0.1,0.1], 
@@ -109,17 +109,18 @@ def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
-    g=mtg_factory(d,adel_metamer,leaves=leaves(),leaf_sectors=leaf_sectors)
+    g=mtg_factory(d,adel_metamer,leaves=l,leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g,leaves=l)
     return g
 
 def adel_one_leaf_element():
     """ create a very simple adel mtg """
+    l = leaves()
     d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[3], 'Lw_shape':[.3], 'Linc':[0],
          'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
-    g=mtg_factory(d,adel_metamer,leaves=leaves(), leaf_sectors=1)
-    g=mtg_interpreter(g)
+    g=mtg_factory(d,adel_metamer,leaves=l, leaf_sectors=1)
+    g=mtg_interpreter(g, leaves=l)
     g.remove_vertex(13)
     labels = g.property('label')
     labels[13] = 'Removed'

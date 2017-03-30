@@ -1,23 +1,30 @@
 from alinea.adel.astk_interface import AdelWheat
 from alinea.astk.TimeControl import TimeControlSet
-from alinea.adel import postprocessing
 
-nplants=1
-wheat = AdelWheat(nplants=nplants)
 
-def test_usage():
-    g = wheat.setup_canopy()
+
+def test_static(age=100):
+    nplants = 1
+    adel = AdelWheat(nplants=nplants)
+    g = adel.setup_canopy(age=100)
+    assert len(g.vertices()) > 40
+    assert g.property('geometry').values()[0].isValid()
+
+def test_statistics():
+    nplants = 1
+    adel = AdelWheat(nplants=nplants)
+    g = adel.setup_canopy(age=100)
+    areas = adel.get_exposed_areas(g)
+    assert 'green_area' in areas
+    pstats = adel.plot_statistics(g)
+
+def test_dynamic():
+    nplants = 1
+    adel = AdelWheat(nplants=nplants)
+    g = adel.setup_canopy(age=100)
     timing = [TimeControlSet(dt=100) for i in range(2)]
     for tc in timing:
-        wheat.plot(g)
-        wheat.grow(g,tc)
+        adel.grow(g,tc)
     return g
-    
-def test_postprocessing(age=100):
-    g = wheat.setup_canopy(age=age)
-    out = wheat.get_exposed_areas(g,convert=True)
-    domain_area = 1
-    axis_df = postprocessing.axis_statistics(out, domain_area)
-    plot_df = postprocessing.plot_statistics(axis_df, nplants, domain_area)
-    return axis_df, plot_df 
+
 

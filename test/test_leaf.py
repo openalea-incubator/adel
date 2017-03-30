@@ -6,12 +6,12 @@ import alinea.adel.fitting as fitting
 import cPickle as Pickle
 from pylab import plot, show,clf
 
-db = r'data/leaves.db'
+db = r'../adel/data/leaves.db'
 f = open(db)
 
 leaves = Pickle.load(f)
-rank = leaves.keys()
-leaf = leaves[rank[0]][0]
+rank = leaves.keys()[0]
+leaf = leaves[rank][0]
 f.close()
 
 #

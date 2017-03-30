@@ -234,23 +234,32 @@ def dimension_table(blades=None, stem=None, ear=None):
 class AdelDress(Adel):
     """A class interface to Adel for static reconstruction"""
 
-    def __init__(self, nplants=1, scene_unit='cm', dim_unit='cm', dimT=None,
-                 leaves=None, nsect=1, classic=False, stand=None, seed=None):
+    def __init__(self, dimT=None, dim_unit='cm', nplants=1, nsect=1,
+                 leaves=None, stand=None,
+                 aspect='smart', split=False,
+                 face_up=False, classic=False, scene_unit='cm', age=0,
+                 seed=None):
         """ Instantiate a dresser
 
         Args:
-            scene_unit: (string) desired length unit for the output mtg
+            dimT: (panda.dataFrame) a table with organ dimensions
             dim_unit: (string) length unit used in the dimension table
-            dimT: (panda.dataFrame) a table with organ adimensions
-            leaves: (object) a Leaves class instance pointing to leaf shape database
-             or a {species:leaf_db} dict referencing distinct database per species
             nsect: (int) the number of sectors on leaves
-            classic: (bool) should stem cylinders be classical pgl cylinders ?
+            leaves: (object) a Leaves class instance pointing to leaf shape
+             database or a {species:leaf_db} dict referencing distinct database
+             per species
             stand: (object) a Stand class instance
+            aspect: (str) the aspect of the stand (square, line or smart)
+            classic: (bool) should stem cylinders be classical pgl cylinders ?
+            scene_unit: (string) desired length unit for the output mtg
+            age: (optional) the age of the canopy
         """
         super(AdelDress, self).__init__(nplants=nplants, nsect=nsect,
                                         leaves=leaves, stand=stand,
+                                        aspect=aspect,
+                                        split=split, face_up=face_up,
                                         classic=classic, scene_unit=scene_unit,
+                                        age=age,
                                         seed=seed)
 
         if dimT is None:
@@ -339,7 +348,8 @@ class AdelDress(Adel):
 
         return pandas.concat(dfl)
 
-    def canopy(self, nplants=None, azimuth=None, species=None, seed=None, age=None):
+    def canopy(self, nplants=None, azimuth=None, species=None, seed=None,
+               age=None, aspect='smart'):
         """ Generate a mtg encoding the canopy
 
         Args:
@@ -355,7 +365,7 @@ class AdelDress(Adel):
         """
         if age is not None:
             self.new_age(age)
-        self.new_stand(nplants, seed)
+        self.new_stand(nplants, seed, aspect)
         df = self.canopy_table(azimuth=azimuth, species=species)
 
         stand = zip(self.positions, self.plant_azimuths)

@@ -25,10 +25,10 @@ class Adel(object):
                   'hm': 100,
                   'km': 1000}
 
-    def __init__(self, nplants=1, nsect=1, seed=None, leaves=None, stand=None,
-                 split=False,
+    def __init__(self, nplants=1, nsect=1, leaves=None, stand=None,
+                 aspect='smart', split=False,
                  face_up=False, classic=False, scene_unit='cm',
-                 leaf_db=None, positions=None, age=0):
+                 leaf_db=None, positions=None, age=0, seed=None):
 
         if leaf_db is not None:
             warnings.warn(
@@ -63,17 +63,23 @@ class Adel(object):
         self.seed = seed
         self.meta = {}
 
-        self.new_stand(nplants, seed)
+        self.new_stand(nplants, seed, aspect)
         self.new_age(age)
 
-    def new_stand(self, nplants=None, seed=None):
+    def new_stand(self, nplants=None, seed=None, aspect='smart'):
         if seed is not None:
             self.seed = seed
             numpy.random.seed(self.seed)
         if nplants is not None:
-            self.nplants, self.domain, self.positions, \
-            self.domain_area = self.stand.smart_stand(
-                nplants, convunit=1. / self.convUnit)
+            self.aspect = aspect
+            if aspect is 'smart' or self.stand.density_curve is not None:
+                self.nplants, self.domain, self.positions, \
+                self.domain_area = self.stand.smart_stand(
+                    nplants, convunit=1. / self.convUnit)
+            else:
+                self.nplants, self.domain, self.positions, \
+                self.domain_area = self.stand.stand(
+                    nplants, aspect=aspect, convunit=1. / self.convUnit)
             self.plant_azimuths = numpy.random.random(self.nplants) * 360
             stand_parameters = {'sowing_density': self.stand.sowing_density,
                                 'plant_density': self.stand.plant_density,
@@ -81,7 +87,8 @@ class Adel(object):
                                 'noise': self.stand.noise,
                                 'density_curve_data': self.stand.density_curve_data}
             self.meta.update(
-                {'stand': stand_parameters, 'nplants': self.nplants,
+                {'stand': stand_parameters, 'aspect': self.aspect,
+                 'nplants': self.nplants,
                  'domain': self.domain, 'domain_area': self.domain_area,
                  'nsect': self.nsect, 'scene_unit': self.scene_unit,
                  'convUnit': self.convUnit,

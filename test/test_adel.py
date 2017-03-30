@@ -16,6 +16,21 @@ adel = test_instantiate()
 g = test_data.adel_two_metamers()
 
 
+def test_stand():
+    assert adel.aspect == 'smart'
+    assert adel.domain_area == 0.004
+    assert adel.nplants == 1
+    adel.new_stand(nplants=4, aspect='smart')
+    assert adel.domain_area == 0.016
+    assert adel.nplants == 4
+    adel.new_stand(nplants=4, aspect='line')
+    assert adel.domain_area == 0.016
+    assert adel.nplants == 4
+    adel.new_stand(nplants=4, aspect='square')
+    assert adel.domain_area == adel.nplants * 1. / adel.stand.plant_density
+    assert adel.nplants == 5
+
+
 def test_get_axis():
     assert g.nb_scales() == 6
     ms = adel.get_axis(g)

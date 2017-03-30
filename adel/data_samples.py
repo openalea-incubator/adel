@@ -15,7 +15,7 @@ def wheat_dimension_profiles():
 
 def leaves():
     from alinea.adel.geometric_elements import Leaves
-    return Leaves()
+    return {0: Leaves()}
     
 def leaves_db():
     import cPickle as Pickle
@@ -74,7 +74,7 @@ def adel_two_metamers(leaf_sectors=1):
          'Linc': [0, 0],
          'Einc': [0, 45], 'El': [1, 1], 'Ev': [1, 1], 'Esen': [0, 0],
          'Ed': [0.1, 0.1], 'Gv': [1, 1], 'Gl': [1,1], 'Gd': [0.1, 0.1], 'Gsen':[0,0],'LcType':[1,1], 'LcIndex':[1,1]}
-    g = mtg_factory(d, adel_metamer, leaves=leaves(), leaf_sectors=leaf_sectors)
+    g = mtg_factory(d, adel_metamer, leaves=l, leaf_sectors=leaf_sectors)
     g = mtg_interpreter(g, leaves=l)
     return g
     

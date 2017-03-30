@@ -13,10 +13,10 @@ from openalea.mtg.plantframe.color import colormap
 
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-from alinea.adel.mtg_interpreter import plot3d
+from alinea.adel.mtg_interpreter import plot3d, transform_geom
 from alinea.adel.postprocessing import axis_statistics, plot_statistics, \
     midrib_statistics
-from alinea.adel.newmtg import exposed_areas, exposed_areas2canS
+from alinea.adel.newmtg import exposed_areas, exposed_areas2canS, duplicate
 
 
 class Adel(object):
@@ -25,10 +25,10 @@ class Adel(object):
                   'hm': 100,
                   'km': 1000}
 
-    def __init__(self, nplants=1, nsect=1, leaves=None, stand=None,
+    def __init__(self, nplants=1, duplicate=None, nsect=1, leaves=None, stand=None,
                  aspect='smart', split=False,
                  face_up=False, classic=False, scene_unit='cm',
-                 leaf_db=None, positions=None, age=0, seed=None):
+                 leaf_db=None, positions=None, age=None, seed=None):
 
         if leaf_db is not None:
             warnings.warn(
@@ -63,19 +63,25 @@ class Adel(object):
         self.seed = seed
         self.meta = {}
 
-        self.new_stand(nplants, seed, aspect)
-        self.new_age(age)
+        self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
+                       aspect=aspect, age=age)
 
-    def new_stand(self, nplants=None, seed=None, aspect='smart'):
+    def new_stand(self, nplants=None, duplicate=None, seed=None, aspect='smart',
+                  age=None):
         if seed is not None:
             self.seed = seed
             numpy.random.seed(self.seed)
+
+        if age is None:
+            self.canopy_age = -999
+            self.meta.update({'canopy_age': self.canopy_age})
+
         if nplants is not None:
             self.aspect = aspect
             if aspect is 'smart' or self.stand.density_curve is not None:
                 self.nplants, self.domain, self.positions, \
                 self.domain_area = self.stand.smart_stand(
-                    nplants, convunit=1. / self.convUnit)
+                    nplants, at=age, convunit=1. / self.convUnit)
             else:
                 self.nplants, self.domain, self.positions, \
                 self.domain_area = self.stand.stand(
@@ -94,9 +100,36 @@ class Adel(object):
                  'convUnit': self.convUnit,
                  'split': self.split})
 
-    def new_age(self, age):
-        self.canopy_age = age
-        self.meta.update({'canopy_age': age})
+            self.duplicate = duplicate
+            if duplicate is not None:
+                # split nplants into nquot and nrem, so that
+                # nplants = nquote * duplicate + nrem
+                self.nrem = self.nplants % duplicate
+                self.nquot = (self.nplants - self.nrem) / duplicate
+                if self.nquot == 0 and self.duplicate > 0:  # degenerated case
+                    self.nquot = 1
+                    self.nrem = 0
+                    self.duplicate = self.nplants
+
+    def duplicated(self, gquot, grem=None):
+        """Construct g using duplications"""
+        if self.duplicate is None:
+            raise ValueError('Duplication not defined for this stand')
+        g = duplicate(gquot, self.nquot * self.duplicate, grem)
+        # dispose plants and renumber them
+        pos = g.property('position ')
+        az = g.property('azimuth')
+        lab = g.property('label')
+        geom = g.property('geometry')
+        for i, vid in enumerate(g.vertices(1)):
+            lab[vid] = 'plant' + str(i + 1)
+            pos[vid] = self.positions[i]
+            az[vid] = self.plant_azimuths[i]
+            for gid in g.components_at_scale(vid, g.max_scale()):
+                if gid in geom:
+                    geom[gid] = transform_geom(geom[gid], self.positions[i],
+                                               self.plant_azimuths[i])
+        return g
 
     def meta_informations(self, g):
         if 'meta' in g.property_names():

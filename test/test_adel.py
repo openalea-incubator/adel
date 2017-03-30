@@ -74,3 +74,12 @@ def test_save_and_load():
     if os.path.exists(fg):
         os.remove(fg)
 
+def test_duplicated():
+    try:
+        gg = adel.duplicated(g)
+        assert False
+    except ValueError:
+        assert True
+    adel.new_stand(nplants=2, duplicate=2)
+    gg = adel.duplicated(g)
+    assert gg.nb_vertices() == 1 + 2 * (g.nb_vertices() - 1)

@@ -967,6 +967,21 @@ def replicate(g, target=1):
 
     return g_dup
 
+
+def duplicate(g, replicates=1, grem=None):
+    """construct a mtg replicating g n times and adding grem"""
+    g_rep = replicate(g, replicates)
+    if grem is not None:
+        g = grem
+        g = union(g, g_rep)
+    else:
+        g = g_rep
+    return g
+
+
+
+
+
 # to do
 
 # varaibles sur element : area, senesced_area, senescenece_position (0,1 sur la feuille)

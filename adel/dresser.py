@@ -234,10 +234,11 @@ def dimension_table(blades=None, stem=None, ear=None):
 class AdelDress(Adel):
     """A class interface to Adel for static reconstruction"""
 
-    def __init__(self, dimT=None, dim_unit='cm', nplants=1, nsect=1,
+    def __init__(self, dimT=None, dim_unit='cm', nplants=1, duplicate=None,
+                 nsect=1,
                  leaves=None, stand=None,
                  aspect='smart', split=False,
-                 face_up=False, classic=False, scene_unit='cm', age=0,
+                 face_up=False, classic=False, scene_unit='cm', age=None,
                  seed=None):
         """ Instantiate a dresser
 
@@ -254,7 +255,8 @@ class AdelDress(Adel):
             scene_unit: (string) desired length unit for the output mtg
             age: (optional) the age of the canopy
         """
-        super(AdelDress, self).__init__(nplants=nplants, nsect=nsect,
+        super(AdelDress, self).__init__(nplants=nplants, duplicate=duplicate,
+                                        nsect=nsect,
                                         leaves=leaves, stand=stand,
                                         aspect=aspect,
                                         split=split, face_up=face_up,
@@ -348,12 +350,14 @@ class AdelDress(Adel):
 
         return pandas.concat(dfl)
 
-    def canopy(self, nplants=None, azimuth=None, species=None, seed=None,
+    def canopy(self, nplants=None, duplicate=None, azimuth=None, species=None,
+               seed=None,
                age=None, aspect='smart'):
         """ Generate a mtg encoding the canopy
 
         Args:
             nplants: the number of plants in the canopy
+            duplicate:
             azimuth: a callable returning leaf azimuth as a function of leaf rank,
              leaf rank from top and axe_id. If None
             species : a {species: frequency} dict indicating the composition of
@@ -363,15 +367,19 @@ class AdelDress(Adel):
         Returns:
 
         """
-        if age is not None:
-            self.new_age(age)
-        self.new_stand(nplants, seed, aspect)
+
+        self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
+                       aspect=aspect, age=age)
         df = self.canopy_table(azimuth=azimuth, species=species)
 
         stand = zip(self.positions, self.plant_azimuths)
-        g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,
-                        leaves=self.leaves, stand=stand)
-        # add geometry
-        g = mtg_interpreter(g, self.leaves, classic=self.classic,
-                            face_up=self.face_up)
+
+        if self.duplicate is None:
+            g = mtg_factory(df.to_dict('list'), leaf_sectors=self.nsect,
+                            leaves=self.leaves, stand=stand)
+            g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                                face_up=self.face_up)
+        else:
+            raise NotImplementedError("duplication not yet implemented for dresser")
+
         return g

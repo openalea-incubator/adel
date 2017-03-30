@@ -141,7 +141,7 @@ def dataframe(d):
             rval = numpy2ri(numpy.array(v))
             if not _is_iterable(v):
                 v = [v]
-            if 'NA' in v:
+            if 'NA' in numpy.array(v).tolist():
                 df[k] = r['as.numeric'](rval)
             else :
                 df[k] = rval

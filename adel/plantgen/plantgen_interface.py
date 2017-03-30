@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from adel.plantgen import plantgen_core, tools, params
+from alinea.adel.plantgen import plantgen_core, tools, params
 
 warnings.simplefilter('always', tools.InputWarning)
 

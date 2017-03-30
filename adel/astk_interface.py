@@ -7,34 +7,36 @@ except:
     import pickle
 import os
 
-import numpy
+
 import warnings
 
 
-from alinea.adel.AdelR import setAdel,RunAdel,genGeoAxe, checkAxeDyn, getAxeT, getPhenT, getPhytoT, saveRData
+from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
+    getPhenT, getPhytoT, saveRData
 from alinea.adel.newmtg import *
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import *
 from alinea.astk.TimeControl import *
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-from alinea.adel.postprocessing import axis_statistics, plot_statistics, midrib_statistics
-    
+from alinea.adel.postprocessing import axis_statistics, plot_statistics, \
+    midrib_statistics
+
 from openalea.mtg.algo import union
 import openalea.plantgl.all as pgl
 
-def replicate(g, target=1):
 
+def replicate(g, target=1):
     current = g.nb_vertices(scale=1)
 
     if target <= current:
         return g
-    
+
     assert target % current == 0
-    #otherwise use nrem + union
-    
-    nduplication = int(numpy.log2(1. * target / current))   
-    missing = target - current * numpy.power(2,nduplication)
+    # otherwise use nrem + union
+
+    nduplication = int(numpy.log2(1. * target / current))
+    missing = target - current * numpy.power(2, nduplication)
     cards = numpy.power(2, range(nduplication))
     add_g = [False] * len(cards)
     for i in reversed(range(len(cards))):
@@ -42,7 +44,7 @@ def replicate(g, target=1):
             add_g[i] = True
             missing -= cards[i]
     assert missing == 0
-    
+
     g_add = None
     g_dup = g.sub_mtg(g.root)
     for i in range(nduplication):
@@ -54,88 +56,106 @@ def replicate(g, target=1):
                 g_add = g1
             else:
                 g_add = union(g_add, g1)
-    
-    if g_add is not None:        
-        g_dup = union(g_dup,g_add)
-       
+
+    if g_add is not None:
+        g_dup = union(g_dup, g_add)
+
     return g_dup
 
+
 def transform_geom(geom, translation, rotation):
-    translation = map(float, translation) # force cast to float (pgl does not accept values extracted from numpy arryas
+    translation = map(float,
+                      translation)  # force cast to float (pgl does not accept values extracted from numpy arryas
     if isinstance(geom, pgl.Geometry):
-        geom = pgl.Translated(translation, pgl.AxisRotated((0,0,1),rotation, geom))
+        geom = pgl.Translated(translation,
+                              pgl.AxisRotated((0, 0, 1), rotation, geom))
     elif isinstance(geom, pgl.Shape):
-        geom = pgl.Shape(pgl.Translated(translation, pgl.AxisRotated((0,0,1),rotation, geom.geometry)))
+        geom = pgl.Shape(pgl.Translated(translation,
+                                        pgl.AxisRotated((0, 0, 1), rotation,
+                                                        geom.geometry)))
     return geom
 
-    
+
 class AdelWheat(object):
-    
-    def __init__(self, nplants = 1, duplicate=1, nsect = 1, devT = None, sample = 'random', seed = None, leaves = None, stand = None, aspect='square', convUnit = 0.01, thermal_time_model = None, geoAxe=None, incT=60, dinT=5, dep = 7, run_adel_pars = None, split=False, face_up=False, aborting_tiller_reduction = 1.0, classic=False, leaf_db = None, positions = None, ssipars=None):
-    
-        if devT is None: 
+    def __init__(self, nplants=1, duplicate=1, nsect=1, devT=None,
+                 sample='random', seed=None, leaves=None, stand=None,
+                 aspect='square', convUnit=0.01, thermal_time_model=None,
+                 geoAxe=None, incT=60, dinT=5, dep=7, run_adel_pars=None,
+                 split=False, face_up=False, aborting_tiller_reduction=1.0,
+                 classic=False, leaf_db=None, positions=None, ssipars=None):
+
+        if devT is None:
             devT = adel_data.devT()
-            
+
         if run_adel_pars is None:
-            run_adel_pars = {'senescence_leaf_shrink' : 0.5,'leafDuration' : 2, 'fracLeaf' : 0.2, 'stemDuration' : 2. / 1.2, 'dHS_col' : 0.2,'dHS_en':0, 'epsillon' : 1e-6, 'HSstart_inclination_tiller': 1, 'rate_inclination_tiller': 30, 'drop_empty':True}
-            
+            run_adel_pars = {'senescence_leaf_shrink': 0.5, 'leafDuration': 2,
+                             'fracLeaf': 0.2, 'stemDuration': 2. / 1.2,
+                             'dHS_col': 0.2, 'dHS_en': 0, 'epsillon': 1e-6,
+                             'HSstart_inclination_tiller': 1,
+                             'rate_inclination_tiller': 30, 'drop_empty': True}
+
         if leaf_db is not None:
-            warnings.warn('!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead', DeprecationWarning)
+            warnings.warn(
+                '!!!!Warning!!!! leaf_db argument is deprecated, use adel.geometric_elements.Leaves class instead',
+                DeprecationWarning)
         if positions is not None:
-            warnings.warn('!!!!Warning!!!! positions argument is deprecated, use stand = adel.Stand class instead', DeprecationWarning)
+            warnings.warn(
+                '!!!!Warning!!!! positions argument is deprecated, use stand = adel.Stand class instead',
+                DeprecationWarning)
             print('coucou')
-            
+
         if leaves is None:
             leaves = Leaves()
-            
+
         if stand is None:
-            stand = AgronomicStand(sowing_density = 250, plant_density=250, inter_row=0.15)
-        self.stand=stand
-        stand_parameters = {'sowing_density':stand.sowing_density,
-                                 'plant_density': stand.plant_density,
-                                  'inter_row': stand.inter_row,
-                                 'noise': stand.noise,
-                                 'density_curve_data': stand.density_curve_data}
-            
+            stand = AgronomicStand(sowing_density=250, plant_density=250,
+                                   inter_row=0.15)
+        self.stand = stand
+        stand_parameters = {'sowing_density': stand.sowing_density,
+                            'plant_density': stand.plant_density,
+                            'inter_row': stand.inter_row,
+                            'noise': stand.noise,
+                            'density_curve_data': stand.density_curve_data}
+
         if thermal_time_model is None:
             thermal_time_model = DegreeDayModel(Tbase=0)
 
         if geoAxe is None:
-            geoAxe = genGeoAxe(incT=incT,dinT=dinT,dep=dep)
-        
-        self.devT = devT
-        
-        if self.stand.density_curve is None:
-            self.nplants, self.domain, self.positions, area_m2 = stand.stand(nplants * duplicate, aspect=aspect)
-        else:
-            self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(nplants * duplicate)
+            geoAxe = genGeoAxe(incT=incT, dinT=dinT, dep=dep)
 
-        #split nplants into nquot and nrem, such that nplants = nquote * duplicate + nrem
+        self.devT = devT
+
+        if self.stand.density_curve is None:
+            self.nplants, self.domain, self.positions, area_m2 = stand.stand(
+                nplants * duplicate, aspect=aspect)
+        else:
+            self.nplants, self.domain, self.positions, area_m2 = stand.smart_stand(
+                nplants * duplicate)
+
+        # split nplants into nquot and nrem, such that nplants = nquote * duplicate + nrem
         self.nrem = self.nplants % duplicate
         self.nquot = (self.nplants - self.nrem) / duplicate
         self.duplicate = duplicate
-        if self.nquot == 0 and self.duplicate > 0:# degenerated case
+        if self.nquot == 0 and self.duplicate > 0:  # degenerated case
             self.nquot = 1
             self.nrem = 0
             self.duplicate = self.nplants
 
-            
-        
-        
         self.domain_area = area_m2
         self.plant_azimuths = numpy.random.random(self.nplants) * 360
-        
-        pars = {'devT':devT, 'RcodegeoLeaf':leaves.geoLeaf, 'RcodegeoAxe':geoAxe,
-                'seed':seed, 'sample':sample, 'xydb':leaves.xydb, 'srdb':leaves.srdb, 'ssipars':ssipars}
+
+        pars = {'devT': devT, 'RcodegeoLeaf': leaves.geoLeaf,
+                'RcodegeoAxe': geoAxe,
+                'seed': seed, 'sample': sample, 'xydb': leaves.xydb,
+                'srdb': leaves.srdb, 'ssipars': ssipars}
         self.pars = setAdel(nplants=self.nquot, **pars)
         if self.nquot > 0:
             self.pars_quot = setAdel(nplants=self.nquot, **pars)
         if self.nrem > 0:
-            self.pars_rem = setAdel(nplants = self.nrem, **pars)
+            self.pars_rem = setAdel(nplants=self.nrem, **pars)
         self.leaves = leaves
         self.nsect = nsect
 
-        
         self.thermal_time = thermal_time_model
         self.run_adel_pars = run_adel_pars
         self.split = split
@@ -144,8 +164,9 @@ class AdelWheat(object):
         self.classic = classic
         self.convUnit = convUnit
         self.meta = {'stand': stand_parameters, 'nplants': self.nplants,
-                     'domain':self.domain, 'domain_area':self.domain_area,
-                     'nsect':self.nsect, 'convUnit': self.convUnit, 'split':self.split}
+                     'domain': self.domain, 'domain_area': self.domain_area,
+                     'nsect': self.nsect, 'convUnit': self.convUnit,
+                     'split': self.split}
 
     @staticmethod
     def meta_informations(g):
@@ -156,40 +177,52 @@ class AdelWheat(object):
         """ compute timing and time_control_sets for a simulation between start and stop. 
 
         Return 0 when there is no rain
-        """ 
+        """
         timestep = delay
-        start_date= weather.str_to_datetime(start_date)
-        temp = [d['temperature_air'] for d in weather.split_weather(timestep, start_date, steps)]
-       
-        return (TimeControlSet(Tair = temp[i / int(delay)], dt = delay) if not i % delay  else TimeControlSet(dt=0) for i in range(steps))
+        start_date = weather.str_to_datetime(start_date)
+        temp = [d['temperature_air'] for d in
+                weather.split_weather(timestep, start_date, steps)]
 
-    def setup_canopy(self, age = 10):
-    
+        return (TimeControlSet(Tair=temp[i / int(delay)],
+                               dt=delay) if not i % delay  else TimeControlSet(
+            dt=0) for i in range(steps))
+
+    def setup_canopy(self, age=10):
+
         self.canopy_age = age
-        
-        # produce plants positionned at origin        
+
+        # produce plants positionned at origin
         if self.nrem > 0:
             canopy = RunAdel(age, self.pars_rem, adelpars=self.run_adel_pars)
-            grem = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=None, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-            grem = mtg_interpreter(grem, self.leaves, face_up = self.face_up, classic= self.classic)
-        
+            grem = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
+                               leaves=self.leaves, stand=None, split=self.split,
+                               aborting_tiller_reduction=self.aborting_tiller_reduction)
+            grem = mtg_interpreter(grem, self.leaves, face_up=self.face_up,
+                                   classic=self.classic)
+
         if self.nquot > 0:
             canopy = RunAdel(age, self.pars_quot, adelpars=self.run_adel_pars)
-            gquot = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect, leaves=self.leaves, stand=None, split=self.split, aborting_tiller_reduction=self.aborting_tiller_reduction)
-            gquot = mtg_interpreter(gquot, self.leaves, face_up = self.face_up, classic= self.classic)
+            gquot = mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
+                                leaves=self.leaves, stand=None,
+                                split=self.split,
+                                aborting_tiller_reduction=self.aborting_tiller_reduction)
+            gquot = mtg_interpreter(gquot, self.leaves, face_up=self.face_up,
+                                    classic=self.classic)
             gquot = replicate(gquot, self.nquot * self.duplicate)
-            
+
         if self.nrem > 0:
             g = grem
             if self.nquot > 0:
                 g = union(g, gquot)
         else:
             g = gquot
-        
-        #update positions and domain if smart stand is used       
+
+        # update positions and domain if smart stand is used
         if self.stand.density_curve is not None:
-            new_nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(self.nplants, at=age)
-            self.meta.update({'domain':self.domain, 'domain_area':self.domain_area})
+            new_nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(
+                self.nplants, at=age)
+            self.meta.update(
+                {'domain': self.domain, 'domain_area': self.domain_area})
             assert new_nplants == self.nplants
 
         # dispose plants and renumber them
@@ -197,106 +230,109 @@ class AdelWheat(object):
         az = g.property('azimuth')
         lab = g.property('label')
         geom = g.property('geometry')
-        for i,vid in enumerate(g.vertices(1)):
+        for i, vid in enumerate(g.vertices(1)):
             lab[vid] = 'plant' + str(i + 1)
             pos[vid] = self.positions[i]
             az[vid] = self.plant_azimuths[i]
             for gid in g.components_at_scale(vid, g.max_scale()):
                 if gid in geom:
-                    geom[gid] = transform_geom(geom[gid], self.positions[i], self.plant_azimuths[i])
+                    geom[gid] = transform_geom(geom[gid], self.positions[i],
+                                               self.plant_azimuths[i])
         # add meta
         root = g.node(0)
         self.meta.update({'canopy_age': age})
         root.meta = self.meta
         return g
 
-    def checkAxeDyn(self, dates=range(0,2000,100), density=None):
+    def checkAxeDyn(self, dates=range(0, 2000, 100), density=None):
         if density is None:
-            density=self.stand.plant_density
+            density = self.stand.plant_density
         return checkAxeDyn(self.pars, dates, density)
-     
+
     def check_nff(self):
         """ Count the probability of occurence of MS with given nff
         """
         ms = numpy.array(self.devT['axeT']['id_axis']) == 'MS'
         nffs = numpy.array(self.devT['axeT']['N_phytomer'])[ms]
-        counts = {n:nffs.tolist().count(n) for n in set(nffs)}
-        probas = {n:nffs.tolist().count(n) * 1.0 / len(nffs) for n in set(nffs)}
+        counts = {n: nffs.tolist().count(n) for n in set(nffs)}
+        probas = {n: nffs.tolist().count(n) * 1.0 / len(nffs) for n in
+                  set(nffs)}
         return counts, probas
-        
-        
+
     def check_primary_tillers(self):
         """ Count/estimate probabilitie of occurence of primary tillers
         """
-        import re 
+        import re
         axis = self.devT['axeT']['id_axis']
-        ms = [e for e in axis if re.match('MS',e)]
-        tillers = [e for e in axis if re.match('T.$',e)]
-        counts = {n:tillers.count(n) for n in set(tillers)}
-        probas = {n:tillers.count(n) * 1.0 / len(ms) for n in set(tillers)}
+        ms = [e for e in axis if re.match('MS', e)]
+        tillers = [e for e in axis if re.match('T.$', e)]
+        counts = {n: tillers.count(n) for n in set(tillers)}
+        probas = {n: tillers.count(n) * 1.0 / len(ms) for n in set(tillers)}
         return counts, probas
-         
-     
+
     def axeT(self):
         return getAxeT(self.pars)
-        
+
     def phenT(self, axe='MS'):
         return getPhenT(self.pars, axe=axe)
-        
+
     def phytoT(self, axe='MS'):
         return getPhytoT(self.pars, axe=axe)
-        
+
     def save_pars(self):
-        saveRData(self.pars,'plants','adel_pars.RData')
-        
+        saveRData(self.pars, 'plants', 'adel_pars.RData')
+
     def grow(self, g, time_control):
-    
-        try: #old interface
+
+        try:  # old interface
             if time_control.dt <= 0:
-                dday=0.
+                dday = 0.
             else:
                 dday = time_control.Tair.mean()
         except:
             data = time_control
             tt = self.thermal_time(data.index, data)
             dday = tt[-1]
-        
-        #refg = self.setup_canopy(age = self.canopy_age)
+
+        # refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
-        newg = self.setup_canopy(age = self.canopy_age)
-        #newg = mtg_update(newg, g, refg)
+        newg = self.setup_canopy(age=self.canopy_age)
+        # newg = mtg_update(newg, g, refg)
         move_properties(g, newg)
-        
+
         return newg
-   
+
     def grow_dd(self, g, dday):
-        #refg = self.setup_canopy(age = self.canopy_age)
+        # refg = self.setup_canopy(age = self.canopy_age)
         self.canopy_age += dday
-        newg = self.setup_canopy(age = self.canopy_age)
-        #newg = mtg_update(newg, g, refg)
+        newg = self.setup_canopy(age=self.canopy_age)
+        # newg = mtg_update(newg, g, refg)
         move_properties(g, newg)
         return newg
-       
-    def get_axis(self, g, plant='plant1', axe = 'MS'):
+
+    def get_axis(self, g, plant='plant1', axe='MS'):
         """ return a new mtg representing an axe
         """
         p = [vid for vid in g.vertices(scale=1) if g.label(vid) == plant][0]
         ax = [vid for vid in g.components(p) if g.label(vid) == axe][0]
-        return g.sub_mtg(ax,copy=True)
+        return g.sub_mtg(ax, copy=True)
 
     @staticmethod
     def plot(g, property=None):
         from openalea.plantgl.all import Viewer
         from openalea.mtg.plantframe.color import colormap
-        
+
         colors = None
         if property:
             g = colormap(g, property, cmap='jet', lognorm=True)
             colored = g.property('color')
-            colors = {vid:colored.get(vid,colored.get(g.complex(vid),[0,0,0])) for vid in g.vertices(scale=g.max_scale())}
+            colors = {
+                vid: colored.get(vid, colored.get(g.complex(vid), [0, 0, 0]))
+                for vid in g.vertices(scale=g.max_scale())}
         else:
             colors = None
-        s = plot3d(g, colors=colors)  # use the one of openalea.plantframe.color instead ?
+        s = plot3d(g,
+                   colors=colors)  # use the one of openalea.plantframe.color instead ?
         Viewer.display(s)
         return s
 
@@ -320,12 +356,13 @@ class AdelWheat(object):
         df_lai = AdelWheat.get_exposed_areas(g, convert=True)
         axstat = None
         if not df_lai.empty:
-            axstat, _ = axis_statistics(df_lai, meta['domain_area'], meta['convUnit'])
+            axstat, _ = axis_statistics(df_lai, meta['domain_area'],
+                                        meta['convUnit'])
         return axstat
 
     @staticmethod
     def plot_statistics(g, axstat=None):
-        pstat=None
+        pstat = None
         meta = AdelWheat.meta_informations(g)
         if axstat is None:
             axstat = AdelWheat.axis_statistics(g)
@@ -333,34 +370,34 @@ class AdelWheat(object):
         return pstat
 
     @staticmethod
-    def save(g, index = 0, dir='./adel_saved', basename=None):
+    def save(g, index=0, dir='./adel_saved', basename=None):
         if basename is None:
             if not os.path.exists(dir):
                 os.mkdir(dir)
-            basename_geom = dir + '/scene%04d' %(index)
-            basename_adel = dir + '/adel%04d' %(index)
+            basename_geom = dir + '/scene%04d' % (index)
+            basename_adel = dir + '/adel%04d' % (index)
         else:
             basename_adel = basename_geom = str(basename)
         s = AdelWheat.scene(g)
-        geom = {sh.id:sh.geometry for sh in s}
+        geom = {sh.id: sh.geometry for sh in s}
         g.remove_property('geometry')
         fgeom = basename_geom + '.bgeom'
         fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
         with open(fg, 'w') as output:
             pickle.dump(g, output)
-        #restore geometry
+        # restore geometry
         g.add_property('geometry')
         g.property('geometry').update(geom)
         return fgeom, fg
 
     @staticmethod
-    def load(index=0, dir = './adel_saved', basename=None,load_geom=True):
+    def load(index=0, dir='./adel_saved', basename=None, load_geom=True):
         if basename is None:
             if not os.path.exists(dir):
                 os.mkdir(dir)
-            basename_geom = dir + '/scene%04d' %(index)
-            basename_adel = dir + '/adel%04d' %(index)
+            basename_geom = dir + '/scene%04d' % (index)
+            basename_adel = dir + '/adel%04d' % (index)
         else:
             basename_adel = basename_geom = basename
         fgeom = basename_geom + '.bgeom'
@@ -375,68 +412,84 @@ class AdelWheat(object):
         if load_geom:
             s = pgl.Scene()
             s.read(fgeom, 'BGEOM')
-            geom = {sh.id:sh.geometry for sh in s}
+            geom = {sh.id: sh.geometry for sh in s}
             g.add_property('geometry')
             g.property('geometry').update(geom)
-        
+
         return g
-        
-    def get_midribs(self,g, resample = False):
-        
-        vids = [vid for vid in g.vertices(scale=g.max_scale() - 1) if g.label(vid).startswith('blade')]
+
+    def get_midribs(self, g, resample=False):
+
+        vids = [vid for vid in g.vertices(scale=g.max_scale() - 1) if
+                g.label(vid).startswith('blade')]
         visible_length = g.property('visible_length')
-        midribs = {vid:self.leaves.midrib(g.node(vid), resample=resample) for vid in vids if visible_length[vid] > 0}
+        midribs = {vid: self.leaves.midrib(g.node(vid), resample=resample) for
+                   vid in vids if visible_length[vid] > 0}
         #
         anchor = g.property('anchor_point')
-        midribs_anchor = {vid:[anchor[cid] for cid in g.components(vid) if cid in anchor] for vid in midribs}
-        hins = {k:v[0][2] + midribs[k][2] for k,v in midribs_anchor.iteritems() if len(v) > 0}
+        midribs_anchor = {
+            vid: [anchor[cid] for cid in g.components(vid) if cid in anchor] for
+            vid in midribs}
+        hins = {k: v[0][2] + midribs[k][2] for k, v in
+                midribs_anchor.iteritems() if len(v) > 0}
 
-        metamer = {vid:g.complex(vid) for vid in midribs}
-        axe = {vid:g.complex(metamer[vid]) for vid in midribs}
-        plant = {vid:g.complex(axe[vid]) for vid in midribs}
-        ntop=g.property('ntop')
-        
-        res = [pandas.DataFrame({'vid':vid,
-                                 'ntop':ntop[vid],
-                                 'metamer':int(g.label(metamer[vid]).split('metamer')[1]),
-                                 'axe':g.label(axe[vid]),
-                                 'plant':int(g.label(plant[vid]).split('plant')[1]),
-                                  'x':midribs[vid][0],
-                                  'y':midribs[vid][1],
-                                  'hins':hins[vid]}) for vid in hins]#hins keys are for midribs keys wich also have a geometry (anchor point
-        
+        metamer = {vid: g.complex(vid) for vid in midribs}
+        axe = {vid: g.complex(metamer[vid]) for vid in midribs}
+        plant = {vid: g.complex(axe[vid]) for vid in midribs}
+        ntop = g.property('ntop')
+
+        res = [pandas.DataFrame({'vid': vid,
+                                 'ntop': ntop[vid],
+                                 'metamer': int(
+                                     g.label(metamer[vid]).split('metamer')[1]),
+                                 'axe': g.label(axe[vid]),
+                                 'plant': int(
+                                     g.label(plant[vid]).split('plant')[1]),
+                                 'x': midribs[vid][0],
+                                 'y': midribs[vid][1],
+                                 'hins': hins[vid]}) for vid in
+               hins]  # hins keys are for midribs keys wich also have a geometry (anchor point
+
         return pandas.concat(res)
 
     def midrib_statistics(self, g):
         data = self.get_midribs(g)
         return midrib_statistics(data)
 
-        
-def adelwheat_node(nplants = 1, nsect = 1, devT = None, leaves=None, geoAxe=None, stand=None, run_adel_pars=None, options={}):
+
+def adelwheat_node(nplants=1, nsect=1, devT=None, leaves=None, geoAxe=None,
+                   stand=None, run_adel_pars=None, options={}):
     args = locals()
     args.update(options)
     args.pop('options')
     model = AdelWheat(**args)
     return model
-    
+
+
 def setup_canopy_node(adel, age=10):
     return adel.setup_canopy(age)
-    
+
+
 def adel_scene_node(g):
     return plot3d(g)
-    
+
+
 def axis_statistics_node(adel, g):
     return adel.axis_statistics(g),
-    
+
+
 def plot_statistics_node(adel, axstat):
     return adel.plot_statistics(axstat),
-        
-#user friendly macros
+
+
+# user friendly macros
 from alinea.adel.stand.stand import agronomicplot
 from alinea.astk.plant_interface import *
 
-def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150, 
-                     plant_density=150, inter_row=0.12, nsect=1, seed = None, sample='random'):
+
+def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,
+                     plant_density=150, inter_row=0.12, nsect=1, seed=None,
+                     sample='random'):
     """ Initialize a wheat canopy.
     
     Parameters
@@ -471,12 +524,13 @@ def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,
         tuple of coordinates defining the domain
 
     """
-    nplants, positions, domain, domain_area, convUnit = agronomicplot(length=length, 
-                                                            width=width, 
-                                                            sowing_density=sowing_density, 
-                                                            plant_density=plant_density,
-                                                            inter_row=inter_row)
-    wheat = AdelWheat(nplants=nplants, positions = positions, nsect=nsect, seed= seed, sample=sample)
-    g,_ = new_canopy(wheat,age=age)
+    nplants, positions, domain, domain_area, convUnit = agronomicplot(
+        length=length,
+        width=width,
+        sowing_density=sowing_density,
+        plant_density=plant_density,
+        inter_row=inter_row)
+    wheat = AdelWheat(nplants=nplants, positions=positions, nsect=nsect,
+                      seed=seed, sample=sample)
+    g, _ = new_canopy(wheat, age=age)
     return g, wheat, domain_area, domain, convUnit
-        

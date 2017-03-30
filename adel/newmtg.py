@@ -21,6 +21,7 @@ from alinea.adel.mtg import convert, properties_from_dict
 # import csv
 
 from openalea.mtg import MTG, fat_mtg
+from openalea.mtg.algo import union
 
 
 import numpy
@@ -928,6 +929,43 @@ def exposed_areas2canS(exposed_areas):
         # hack
         d['d_basecol'] = 0
     return d
+
+def replicate(g, target=1):
+    """ replicate the plants in g up to obtain target new plants"""
+    current = g.nb_vertices(scale=1)
+
+    if target <= current:
+        return g
+
+    assert target % current == 0
+    # otherwise use nrem + union
+
+    nduplication = int(numpy.log2(1. * target / current))
+    missing = target - current * numpy.power(2, nduplication)
+    cards = numpy.power(2, range(nduplication))
+    add_g = [False] * len(cards)
+    for i in reversed(range(len(cards))):
+        if cards[i] <= missing:
+            add_g[i] = True
+            missing -= cards[i]
+    assert missing == 0
+
+    g_add = None
+    g_dup = g.sub_mtg(g.root)
+    for i in range(nduplication):
+        g1 = g_dup.sub_mtg(g_dup.root)
+        g_dup = union(g_dup, g1)
+        if add_g[i]:
+            g1 = g.sub_mtg(g.root)
+            if g_add is None:
+                g_add = g1
+            else:
+                g_add = union(g_add, g1)
+
+    if g_add is not None:
+        g_dup = union(g_dup, g_add)
+
+    return g_dup
 
 # to do
 

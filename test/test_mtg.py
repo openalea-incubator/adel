@@ -11,8 +11,8 @@ def leaves_db():
     leaves = Pickle.load(f)
     f.close()
     leaves = fitting.fit_leaves(leaves, 9)
-    print "leaves ", leaves
-    return leaves
+    #print "leaves ", leaves
+    return leaves[0]
 
 functions = build_symbols(leaves_db())
 

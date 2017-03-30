@@ -63,10 +63,10 @@ class AdelWheat(Adel):
         assert len(self.leaves.keys()) == 1
         k = self.leaves.keys()[0]
 
-        pars = {'devT': devT, 'RcodegeoLeaf': leaves[k].geoLeaf,
+        pars = {'devT': self.devT, 'RcodegeoLeaf': self.leaves[k].geoLeaf,
                     'RcodegeoAxe': geoAxe,
-                    'seed': seed, 'sample': sample, 'xydb': leaves[k].xydb,
-                    'srdb': leaves[k].srdb, 'ssipars': ssipars}
+                    'seed': self.seed, 'sample': sample, 'xydb': self.leaves[k].xydb,
+                    'srdb': self.leaves[k].srdb, 'ssipars': ssipars}
 
         if self.duplicate is None:
             self.pars = setAdel(nplants=self.nplants, **pars)

@@ -151,6 +151,8 @@ class Adel(object):
 
         if age is None:
             self.canopy_age = -999
+        else:
+            self.canopy_age = age
         self.meta.update({'canopy_age': self.canopy_age})
 
         if species is not None:

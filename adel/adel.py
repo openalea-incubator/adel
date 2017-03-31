@@ -335,6 +335,16 @@ class Adel(object):
         g = pickle.load(f)
         f.close()
 
+        # backward compatibility
+        if isinstance(g, list):
+            g, age = g
+            root = g.node(0)
+            meta = {'canopy_age': age}
+            if 'meta' not in g.property_names():
+                root.meta = meta
+            else:
+                root.meta.update(meta)
+
         if load_geom:
             s = Scene()
             s.read(fgeom, 'BGEOM')

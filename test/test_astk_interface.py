@@ -22,7 +22,7 @@ def test_dynamic():
     nplants = 1
     adel = AdelWheat(nplants=nplants)
     g = adel.setup_canopy(age=100)
-    timing = [TimeControlSet(dt=100) for i in range(2)]
+    timing = [TimeControlSet(dt=100) for _ in range(2)]
     for tc in timing:
         adel.grow(g,tc)
     return g

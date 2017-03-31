@@ -296,4 +296,16 @@ def plot3d(g,
         geom2shape(vid, mesh, scene,colors)
     return scene
 
-        
+
+def transform_geom(geom, translation, rotation):
+    # force cast to float (pgl does not accept values extracted from numpy arryas
+    translation = map(float,
+                      translation)
+    if isinstance(geom, pgl.Geometry):
+        geom = pgl.Translated(translation,
+                              pgl.AxisRotated((0, 0, 1), rotation, geom))
+    elif isinstance(geom, pgl.Shape):
+        geom = pgl.Shape(pgl.Translated(translation,
+                                        pgl.AxisRotated((0, 0, 1), rotation,
+                                                        geom.geometry)))
+    return geom

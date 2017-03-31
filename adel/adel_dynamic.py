@@ -1,8 +1,6 @@
 """ Prototype adel model that uses mtg edition functions"""
 from openalea.mtg import MTG
-from alinea.adel.AdelR import RunAdel
-from openalea.mtg.algo import union
-from alinea.adel.astk_interface import AdelWheat, replicate, transform_geom, mtg_interpreter, adel_metamer
+from alinea.adel.astk_interface import AdelWheat, replicate, transform_geom, mtg_interpreter
 from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
 from alinea.adel.AdelR import plantSample
 
@@ -58,61 +56,12 @@ class AdelWheatDyn(AdelWheat):
                                       internode_properties, sheath_properties,
                                       blade_properties)
 
-    def setup_canopy(self, age=10):
-
-        self.canopy_age = age
-
-        # produce plants positionned at origin
-        if self.nrem > 0:
-            canopy = RunAdel(age, self.pars_rem, adelpars=self.run_adel_pars)
-            grem = new_mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
-                               leaves=self.leaves, stand=None, split=self.split,
-                               aborting_tiller_reduction=self.aborting_tiller_reduction)
-            grem = mtg_interpreter(grem, self.leaves, face_up=self.face_up,
-                                   classic=self.classic)
-
-        if self.nquot > 0:
-            canopy = RunAdel(age, self.pars_quot, adelpars=self.run_adel_pars)
-            gquot = new_mtg_factory(canopy, adel_metamer, leaf_sectors=self.nsect,
-                                leaves=self.leaves, stand=None,
-                                split=self.split,
-                                aborting_tiller_reduction=self.aborting_tiller_reduction)
-            gquot = mtg_interpreter(gquot, self.leaves, face_up=self.face_up,
-                                    classic=self.classic)
-            gquot = replicate(gquot, self.nquot * self.duplicate)
-
-        if self.nrem > 0:
-            g = grem
-            if self.nquot > 0:
-                g = union(g, gquot)
-        else:
-            g = gquot
-
-        # update positions and domain if smart stand is used
-        if self.stand.density_curve is not None:
-            new_nplants, self.domain, self.positions, self.domain_area = self.stand.smart_stand(
-                self.nplants, at=age)
-            self.meta.update(
-                {'domain': self.domain, 'domain_area': self.domain_area})
-            assert new_nplants == self.nplants
-
-        # dispose plants and renumber them
-        pos = g.property('position ')
-        az = g.property('azimuth')
-        lab = g.property('label')
-        geom = g.property('geometry')
-        for i, vid in enumerate(g.vertices(1)):
-            lab[vid] = 'plant' + str(i + 1)
-            pos[vid] = self.positions[i]
-            az[vid] = self.plant_azimuths[i]
-            for gid in g.components_at_scale(vid, g.max_scale()):
-                if gid in geom:
-                    geom[gid] = transform_geom(geom[gid], self.positions[i],
-                                               self.plant_azimuths[i])
-        # add meta
-        root = g.node(0)
-        self.meta.update({'canopy_age': age})
-        root.meta = self.meta
+    def build_mtg(self, parameters, stand, **kwds):
+        """ temporary overwrite adel default"""
+        g = new_mtg_factory(parameters, stand=stand, leaf_sectors=self.nsect,
+                        leaves=self.leaves, split=self.split, **kwds)
+        g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                            face_up=self.face_up)
         return g
 
     def update_geometry(self, g, SI_units=False, properties_to_convert={'lengths':[], 'areas':[]}):

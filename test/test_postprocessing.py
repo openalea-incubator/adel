@@ -17,7 +17,7 @@ ADEL_OUTPUT_FILENAME = 'adel_output.csv'
 RELATIVE_TOLERANCE = 10e-3
 ABSOLUTE_TOLERANCE = 10e-3
 
-
+# TO DO restore full test by validating new expectations
 def test_aggregate_adel_output():
     adel_output_df = pd.read_csv(INPUTS_DIRPATH/ADEL_OUTPUT_FILENAME)
     adel_output_df['species'] = '0'

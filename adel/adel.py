@@ -40,7 +40,7 @@ def balanced_sample(n, proba):
         card[k] += 1
         missing -= 1
     card = {k: v for k, v in card.iteritems() if v > 0}
-    items = flat_list([[int(key)] * val for key, val in card.iteritems()])
+    items = flat_list([[key] * val for key, val in card.iteritems()])
     numpy.random.shuffle(items)
     return items
 

@@ -301,13 +301,14 @@ class AdelDress(Adel):
                                         age=age,
                                         seed=seed)
 
-    def canopy_table(self, plant_references, plant_species, azimuth=None):
+    def canopy_table(self, plant_references, plant_species, azimuth=None, relative_inclination=1):
         """Compute adel canopy table
 
         Args:
             plants: a list of int identyfying reference plant indices
             plant_species: a list of species to be associated to each plant
             azimuth: a function for computing leaf azimuth
+            relative_inclination: a multiplier of leaf base inclination angle or a {specie:multiplier} dict.
 
         Returns:
 
@@ -316,6 +317,10 @@ class AdelDress(Adel):
         if azimuth is None:
             def azimuth(n, ntop, axe):
                 return 180 + (numpy.random.random() - 0.5) * 30
+                
+        rinc = relative_inclination        
+        if not isinstance(relative_inclination, dict):
+            rinc = {k:relative_inclination for k in set(plant_species)}
 
         dfl = []
         # TO DO compute only on set(ref_plant_id) in a dict then create the list
@@ -357,7 +362,7 @@ class AdelDress(Adel):
             dfp.loc[:, 'Lr'] = 0
             dfp.loc[:, 'Lsen'] = 0
             dfp.loc[:, 'L_shape'] = dfp['Ll']
-            dfp.loc[:, 'Linc'] = 1
+            dfp.loc[:, 'Linc'] = rinc[dfp['species'][0]]
             dfp.loc[:, 'Gsen'] = 0
             dfp.loc[:, 'Ginc'] = 0
             dfp.loc[:, 'Esen'] = 0
@@ -368,7 +373,7 @@ class AdelDress(Adel):
 
     def canopy(self, nplants=None, duplicate=None, azimuth=None, species=None,
                seed=None,
-               age=None, aspect='smart'):
+               age=None, aspect='smart', relative_inclination=1):
         """ Generate a mtg encoding the canopy
 
         Args:
@@ -387,7 +392,7 @@ class AdelDress(Adel):
             self.new_stand(nplants=nplants, duplicate=duplicate, seed=seed,
                            aspect=aspect, age=age, species=species)
             df = self.canopy_table(self.plant_references, self.plant_species,
-                                   azimuth=azimuth)
+                                   azimuth=azimuth, relative_inclination=relative_inclination)
             stand = zip(self.positions, self.plant_azimuths)
             g = self.build_mtg(df.to_dict('list'), stand)
         else:

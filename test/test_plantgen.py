@@ -37,7 +37,7 @@ if not default_results.exists():
 relative_tolerance = 10e-3
 absolute_tolerance = 10e-3
 
-OUTPUTS_PRECISION = 3
+OUTPUTS_PRECISION = 10
 
 FLOAT_FORMAT = '%.{}f'.format(OUTPUTS_PRECISION)
 

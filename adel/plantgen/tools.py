@@ -25,6 +25,7 @@ import random
 import math
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import leastsq
 
 def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, emergence_probability_reduction_factor, parent_cohort_index=None, parent_cohort_position=None):
@@ -149,7 +150,7 @@ def calculate_tiller_final_leaves_number(MS_final_leaves_number, cohort_number, 
     return a_1* MS_final_leaves_number - a_2 * cohort_number
     
 
-def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, TT_regression_end, TT_em_phytomer1):
+def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, TT_regression_end, TT_em_phytomer1_df):
     '''
     Decide the thermal times (relative to canopy emergence) when the axes stop 
     growing. Uses an exponential function which describes the decay of the global population.
@@ -162,8 +163,8 @@ def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, T
           of the most frequent main stem is equal to (N_phytomer_potential - 5).    
         - `TT_regression_end` (:class:`float`) - the thermal time at which the regression ends, i.e. when the haun stage 
          of the most frequent main stem is equal to flag leaf number.
-        - `TT_em_phytomer1` (:class:`list`) - Thermal times (relative to canopy appearance) 
-          of tip appearance of the first true leaf (not coleoptile nor prophyll)
+        - `TT_em_phytomer1_df` (:class:`pandas.DataFrame`) - A dataframe which contains, for each plant and each tiller, the thermal time 
+        (relative to canopy appearance) of tip appearance of the first true leaf (not coleoptile nor prophyll).
 
     :Returns: 
         the thermal times (relative to canopy emergence) when the axes stops growing.
@@ -180,7 +181,7 @@ def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, T
 
     '''
     if number_of_ears is None: # no regression
-        return [np.nan] * len(TT_em_phytomer1)
+        return [np.nan] * len(TT_em_phytomer1_df)
     else:
         if max_axes_number < 0:
             raise InputError("max_axes_number negative")
@@ -199,28 +200,27 @@ def decide_time_of_death(max_axes_number, number_of_ears, TT_regression_start, T
         
         def calculate_number_of_active_axes(tt, max_axes_number, number_of_ears, TT_regression_start, TT_regression_end):
             return (max_axes_number - number_of_ears) * math.exp(-2.59861720216721* (tt - TT_regression_start) / (1.65412664908155* (TT_regression_end - TT_regression_start) - (tt - TT_regression_start))) + number_of_ears ## les constantes sont a mettre dans params
-                    
+        
+        TT_stop_axis_df = TT_em_phytomer1_df.assign(TT_stop_axis=pd.Series(index=TT_em_phytomer1_df.index))
         number_of_remaining_axes = max_axes_number
-        TT_em_phytomer1_tuples = zip(TT_em_phytomer1[:], range(len(TT_em_phytomer1)))
-        TT_stop_axis_tuples = []
+        
         for tt in range(int(TT_regression_start), int(TT_regression_end) + 1):
             number_of_active_axes = int(calculate_number_of_active_axes(tt, max_axes_number, number_of_ears, TT_regression_start, TT_regression_end))
-            number_of_axes_to_delete = number_of_remaining_axes - number_of_active_axes
+            number_of_axes_to_delete = number_of_remaining_axes - number_of_active_axes          
+            # we consider only the lines where TT_stop_axis is still NA
+            TT_stop_axis_NA_df = TT_stop_axis_df.loc[TT_stop_axis_df.TT_stop_axis.isnull()]
+            plants_to_use_for_random_draw = TT_stop_axis_NA_df.id_plt.unique().tolist()
             while number_of_axes_to_delete > 0:
-                index_to_pop = random.randrange(len(TT_em_phytomer1_tuples))
-                _, axis_row_number = TT_em_phytomer1_tuples.pop(index_to_pop)
-                TT_stop_axis_tuples.append((axis_row_number, tt))
+                id_plt = random.choice(plants_to_use_for_random_draw)
+                TT_stop_axis_NA_df_plant_group = TT_stop_axis_NA_df.loc[TT_stop_axis_NA_df.id_plt == id_plt]
+                index_of_yougest_tiller = TT_stop_axis_NA_df_plant_group.TT_em_phytomer1.idxmax()
+                TT_stop_axis_df.loc[index_of_yougest_tiller, 'TT_stop_axis'] = tt
+                plants_to_use_for_random_draw.remove(id_plt)
                 number_of_axes_to_delete -= 1
                 number_of_remaining_axes -= 1
             if number_of_remaining_axes == 0:
                 break 
-        TT_stop_axis_tuples.sort()
-        TT_stop_axis_row_number_list = [TT_stop_axis_tuple[0] for TT_stop_axis_tuple in TT_stop_axis_tuples]
-        TT_stop_axis_list = [TT_stop_axis_tuple[1] for TT_stop_axis_tuple in TT_stop_axis_tuples]
-        for i in range(len(TT_em_phytomer1)):
-            if i not in TT_stop_axis_row_number_list:
-                TT_stop_axis_list.insert(i, np.nan)
-        return TT_stop_axis_list 
+        return TT_stop_axis_df.TT_stop_axis.tolist()
 
 
 def fit_poly(x_meas_array, y_meas_array, fixed_coefs, a_starting_estimate):

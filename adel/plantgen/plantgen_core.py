@@ -387,7 +387,7 @@ class _CreateAxeT():
              self.axeT_['TT_del_phytomer1']) = _gen_all_TT_phytomer1_list(axeT_tmp, phenT_first, dynT_)
             self.axeT_.loc[self.axeT_['id_axis'] == 'MS', 'TT_stop_axis'] = np.nan
             tillers_axeT_index = self.axeT_.loc[self.axeT_['id_axis'] != 'MS'].index
-            self.axeT_.loc[tillers_axeT_index, 'TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.TT_regression_start, self.TT_regression_end, self.axeT_.loc[tillers_axeT_index, 'TT_em_phytomer1'].tolist())
+            self.axeT_.loc[tillers_axeT_index, 'TT_stop_axis'] = tools.decide_time_of_death(axeT_tmp.index.size, number_of_ears, self.TT_regression_start, self.TT_regression_end, self.axeT_.loc[tillers_axeT_index, ['id_plt', 'id_axis', 'TT_em_phytomer1']])
             self.axeT_['id_ear'] = _gen_id_ear_list(self.axeT_['TT_stop_axis'])
             self.axeT_['TT_del_axis'] = _gen_TT_del_axis_list(self.axeT_['TT_stop_axis'], delais_TT_stop_del_axis)
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
@@ -490,18 +490,16 @@ def _gen_all_TT_phytomer1_list(axeT_tmp, phenT_first, dynT):
             if primary_axis == 'MS': 
                 sigma = MS_sigma
                 sigma_div_2 = MS_sigma_div_2
-                mu = 0.0
             else: # tillers
                 sigma = tillers_sigma
                 sigma_div_2 = tillers_sigma_div_2
-                mu = params.MS_HS_AT_TILLER_EMERGENCE[primary_axis]
             
-            infimum = mu - sigma_div_2
-            supremum = mu + sigma_div_2
+            infimum = - sigma_div_2
+            supremum = sigma_div_2
                 
-            normal_distribution = random.normalvariate(mu, sigma)
+            normal_distribution = random.normalvariate(mu=0.0, sigma=sigma)
             while normal_distribution < infimum or normal_distribution > supremum:
-                normal_distribution = random.normalvariate(mu, sigma)
+                normal_distribution = random.normalvariate(mu=0.0, sigma=sigma)
             
             dynT_group = dynT.loc[(dynT.id_cohort == id_cohort) & (dynT.N_phytomer_potential == N_phytomer_potential)]
             a_cohort = dynT_group.loc[dynT_group.first_valid_index(), 'a_cohort']

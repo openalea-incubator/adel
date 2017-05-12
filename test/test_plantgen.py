@@ -25,9 +25,9 @@ number_of_ears = plants_number * ears_density / float(plants_density)
 
 expected_results_dir = path('data/test_plantgen')
 default_expected_results_dir = expected_results_dir.joinpath('default')
-min_min_expected_results_dir = expected_results_dir.joinpath('MIN_MIN')
-short_short_expected_results_dir = expected_results_dir.joinpath('SHORT_SHORT')
-full_full_expected_results_dir = expected_results_dir.joinpath('FULL_FULL')
+min_min_expected_results_dir = expected_results_dir.joinpath('min_min')
+short_short_expected_results_dir = expected_results_dir.joinpath('short_short')
+full_full_expected_results_dir = expected_results_dir.joinpath('full_full')
 
 import tempfile
 tmp_results_directory = path(tempfile.mkdtemp(suffix='_plantgen_results'))
@@ -161,7 +161,7 @@ def test_axes_phenology():
     
    
 @with_setup(reinit_random_state)
-def test_gen_adel_input_data_from_min():
+def test_gen_adel_input_data_from_min_min():
     dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
        
@@ -200,7 +200,7 @@ def test_gen_adel_input_data_from_min():
    
             
 @with_setup(reinit_random_state)
-def test_gen_adel_input_data_from_short():
+def test_gen_adel_input_data_from_short_short():
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     results = plantgen_interface.gen_adel_input_data(dynT_user,
@@ -238,7 +238,7 @@ def test_gen_adel_input_data_from_short():
     
     
 @with_setup(reinit_random_state)
-def test_gen_adel_input_data_from_full():
+def test_gen_adel_input_data_from_full_full():
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
     results = plantgen_interface.gen_adel_input_data(dynT_user,
@@ -276,8 +276,8 @@ def test_gen_adel_input_data_from_full():
    
    
 def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
-    result_table_dir = tmp_results_directory.joinpath('%s_%s' % (dynT_user_completeness, 
-                                                                 dimT_user_completeness))
+    result_table_dir = tmp_results_directory.joinpath('%s_%s' % (dynT_user_completeness.lower(), 
+                                                                 dimT_user_completeness.lower()))
     if not result_table_dir.exists():
         result_table_dir.mkdir()
     for key, value in to_compare.iteritems():
@@ -307,8 +307,8 @@ if __name__ == '__main__':
     test_plants_structure()
     test_organs_dimensions()
     test_axes_phenology()
-    test_gen_adel_input_data_from_min()
-    test_gen_adel_input_data_from_short()
-    test_gen_adel_input_data_from_full()
+    test_gen_adel_input_data_from_min_min()
+    test_gen_adel_input_data_from_short_short()
+    test_gen_adel_input_data_from_full_full()
     test_plantgen()
     

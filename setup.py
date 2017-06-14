@@ -13,13 +13,6 @@ metadata = read_metainfo('metainfo.ini', verbose=True)
 for key,value in metadata.iteritems():
     exec("%s = '%s'" % (key, value))
 
-
-if("win32" in sys.platform):
-    install_requires = ['pandas', 'rpy2']
-    setup_requires = install_requires + []
-else:
-    install_requires = ['pandas', 'rpy2']
-    setup_requires = []
     
 #retrieving packages
 pkg_root_dir = '.'
@@ -62,9 +55,9 @@ setup(
     # Scripts
     entry_points = { 'wralea': [ 'adel= alinea.adel',] },
  
-    # Dependencies
-    setup_requires = setup_requires + ['openalea.deploy'],
-    install_requires = install_requires,
+    # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
+    setup_requires = ['openalea.deploy'],
+    install_requires = [],
     dependency_links = ['http://openalea.gforge.inria.fr/pi'],
    )
 

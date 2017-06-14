@@ -4,9 +4,11 @@ Alinea.Adel
 
 **Authors** : C. Fournier, C. Pradal, B. Andrieu
 
-**Contributors** : M. Abichou (wheat parameteristion, documentation, plantgen), C. Chambon (plantgen, documentation, povray, fit, io widgets)
+**Contributors** : 
+  * M. Abichou (wheat parameteristion, documentation, plantgen), 
+  * C. Chambon (plantgen, documentation, povray, fit, io widgets)
 
-**Institutes** : INRA
+**Institutes** : INRA, CIRAD
 
 **Status** : R and Python package (+ L-system)
 
@@ -18,7 +20,7 @@ About
 Description
 ============
 
-Alinae.adel (Architectural model of DEvelopment based on L-systems) allows
+Alinae.Adel (Architectural model of DEvelopment based on L-systems) allows
 simulating the 3D architectural development of the shoot of gramineaous plant. 
 
 

@@ -302,13 +302,22 @@ def test_plantgen():
     
 
 if __name__ == '__main__':
+    reinit_random_state()
     test_init_axes()
+    reinit_random_state()
     test_phenology_functions()
+    reinit_random_state()
     test_plants_structure()
+    reinit_random_state()
     test_organs_dimensions()
+    reinit_random_state()
     test_axes_phenology()
+    reinit_random_state()
     test_gen_adel_input_data_from_min_min()
+    reinit_random_state()
     test_gen_adel_input_data_from_short_short()
+    reinit_random_state()
     test_gen_adel_input_data_from_full_full()
+    reinit_random_state()
     test_plantgen()
     

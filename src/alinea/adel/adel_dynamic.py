@@ -1,8 +1,9 @@
 """ Prototype adel model that uses mtg edition functions"""
 from openalea.mtg import MTG
-from alinea.adel.astk_interface import AdelWheat, replicate, transform_geom, mtg_interpreter
+from alinea.adel.astk_interface import AdelWheat
 from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
 from alinea.adel.AdelR import plantSample
+from alinea.adel.mtg_interpreter import mtg_interpreter, transform_geom
 
 
 class AdelWheatDyn(AdelWheat):

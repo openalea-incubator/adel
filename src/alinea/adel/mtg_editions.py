@@ -403,9 +403,9 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
             'leaf_db argument is deprecated, use leaves argument instead')
 
     if leaves is None:
-        dynamic_leaf_db = False
+        dynamic_leaf_db = {0: False}
     else:
-        dynamic_leaf_db = leaves.dynamic
+        dynamic_leaf_db = {k: leaves[k].dynamic for k in leaves}
 
     g = MTG()
 
@@ -416,7 +416,7 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
 
     dp = parameters
     nrow = len(dp['plant'])
-
+    species = 0
     for i in range(nrow):
         plant, num_metamer = [int(convert(dp.get(x)[i], undef=None)) for x in
                               [topology[e] for e in [0, 2]]]
@@ -466,17 +466,17 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
         components = []
         if metamer_factory:
             xysr_key = None
-            if leaves is not None and 'LcType' in args and 'LcIndex' in args:
+            if leaves[species] is not None and 'LcType' in args and 'LcIndex' in args:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:
                     age = None
-                    if dynamic_leaf_db:
+                    if dynamic_leaf_db[species]:
                         age = float(args[
                                         'rph']) - 0.3  # age_db = HS - rank + 1 = ph - 1.3 - rank +1 = rph - .3
                         if age != 'NA':
                             age = max(0, int(float(age)))
-                    xysr_key = leaves.get_leaf_key(lctype, lcindex, age)
+                    xysr_key = leaves[species].get_leaf_key(lctype, lcindex, age)
 
             elongation = None
             if add_elongation:

@@ -200,14 +200,13 @@ class AdelVisitor():
                 turtle.rollR(azim)
     
            
-        #if n.label.startswith('Leaf'):    
-        
-        # update geometry of elements
-        if n.length > 0:
-            mesh = compute_element(n, self.leaves, self.classic)
-            if mesh:#To DO : reset to None if calculated so ?
-                n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
-                n.anchor_point = turtle.getPosition()
+        if n.label.startswith('Leaf') or n.label.startswith('Stem'):
+            # update geometry of elements
+            if n.length > 0:
+                mesh = compute_element(n, self.leaves, self.classic)
+                if mesh:#To DO : reset to None if calculated so ?
+                    n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
+                    n.anchor_point = turtle.getPosition()
         # 3. Update the turtle and context
         turtle.setId(v)
         if n.label.startswith('Stem'):

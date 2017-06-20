@@ -16,14 +16,17 @@ def test_adelr1():
     res = run(('alinea.adel.tutorials', 'AdelR MonoRun'),
         inputs={}, pm=pm, vtx_id=13)
 
-def test_adelr2():
-    """ Test AdelR MonoRun """
-    res = run(('alinea.adel.tutorials', 'AdelR MonoRun'),
-        inputs={}, pm=pm, vtx_id=39)
 
 
-def test_arvalis():
-    """ Test Leaf db Explorer """
-    res = run(('alinea.adel.tutorials', 'Leaf db Explorer'),
-        inputs={}, pm=pm)
-    assert res[0] == []
+# to be repaired
+# def test_adelr2():
+#     """ Test AdelR MonoRun """
+#     res = run(('alinea.adel.tutorials', 'AdelR MonoRun'),
+#         inputs={}, pm=pm, vtx_id=39)
+#
+#
+# def test_arvalis():
+#     """ Test Leaf db Explorer """
+#     res = run(('alinea.adel.tutorials', 'Leaf db Explorer'),
+#         inputs={}, pm=pm)
+#     assert res[0] == []

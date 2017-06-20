@@ -5,7 +5,7 @@ import numpy as np
 import pandas
 from openalea.core.path import path
 from openalea.core.alea import *
-from nose.tools import with_setup
+
 
 random.seed(1234)
 
@@ -42,10 +42,12 @@ OUTPUTS_PRECISION = 10
 FLOAT_FORMAT = '%.{}f'.format(OUTPUTS_PRECISION)
 
 def reinit_random_state():
+    global initial_random_state
     random.setstate(initial_random_state)
 
-@with_setup(reinit_random_state)
+
 def test_init_axes():
+    reinit_random_state()
     (theoretical_cohort_cardinalities, 
      theoretical_axis_cardinalities) = tools.calculate_theoretical_cardinalities(plants_number, 
                                                                                  decide_child_cohort_probabilities,
@@ -67,8 +69,9 @@ def test_init_axes():
     np.testing.assert_allclose(cardinalityT.values, expected_cardinalityT.values, relative_tolerance, absolute_tolerance)
   
   
-@with_setup(reinit_random_state)
+
 def test_phenology_functions():
+    reinit_random_state()
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     dynT_, decimal_elongated_internode_number = plantgen_core.phenology_functions(plants_number, decide_child_cohort_probabilities, 
@@ -84,9 +87,9 @@ def test_phenology_functions():
     expected_dynT = expected_dynT.drop('id_axis', axis=1)
     np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)
        
-   
-@with_setup(reinit_random_state)
+
 def test_plants_structure():
+    reinit_random_state()
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     axeT_, tilleringT, phenT_first = plantgen_core.plants_structure(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
@@ -114,9 +117,9 @@ def test_plants_structure():
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(phenT_first.values, expected_phenT_first.values, relative_tolerance, absolute_tolerance)
     
-    
-@with_setup(reinit_random_state)
+
 def test_organs_dimensions():
+    reinit_random_state()
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
         
@@ -131,9 +134,9 @@ def test_organs_dimensions():
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
         
-    
-@with_setup(reinit_random_state)
+
 def test_axes_phenology():
+    reinit_random_state()
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     phenT_, phenT_abs, HS_GL_SSI_T = plantgen_core.axes_phenology(plants_number, decide_child_cohort_probabilities, MS_leaves_number_probabilities, 
@@ -159,9 +162,9 @@ def test_axes_phenology():
     print 'The results have been saved to %s' % test_table_filepath
     np.testing.assert_allclose(HS_GL_SSI_T.values, expected_HS_GL_SSI_T.values, relative_tolerance, absolute_tolerance)
     
-   
-@with_setup(reinit_random_state)
+
 def test_gen_adel_input_data_from_min_min():
+    reinit_random_state()
     dynT_user = pandas.read_csv(min_min_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(min_min_expected_results_dir/'dimT_user.csv')
        
@@ -199,8 +202,9 @@ def test_gen_adel_input_data_from_min_min():
     _check_results(to_compare, plantgen_core.DataCompleteness.MIN, plantgen_core.DataCompleteness.MIN)
    
             
-@with_setup(reinit_random_state)
+
 def test_gen_adel_input_data_from_short_short():
+    reinit_random_state()
     dynT_user = pandas.read_csv(short_short_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(short_short_expected_results_dir/'dimT_user.csv')
     results = plantgen_interface.gen_adel_input_data(dynT_user,
@@ -236,9 +240,9 @@ def test_gen_adel_input_data_from_short_short():
         
     _check_results(to_compare, plantgen_core.DataCompleteness.SHORT, plantgen_core.DataCompleteness.SHORT)
     
-    
-@with_setup(reinit_random_state)
+
 def test_gen_adel_input_data_from_full_full():
+    reinit_random_state()
     dynT_user = pandas.read_csv(full_full_expected_results_dir/'dynT_user.csv')
     dimT_user = pandas.read_csv(full_full_expected_results_dir/'dimT_user.csv')
     results = plantgen_interface.gen_adel_input_data(dynT_user,
@@ -292,32 +296,24 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
             expected_table = expected_table.drop('id_axis', axis=1)
         np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
    
-   
-def test_plantgen():
-    # test the visualea node
-    pm = PackageManager()
-    pm.init(verbose=False)
-    res = run(('alinea.adel.Tutorials', 'plantgen'), {}, pm=pm)
-    assert res == []
+
+# Deactivate test as it modifies data : TO DO : pass tmp dir to node before executing
+# def test_plantgen():
+#     # test the visualea node
+#     pm = PackageManager()
+#     pm.init(verbose=False)
+#     res = run(('alinea.adel.Tutorials', 'plantgen'), {}, pm=pm)
+#     assert res == []
     
 
 if __name__ == '__main__':
-    reinit_random_state()
     test_init_axes()
-    reinit_random_state()
     test_phenology_functions()
-    reinit_random_state()
     test_plants_structure()
-    reinit_random_state()
     test_organs_dimensions()
-    reinit_random_state()
     test_axes_phenology()
-    reinit_random_state()
     test_gen_adel_input_data_from_min_min()
-    reinit_random_state()
     test_gen_adel_input_data_from_short_short()
-    reinit_random_state()
     test_gen_adel_input_data_from_full_full()
-    reinit_random_state()
-    test_plantgen()
+    # test_plantgen()
     

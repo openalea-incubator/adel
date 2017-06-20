@@ -175,7 +175,7 @@ class InputWarning(UserWarning):
 warnings.simplefilter('always', InputWarning)
 
 
-def aggregate_adel_output(adel_output_df, by=['TT', 'plant', 'axe_id']):
+def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id')):
     '''
     Aggregate the output of Adel.
     
@@ -196,6 +196,7 @@ def aggregate_adel_output(adel_output_df, by=['TT', 'plant', 'axe_id']):
     '''
 
     aggregations_to_apply_list = [('TT', lambda x: x[x.first_valid_index()]),
+                                  ('species', lambda x: x[x.first_valid_index()]),
                                   ('plant', lambda x: x[x.first_valid_index()]),
                                   ('axe_id', lambda x: x[x.first_valid_index()]),
                                   ('refplant_id', lambda x: x[x.first_valid_index()]),
@@ -238,8 +239,8 @@ def phenology(adel_output_df):
     
     phenology_list = []
     
-    for name, group in adel_output_df.groupby(['TT', 'plant', 'axe_id'], as_index=False):
-        TT, plant, axe_id = name
+    for name, group in adel_output_df.groupby(['TT', 'species', 'plant', 'axe_id'], as_index=False):
+        TT, species, plant, axe_id = name
         L_shape = group['L_shape']
         indexes_of_vegetative_phytomers = group[group['numphy'] <= group['nff']].index
         NFF = indexes_of_vegetative_phytomers.size
@@ -292,11 +293,11 @@ def phenology(adel_output_df):
          
         GreenLeaf = HS - SSI
         
-        phenology_list.append([TT, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,
+        phenology_list.append([TT, species, plant, axe_id, NFF, HS, SSI, GreenLeaf, NFL,
                               NFV, has_ear, d_base_lastcol, HS_final])
     
     phenology_df = pd.DataFrame(phenology_list, 
-                                columns=['TT', 'plant', 'axe_id', 'NFF',
+                                columns=['TT', 'species', 'plant', 'axe_id', 'NFF',
                                          'HS', 'SSI', 'GreenLeaf', 'NFL',
                                          'NFV', 'has_ear', 'd_base-lastcol', 
                                          'HS_final'])
@@ -336,7 +337,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
     '''
     aggregated_adel_output_df = aggregate_adel_output(adel_output_df)
     phenology_df = phenology(adel_output_df)
-    intermediate_df = pd.merge(aggregated_adel_output_df, phenology_df, on=['TT', 'plant', 'axe_id'])
+    intermediate_df = pd.merge(aggregated_adel_output_df, phenology_df, on=['TT', 'species', 'plant', 'axe_id'])
     
     area_in_cm = domain_area * 1.0 / convUnit ** 2
 
@@ -351,7 +352,7 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
     is_active.loc[growing_indexes] = 1
     intermediate_df['is_active'] = is_active
     
-    for (ThermalTime, axe_id, NFF, has_ear), group in intermediate_df.groupby(['TT', 'axe_id', 'NFF', 'has_ear'], as_index=False):
+    for (ThermalTime, species, axe_id, NFF, has_ear), group in intermediate_df.groupby(['TT', 'species', 'axe_id', 'NFF', 'has_ear'], as_index=False):
         HS = group['HS'].mean()
         SSI = group['SSI'].mean()
         tot_LAI = group['Slv'].sum() / area_in_cm
@@ -368,14 +369,14 @@ def axis_statistics(adel_output_df, domain_area, convUnit=0.01):
         else:
             axis_order = axe_id.count('.') + 1
         
-        axis_statistics_list.append([ThermalTime, axe_id, NFF, HS, SSI, tot_LAI, 
+        axis_statistics_list.append([ThermalTime, species, axe_id, NFF, HS, SSI, tot_LAI,
                                      green_LAI, tot_PAI, green_PAI, has_ear, 
                                      d_base_lastcol, axes_cardinality, 
                                      active_axes_cardinality, axis_order])
         
     axis_statistics_df = \
         pd.DataFrame(axis_statistics_list,
-                     columns=['ThermalTime', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert', 
+                     columns=['ThermalTime', 'species', 'axe_id', 'NFF', 'HS', 'SSI', 'LAI totale', 'LAI vert',
                               'PAI total', 'PAI vert', 'has_ear', 'd_base-lastcol', 'axes_cardinality', 
                               'active_axes_cardinality', 'axis_order'])
     
@@ -404,7 +405,7 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
     :Returns Type:
         pandas.DataFrame
     '''
-    plot_statistics_columns = ['aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 
+    plot_statistics_columns = ['aire du plot', 'Nbr.plant.perplot', 'ThermalTime', 'species',
                                'LAI_tot', 'LAI_vert', 'PAI_tot', 'PAI_vert', 
                                'Nbr.axe.tot.m2', 'number_of_active_axes_per_m2']
     
@@ -413,18 +414,18 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
         plot_statistics_columns.append('active_axes_density_for_axis_order_{}'.format(order))
         
     plot_statistics_list = []
-    for ThermalTime, ThermalTime_group in axis_statistics_df.groupby('ThermalTime', as_index=False):
+    for (ThermalTime, species),  group in axis_statistics_df.groupby(('ThermalTime', 'species'), as_index=False):
                                   
-        tot_LAI = ThermalTime_group['LAI totale'].sum() 
-        green_LAI = ThermalTime_group['LAI vert'].sum()
-        tot_PAI = ThermalTime_group['PAI total'].sum()
-        green_PAI = ThermalTime_group['PAI vert'].sum()
-        axes_density = ThermalTime_group['axes_cardinality'].sum() / float(domain_area) 
-        total_active_axes_density = ThermalTime_group['active_axes_cardinality'].sum() / float(domain_area)
+        tot_LAI = group['LAI totale'].sum()
+        green_LAI = group['LAI vert'].sum()
+        tot_PAI = group['PAI total'].sum()
+        green_PAI = group['PAI vert'].sum()
+        axes_density = group['axes_cardinality'].sum() / float(domain_area)
+        total_active_axes_density = group['active_axes_cardinality'].sum() / float(domain_area)
         
         active_axes_densities_per_order = []
         
-        axis_order_grouped = ThermalTime_group.groupby('axis_order')
+        axis_order_grouped = group.groupby('axis_order')
         for order in orders:
             if order in axis_order_grouped.groups:
                 active_axes_density = axis_order_grouped.get_group(order)['active_axes_cardinality'].sum() / float(domain_area)
@@ -432,7 +433,7 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
                 active_axes_density = np.nan
             active_axes_densities_per_order.append(active_axes_density)
             
-        plot_statistics_list.append([domain_area, plant_number, ThermalTime, 
+        plot_statistics_list.append([domain_area, plant_number, ThermalTime, species,
                                      tot_LAI, green_LAI, tot_PAI, green_PAI, 
                                      axes_density, total_active_axes_density]
                                     + active_axes_densities_per_order)
@@ -466,7 +467,8 @@ def midrib_statistics(midribs):
         s = _curvilinear_abscisse(x,y)
         origin, phi0, s, dphi = _curvature_xys(x,y,s)
         #
-        return pd.Series({'plant':midrib['plant'].values[0],
+        return pd.Series({'species': midrib['species'].values[0],
+                                'plant':midrib['plant'].values[0],
                                  'axe':midrib['axe'].values[0],
                                  'leaf':midrib['metamer'].values[0],
                                  'insertion_angle': np.degrees(phi0),

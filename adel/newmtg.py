@@ -21,6 +21,7 @@ from alinea.adel.mtg import convert, properties_from_dict
 # import csv
 
 from openalea.mtg import MTG, fat_mtg
+from openalea.mtg.algo import union
 
 
 import numpy
@@ -293,13 +294,20 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
     mtype = kwargs.get('m_type', 'vegetative')
     age = kwargs.get('age', 'NA')
     is_ligulated = kwargs.get('is_ligulated', 'NA')
+    species = kwargs.get('species', 0)
 
     if mtype != 'vegetative':
         modules = [
-            {'label': mtype, 'ntop': ntop, 'length': El, 'visible_length': Ev,
-             'senesced_length': Esen, 'diameter': Ed, 'azimuth': Eaz,
+            {'label': mtype,
+             'ntop': ntop,
+             'length': El,
+             'visible_length': Ev,
+             'senesced_length': Esen,
+             'diameter': Ed,
+             'azimuth': Eaz,
              'inclination': Einc,
-             'elements': internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}]
+             'elements': internode_elements(El, Ev, Esen, Eaz, Einc, Ed)}
+        ]
     else:
         modules = [
             {'label': 'internode',
@@ -329,6 +337,7 @@ def adel_metamer(Ll=None, Lv=None, Lr=None, Lsen=None, L_shape=None,
              'n_sect': Lsect,
              'shape_mature_length': L_shape,
              'shape_max_width': Lw_shape,
+             'species': species,
              'shape_key': shape_key,
              'inclination': Linc,
              'elements': blade_elements(Lsect, Ll, Lv, Lr, Lsen, L_shape,
@@ -383,7 +392,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
     metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
     leaf_sectors is an integer giving the number of LeafElements per Leaf blade
-    leaves is an instance of adel.geometric_elements.Leaves class
+    leaves is a {species:adel.geometric_elements.Leaves} dict
     stand is a list of tuple (xy_position_tuple, azimuth) of plant positions
     axis_dynamics is a 3 levels dict describing axis dynamic. 1st key level is plant number, 2nd key level is axis number, and third ky level are labels of values (n, tip, ssi, disp)
     topology is the list of key names used in parameters dict for plant number, axe number and metamer number
@@ -398,9 +407,9 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             'leaf_db argument is deprecated, use leaves argument instead')
 
     if leaves is None:
-        dynamic_leaf_db = False
+        dynamic_leaf_db = {0: False}
     else:
-        dynamic_leaf_db = leaves.dynamic
+        dynamic_leaf_db = {k: leaves[k].dynamic for k in leaves}
 
     g = MTG()
 
@@ -438,11 +447,15 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             label = 'plant' + str(plant)
             position = (0, 0, 0)
             azimuth = 0
+            species = 0
+            if 'species' in args:
+                species = args['species']
             if stand and len(stand) >= plant:
                 position, azimuth = stand[plant - 1]
             vid_plant = g.add_component(g.root, label=label, edge_type='/',
                                         position=position, azimuth=azimuth,
-                                        refplant_id=args.get('refplant_id'))
+                                        refplant_id=args.get('refplant_id'),
+                                        species=species)
             # reset buffers
             prev_axe = -1
             vid_axe = -1
@@ -484,17 +497,19 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
         components = []
         if metamer_factory:
             xysr_key = None
-            if leaves is not None and 'LcType' in args and 'LcIndex' in args:
+            if leaves[
+                species] is not None and 'LcType' in args and 'LcIndex' in args:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:
                     age = None
-                    if dynamic_leaf_db:
+                    if dynamic_leaf_db[species]:
                         age = float(args[
                                         'rph']) - 0.3  # age_db = HS - rank + 1 = ph - 1.3 - rank +1 = rph - .3
                         if age != 'NA':
                             age = max(0, int(float(age)))
-                    xysr_key = leaves.get_leaf_key(lctype, lcindex, age)
+                    xysr_key = leaves[species].get_leaf_key(lctype, lcindex,
+                                                            age)
 
             elongation = None
             if add_elongation:
@@ -515,13 +530,13 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             args.update({'split': split})
             if args.get('HS_final') < args.get('nff'):
                 for what in (
-                        'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl',
-                        'Gv', 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
+                'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
+                'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
                     args.update(
                         {what: args.get(what) * aborting_tiller_reduction})
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
-                                         elongation=elongation, leaves=leaves,
-                                         **args)
+                                         elongation=elongation,
+                                         leaves=leaves[species], **args)
             args = {'L_shape': args.get('L_shape')}
         #
         label = 'metamer' + str(num_metamer)
@@ -839,23 +854,31 @@ def exposed_areas(g):
     for vid in g.vertices_iter(scale=g.max_scale()):
         n = g.node(vid)
         if n.length > 0 and not n.label.startswith('Hidden'):
-            numphy = int(''.join(list(n.complex().complex().label)[7:]))
-            nf = n.complex().complex().complex().nff
+            organ = n.complex()
+            metamer = organ.complex()
+            axe = metamer.complex()
+            plant = axe.complex()
+            numphy = int(''.join(list(metamer.label)[7:]))
+            nf = axe.nff
             node_data = {
-                'plant': n.complex().complex().complex().complex().label,
-                'axe': n.complex().complex().complex().label,
+                'plant': plant.label,
+                'axe': axe.label,
                 'metamer': numphy,
-                'organ': n.complex().label,
+                'organ': organ.label,
                 'vid': vid,
                 'ntop': nf - numphy + 1,
                 'element': n.label,
-                'refplant_id': n.complex().complex().complex().complex().refplant_id,
+                'refplant_id': plant.refplant_id,
                 'nff': nf,
-                'HS_final': n.complex().complex().complex().HS_final,
-                'L_shape': n.complex().complex().L_shape
+                'HS_final': axe.HS_final,
+                'L_shape': metamer.L_shape
             }
             properties = n.properties()
             node_data.update({k: properties[k] for k in what})
+            if 'species' in plant.properties():
+                node_data.update({'species': plant.species})
+            else:
+                node_data.update({'species': 0})
             data[vid] = node_data
     df = pandas.DataFrame(data).T
     # hack
@@ -867,10 +890,13 @@ def exposed_areas2canS(exposed_areas):
     """ adaptor to convert new adel output to old adel output (canS-like) dataframe """
     d = exposed_areas
     if len(d) > 0:
-        grouped = d.groupby(['plant', 'axe', 'metamer'], group_keys=False)
+        grouped = d.groupby(['species', 'plant', 'axe', 'metamer'],
+                            group_keys=False)
+
 
         def _metamer(sub):
-            met = {'plant': sub.plant.values[0],
+            met = {'species': sub.species.values[0],
+                   'plant': sub.plant.values[0],
                    'refplant_id': sub.refplant_id.values[0],
                    'axe_id': sub.axe.values[0],
                    'nff': sub.nff.values[0],
@@ -903,6 +929,58 @@ def exposed_areas2canS(exposed_areas):
         # hack
         d['d_basecol'] = 0
     return d
+
+def replicate(g, target=1):
+    """ replicate the plants in g up to obtain target new plants"""
+    current = g.nb_vertices(scale=1)
+
+    if target <= current:
+        return g
+
+    assert target % current == 0
+    # otherwise use nrem + union
+
+    nduplication = int(numpy.log2(1. * target / current))
+    missing = target - current * numpy.power(2, nduplication)
+    cards = numpy.power(2, range(nduplication))
+    add_g = [False] * len(cards)
+    for i in reversed(range(len(cards))):
+        if cards[i] <= missing:
+            add_g[i] = True
+            missing -= cards[i]
+    assert missing == 0
+
+    g_add = None
+    g_dup = g.sub_mtg(g.root)
+    for i in range(nduplication):
+        g1 = g_dup.sub_mtg(g_dup.root)
+        g_dup = union(g_dup, g1)
+        if add_g[i]:
+            g1 = g.sub_mtg(g.root)
+            if g_add is None:
+                g_add = g1
+            else:
+                g_add = union(g_add, g1)
+
+    if g_add is not None:
+        g_dup = union(g_dup, g_add)
+
+    return g_dup
+
+
+def duplicate(g, replicates=1, grem=None):
+    """construct a mtg replicating g n times and adding grem"""
+    g_rep = replicate(g, replicates)
+    if grem is not None:
+        g = grem
+        g = union(g, g_rep)
+    else:
+        g = g_rep
+    return g
+
+
+
+
 
 # to do
 

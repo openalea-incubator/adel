@@ -3,6 +3,8 @@ import os
 import pandas
 import numpy
 import warnings
+import operator
+from itertools import chain
 
 try:
     import cPickle as pickle
@@ -13,10 +15,34 @@ from openalea.mtg.plantframe.color import colormap
 
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
-from alinea.adel.mtg_interpreter import plot3d
+from alinea.adel.mtg_interpreter import plot3d, transform_geom, mtg_interpreter
 from alinea.adel.postprocessing import axis_statistics, plot_statistics, \
     midrib_statistics
-from alinea.adel.newmtg import exposed_areas, exposed_areas2canS
+from alinea.adel.newmtg import exposed_areas, exposed_areas2canS, duplicate, \
+    mtg_factory
+
+
+def flat_list(nested_list):
+    return list(chain.from_iterable(nested_list))
+
+
+def balanced_sample(n, proba):
+    """ return a list of n keys found in proba, repecting probalities of proba values"""
+    card = {k: int(v * n) for k, v in proba.iteritems()}
+    missing = int(n - sum(card.values()))
+    while (missing > 0):
+        # current frequencies
+        freq = {k: float(v) / n for k, v in card.iteritems()}
+        # diff with probabilities
+        dp = {k: abs(freq[k] - proba[k]) for k in freq}
+        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        k = sorted_p[0][0]
+        card[k] += 1
+        missing -= 1
+    card = {k: v for k, v in card.iteritems() if v > 0}
+    items = flat_list([[key] * val for key, val in card.iteritems()])
+    numpy.random.shuffle(items)
+    return items
 
 
 class Adel(object):
@@ -25,30 +51,76 @@ class Adel(object):
                   'hm': 100,
                   'km': 1000}
 
-    def __init__(self, nplants=1, nsect=1, seed=None, leaves=None, stand=None,
-                 split=False,
+    def __init__(self, nref_plants=1, nplants=1, duplicate=None, species=None,
+                 nsect=1,
+                 leaves=None, stand=None,
+                 aspect='smart', split=False,
                  face_up=False, classic=False, scene_unit='cm',
-                 leaf_db=None, positions=None, age=0):
+                 age=None, seed=None, leaf_db=None, positions=None,
+                 convUnit=None):
+        """
+
+        Args:
+            nref_plants: the number of reference plants in the database
+            nplants: the number of plants in the canopy
+            duplicate:
+            species: a {species: frequency} dict indicating the composition of
+             the canopy. If None (default), a monospecific canopy of species '0'
+             is generated
+            nsect: (int) the number of sectors on leaves
+            leaves: (object) a Leaves class instance pointing to leaf shape
+             database or a {species:leaf_db} dict referencing distinct database
+             per species
+            stand: (object) a Stand class instance
+            aspect: (str) the aspect of the stand (square, line or smart)
+            split:
+            face_up:
+            classic: (bool) should stem cylinders be classical pgl cylinders ?
+            scene_unit: (string) desired length unit for the output mtg
+            age: (optional) the age of the canopy
+            seed: (int) a seed for the random number generator
+            leaf_db: deprecated, use leaves
+            positions: deprecated, use stand
+            convUnit: deprecated, use scene_unit
+        """
 
         if leaf_db is not None:
             warnings.warn(
                 '!!!!Warning!!!! leaf_db argument is deprecated, '
                 'use adel.geometric_elements.Leaves class instead',
                 DeprecationWarning)
+
         if positions is not None:
             warnings.warn(
                 '!!!!Warning!!!! positions argument is deprecated,'
                 ' use stand = adel.Stand class instead',
                 DeprecationWarning)
 
+        if convUnit is not None:
+            warnings.warn(
+                "!!!!Warning!!!! convUnit argument is deprecated,"
+                " use scene_unit=unit_name (" + ','.join(self.conv_units) +
+                ") instead",
+                DeprecationWarning)
+
+        if species is None:
+            species = {0: 1}
+
         if leaves is None:
-            leaves = Leaves()
+            leaves = {0: Leaves()}
+
+        if not isinstance(leaves, dict):
+            leaves = {0: leaves}
 
         if stand is None:
             stand = AgronomicStand(sowing_density=250, plant_density=250,
                                    inter_row=0.15)
 
+        self.nref_plants = nref_plants
+        self.nplants = nplants
+        self.duplicate = duplicate
         self.stand = stand
+        self.species = species
         self.leaves = leaves
         self.scene_unit = scene_unit
         self.convUnit = self.conv_units[self.scene_unit]
@@ -59,33 +131,104 @@ class Adel(object):
         self.seed = seed
         self.meta = {}
 
-        self.new_stand(nplants, seed)
-        self.new_age(age)
+        self.new_stand(nref_plants=nref_plants, nplants=nplants,
+                       duplicate=duplicate, seed=seed,
+                       aspect=aspect, age=age, species=species)
 
-    def new_stand(self, nplants=None, seed=None):
+    def new_stand(self, nref_plants=None, nplants=None, duplicate=None,
+                  seed=None, aspect=None,
+                  age=None, species=None):
+
+        if nref_plants is not None:
+            self.nref_plants = nref_plants
+
+        if nplants is not None:
+            self.nplants = nplants
+
         if seed is not None:
             self.seed = seed
             numpy.random.seed(self.seed)
-        if nplants is not None:
+
+        if age is None:
+            self.canopy_age = -999
+        else:
+            self.canopy_age = age
+        self.meta.update({'canopy_age': self.canopy_age})
+
+        if species is not None:
+            self.species = species
+
+        if aspect is not None:
+            self.aspect = aspect
+
+        if duplicate is not None:
+            self.duplicate = duplicate
+
+        if self.aspect is 'smart':
             self.nplants, self.domain, self.positions, \
             self.domain_area = self.stand.smart_stand(
-                nplants, convunit=1. / self.convUnit)
-            self.plant_azimuths = numpy.random.random(self.nplants) * 360
-            stand_parameters = {'sowing_density': self.stand.sowing_density,
-                                'plant_density': self.stand.plant_density,
-                                'inter_row': self.stand.inter_row,
-                                'noise': self.stand.noise,
-                                'density_curve_data': self.stand.density_curve_data}
-            self.meta.update(
-                {'stand': stand_parameters, 'nplants': self.nplants,
-                 'domain': self.domain, 'domain_area': self.domain_area,
-                 'nsect': self.nsect, 'scene_unit': self.scene_unit,
-                 'convUnit': self.convUnit,
-                 'split': self.split})
+                self.nplants, at=age, convunit=1. / self.convUnit)
+        else:
+            self.nplants, self.domain, self.positions, \
+            self.domain_area = self.stand.stand(
+                self.nplants, aspect=self.aspect, convunit=1. / self.convUnit)
 
-    def new_age(self, age):
-        self.canopy_age = age
-        self.meta.update({'canopy_age': age})
+        self.plant_azimuths = numpy.random.random(self.nplants) * 360
+        self.plant_species = balanced_sample(self.nplants, self.species)
+        self.plant_references = numpy.random.choice(range(self.nref_plants),
+                                                    self.nplants)
+
+        stand_parameters = {'sowing_density': self.stand.sowing_density,
+                            'plant_density': self.stand.plant_density,
+                            'inter_row': self.stand.inter_row,
+                            'noise': self.stand.noise,
+                            'density_curve_data': self.stand.density_curve_data}
+        self.meta.update(
+            {'stand': stand_parameters, 'aspect': self.aspect,
+             'nplants': self.nplants,
+             'domain': self.domain, 'domain_area': self.domain_area,
+             'nsect': self.nsect, 'scene_unit': self.scene_unit,
+             'convUnit': self.convUnit,
+             'split': self.split})
+
+        if duplicate is not None:
+            # split nplants into nquot and nrem, so that
+            # nplants = nquote * duplicate + nrem
+            self.nrem = self.nplants % duplicate
+            self.nquot = (self.nplants - self.nrem) / duplicate
+            if self.nquot == 0 and self.duplicate > 0:  # degenerated case
+                self.nquot = 1
+                self.nrem = 0
+                self.duplicate = self.nplants
+
+    def duplicated(self, gquot, grem=None):
+        """Construct g using duplications"""
+        if self.duplicate is None:
+            raise ValueError('Duplication not defined for this stand')
+        g = duplicate(gquot, self.nquot * self.duplicate, grem)
+        # dispose plants and renumber them
+        pos = g.property('position ')
+        az = g.property('azimuth')
+        lab = g.property('label')
+        geom = g.property('geometry')
+        for i, vid in enumerate(g.vertices(1)):
+            lab[vid] = 'plant' + str(i + 1)
+            pos[vid] = self.positions[i]
+            az[vid] = self.plant_azimuths[i]
+            for gid in g.components_at_scale(vid, g.max_scale()):
+                if gid in geom:
+                    geom[gid] = transform_geom(geom[gid], self.positions[i],
+                                               self.plant_azimuths[i])
+        return g
+
+
+    def build_mtg(self, parameters, stand, **kwds):
+        g = mtg_factory(parameters, stand=stand, leaf_sectors=self.nsect,
+                        leaves=self.leaves, split=self.split, **kwds)
+        g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                            face_up=self.face_up)
+        return g
+
 
     def meta_informations(self, g):
         if 'meta' in g.property_names():
@@ -192,6 +335,16 @@ class Adel(object):
         g = pickle.load(f)
         f.close()
 
+        # backward compatibility
+        if isinstance(g, list):
+            g, age = g
+            root = g.node(0)
+            meta = {'canopy_age': age}
+            if 'meta' not in g.property_names():
+                root.meta = meta
+            else:
+                root.meta.update(meta)
+
         if load_geom:
             s = Scene()
             s.read(fgeom, 'BGEOM')
@@ -202,12 +355,18 @@ class Adel(object):
         return g
 
     def get_midribs(self, g, resample=False):
-
-        vids = [vid for vid in g.vertices(scale=g.max_scale() - 1) if
-                g.label(vid).startswith('blade')]
         visible_length = g.property('visible_length')
-        midribs = {vid: self.leaves.midrib(g.node(vid), resample=resample) for
-                   vid in vids if visible_length[vid] > 0}
+        blades = (vid for vid in g.vertices(scale=g.max_scale() - 1) if
+                g.label(vid).startswith('blade'))
+        vids = (vid for vid in blades if visible_length[vid] > 0)
+        metamer = {vid: g.complex(vid) for vid in vids}
+        axe = {vid: g.complex(metamer[vid]) for vid in metamer}
+        plant = {vid: g.complex(axe[vid]) for vid in axe}
+        p = g.property('species')
+        species = {vid: p.get(plant[vid], 0) for vid in plant}
+
+        midribs = {vid: self.leaves[species[vid]].midrib(g.node(vid), resample=resample) for
+                   vid in species}
         #
         anchor = g.property('anchor_point')
         midribs_anchor = {
@@ -217,11 +376,7 @@ class Adel(object):
         hins = {k: v[0][2] + midribs[k][2] for k, v in
                 midribs_anchor.iteritems() if len(v) > 0}
 
-        metamer = {vid: g.complex(vid) for vid in midribs}
-        axe = {vid: g.complex(metamer[vid]) for vid in midribs}
-        plant = {vid: g.complex(axe[vid]) for vid in midribs}
         ntop = g.property('ntop')
-
         res = [pandas.DataFrame({'vid': vid,
                                  'ntop': ntop[vid],
                                  'metamer': int(
@@ -229,6 +384,7 @@ class Adel(object):
                                  'axe': g.label(axe[vid]),
                                  'plant': int(
                                      g.label(plant[vid]).split('plant')[1]),
+                                 'species': species[vid],
                                  'x': midribs[vid][0],
                                  'y': midribs[vid][1],
                                  'hins': hins[vid]}) for vid in

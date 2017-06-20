@@ -54,13 +54,14 @@ def compute_element(element_node, leaves, classic=False):
     
     if n.label.startswith('Leaf'): #leaf element
         blade = n.complex()
+        species = blade.species
         if blade.visible_length > 0.01:# filter less than 0.1 mm leaves
             if blade.shape_key is not None and n.srb is not None:
-                if leaves.dynamic:
+                if leaves[species].dynamic:
                     inclin = 1 # inclination is encoded in db
                 else:
                     inclin = blade.inclination
-                geom = leaves.mesh(blade.shape_key, blade.shape_mature_length, blade.shape_max_width, blade.visible_length, n.srb, n.srt, incline= inclin, flipx = True) # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
+                geom = leaves[species].mesh(blade.shape_key, blade.shape_mature_length, blade.shape_max_width, blade.visible_length, n.srb, n.srt, incline= inclin, flipx = True) # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
 
             if n.lrolled > 0:
                 rolled = StemElement_mesh(n.lrolled, n.d_rolled, n.d_rolled, classic)
@@ -295,4 +296,16 @@ def plot3d(g,
         geom2shape(vid, mesh, scene,colors)
     return scene
 
-        
+
+def transform_geom(geom, translation, rotation):
+    # force cast to float (pgl does not accept values extracted from numpy arryas
+    translation = map(float,
+                      translation)
+    if isinstance(geom, pgl.Geometry):
+        geom = pgl.Translated(translation,
+                              pgl.AxisRotated((0, 0, 1), rotation, geom))
+    elif isinstance(geom, pgl.Shape):
+        geom = pgl.Shape(pgl.Translated(translation,
+                                        pgl.AxisRotated((0, 0, 1), rotation,
+                                                        geom.geometry)))
+    return geom

@@ -1,7 +1,7 @@
 import pandas
 import numpy as np
 from openalea.core.path import path
-from adel.povray import post_processing
+from alinea.adel.povray import post_processing
     
 def test_count_pixels():
     scene_path = path("data/test_povray/scene.bmp")

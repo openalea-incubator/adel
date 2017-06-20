@@ -433,7 +433,8 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
             if stand and len(stand) >= plant:
                 position, azimuth = stand[plant - 1]
             plant_properties = {'position': position, 'azimuth': azimuth,
-                'refplant_id': args.get('refplant_id')}
+                'refplant_id': args.get('refplant_id'),
+                                        'species': species}
 
             timetable = None
             if axis_dynamics:
@@ -502,7 +503,7 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
                     args.update(
                         {what: args.get(what) * aborting_tiller_reduction})
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
-                                         elongation=elongation, leaves=leaves,
+                                         elongation=elongation, leaves=leaves[species],
                                          **args)
             args = {'L_shape': args.get('L_shape')}
         #

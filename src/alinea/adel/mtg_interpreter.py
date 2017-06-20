@@ -2,12 +2,11 @@
 
 from math import degrees, radians, pi, cos, sin
 import openalea.plantgl.all as pgl
-from openalea.mtg import MTG
+# from openalea.mtg import MTG
 from openalea.mtg.turtle import TurtleFrame
-from openalea.mtg.algo import union
+# from openalea.mtg.algo import union
 from alinea.astk.plantgl_utils import addSets
 
-from alinea.adel.exception import *
 
 # Meshing function for StemElements
 

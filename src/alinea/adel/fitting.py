@@ -1,12 +1,8 @@
-import subprocess
-import os
 
 from numpy import *
 from scipy.interpolate import *
 from scipy.integrate import simps
 import openalea.plantgl.all as pgl
-
-from pylab import plot
 
 from simplification import cost
 from itertools import izip

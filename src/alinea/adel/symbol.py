@@ -14,11 +14,7 @@ import random, math
 import openalea.plantgl.all as pgl
 import fitting
 import label
-import cPickle as Pickle
-from copy import deepcopy
-from itertools import chain
 from math import degrees, radians, pi, cos, sin
-import numpy
 
 from alinea.adel.exception import *
 
@@ -206,7 +202,7 @@ def normal( set ):
         p1, p2, p3 = pts[i1], pts[i2], pts[i3]
         pt_bary = (p1+p2+p3)/3.
         n = (p2-p1) ^ (p3-p1)
-        geoms.append(TriangleSet([p1, p2, p3], [(0,1,2)]))
-        geoms.append(Polyline([pt_bary, pt_bary+ n]))
+        geoms.append(pgl.TriangleSet([p1, p2, p3], [(0,1,2)]))
+        geoms.append(pgl.Polyline([pt_bary, pt_bary+ n]))
     return geoms
 

@@ -1,5 +1,5 @@
 from alinea.adel.dresser import blade_dimension, stem_dimension, ear_dimension, \
-    dimension_table, AdelDress
+    dimension_table, AdelDress, AdelDressDyn
 from alinea.adel.data_samples import leaves
 
 
@@ -17,6 +17,11 @@ def test_dresser():
     assert len(s) == 6
     stats = adel.midrib_statistics(g)
     assert all(stats['insertion_height'].values ==(40, 50, 60))
+
+
+def test_dresser_dyn():
+    adel = AdelDressDyn()
+    g = adel.canopy()
 
 
 def test_mixture():

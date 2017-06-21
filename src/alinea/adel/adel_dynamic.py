@@ -38,7 +38,7 @@ class AdelWheatDyn(AdelWheat):
         lctype = int(m['Lindex'][0])
         lcindex = int(m['Lseed'][0])
         if lctype != -999 and lcindex != -999:
-            shape_key = self.leaves.get_leaf_key(lctype, lcindex, age=None)
+            shape_key = self.leaves[0].get_leaf_key(lctype, lcindex, age=None)
 
         internode_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
                                 'senesced_length': 0, 'diameter': m['Ed'][0],
@@ -51,7 +51,7 @@ class AdelWheatDyn(AdelWheat):
                             'n_sect': self.nsect,
                             'shape_mature_length': m['Ll'][0],
                             'shape_max_width': m['Lw'][0],
-                            'shape_key': shape_key, 'inclination': 0}
+                            'shape_key': shape_key, 'inclination': 0, 'species':0}
 
         return add_vegetative_metamer(g, plant, axe, metamer_properties,
                                       internode_properties, sheath_properties,

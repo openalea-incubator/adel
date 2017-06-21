@@ -343,6 +343,7 @@ def update_organ_elements(g, leaves=None, split=False):
     shape_max_width = g.property('shape_max_width')
     shape_key = g.property('shape_key')
     area = g.property('area')
+    species = g.property('species')
 
     for organ in g.vertices(scale=4):
         if labels[organ].startswith('internode'):
@@ -361,7 +362,7 @@ def update_organ_elements(g, leaves=None, split=False):
                                   senesced_length[organ],
                                   shape_mature_length[organ],
                                   shape_max_width[organ], shape_key[organ],
-                                  leaves=leaves, split=split)
+                                  leaves=leaves[species[organ]], split=split)
         else:
             elts = []
 

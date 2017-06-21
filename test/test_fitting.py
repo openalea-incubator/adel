@@ -9,7 +9,7 @@ symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'Leaf
 
 def leaves_db():
     import cPickle as Pickle
-    fn = r'../adel/data/leaves.db'
+    fn = r'../src/alinea/adel/data/leaves.db'
     f = open(fn)
     leaves = Pickle.load(f)
     f.close()

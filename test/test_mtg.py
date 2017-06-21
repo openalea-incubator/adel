@@ -7,7 +7,7 @@ symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'Leaf
 
 def leaves_db():
     import cPickle as Pickle
-    f = open('../adel/data/leaves.db')
+    f = open('../src/alinea/adel/data/leaves.db')
     leaves = Pickle.load(f)
     f.close()
     leaves = fitting.fit_leaves(leaves, 9)

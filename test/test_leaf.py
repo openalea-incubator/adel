@@ -6,7 +6,7 @@ import alinea.adel.fitting as fitting
 import cPickle as Pickle
 from pylab import plot, show,clf
 
-db = r'../adel/data/leaves.db'
+db = r'../src/alinea/adel/data/leaves.db'
 f = open(db)
 
 leaves = Pickle.load(f)

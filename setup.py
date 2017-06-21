@@ -14,13 +14,13 @@ for key,value in metadata.iteritems():
     exec("%s = '%s'" % (key, value))
 
     
-#retrieving packages
-pkg_root_dir = '.'
-pkgs = [ pkg for pkg in find_packages(pkg_root_dir) if namespace not in pkg]
-top_pkgs = [pkg for pkg in pkgs if  len(pkg.split('.')) < 2]
-packages = [ namespace + "." + pkg for pkg in pkgs]
-package_dir = dict( [('',pkg_root_dir)] + [(namespace + "." + pkg, pkg_root_dir + "/" + pkg) for pkg in top_pkgs] )
-wralea_entry_points = ['%s = %s'%(pkg,namespace + '.' + pkg) for pkg in top_pkgs]
+# #retrieving packages
+# pkg_root_dir = '.'
+# pkgs = [ pkg for pkg in find_packages(pkg_root_dir) if namespace not in pkg]
+# top_pkgs = [pkg for pkg in pkgs if  len(pkg.split('.')) < 2]
+# packages = [ namespace + "." + pkg for pkg in pkgs]
+# package_dir = dict( [('',pkg_root_dir)] + [(namespace + "." + pkg, pkg_root_dir + "/" + pkg) for pkg in top_pkgs] )
+# wralea_entry_points = ['%s = %s'%(pkg,namespace + '.' + pkg) for pkg in top_pkgs]
 
 # Main setup
 setup(
@@ -38,15 +38,15 @@ setup(
 
     py_modules = [],
     # pure python  packages
-    packages= packages,
+    packages= find_packages('src'),
     # python packages directory
-    package_dir= package_dir,
+    package_dir= {'': 'src'},
 
                    
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},
-    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('adel', 'data'))},
+    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea','adel', 'data'))},
 
     # Add package platform libraries if any
     zip_safe = False,

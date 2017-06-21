@@ -21,7 +21,7 @@ def adel_mtg():
 
 def leaves_db():
     import cPickle as Pickle
-    fn = r'../adel/data/leaves_simple.db'
+    fn = r'../src/alinea/adel/data/leaves.db'
     f = open(fn)
     leaves = Pickle.load(f)
     f.close()

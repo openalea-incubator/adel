@@ -1,0 +1,91 @@
+from openalea.plantgl.all import *
+from math import cos, sin, degrees, radians, atan2,sqrt
+
+NbPhyto = 15 
+internodes = [20]*NbPhyto
+leaf = [100]*NbPhyto
+phi = 90
+lw = 0.2
+
+module plant : scale = 1
+module A(n) : scale = 2
+module I(l) : scale = 2
+module L(l,p) : scale = 2
+
+
+Axiom: plant SetWidth(2)A(NbPhyto)
+
+derivation length: 2
+production:
+
+A(n): 
+  for i in range(n):
+    nproduce I(internodes[i])[/(phi*i) L(leaf[i], phi*i)]
+
+interpretation:
+
+I(l) --> SetColor(1)F(l)
+
+L(l, angle):
+  nproduce SetColor(2)@Gc SetContour(parameter_3)
+  sp = 0
+  ap = 0
+  for i in range(10):
+    s = float(i+1)/10
+    if parameter(s) >0.:
+      pt1 = parameter_2.getPointAt(sp)
+      pt2 = parameter_2.getPointAt(s)
+      sp = s
+      r = (pt2[0]-pt1[0])*l
+      x = r* cos(radians(angle))
+      y = r* sin(radians(angle))      
+      z = (pt2[1]-pt1[1])*l
+      dl = sqrt(r**2 + z**2)
+      a = atan2(r,z) - ap
+      ap = atan2(r,z)
+      nproduce SetWidth(parameter(s)*l*lw) ^(degrees(a)) F(dl)
+  nproduce @Ge
+    
+
+
+endlsystem
+###### INITIALISATION ######
+
+__lpy_code_version__ = 1.1
+
+def __initialiseContext__(context):
+	import openalea.plantgl.all as pgl
+	Color_1 = pgl.Material("Color_1" , 		ambient = (0,170,0) , 
+		diffuse = 0.205882 , 
+		specular = (79,79,79) , 
+)
+	Color_1.name = "Color_1"
+	context.turtle.setMaterial(1,Color_1)
+	Color_2 = pgl.Material("Color_2" , 		ambient = (99,198,32) , 
+		diffuse = 0.909091 , 
+)
+	Color_2.name = "Color_2"
+	context.turtle.setMaterial(2,Color_2)
+	panel_0 = ({'active': True, 'visible': False, 'name': 'Panel 1'},[])
+	import openalea.plantgl.all as pgl
+	parameter = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(0, 0.18977, 1),(0.210286, 0.711839, 1),(0.789357, 0.713147, 1),(1, 0, 1)]) , 
+	    )
+	parameter.name = "parameter"
+	import openalea.plantgl.all as pgl
+	parameter_2 = pgl.BezierCurve2D(	
+	    pgl.Point3Array([(-0.00150942, 0.0453173, 1),(0.28895, 1.30304, 1),(0.592717, 0.883796, 1),(0.736803, 0.780585, 1)]) , 
+	    )
+	parameter_2.name = "parameter_2"
+	parameter_3 = pgl.BezierCurve2D(	
+	    pgl.Point3Array([(-0.5, 0, 1),(-0.10528, 0.00397954, 1),(0.153153, 0.315315, 1),(0.5, 0, 1)]) , 
+	    )
+	parameter_3.name = "parameter_3"
+	panel_1 = ({'active': True, 'visible': True, 'name': 'Panel 2'},[('Function',parameter),('Curve2D',parameter_2),('Curve2D',parameter_3)])
+	parameterset = [panel_0,panel_1,]
+	context["__functions__"] = [('parameter',parameter),]
+	context["__curves__"] = [('parameter_2',parameter_2),('parameter_3',parameter_3),]
+	context["__parameterset__"] = parameterset
+	context["parameter"] = pgl.QuantisedFunction(parameter)
+	context["parameter_2"] = parameter_2
+	context["parameter_3"] = parameter_3

@@ -5,6 +5,9 @@ import pandas
 
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.adel import Adel
+# import for AdelDressDyn
+from alinea.adel.mtg_interpreter import mtg_interpreter
+from alinea.adel.mtg_editions import new_mtg_factory
 
 
 def blade_dimension(area=None, length=None, width=None, ntop=None, leaves=None,
@@ -399,4 +402,16 @@ class AdelDress(Adel):
             raise NotImplementedError(
                 "duplication not yet implemented for dresser")
 
+        return g
+
+
+class AdelDressDyn(AdelDress):
+    """Dresser that can generate mtg compatible with AdelDynamic"""
+
+    def build_mtg(self, parameters, stand, **kwds):
+        """ temporary overwrite adel default"""
+        g = new_mtg_factory(parameters, stand=stand, leaf_sectors=self.nsect,
+                        leaves=self.leaves, split=self.split, **kwds)
+        g = mtg_interpreter(g, self.leaves, classic=self.classic,
+                            face_up=self.face_up)
         return g

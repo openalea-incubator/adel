@@ -191,7 +191,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
                     # print(sb_green,st_green,st_sen)
                     #
                     # Compute area of elements
-                    if ls_green > 0:
+                    if ls_green > 0 and leaves is not None:
                         S_green = leaves.blade_elt_area(shape_key, Lshape,
                                                         Lwshape,
                                                         sb_green / Lshape,
@@ -200,7 +200,7 @@ def blade_elements(sectors, l, lvis, lrolled, lsen, Lshape, Lwshape, shape_key,
                                                         Lwshape,
                                                         sb_green / Lshape,
                                                         st_green / Lshape)
-                    if ls_sen > 0:
+                    if ls_sen > 0 and leaves is not None:
                         S_sen = leaves.blade_elt_area(shape_key, Lshape,
                                                       Lwshape, sb_sen / Lshape,
                                                       st_sen / Lshape)
@@ -408,6 +408,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
 
     if leaves is None:
         dynamic_leaf_db = {0: False}
+        leaves = {0: None}
     else:
         dynamic_leaf_db = {k: leaves[k].dynamic for k in leaves}
 
@@ -497,8 +498,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
         components = []
         if metamer_factory:
             xysr_key = None
-            if leaves[
-                species] is not None and 'LcType' in args and 'LcIndex' in args:
+            if leaves[species] is not None and 'LcType' in args and 'LcIndex' in args:
                 lctype = int(args['LcType'])
                 lcindex = int(args['LcIndex'])
                 if lctype != -999 and lcindex != -999:

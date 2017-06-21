@@ -1,7 +1,7 @@
 from openalea.mtg import MTG
 from alinea.adel.mtg_editions import add_plant, add_axe, add_vegetative_metamer, find_plants, \
-    find_metamers, find_label, insert_elements
-
+    find_metamers, find_label, insert_elements, new_mtg_factory
+from alinea.adel.data_samples import canopy_two_metamers, leaves
 
 def test_add_plant():
     g = MTG()
@@ -58,3 +58,14 @@ def test_insert_elements():
     elt1 = find_label('elt1', g)[0]
     assert labels[g.parent(elt1)] == 'baseElement'
     assert labels[g.children(elt1)[0]] == 'elt2'
+
+def test_new_mtg_factory():
+    pars = canopy_two_metamers()
+    g = new_mtg_factory(pars)
+    vid = find_label('metamer1', g)[0]
+    m = g.node(vid)
+    internode, sheath, blade = m.components()
+    assert len(blade.components()) > 2
+    l = leaves()
+    g = new_mtg_factory(pars, leaves=l)
+

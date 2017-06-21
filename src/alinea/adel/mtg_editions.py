@@ -11,7 +11,7 @@
 # ==============================================================================
 """ new mtg edition function (should be integrated in new mtg"""
 from openalea.mtg.traversal import iter_mtg
-from alinea.adel.newmtg import internode_elements, sheath_elements, blade_elements, convert, properties_from_dict
+from alinea.adel.newmtg import internode_elements, sheath_elements, blade_elements, convert, properties_from_dict, adel_metamer
 from openalea.mtg import MTG, fat_mtg
 from alinea.adel.exception import AdelDeprecationError
 
@@ -390,7 +390,7 @@ def update_organ_elements(g, leaves=None, split=False):
     return g
 
 
-def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
+def new_mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
                     leaves=None, stand=None, axis_dynamics=None,
                     add_elongation=False,
                     topology=('plant', 'axe_id', 'numphy'), split=False,
@@ -404,6 +404,7 @@ def new_mtg_factory(parameters, metamer_factory=None, leaf_sectors=1,
 
     if leaves is None:
         dynamic_leaf_db = {0: False}
+        leaves = {0: None}
     else:
         dynamic_leaf_db = {k: leaves[k].dynamic for k in leaves}
 

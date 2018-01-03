@@ -378,15 +378,21 @@ def update_organ_elements(g, leaves=None, split=False):
                      elt['label'].startswith('StemElement')])
 
             # insert elts
-            if len(g.components(organ)) == 2:
+            if len(g.components(organ)) == 2: # only top and base element
                 insert_elements(g, organ, elts)
             else:
                 for elt in elts:
                     label = elt.pop('label')
-                    vid_elt = find_label(label, g, organ)[0]
+                    vid_elt_value = find_label(label, g, organ) # Add HiddenElement XOR LeafElements and update the other one.
+                    if vid_elt_value:
+                        vid_elt = vid_elt_value[0]
+                    else:
+                         elt_to_insert = elt
+                         elt_to_insert['label'] = label
+                         vid_elt = insert_elements(g, organ, [elt_to_insert])[0]
+
                     for k in elt:
                         g.property(k)[vid_elt] = elt[k]
-
 
     return g
 

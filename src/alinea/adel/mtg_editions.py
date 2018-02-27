@@ -367,7 +367,7 @@ def update_organ_elements(g, leaves=None, split=False):
             elts = []
 
         if len(elts) > 0:
-            # update area
+            # update area at organ scale
             if labels[organ].startswith('blade'):
                 area[organ] = sum(
                     [elt['area'] for elt in elts if
@@ -377,7 +377,7 @@ def update_organ_elements(g, leaves=None, split=False):
                     [elt['area'] for elt in elts if
                      elt['label'].startswith('StemElement')])
 
-            # insert elts
+            # insert elts and updates at element scale
             if len(g.components(organ)) == 2: # only top and base element
                 insert_elements(g, organ, elts)
             else:

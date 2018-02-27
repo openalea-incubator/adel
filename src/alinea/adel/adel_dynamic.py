@@ -41,10 +41,10 @@ class AdelWheatDyn(AdelWheat):
             shape_key = self.leaves[0].get_leaf_key(lctype, lcindex, age=None)
 
         internode_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
-                                'senesced_length': 0, 'diameter': m['Ed'][0],
+                                'senesced_length': 0, 'diameter': m['Ed'][0] / 100,
                                 'azimuth': m['Azim'][0], 'inclination': 0}
         sheath_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
-                             'senesced_length': 0, 'diameter': m['Gd'][0],
+                             'senesced_length': 0, 'diameter': m['Gd'][0] / 100,
                              'azimuth': 0, 'inclination': 0}
         blade_properties = {'ntop': ntop, 'length': 0, 'visible_length': 0,
                             'rolled_length': 0, 'senesced_length': 0,
@@ -85,7 +85,7 @@ class AdelWheatDyn(AdelWheat):
         g = update_organ_elements(g, self.leaves, self.split)
         g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
                             classic=self.classic)
-        pos = g.property('position ')
+        pos = g.property('position')
         az = g.property('azimuth')
         geom = g.property('geometry')
         for i, vid in enumerate(g.vertices(1)):

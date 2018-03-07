@@ -1,7 +1,7 @@
 """ Prototype adel model that uses mtg edition functions"""
 from openalea.mtg import MTG
 from alinea.adel.astk_interface import AdelWheat
-from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
+from alinea.adel.mtg_editions import find_metamers, add_axe, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
 from alinea.adel.AdelR import plantSample
 from alinea.adel.mtg_interpreter import mtg_interpreter, transform_geom
 
@@ -25,6 +25,11 @@ class AdelWheatDyn(AdelWheat):
             add_plant(g, i, plant_properties=plant_properties,
                       axis_properties=ms_properties)
         return g
+
+    def add_tiller(self, g, label='T1', plant_number=1):
+       add_axe(g, label, plant_number)
+       return g
+
 
     def add_metamer(self, g, plant=1, axe='MS'):
         vid_plant, vid_axe, metamers = find_metamers(g, plant, axe)

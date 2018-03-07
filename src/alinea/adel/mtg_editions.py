@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 """ new mtg edition function (should be integrated in new mtg"""
+# TODO add to adel dressdyn
 from openalea.mtg.traversal import iter_mtg
 from alinea.adel.newmtg import internode_elements, sheath_elements, blade_elements, convert, properties_from_dict, adel_metamer
 from openalea.mtg import MTG, fat_mtg

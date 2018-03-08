@@ -96,7 +96,26 @@ class AdelWheat(Adel):
                                dt=delay) if not i % delay  else TimeControlSet(
             dt=0) for i in range(steps))
 
-    def setup_canopy(self, age=10):
+    def setup_canopy(self, age=None):
+        """ Create a canopy of a given age
+
+        Args:
+            age: thermal time age of the canopy (simce emergence 1).
+            If None (default) a full grown canopy is returned (TT = last
+            ligulation + 300)
+
+        Returns:
+
+        """
+
+        if age is None:
+            axT = pandas.DataFrame(self.devT['axeT'])
+            phenT = pandas.DataFrame(self.devT['phenT'])
+            axT = axT.loc[axT['TT_stop_axis'] == 'NA']
+            axT = axT.merge(phenT)
+            TT_last_col = (axT['TT_col_phytomer1'] + axT['dTT_col_phytomer']).max()
+            age = TT_last_col + 300
+
 
         self.new_stand(age=age)
 

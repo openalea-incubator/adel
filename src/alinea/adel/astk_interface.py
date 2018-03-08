@@ -21,7 +21,7 @@ class AdelWheat(Adel):
                  aborting_tiller_reduction=1.0, ssipars=None,
                  nplants=1, duplicate=None, species=None, nsect=1, leaves=None, stand=None,
                  aspect='smart', split=False,
-                 face_up=False, classic=False, scene_unit='cm',
+                 face_up=False, classic=False, devT_unit='cm', scene_unit='cm',
                  age=None, seed=None,
                  leaf_db=None,
                  positions=None,
@@ -32,6 +32,14 @@ class AdelWheat(Adel):
 
         if devT is None:
             devT = adel_data.devT()
+            devT_unit = 'cm'
+
+        if devT_unit != scene_unit:
+            convert = self.conv_units[devT_unit] / self.conv_units[scene_unit]
+            for x in ('L_internode', 'W_internode', 'W_sheath', 'W_blade', 'L_sheath',
+                      'L_blade'):
+                devT['dimT'][x] *= convert
+
         self.devT = devT
 
         self.ref_plants = list(set(self.devT['axeT']['id_plt']))

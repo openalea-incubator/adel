@@ -1,6 +1,7 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
+import pandas
 
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
     getPhenT, getPhytoT, saveRData
@@ -101,6 +102,15 @@ class AdelWheat(Adel):
 
         if self.duplicate is None:
             canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
+            # add index_relative_to_MS_phytomer to parameters
+            if 'index_relative_to_MS_phytomer' in self.devT['dimT']:
+                dfd = pandas.DataFrame(self.devT['axeT']).merge(
+                    pandas.DataFrame(self.devT['dimT'])).loc[:, (
+                      'id_plt', 'id_axis', 'index_phytomer',
+                      'index_relative_to_MS_phytomer')]
+                canopy = pandas.DataFrame(canopy).merge(dfd.rename(
+                    columns={'id_plt': 'plant', 'id_axis': 'axe_id',
+                             'index_phytomer': 'numphy'})).to_dict('list')
             stand = zip(self.positions, self.plant_azimuths)
             g = self.build_mtg(canopy, stand,
                                aborting_tiller_reduction=self.aborting_tiller_reduction)

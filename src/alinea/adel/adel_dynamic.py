@@ -85,7 +85,7 @@ class AdelWheatDyn(AdelWheat):
         g = update_organ_elements(g, self.leaves, self.split)
         g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
                             classic=self.classic)
-        pos = g.property('position ')
+        pos = g.property('position')
         az = g.property('azimuth')
         geom = g.property('geometry')
         for i, vid in enumerate(g.vertices(1)):

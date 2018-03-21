@@ -1,7 +1,9 @@
 """ Prototype adel model that uses mtg edition functions"""
+import pandas
+
 from openalea.mtg import MTG
 from alinea.adel.astk_interface import AdelWheat
-from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
+from alinea.adel.mtg_editions import find_metamers, add_axe, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
 from alinea.adel.AdelR import plantSample
 from alinea.adel.mtg_interpreter import mtg_interpreter, transform_geom
 
@@ -26,6 +28,11 @@ class AdelWheatDyn(AdelWheat):
                       axis_properties=ms_properties)
         return g
 
+    def add_tiller(self, g, label='T1', plant_number=1):
+       add_axe(g, label, plant_number)
+       return g
+
+
     def add_metamer(self, g, plant=1, axe='MS'):
         vid_plant, vid_axe, metamers = find_metamers(g, plant, axe)
         nff = g.property('nff')[vid_axe]
@@ -33,6 +40,17 @@ class AdelWheatDyn(AdelWheat):
         df = self.phytoT(axe)
         m = df.loc[df['n'] == num_metamer, :].to_dict('list')
         metamer_properties = {'L_shape': m['Ll'][0]}
+        if 'index_relative_to_MS_phytomer' in self.devT['dimT']:
+            dfd = pandas.DataFrame(self.devT['axeT']).merge(
+                pandas.DataFrame(self.devT['dimT'])).loc[:, (
+                      'id_plt', 'id_axis', 'index_phytomer',
+                      'index_relative_to_MS_phytomer')]
+            metamer_properties.update({'index_relative_to_MS_phytomer':
+                                           dfd.set_index(['id_plt', 'id_axis',
+                                                          'index_phytomer']).loc[
+                                               (plant, axe,
+                                                num_metamer), 'index_relative_to_MS_phytomer']})
+
         ntop = nff - num_metamer + 1
         shape_key = None
         lctype = int(m['Lindex'][0])

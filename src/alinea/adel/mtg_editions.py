@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 """ new mtg edition function (should be integrated in new mtg"""
+# TODO add to adel dressdyn
 from openalea.mtg.traversal import iter_mtg
 from alinea.adel.newmtg import internode_elements, sheath_elements, blade_elements, convert, properties_from_dict, adel_metamer
 from openalea.mtg import MTG, fat_mtg
@@ -523,7 +524,9 @@ def new_mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
                                          elongation=elongation, leaves=leaves[species],
                                          **args)
-            args = {'L_shape': args.get('L_shape')}
+            args = {'L_shape': args.get('L_shape'),
+                    'index_relative_to_MS_phytomer': args.get(
+                        'index_relative_to_MS_phytomer')}
         #
         metamer_properties = args
         internode, sheath, blade = None, None, None

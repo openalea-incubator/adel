@@ -537,7 +537,9 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
                                          elongation=elongation,
                                          leaves=leaves[species], **args)
-            args = {'L_shape': args.get('L_shape')}
+            args = {'L_shape': args.get('L_shape'),
+                    'index_relative_to_MS_phytomer': args.get(
+                        'index_relative_to_MS_phytomer')}
         #
         label = 'metamer' + str(num_metamer)
         new_metamer = g.add_component(vid_axe, edge_type='/', label=label,

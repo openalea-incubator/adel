@@ -1,6 +1,7 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
+import pandas
 
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
     getPhenT, getPhytoT, saveRData
@@ -104,12 +105,40 @@ class AdelWheat(Adel):
                                dt=delay) if not i % delay  else TimeControlSet(
             dt=0) for i in range(steps))
 
-    def setup_canopy(self, age=10):
+    def setup_canopy(self, age=None):
+        """ Create a canopy of a given age
+
+        Args:
+            age: thermal time age of the canopy (simce emergence 1).
+            If None (default) a full grown canopy is returned (TT = last
+            ligulation + 300)
+
+        Returns:
+
+        """
+
+        if age is None:
+            axT = pandas.DataFrame(self.devT['axeT'])
+            phenT = pandas.DataFrame(self.devT['phenT'])
+            axT = axT.loc[axT['TT_stop_axis'] == 'NA']
+            axT = axT.merge(phenT)
+            TT_last_col = (axT['TT_col_phytomer1'] + axT['dTT_col_phytomer']).max()
+            age = TT_last_col + 300
+
 
         self.new_stand(age=age)
 
         if self.duplicate is None:
             canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
+            # add index_relative_to_MS_phytomer to parameters
+            if 'index_relative_to_MS_phytomer' in self.devT['dimT']:
+                dfd = pandas.DataFrame(self.devT['axeT']).merge(
+                    pandas.DataFrame(self.devT['dimT'])).loc[:, (
+                      'id_plt', 'id_axis', 'index_phytomer',
+                      'index_relative_to_MS_phytomer')]
+                canopy = pandas.DataFrame(canopy).merge(dfd.rename(
+                    columns={'id_plt': 'plant', 'id_axis': 'axe_id',
+                             'index_phytomer': 'numphy'})).to_dict('list')
             stand = zip(self.positions, self.plant_azimuths)
             g = self.build_mtg(canopy, stand,
                                aborting_tiller_reduction=self.aborting_tiller_reduction)

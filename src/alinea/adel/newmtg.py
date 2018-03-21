@@ -82,9 +82,9 @@ def internode_elements(l, lvis, lsen, az, inc, d, split=False):
     hidden_elt = {'label': 'HiddenElement', 'length': lhide, 'area': Shide,
                   'is_green': True}
     if split:
-        green_elt = {'label': 'StemElementg', 'length': lgreen,
+        green_elt = {'label': 'StemElementg', 'length': lgreen,'area': Sgreen,
                      'is_green': True, 'azimuth': az, 'inclination': inc}
-        sen_elt = {'label': 'StemElements', 'length': lsen, 'is_green': False,
+        sen_elt = {'label': 'StemElements', 'length': lsen, 'area': Ssen, 'is_green': False,
                    'azimuth': 0, 'inclination': 0}
         return [hidden_elt, green_elt, sen_elt]
     else:

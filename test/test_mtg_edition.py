@@ -1,6 +1,6 @@
 from openalea.mtg import MTG
 from alinea.adel.mtg_editions import add_plant, add_axe, add_vegetative_metamer, find_plants, \
-    find_metamers, find_label, insert_elements, new_mtg_factory
+    find_metamers, find_label, insert_elements, new_mtg_factory, update_organ_elements
 from alinea.adel.data_samples import canopy_two_metamers, leaves
 
 def test_add_plant():
@@ -58,6 +58,8 @@ def test_insert_elements():
     elt1 = find_label('elt1', g)[0]
     assert labels[g.parent(elt1)] == 'baseElement'
     assert labels[g.children(elt1)[0]] == 'elt2'
+    elt0 = insert_elements(g, collar, [{'label':'elt0'}], before=elt1)[0]
+    assert labels[g.children(elt0)[0]] == 'elt1'
 
 def test_new_mtg_factory():
     pars = canopy_two_metamers()
@@ -69,3 +71,11 @@ def test_new_mtg_factory():
     l = leaves()
     g = new_mtg_factory(pars, leaves=l)
 
+def test_update_organ_element():
+    pars = canopy_two_metamers()
+    l = leaves()
+    g = new_mtg_factory(pars, leaves=l)
+    ref = len(g)
+    update_organ_elements(g, leaves=l, split=True)
+    # TODO: a bit uggly as old leaf elements are still there
+    assert len(g) > ref

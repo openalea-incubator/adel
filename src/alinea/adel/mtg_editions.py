@@ -216,20 +216,23 @@ def add_vegetative_metamer(g, plant_number=1, axe_label='MS',
     return vid_metamer
 
 
-def insert_elements(g, vid_organ, elements):
+def insert_elements(g, vid_organ, elements, before=None):
     """ Insert elements between base and top element of an organ
 
     Args:
         g: the mtg
         vid_organ: the vertex id of the targetd organ
         elements: a list of dict with element properties
+        before : the vertex id of the element before which elements should be
+        inserted. If None (default) elements are inserted before top element
 
     Returns:
         a list of vid of the inserted elements
     """
 
     inserted = []
-    before = find_label('topElement', g, vid_organ)[0]
+    if before is None:
+        before = find_label('topElement', g, vid_organ)[0]
     for element in reversed(elements):
         before = g.insert_parent(before, edge_type='<', **element)
         inserted.append(before)
@@ -379,21 +382,28 @@ def update_organ_elements(g, leaves=None, split=False):
                      elt['label'].startswith('StemElement')])
 
             # insert elts and updates at element scale
+            # TODO : remove component if not present anymore
             if len(g.components(organ)) == 2: # only top and base element
                 insert_elements(g, organ, elts)
             else:
+                insertion_stack = []
                 for elt in elts:
                     label = elt.pop('label')
-                    vid_elt_value = find_label(label, g, organ) # Add HiddenElement XOR LeafElements and update the other one.
-                    if vid_elt_value:
-                        vid_elt = vid_elt_value[0]
+                    found = find_label(label, g, organ)
+                    if found:
+                        vid_elt = found[0]
+                        if len(insertion_stack) > 0: #flush insertion stack
+                            insert_elements(g, organ, insertion_stack,
+                                            before=vid_elt)
+                            insertion_stack = []
+                        for k in elt:
+                            g.property(k)[vid_elt] = elt[k]
                     else:
-                         elt_to_insert = elt
-                         elt_to_insert['label'] = label
-                         vid_elt = insert_elements(g, organ, [elt_to_insert])[0]
+                        elt['label'] = label
+                        insertion_stack.append(elt)
+                if len(insertion_stack) > 0: #no successor found
+                    insert_elements(g, organ, insertion_stack)
 
-                    for k in elt:
-                        g.property(k)[vid_elt] = elt[k]
 
     return g
 

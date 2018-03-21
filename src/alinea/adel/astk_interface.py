@@ -36,8 +36,9 @@ class AdelWheat(Adel):
 
         if devT_unit != scene_unit:
             convert = self.conv_units[devT_unit] / self.conv_units[scene_unit]
-            for x in ('L_internode', 'W_internode', 'W_sheath', 'W_blade', 'L_sheath',
-                      'L_blade'):
+            for x in (
+            'L_internode', 'W_internode', 'W_sheath', 'W_blade', 'L_sheath',
+            'L_blade'):
                 devT['dimT'][x] *= convert
 
         self.devT = devT

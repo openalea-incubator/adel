@@ -43,7 +43,13 @@ Requirements
 ============
 
 * OpenAlea.Deploy
+* OpenAlea.Mtg
+* OpenAlea.core
+* OpenAlea.visualea
+* OpenAlea.PlantGl
 * NumPy
+* Scipy
+* MatplotLib
 * Pandas
 * Rpy2
 
@@ -52,19 +58,19 @@ Installation with conda
 
 Create an environment:
 
-    conda create -n adel -c openalea openalea.plantgl boost=1.66
+  conda create -n adel -c openalea openalea.plantgl boost=1.66
 
 Activate the environment:
 
-    [source] activate adel
+  [source] activate adel
 
 Install the different packages
 
-	conda install -c conda-forge rpy2 
+  conda install -c conda-forge rpy2 
 
-    conda install -c openalea openalea.mtg  openalea.visualea openalea.core numpy scipy matplotlib pandas
+  conda install -c openalea openalea.mtg openalea.visualea openalea.core numpy scipy matplotlib pandas
 
 
 Install adel
 
-	python setup.py develop
+  python setup.py develop

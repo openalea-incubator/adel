@@ -56,9 +56,9 @@ setup(
     entry_points = { 'wralea': [ 'adel= alinea.adel',] },
  
     # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
-    setup_requires = ['openalea.deploy'],
+    setup_requires = [],
     install_requires = [],
-    dependency_links = ['http://openalea.gforge.inria.fr/pi'],
+    dependency_links = [],
    )
 
 

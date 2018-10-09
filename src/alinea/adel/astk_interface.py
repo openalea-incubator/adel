@@ -1,17 +1,45 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
-
+import numpy
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
     getPhenT, getPhytoT, saveRData
 from alinea.adel.newmtg import move_properties
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import plot3d
-from alinea.astk.TimeControl import *
 
 
 from alinea.adel.adel import Adel
 
+class DegreeDayModel:
+    """ Classical degreeday model equation
+    """
+    
+    def __init__(self, Tbase = 0):
+        self.Tbase = Tbase
+        
+    def __call__(self, time_sequence, weather_data):
+        """ Compute thermal time accumulation over time_sequence
+           
+        :Parameters:
+        ----------
+        - `time_sequence` (panda dateTime index)
+            A sequence of TimeStamps indicating the dates of all elementary time steps of the simulation
+        - weather (alinea.astk.Weather instance)
+            A Weather database
+
+        """    
+        try:
+            Tair = weather_data.temperature_air[time_sequence]
+        except:
+            #strange extract needed on visualea 1.0 (to test again with ipython in visualea)
+            T_data = weather_data[['temperature_air']]
+            Tair = numpy.array([float(T_data.loc[d]) for d in time_sequence])
+        Tcut = numpy.maximum(numpy.zeros_like(Tair), Tair - self.Tbase)
+        days = [0] + [((t - time_sequence[0]).total_seconds()+ 3600) / 3600 / 24 for t in time_sequence]
+        dt = numpy.diff(days).tolist()
+        return numpy.cumsum(Tcut * dt)
+        
 
 class AdelWheat(Adel):
 
@@ -95,6 +123,16 @@ class AdelWheat(Adel):
 
         Return 0 when there is no rain
         """
+        class TimeControlSet:
+            def __init__(self, **kwd):
+                """  Create a TimeControlSet , that is a simple class container for named object"""
+                self.__dict__.update(kwd)
+
+            def check(self,attname,defaultvalue):
+                """ Check if an attribute exists. If not create it with default value """
+                if not hasattr(self,attname):
+                    setattr(self,attname,defaultvalue)
+                    
         timestep = delay
         start_date = weather.str_to_datetime(start_date)
         temp = [d['temperature_air'] for d in
@@ -224,7 +262,10 @@ def plot_statistics_node(adel, axstat):
 
 # user friendly macros
 from alinea.adel.stand.stand import agronomicplot
-from alinea.astk.plant_interface import *
+
+def new_canopy(plant_model, age = 0):
+    g = plant_model.setup_canopy(age)
+    return g, plant_model
 
 
 def initialise_stand(age=0., length=0.1, width=0.2, sowing_density=150,

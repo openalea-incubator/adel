@@ -5,9 +5,30 @@ import openalea.plantgl.all as pgl
 # from openalea.mtg import MTG
 from openalea.mtg.turtle import TurtleFrame
 # from openalea.mtg.algo import union
-from alinea.astk.plantgl_utils import addSets
+# from alinea.astk.plantgl_utils import addSets
 
+def _is_iterable(x):
+    try:
+        x = iter(x)
+    except TypeError: 
+        return False
+    return True
 
+def as_tuples(pgl_3List, offset=0):
+    """ return pgl list of 3 numbers kind (indes3, vector3) as a list of python tuples
+    """
+    if not _is_iterable(offset):
+        offset = [offset] * 3
+    return [(i[0] + offset[0], i[1] + offset[1], i[2] + offset[2]) for i in pgl_3List]
+    
+def addSets(pglset1,pglset2, translate = (0,0,0)):
+    """ create a new TriangleSet by addition of two existing ones
+    if translate is not None, pglset2 is translated with vector translate
+    """
+    points = as_tuples(pglset1.pointList) + as_tuples(pglset2.pointList, offset= translate)
+    index = as_tuples(pglset1.indexList) + as_tuples(pglset2.indexList, offset = len(pglset1.pointList))
+    return pgl.TriangleSet(points, index)
+    
 # Meshing function for StemElements
 
 def slim_cylinder(length, radius_base, radius_top):

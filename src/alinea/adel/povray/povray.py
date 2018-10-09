@@ -203,83 +203,83 @@ box {{ <{x1}, {y1},  -0.1>,
 
 # deprecated functions (here for backward compatibility)
 
-from alinea.adel.postprocessing import domain3D, stand_box
-
-color_list=[(0,0,0),
-            (255,0,0),# 1 = Green lamina
-            (0,255,0),# 2 = Senescent Lamina
-            (0,0,255),# 3 = Green sheath
-            (255,255,0),# 4 = Senescent sheath
-            (0,255,255),# 5 = Green internode
-            (255,0,255),# 6 = senescent Internode
-            (128,255,0),# 7 = green peduncule
-            (0,128,255),# 8 = senescent peduncule
-            (255,0,128),# 9 = green ear
-            (0,255,128),# 10 = senescent ear
-            (128,0,255),# 11 = green awn
-            (255,128,0),# 12 = senescent awn
-            (128,128,255),#???
-            (255,128,128),
-            (128,255,128),
-            (255,255,255)
-            ]
-
-def col_item (ind, color_list=color_list) :
-    if ind is None:
-        return lambda x: color_list[(x-1) % len(color_list)]
-    else:
-        return color_list[(ind-1) % len(color_list)],
-
- 
-def povray(scene, 
-           pov_file = './scene.pov', 
-           camera_distance=1., fov=45., width=320, height=280, 
-           domain = ((-.5,-.5),(.5,.5)), 
-           azimuth=0., zenith= 0., camera_type = 'perspective', 
-           soil=False, 
-           povray_cmd='povray'):
-    """    
-     !!!! Deprecated function, use alinea.povray.Povray class instead !!!! 
-    
-    Compute povray files based both on a scene and its stand box.
-
-    :Parameters:
-        - scene: a plantgl scene
-        - camera distance: distance from the position of the camera to the look_at point
-        - angle : angle corresponding to the width of the image
-        - width: width of the final image in pixel
-        - height: height of the final image in pixel
-        - domain: scene pattern used by caribu
-        - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
-        - zenith: angle between the view direction and the vertical
-        - camera type: perspective, orthographic or fisheye
-        - soil: add a soil to the scene
-        - povray cmd : the path of the povray exe
-    """
-    
-    f = path(pov_file)
-    namebase = f.namebase
-    ext = f.ext
-    dirname = f.dirname()
-    
-    xc=0.5*(domain[0][0]+domain[1][0])
-    yc=0.5*(domain[0][1]+domain[1][1])
-
-    camera = {'type':camera_type, 'distance':camera_distance, 'fov':fov,  'xc':xc, 'yc':yc, 'azimuth':azimuth, 'zenith':zenith}
-    
-    pov = PovRay(camera=camera, image_width=width, image_height=height, working_dir=str(dirname))
-    
-    pov.render(scene, namebase + ext)
-    image_name = pov.rendered_image_path
-    
-    d3D = domain3D(domain, scene)
-    scene_box = pgl.Scene()
-    scene_box.add(stand_box(d3D))
-    f_box = namebase + '_box' + ext
-    pov.render(scene_box, f_box)
-    image_name_box = pov.rendered_image_path
-
-    return image_name, image_name_box
+# from alinea.adel.postprocessing import domain3D, stand_box
+#
+# color_list=[(0,0,0),
+#             (255,0,0),# 1 = Green lamina
+#             (0,255,0),# 2 = Senescent Lamina
+#             (0,0,255),# 3 = Green sheath
+#             (255,255,0),# 4 = Senescent sheath
+#             (0,255,255),# 5 = Green internode
+#             (255,0,255),# 6 = senescent Internode
+#             (128,255,0),# 7 = green peduncule
+#             (0,128,255),# 8 = senescent peduncule
+#             (255,0,128),# 9 = green ear
+#             (0,255,128),# 10 = senescent ear
+#             (128,0,255),# 11 = green awn
+#             (255,128,0),# 12 = senescent awn
+#             (128,128,255),#???
+#             (255,128,128),
+#             (128,255,128),
+#             (255,255,255)
+#             ]
+#
+# def col_item (ind, color_list=color_list) :
+#     if ind is None:
+#         return lambda x: color_list[(x-1) % len(color_list)]
+#     else:
+#         return color_list[(ind-1) % len(color_list)],
+#
+#
+# def povray(scene,
+#            pov_file = './scene.pov',
+#            camera_distance=1., fov=45., width=320, height=280,
+#            domain = ((-.5,-.5),(.5,.5)),
+#            azimuth=0., zenith= 0., camera_type = 'perspective',
+#            soil=False,
+#            povray_cmd='povray'):
+#     """
+#      !!!! Deprecated function, use alinea.povray.Povray class instead !!!!
+#
+#     Compute povray files based both on a scene and its stand box.
+#
+#     :Parameters:
+#         - scene: a plantgl scene
+#         - camera distance: distance from the position of the camera to the look_at point
+#         - angle : angle corresponding to the width of the image
+#         - width: width of the final image in pixel
+#         - height: height of the final image in pixel
+#         - domain: scene pattern used by caribu
+#         - azimuth: angle in degree around the vertical axis. az=0. is equialent to have the width of the image align to X direction of the scene
+#         - zenith: angle between the view direction and the vertical
+#         - camera type: perspective, orthographic or fisheye
+#         - soil: add a soil to the scene
+#         - povray cmd : the path of the povray exe
+#     """
+#
+#     f = path(pov_file)
+#     namebase = f.namebase
+#     ext = f.ext
+#     dirname = f.dirname()
+#
+#     xc=0.5*(domain[0][0]+domain[1][0])
+#     yc=0.5*(domain[0][1]+domain[1][1])
+#
+#     camera = {'type':camera_type, 'distance':camera_distance, 'fov':fov,  'xc':xc, 'yc':yc, 'azimuth':azimuth, 'zenith':zenith}
+#
+#     pov = PovRay(camera=camera, image_width=width, image_height=height, working_dir=str(dirname))
+#
+#     pov.render(scene, namebase + ext)
+#     image_name = pov.rendered_image_path
+#
+#     d3D = domain3D(domain, scene)
+#     scene_box = pgl.Scene()
+#     scene_box.add(stand_box(d3D))
+#     f_box = namebase + '_box' + ext
+#     pov.render(scene_box, f_box)
+#     image_name_box = pov.rendered_image_path
+#
+#     return image_name, image_name_box
 
         
         

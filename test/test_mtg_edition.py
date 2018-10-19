@@ -77,5 +77,14 @@ def test_update_organ_element():
     g = new_mtg_factory(pars, leaves=l)
     ref = len(g)
     update_organ_elements(g, leaves=l, split=True)
-    # TODO: a bit uggly as old leaf elements are still there
     assert len(g) > ref
+
+def debug_mtg_build():
+    g = MTG()
+    vidP=g.add_component(g.root,label='P', edge_type='/')
+    vidL = g.add_component(vidP, label='L', edge_type='/')
+    vidb = g.add_component(vidL, label='base', edge_type='/')
+    vidt = g.add_child(vidb, label='top', edge_type='<')
+    vide = g.insert_parent(vidt, edge_type='<', label='elt1')
+
+

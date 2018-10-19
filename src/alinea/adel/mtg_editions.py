@@ -144,8 +144,7 @@ def add_plant(g, plant_number=None, plant_properties=None, axis_properties=None,
                                     **collar_properties)
         vid_base = g.add_component(vid_organ, edge_type='/',
                                    label='baseElement')
-        vid_top = g.add_component(vid_organ, edge_type='/', label='topElement')
-        g.add_child(vid_base, child=vid_top, edge_type='<')
+        g.add_child(vid_base, edge_type='<', label='topElement')
         return vid_plant
 
 
@@ -189,28 +188,25 @@ def add_vegetative_metamer(g, plant_number=1, axe_label='MS',
     new_organ = g.add_component(vid_metamer, label='internode', edge_type='/',
                                 **internode_properties)
     base_elt = g.add_component(new_organ, label='baseElement', edge_type='/')
-    top_elt = g.add_component(new_organ, label='topElement', edge_type='/')
     vid_parent_organ = g.add_child(vid_parent_organ, child=new_organ,
                                    edge_type='<')
     g.add_child(vid_parent_elt, child=base_elt, edge_type='<')
-    vid_parent_elt = g.add_child(base_elt, child=top_elt, edge_type='<')
+    vid_parent_elt = g.add_child(base_elt, label='topElement', edge_type='<')
     # sheath
     new_organ = g.add_component(vid_metamer, label='sheath', edge_type='/',
                                 **sheath_properties)
     base_elt = g.add_component(new_organ, label='baseElement', edge_type='/')
-    top_elt = g.add_component(new_organ, label='topElement', edge_type='/')
     vid_parent_organ = g.add_child(vid_parent_organ, child=new_organ,
                                    edge_type='+')
     g.add_child(vid_parent_elt, child=base_elt, edge_type='+')
-    vid_parent_elt = g.add_child(base_elt, child=top_elt, edge_type='<')
+    vid_parent_elt = g.add_child(base_elt, label='topElement', edge_type='<')
     # blade
     new_organ = g.add_component(vid_metamer, label='blade', edge_type='/',
                                 **blade_properties)
     base_elt = g.add_component(new_organ, label='baseElement', edge_type='/')
-    top_elt = g.add_component(new_organ, label='topElement', edge_type='/')
     g.add_child(vid_parent_organ, child=new_organ, edge_type='<')
     g.add_child(vid_parent_elt, child=base_elt, edge_type='<')
-    g.add_child(base_elt, child=top_elt, edge_type='<')
+    g.add_child(base_elt, label='topElement', edge_type='<')
 
     return vid_metamer
 
@@ -381,10 +377,20 @@ def update_organ_elements(g, leaves=None, split=False):
                      elt['label'].startswith('StemElement')])
 
             # insert elts and updates at element scale
-            # TODO : remove component if not present anymore
             if len(g.components(organ)) == 2: # only top and base element
                 insert_elements(g, organ, elts)
             else:
+                # remove unmatched elt
+                def remove_element(g, vid):
+                    g.remove_vertex(vid, reparent_child=True)
+                    # TODO hack waiting for bug correction in mtg
+                    g._remove_vertex_properties(vid)
+                newlabels = [e['label'] for e in elts] + ['baseElement', 'topElement']
+                labels = g.property('label')
+                for elt in g.components(organ):
+                    if labels[elt] not in newlabels:
+                        remove_element(g, elt)
+                # insert new
                 insertion_stack = []
                 for elt in elts:
                     label = elt.pop('label')

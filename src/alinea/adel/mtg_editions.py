@@ -343,6 +343,7 @@ def update_organ_elements(g, leaves=None, split=False):
     shape_key = g.property('shape_key')
     area = g.property('area')
     species = g.property('species')
+    age = g.property('age')
 
     for organ in g.vertices(scale=4):
         if labels[organ].startswith('internode'):
@@ -356,6 +357,11 @@ def update_organ_elements(g, leaves=None, split=False):
                                    inclination[organ], diameter[organ],
                                    split=split)
         elif labels[organ].startswith('blade'):
+            l = leaves[species[organ]]
+            if l is not None and l.dynamic:
+                lctype, lcindex, _ = shape_key[organ]
+                age_index = l.get_age_index(age[organ])
+                shape_key[organ] = (lctype, lcindex, age_index)
             elts = blade_elements(sectors[organ], length[organ],
                                   visible_length[organ], rolled_length[organ],
                                   senesced_length[organ],

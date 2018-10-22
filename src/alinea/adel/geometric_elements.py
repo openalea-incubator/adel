@@ -88,20 +88,24 @@ class Leaves(object):
         leaves,discard = fitting.fit_leaves(leaves, self.discretisation_level, self.dynamic)
             
         self.leaves = leaves
-    
-    def get_leaf_key(self, lindex, lseed, age=None):
-    # to do return one default leaf even if key error occur ?
-        key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
+
+    def get_age_index(self, age=None):
         age_index = age
         if age is not None:
             binf = numpy.searchsorted(self.bins, age) - 1#binf is position of bin below age (starting at zero)
-            if binf < 0: 
+            if binf < 0:
                 binf = 0 # age below first value are in firts interval
             if binf >= (len(self.bins) - 1):#binf is the last value
                 age_index = binf - 1
             else:
                 age_index = binf
-            #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
+        return age_index
+
+    def get_leaf_key(self, lindex, lseed, age=None):
+    # to do return one default leaf even if key error occur ?
+        key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
+        age_index = self.get_age_index(age)
+        #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
         return key, index, age_index
     
     def get_leaf(self, leaf_key):

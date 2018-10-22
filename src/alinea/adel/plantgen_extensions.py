@@ -865,7 +865,7 @@ class AxePop(object):
             df['nff'] = y
             return df
         df = pandas.concat(map(lambda x: _dfc(x[0],x[1]), zip(plant_axes, list(reversed(nff_MS)))))# plants are constructed by poping nff_MS, ie from last to first
-        cardnff = df.groupby(('nff','cohort')).agg('count')
+        cardnff = df.groupby(['nff','cohort']).agg('count')
         #find nff per cohort
         cohort_decimal_nff = {int(k):self.Emission.final_leaf_numbers(int(k)) for k in self.MS_probabilities}
         cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.iteritems()} for k,v in cohort_decimal_nff.iteritems()}

@@ -93,9 +93,10 @@ def compute_element(element_node, leaves, classic=False):
         stem = n.complex()
         #diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter
         #diameter_top = n.diam
-        diameter_base = stem.diameter
-        diameter_top = stem.diameter
-        geom = StemElement_mesh(n.length, diameter_base, diameter_top, classic)
+        if n.length > 0:
+            diameter_base = stem.diameter
+            diameter_top = stem.diameter
+            geom = StemElement_mesh(n.length, diameter_base, diameter_top, classic)
         
     return geom
         
@@ -140,6 +141,7 @@ class AdelVisitor():
         self.leaves = leaves
     
     def __call__(self, g, v, turtle):
+        geometry=g.property('geometry')
         # 1. retrieve the node
         n = g.node(v)
         axis = n.complex_at_scale(scale=2).label
@@ -223,11 +225,15 @@ class AdelVisitor():
            
         if n.label.startswith('Leaf') or n.label.startswith('Stem'):
             # update geometry of elements
+            mesh = None
             if n.length > 0:
                 mesh = compute_element(n, self.leaves, self.classic)
-                if mesh:#To DO : reset to None if calculated so ?
-                    n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
-                    n.anchor_point = turtle.getPosition()
+            if mesh:
+                n.geometry = turtle.transform(mesh, face_up= self.face_up and  n.label.startswith('Leaf'))
+                n.anchor_point = turtle.getPosition()
+            else:
+                if v in geometry: # delete existing geometry
+                    geometry.pop(v)
         # 3. Update the turtle and context
         turtle.setId(v)
         if n.label.startswith('Stem'):

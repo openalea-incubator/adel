@@ -82,7 +82,7 @@ class AdelWheatDyn(AdelWheat):
             self.convert_to_ADEL_units(g, properties_to_convert)
 
         # update elements
-        g = update_organ_elements(g, self.leaves, self.split)
+        g = update_organ_elements(g, self.leaves, self.split, self.phyllochron())
         g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
                             classic=self.classic)
         pos = g.property('position')

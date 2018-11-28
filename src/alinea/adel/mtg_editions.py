@@ -317,7 +317,7 @@ def add_axe(g, label, plant_number=1, axis_properties=None,
     return vid_axe
 
 
-def update_organ_elements(g, leaves=None, split=False):
+def update_organ_elements(g, leaves=None, split=False, phyllochron=None):
     """ Set / update organ elements
 
     Args:
@@ -360,7 +360,8 @@ def update_organ_elements(g, leaves=None, split=False):
             l = leaves[species[organ]]
             if l is not None and l.dynamic:
                 lctype, lcindex, _ = shape_key[organ]
-                age_index = l.get_age_index(age[organ])
+                axe = labels[g.complex(g.complex(organ))]
+                age_index = l.get_age_index(float(age[organ]) / phyllochron[axe] - 0.3)
                 shape_key[organ] = (lctype, lcindex, age_index)
             elts = blade_elements(sectors[organ], length[organ],
                                   visible_length[organ], rolled_length[organ],

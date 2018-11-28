@@ -1,9 +1,10 @@
 """ Class instanciating a wheat canopy and complying to astk canopy interface
 """
 
+import os
 import numpy
 from alinea.adel.AdelR import setAdel, RunAdel, genGeoAxe, checkAxeDyn, getAxeT, \
-    getPhenT, getPhytoT, saveRData
+    getPhenT, getPhytoT, saveRData, readRData
 from alinea.adel.newmtg import move_properties
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import plot3d
@@ -200,11 +201,20 @@ class AdelWheat(Adel):
     def phenT(self, axe='MS'):
         return getPhenT(self.pars, axe=axe)
 
+    def phyllochron(self):
+        return {axe: self.phenT(axe).tip.diff().mean() for axe in self.axeT().axe}
+
     def phytoT(self, axe='MS'):
         return getPhytoT(self.pars, axe=axe)
 
-    def save_pars(self):
-        saveRData(self.pars, 'plants', 'adel_pars.RData')
+    def save_pars(self, dir='.'):
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        saveRData(self.pars, 'plants', dir + '/adel_pars.RData')
+
+    def read_pars(self, dir='.'):
+        return readRData(dir + '/adel_pars.RData')['plants']
+
 
     def grow(self, g, time_control):
 

@@ -20,8 +20,8 @@ About
 Description
 ============
 
-Alinae.Adel (Architectural model of DEvelopment based on L-systems) allows
-simulating the 3D architectural development of the shoot of gramineaous plant. 
+Alinea.Adel (Architectural model of DEvelopment based on L-systems) allows
+to simulate the 3D architectural development of the shoot of gramineaous plant. 
 
 
 

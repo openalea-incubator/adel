@@ -11,8 +11,7 @@ absolute_tolerance = 10e-3
     
 def test_post_processing():
     adel_output_path = path('data/test_stand/adel_output.csv')
-    
-    import tempfile
+
     global_postprocessing_file_path = path(tempfile.mktemp(prefix='global_postprocessing', suffix='.csv'))
     peraxis_postprocessing_file_path = path(tempfile.mktemp(prefix='peraxis_postprocessing', suffix='.csv'))
     
@@ -30,7 +29,7 @@ def test_post_processing():
     # check intermediate results
     intermediate_results_array = \
         pandas.read_csv(intermediate_results_file_path).values
-    intermediate_results_array = np.delete(intermediate_results_array, 2, 1).astype(float)
+    intermediate_results_array = np.delete(intermediate_results_array, 3, 1).astype(float)
     expected_intermediate_results_array = \
         pandas.read_csv(expected_results_dir_path/'intermediate.csv').values
     expected_intermediate_results_array = np.delete(expected_intermediate_results_array, 2, 1).astype(float)

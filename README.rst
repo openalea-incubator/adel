@@ -68,7 +68,7 @@ Install the different packages
 
   conda install -c conda-forge rpy2 
 
-  conda install -c anaconda -c openalea openalea.mtg openalea.visualea openalea.core numpy scipy matplotlib pandas
+  conda install -c anaconda -c openalea openalea.mtg openalea.visualea openalea.core openalea.components numpy scipy matplotlib pandas pil
 
 
 Install adel

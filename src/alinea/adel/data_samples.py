@@ -65,6 +65,16 @@ def wheat_leaf_db():
     return leaves
 
 
+def axeTable():
+    filename = datadir + '/data/axeTable.csv'
+    return pandas.read_csv(filename, sep=',', decimal='.')
+
+
+def phytoT():
+    filename = datadir + '/data/phytoT.csv'
+    return pandas.read_csv(filename, sep=',', decimal='.')
+
+
 from alinea.adel.newmtg import mtg_factory, adel_metamer
 from alinea.adel.mtg_interpreter import mtg_interpreter
 from alinea.adel.stand.stand import regular

@@ -8,14 +8,38 @@ import os
 from scipy.integrate import simps
 
 import openalea.plantgl.all as pgl
-from math import degrees, radians, pi, cos, sin
-
-from alinea.adel.exception import *
+from math import radians, pi, cos, sin
 import alinea.adel.fitting as fitting
-import alinea.adel.AdelR as adelR
 
 datadir = os.path.dirname(__file__)
 
+
+def genGeoLeaf(nlim=4,dazt=60,dazb=10):
+    """ generate geoLeaf function for Adel """
+    rcode = """
+    geoLeaf <- list(
+     Azim = function(a,n,nf) {{
+            ntop = nf - n
+            ifelse(ntop <= {ntoplim:d},
+            180 + {dazTop:.2f} * (runif(1) - .5),
+            180 + {dazBase:.2f} * (runif(1) - .5))
+            }},
+     Lindex = function(a,n,nf) {{
+              nf - n + 1}}
+              )
+        """
+    return rcode.format(ntoplim = nlim, dazTop = dazt, dazBase = dazb)
+
+
+def leaf_keys(lindex, lseed, db):
+    """ convert R-style lindex/lseed (also called LcType/Lindex in canopy table)
+        into (keys,index) of python xy/sr data bases
+    """
+    if 1 > lindex or lindex > len(db) or lseed < 1:
+        raise KeyError('invalid index for leaf shape database')
+    keys = db.keys()
+    keys.sort()
+    return keys[lindex - 1], lseed - 1
 
 def xydb_to_csv(xydb, filename):
     dat = [(numpy.repeat(k,len(x)), numpy.repeat(i, len(x)), x, y) for k in xydb for i, (x,y) in enumerate(xydb[k])]
@@ -93,7 +117,7 @@ class Leaves(object):
             srdb = srdb_from_csv(data)
             
         if geoLeaf is None:
-            geoLeaf = adelR.genGeoLeaf()
+            geoLeaf = genGeoLeaf()
                 
         if dynamic_bins is None:
             self.dynamic = False
@@ -138,7 +162,7 @@ class Leaves(object):
 
     def get_leaf_key(self, lindex, lseed, age=None):
     # to do return one default leaf even if key error occur ?
-        key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
+        key, index = leaf_keys(lindex, lseed, self.srdb)
         age_index = self.get_age_index(age)
         #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
         return key, index, age_index

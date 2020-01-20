@@ -3,6 +3,8 @@ New proposal for computing organ shapes
 """
 
 import numpy
+import pandas
+import os
 from scipy.integrate import simps
 
 import openalea.plantgl.all as pgl
@@ -10,8 +12,39 @@ from math import degrees, radians, pi, cos, sin
 
 from alinea.adel.exception import *
 import alinea.adel.fitting as fitting
-import alinea.adel.data_samples as adel_data
 import alinea.adel.AdelR as adelR
+
+datadir = os.path.dirname(__file__)
+
+
+def xydb_to_csv(xydb, filename):
+    dat = [(numpy.repeat(k,len(x)), numpy.repeat(i, len(x)), x, y) for k in xydb for i, (x,y) in enumerate(xydb[k])]
+    dat = reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[])
+    df = pandas.DataFrame.from_records(dat, columns=('rank', 'lindex', 'x', 'y'))
+    df.to_csv(filename, index=False, sep=',', decimal='.')
+
+
+def xydb_from_csv(filename):
+    df = pandas.read_csv(filename, sep=',', decimal='.')
+    grouped = df.groupby(['rank', 'lindex'])
+    xydb = {str(int(r)):[] for r in set(df['rank'])}
+    for (rank, lindex), data in iter(grouped):
+        xydb[str(int(rank))] += [(numpy.array(data.loc[:, 'x']), numpy.array(data.loc[:, 'y']))]
+    return xydb
+
+
+def srdb_to_csv(srdb, filename):
+    dat = [(numpy.repeat(k,len(x)), x, y) for k, (x,y) in srdb.iteritems()]
+    dat = reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[])
+    df = pandas.DataFrame.from_records(dat, columns=('rankclass', 's', 'r'))
+    df.to_csv(filename, index=False, sep=',', decimal='.')
+
+
+def srdb_from_csv(filename):
+    df = pandas.read_csv(filename, sep=',', decimal='.')
+    grouped = df.groupby('rankclass')
+    srdb = {str(int(r)): (numpy.array(data.loc[:, 's']), numpy.array(data.loc[:, 'r']))for r,data in grouped}
+    return srdb
 
 
 def curvilinear_abscisse( x, y ):
@@ -50,12 +83,14 @@ def incline_leaf(shape, inclin, relative_angle = True):
 class Leaves(object):
     
     def __init__(self, xydb = None, srdb = None, geoLeaf = None, dynamic_bins = None, discretisation_level = 9, twist = 0):
-    
+
         if xydb is None:
-            xydb = adel_data.xydb()
+            data = datadir + '/data/So99.csv'
+            xydb = xydb_from_csv(data)
         
         if srdb is None:
-            srdb = adel_data.srdb()
+            data = datadir + '/data/SRSo.csv'
+            srdb = srdb_from_csv(data)
             
         if geoLeaf is None:
             geoLeaf = adelR.genGeoLeaf()

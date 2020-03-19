@@ -310,7 +310,7 @@ class Adel(object):
         fgeom = basename_geom + '.bgeom'
         fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
-        with open(fg, 'w') as output:
+        with open(fg, 'wb') as output:
             pickle.dump(g, output)
         # restore geometry
         g.add_property('geometry')

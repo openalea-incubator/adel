@@ -137,7 +137,7 @@ def dataframe(d):
     if d is None:
         return r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             rval = numpy2ri(numpy.array(v))
             if not _is_iterable(v):
                 v = [v]

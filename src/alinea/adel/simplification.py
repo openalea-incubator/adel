@@ -1,8 +1,9 @@
 from math import sqrt
 from heapq import *
 from openalea.plantgl.all import Vector3
+from itertools import chain
 
-points = [Vector3(*pt) for pt in zip(range(10), range(5)+range(5,0,-1), [0]*10)]
+points = [Vector3(*pt) for pt in zip(range(10), chain(range(5), range(5,0,-1)), [0]*10)]
 
 def max_distance(pts, line):
     d_line = line.__normSquared__()

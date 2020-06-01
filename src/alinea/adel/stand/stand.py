@@ -3,7 +3,7 @@ from itertools import *
 from math import pi, sqrt
 from random import random,sample
 from numpy.random import vonmises
-from openalea.core.path import path
+from alinea.adel.path import path
 import numpy as np
 import alinea.adel.postprocessing as pp
 from operator import itemgetter
@@ -15,7 +15,7 @@ def regular(nb_plants, nb_rank, dx, dy, nx=None):
         nx = int(nb_plants/nb_rank)
     ny = nb_rank
     domain = ((0,0),(nx*dx, ny*dy))
-    return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
+    return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in range(ny) for i in range(nx)], domain
     
 def randomise_position(position, radius):
     az = random() * 2 * np.pi
@@ -106,9 +106,9 @@ def regularband(nb_plants, nb_rank, dx, dy):
     
     nx = int(nb_plants/nb_rank)
     ny = nb_rank
-    db=sample(xrange(100),nb_plants)
+    db=sample(range(100),nb_plants)
     domain = ((0,0),(nx*dx, ny*dy))
-    return [(i*dx+dx/2., j*dy+dy/2.+(db[i+j]-50)/100.*dy/3., 0.) for j in xrange(nb_rank) for i in xrange(nx)], domain
+    return [(i*dx+dx/2., j*dy+dy/2.+(db[i+j]-50)/100.*dy/3., 0.) for j in range(nb_rank) for i in range(nx)], domain
 
 def concentric(nb_plants, distance_plant):
     nb_circle = int(sqrt(nb_plants))
@@ -180,7 +180,7 @@ def sample_regular_gaps(points, pattern = [0,1]):
     p = p * (length / len(p)) + [p[i] for i in range(length % len(p))]
     
     #selection = compress(points,p) only python >= 2.7
-    return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
+    return [point for point,i in zip(points,p) if i],[point for point,i in zip(points,p) if not i]
 
 
 def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,

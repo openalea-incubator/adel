@@ -19,7 +19,7 @@ def dataframe(d):
     if d is None:
         return robjects.r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             df[k] = numpy2ri(numpy.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
@@ -227,7 +227,7 @@ files', self)
         if(event[0] == "input_modified"):
             if event[1] == 0:
                 self.update_package_input()
-                for pattern_number, methods in self.methods_mapping.iteritems():
+                for pattern_number, methods in self.methods_mapping.items():
                     methods['update_filenames_combobox'](self, pattern_number)
                     methods['update_filepath_output'](self, pattern_number)
                 self.package_lineedit.setCursorPosition(self.cursorPosition_package_lineedit)
@@ -241,7 +241,7 @@ files', self)
                 self.methods_mapping[pattern_number]['update_filepath_output'](self, pattern_number)
             elif event[1] == 'all':
                 self.update_package_input()
-                for pattern_number, methods in self.methods_mapping.iteritems():
+                for pattern_number, methods in self.methods_mapping.items():
                     methods['update_pattern_input'](self, pattern_number)
                     methods['update_filenames_combobox'](self, pattern_number)
                     methods['update_filepath_output'](self, pattern_number)

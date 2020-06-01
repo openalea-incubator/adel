@@ -284,7 +284,7 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
                                                                  dimT_user_completeness.lower()))
     if not result_table_dir.exists():
         result_table_dir.mkdir()
-    for key, value in to_compare.iteritems():
+    for key, value in to_compare.items():
         expected_table = value[0]
         result_table = value[1]
         result_table_filepath = result_table_dir.joinpath(key + '.csv')

@@ -600,7 +600,7 @@ def _create_cardinalityT(theoretical_cohort_cardinalities, theoretical_axis_card
                                              'theoretical_axis_cardinality',
                                              'simulated_axis_cardinality'])
     idx = 0
-    for (id_cohort, id_axis), theoretical_axis_cardinality in theoretical_axis_cardinalities.iteritems():
+    for (id_cohort, id_axis), theoretical_axis_cardinality in theoretical_axis_cardinalities.items():
         cardinalityT['id_cohort'][idx] = id_cohort
         cardinalityT['id_axis'][idx] = id_axis
         cardinalityT['theoretical_cohort_cardinality'][idx] = theoretical_cohort_cardinalities[id_cohort]
@@ -1200,7 +1200,7 @@ def _create_dynT(dynT_tmp,
         # extract the rows corresponding to the most frequent tiller axes
         grouped = tiller_axes.groupby('id_axis')
         most_frequent_tiller_axes = []
-        for id_axis, group_indexes in grouped.groups.iteritems():
+        for id_axis, group_indexes in grouped.groups.items():
             most_frequent_tiller_axes.append(tiller_axes.ix[group_indexes[0:1]])
         # concatenate these rows in one dataframe ; 'most_frequent_tiller_axes' is  
         # now a pd.DataFrame (and is not a list anymore)

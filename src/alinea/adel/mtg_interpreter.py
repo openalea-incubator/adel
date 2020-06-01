@@ -154,7 +154,7 @@ class AdelVisitor():
             p = n.complex_at_scale(scale=1)
             if 'position' in p.properties():
                 #print p.label, 'moving to ', p.position
-                turtle.move(map(float,p.position))
+                turtle.move(pgl.Vector3(p.position))
             else:
                 turtle.move(0,0,0)
             #initial position to be compatible with canMTG positioning
@@ -317,7 +317,7 @@ def plot3d(g,
         shape.id = vid
         scene.add(shape)
 
-    for vid, mesh in geometries.iteritems():
+    for vid, mesh in geometries.items():
         geom2shape(vid, mesh, scene,colors)
     return scene
 

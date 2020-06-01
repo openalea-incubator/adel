@@ -71,7 +71,7 @@ def decide_child_cohorts(decide_child_cohort_probabilities, first_child_delay, e
     else:
         # Find the children of the secondary stem.
         emergence_probability_reduction_coefficient = (1.0 - emergence_probability_reduction_factor)
-        for cohort_id, cohort_probability in decide_child_cohort_probabilities.iteritems():
+        for cohort_id, cohort_probability in decide_child_cohort_probabilities.items():
             if cohort_id >= first_possible_cohort_number:
                 reducted_cohort_probability = cohort_probability
                 if parent_cohort_position != 'MS':
@@ -112,7 +112,7 @@ def calculate_MS_final_leaves_number(MS_leaves_number_probabilities):
     random_value = random.random()
     probabilities_sum = 0.0
     MS_final_leaves_number = None
-    for leaves_number_str, leaves_probability in MS_leaves_number_probabilities.iteritems():
+    for leaves_number_str, leaves_probability in MS_leaves_number_probabilities.items():
         probabilities_sum += leaves_probability
         if random_value <= probabilities_sum:
             MS_final_leaves_number = float(leaves_number_str)

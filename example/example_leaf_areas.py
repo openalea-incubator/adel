@@ -59,7 +59,7 @@ for canopy_iter in canopy_timing:
         
         # Save variables
         for plant in recorders:
-            for lf, recorder in recorders[plant].iteritems():
+            for lf, recorder in recorders[plant].items():
                 recorder.update_vids_with_labels(adel_ids = adel_ids(g))
                 recorder.record_only_leaf_data(g, date, degree_days = canopy_iter.value.degree_days[-1])
 

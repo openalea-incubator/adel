@@ -142,7 +142,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     total_domain = mask.sum() / 255.
     masked = cv2.bitwise_and(im,im,mask=mask)
     
-    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
+    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.items()}
     
     if not getImages:
         im = None
@@ -212,7 +212,7 @@ def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id'
                              
     column_names = np.array(aggregations_to_apply_list)[:, 0]
     aggregations_to_apply_dict = dict(aggregations_to_apply_list)
-    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.iteritems() if key not in by])
+    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.items() if key not in by])
                              
     grouped = adel_output_df.groupby(by, as_index=False)
     adel_output_aggregated_df = grouped.aggregate(aggregations_to_apply_dict)

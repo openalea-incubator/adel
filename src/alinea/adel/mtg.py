@@ -50,7 +50,8 @@ def log(*args):
         if logger:
             logger.debug('  '.join(map(str, args)))
         else:
-            print '  '.join(map(str, args))
+            print('  '.join(map(str, args)))
+
 
 import re
 
@@ -215,7 +216,7 @@ def read_lsystem_string( string,
             # add new modules to the mtg (i.e. add nodes)
             name = get_name(node)
             if name not in modules:
-                print 'Unknow element %s'% name
+                print('Unknow element %s' % name)
                 continue
             
             module_scale = symbol_at_scale[name]
@@ -334,8 +335,8 @@ def to_aggregation_table(g):
     can_label = g.property("can_label")
     tissue_type = g.property("tissue_type")
 
-    symbols = dict(zip(label.itervalues(), label.iterkeys()))
-    for k, v in symbols.iteritems():
+    symbols = dict(zip(label.values(), label.keys()))
+    for k, v in symbols.items():
         symbols[k] = g.scale(v)
 
     l = symbols.items()
@@ -354,7 +355,7 @@ def to_aggregation_table(g):
 
     # compute the number of triangles
 
-    nb_lines = sum( mesh.indexListSize() for mesh in geometry.itervalues() if mesh)
+    nb_lines = sum( mesh.indexListSize() for mesh in geometry.values() if mesh)
     lines = numpy.zeros((nb_lines, 6), dtype=int)
 
     # compute relative index for metamer in axe and element in metamer
@@ -494,7 +495,7 @@ def to_plantgl(g,
         shape.id = vid
         scene.add(shape)
 
-    for vid, mesh in geometries.iteritems():
+    for vid, mesh in geometries.items():
         geom2shape(vid, mesh, scene)
     return scene,
 
@@ -618,7 +619,7 @@ def apply_property(g, pname, function):
     Returns this values as a dict (vid, new value).
     """
     prop = g.property(pname)
-    return dict( (k, function(v)) for k, v in prop.iteritems())
+    return dict( (k, function(v)) for k, v in prop.items())
 
 CanMTG.planter = planter
 CanMTG.to_plantgl = to_plantgl
@@ -644,7 +645,7 @@ def convert(v, undef='NA'):
 
 def properties(d, exclude = []):
     res = {}
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if k in exclude:
             continue
         v = convert(v)
@@ -920,7 +921,7 @@ def mtg_factory(params, sectors = 1):
                 edge_type = '+'
                 assert g.parent(vid_plant) is None
                 new_axe = g.add_child(vid_axe,edge_type=edge_type,label=label)
-                print vid_axe, new_axe, vid_plant
+                print(vid_axe, new_axe, vid_plant)
                 assert g.parent(vid_plant) is None
                 #vid, vid_axe = g.add_child_and_complex(metamers[axe], complex=vid_axe, **args)
 
@@ -1296,7 +1297,7 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             if v == vid: continue
             # Done for the leaves
             if g.node(v).complex().start_tt > time:
-                print 'Do not consider ', v, time
+                print('Do not consider ', v, time)
                 continue
             visitor(g,v,turtle,time)
 

@@ -122,4 +122,4 @@ def testdyn(nplants=1,start = 100,step = 50, nstep=30,dec=10,az=0):
 # import numpy as np
 # from alinea.popdrops.Rain import get_area_and_normal
 # a1,_=get_area_and_normal(g1.property('geometry'))
-# a1 = dict(((k,np.sum(v)) for k,v in a1.iteritems()))
+# a1 = dict(((k,np.sum(v)) for k,v in a1.items()))

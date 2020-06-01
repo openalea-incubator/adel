@@ -85,21 +85,21 @@ def cardinalities(proba, n, parents = None):
         parents allows for control of botanical constraint in the specific case of tiller sampling
     """
     if parents is not None:#filter botanical impossibilities
-        proba = {k:v for k,v in proba.iteritems() if _parent(k) in parents}
-        proba = {k: v / sum(proba.values()) for k,v in proba.iteritems()} 
-        card  = {k:min(int(v*n), parents.get(_parent(k),n)) for k,v in proba.iteritems()}
+        proba = {k:v for k,v in proba.items() if _parent(k) in parents}
+        proba = {k: v / sum(proba.values()) for k,v in proba.items()}
+        card  = {k:min(int(v*n), parents.get(_parent(k),n)) for k,v in proba.items()}
     else:
-        card  = {k:int(v*n) for k,v in proba.iteritems()}
+        card  = {k:int(v*n) for k,v in proba.items()}
     if parents is not None:   #filter saturated parents after int rounding
-        proba = {k:v for k,v in proba.iteritems() if (card[k] <= parents.get(_parent(k),n) or _parent(k) == '')}
+        proba = {k:v for k,v in proba.items() if (card[k] <= parents.get(_parent(k),n) or _parent(k) == '')}
     
     missing = int(n - sum(card.values()))
     while (missing > 0):
         # current frequencies
-        freq = {k:float(v) / n for k,v in card.iteritems() if k in proba}
+        freq = {k:float(v) / n for k,v in card.items() if k in proba}
         # diff with probabilities
         dp = {k:abs(freq[k] - proba[k]) for k in freq}
-        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        sorted_p = sorted(dp.items(), key=operator.itemgetter(1), reverse=True)
         k = sorted_p[0][0]
         card[k] += 1
         if parents is not None:
@@ -107,13 +107,13 @@ def cardinalities(proba, n, parents = None):
                 proba.pop(k)
         missing -= 1   
             
-    res = {k:v for k,v in card.iteritems() if v > 0}
+    res = {k:v for k,v in card.items() if v > 0}
     if parents is not None:
         parents.update(res)
     return res
    
 def card2list(card,shuffle=True):
-    liste = flat_list([[int(key)] * val for key,val in card.iteritems()])
+    liste = flat_list([[int(key)] * val for key,val in card.items()])
     if shuffle:
         random.shuffle(liste)
     return liste
@@ -153,7 +153,7 @@ def cohort_delays(inner_parameters={}):
     cohort emergence delay = delays HS_0 MS -> HS_0 tillers (HS=0 <=> emergence leaf)
     """
     tiller_delays = inner_parameters.get('MS_HS_AT_TILLER_EMERGENCE',params.MS_HS_AT_TILLER_EMERGENCE)
-    cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.iteritems()}
+    cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.items()}
     cohort_delays[1] = 0
     return cohort_delays
     
@@ -172,7 +172,7 @@ class TillerEmission(object):
     
     def __init__(self, primary_tiller_probabilities = {'T1':0.95, 'T2':0.85, 'T3':0.75, 'T4':0.4}, inner_parameters ={}):
         
-        self.primary_tiller_probabilities = {k:v for k,v in primary_tiller_probabilities.iteritems() if v > 0 }
+        self.primary_tiller_probabilities = {k:v for k,v in primary_tiller_probabilities.items() if v > 0 }
         if len(self.primary_tiller_probabilities) <= 0:
             self.primary_tiller_probabilities = {'T1':0.001}
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.primary_tiller_probabilities)
@@ -206,7 +206,7 @@ class TillerEmission(object):
         proba = self.theoretical_probabilities()
         emergence_delays = self.cohort_delays
         nff = self.final_leaf_numbers(MS_nff)
-        data = zip(*[(k[0],k[1],v) for k,v in proba.iteritems()])
+        data = zip(*[(k[0],k[1],v) for k,v in proba.items()])
         df = pandas.DataFrame({'axis': data[1],
                                'cohort': data[0],
                                'nff': [nff[c] for c in data[0]],
@@ -398,7 +398,7 @@ class HaunStage(object):
     def load(file_path):
         with open(file_path, 'r') as input_file:
             saved = json.load(input_file)
-            saved['cohort_delays'] = {int(k):v for k, v in saved['cohort_delays'].iteritems()}
+            saved['cohort_delays'] = {int(k):v for k, v in saved['cohort_delays'].items()}
         return HaunStage(phyllochron = saved['phyllochron'], TT_hs_0 = saved['TT_hs_0'],
                          std_TT_hs_0 = saved['std_TT_hs_0'], mean_nff = saved['mean_nff'],
                          dHS_nff = saved['dHS_nff'], dTT_cohort=saved['dTT_cohort'],
@@ -702,7 +702,7 @@ class AxePop(object):
         self.std_em = std_em
           
     def mean_nff(self):
-        return sum([int(k) * v for k,v in self.MS_probabilities.iteritems()])
+        return sum([int(k) * v for k,v in self.MS_probabilities.items()])
         
     def mode_nff(self):
         v = self.MS_probabilities.values()
@@ -850,11 +850,11 @@ class AxePop(object):
         groups = table.groupby('cohort')
         axis_proba = groups.apply(lambda x: dict(zip(x['axis'].values, x['probability'].values / sum(x['probability'])))).to_dict()
         parents={'':0}
-        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.iteritems()}    
+        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.items()}
 
-        axis_list = flat_list([flat_list(map(lambda x: [(k,x[0])] * int(x[1]),v.items())) for k, v in axis_cardinalities.iteritems()])
+        axis_list = flat_list([flat_list(map(lambda x: [(k,x[0])] * int(x[1]),v.items())) for k, v in axis_cardinalities.items()])
         plist = plant_list(axis_list, nplants)
-        plant_axes = map(lambda x: [(v[0],k) for k,v in x.iteritems()],plist)
+        plant_axes = map(lambda x: [(v[0],k) for k,v in x.items()],plist)
         
         nff_MS_cardinalities = cardinalities(self.MS_probabilities, nplants)
         nff_MS = card2list(nff_MS_cardinalities)
@@ -868,14 +868,14 @@ class AxePop(object):
         cardnff = df.groupby(['nff','cohort']).agg('count')
         #find nff per cohort
         cohort_decimal_nff = {int(k):self.Emission.final_leaf_numbers(int(k)) for k in self.MS_probabilities}
-        cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.iteritems()} for k,v in cohort_decimal_nff.iteritems()}
+        cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.items()} for k,v in cohort_decimal_nff.items()}
         cohort_nff_cardinalities = {}
         for nff in nff_MS_cardinalities:
             d = {}
             for c in cardnff.loc[int(nff)].index:
                 d[int(c)] = cardinalities(cohort_nff_modalities[int(nff)][int(c)], int(cardnff.loc[int(nff),c]))
             cohort_nff_cardinalities[int(nff)] = d
-        cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
+        cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.items()} for k,v in cohort_nff_cardinalities.items()}
         
         plants = []
         dTTem = get_normal_dist(nb_plants=nplants, sigma=self.std_em)
@@ -907,18 +907,18 @@ class AxePop(object):
         cards = population.groupby('id_cohort').count()['id_axis'].to_dict()
         
         nreg = {k: round(fdisp[k] * cards[k]) for k in fdisp if k in cards}
-        nreg = {k:v for k,v in nreg.iteritems() if v > 0}
-        treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.iteritems()}
+        nreg = {k:v for k,v in nreg.items() if v > 0}
+        treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.items()}
         
         if damages is None:
             tdisp = treg
         else:
             damages.set_index('cohort', inplace=True)
             fdamaged = damages['f_damaged'].to_dict()
-            ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.iteritems()}
-            ndamaged = {k:v for k,v in ndamaged.iteritems() if v > 0}
+            ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.items()}
+            ndamaged = {k:v for k,v in ndamaged.items() if v > 0}
             assert sum(ndamaged.values()) <= sum(nreg.values()), 'Damages are too important to be compensated by reggressing tillers !'
-            tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.iteritems()}
+            tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.items()}
             tdisp = {}
             # for damaged regressing tillers, choose min(tdamage, treg)
             for k in tdamaged:
@@ -1133,21 +1133,21 @@ def axis_list(TilleringModel,  nplants = 2):
     
     modal_proba = {c:modalities(df.ix[c,'nff']) for c in df.index}
     
-    cohort_modalities = {k:cardinalities(modal_proba[k],v) for k,v in cohort_cardinalities.iteritems()}
-    cohort_mods = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_modalities.iteritems()}
+    cohort_modalities = {k:cardinalities(modal_proba[k],v) for k,v in cohort_cardinalities.items()}
+    cohort_mods = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_modalities.items()}
 
     
     p = TilleringModel.theoretical_probabilities()
-    axis_p = [(k[0],(k[1],v)) for k,v in p.iteritems()] 
+    axis_p = [(k[0],(k[1],v)) for k,v in p.items()]
     axis_proba = {k:dict([a[1] for a in axis_p if a[0] == k]) for k in dict(axis_p)}
-    axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.iteritems()} for k,v in axis_proba.iteritems()}
+    axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.items()} for k,v in axis_proba.items()}
     
     parents={'':0}
-    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values()),parents) for k, v in cohort_modalities.iteritems()}
-    cohort_ax = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_axis.iteritems()}
+    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values()),parents) for k, v in cohort_modalities.items()}
+    cohort_ax = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_axis.items()}
     
     axis = {k:zip(cohort_mods[k],cohort_ax[k]) for k in cohort_mods}
-    axis_list = [map(lambda x: (k,x[0],x[1]), v) for k,v in axis.iteritems()]
+    axis_list = [map(lambda x: (k,x[0],x[1]), v) for k,v in axis.items()]
     
     return flat_list(axis_list)
     

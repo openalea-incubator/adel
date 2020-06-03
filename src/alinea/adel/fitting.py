@@ -471,8 +471,12 @@ def read_smf(filename):
     return points, indices
 
 def plantgl_shape(points, indices):
-    indices = [ map(int, index) for index in indices]
-    return pgl.TriangleSet(points, indices, normalPerVertex=False)
+    points = [(pgl.Vector3(t)) for t in points]
+    indices_int = []
+    for index in indices:
+        index1, index2, index3 = index[0], index[1], index[2]
+        indices_int.append([int(index1), int(index2), int(index3)])
+    return pgl.TriangleSet(points, indices_int, normalPerVertex=False)
 
 def qslim( nb_triangles, points, indexes ):
     """
@@ -580,7 +584,7 @@ def fit_leaves(leaves, nb_points, dynamic = False):
                 leaf = _fit_element(el, nb_points)
             else:
                 leaf = {age:_fit_element(v, nb_points) for age,v in el.items()}
-                if any(map(lambda x: x is None, leaf.values())):
+                if any(list(map(lambda x: x is None, leaf.values()))):
                     leaf = None
             if leaf is not None:
                 new_db.setdefault(key,[]).append(leaf)

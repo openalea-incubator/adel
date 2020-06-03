@@ -324,8 +324,8 @@ def plot3d(g,
 
 def transform_geom(geom, translation, rotation):
     # force cast to float (pgl does not accept values extracted from numpy arryas
-    translation = map(float,
-                      translation)
+    translation = tuple(map(float,
+                      translation))
     if isinstance(geom, pgl.Geometry):
         geom = pgl.Translated(translation,
                               pgl.AxisRotated((0, 0, 1), rotation, geom))

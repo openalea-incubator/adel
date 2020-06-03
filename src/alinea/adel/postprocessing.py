@@ -214,7 +214,7 @@ def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id'
     aggregations_to_apply_dict = dict(aggregations_to_apply_list)
     aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.items() if key not in by])
                              
-    grouped = adel_output_df.groupby(by, as_index=False)
+    grouped = adel_output_df.groupby(list(by), as_index=False)
     adel_output_aggregated_df = grouped.aggregate(aggregations_to_apply_dict)
     
     return adel_output_aggregated_df.reindex_axis(column_names, axis=1)

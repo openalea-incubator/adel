@@ -21,11 +21,14 @@ def leaves():
 
 
 def leaves_db():
-    import cPickle as Pickle
+    try:
+        import cPickle as pickle
+    except:
+        import pickle
     import alinea.adel.fitting as fitting
     fn = datadir + '/data/leaves_simple.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
+    f = open(fn, 'rb')
+    leaves = pickle.load(f, encoding='bytes')
     f.close()
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves

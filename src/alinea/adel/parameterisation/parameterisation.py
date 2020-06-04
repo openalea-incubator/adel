@@ -15,7 +15,7 @@ def dataframe(d):
     if d is None:
         return robjects.r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             df[k] = numpy2ri(numpy.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
@@ -422,7 +422,7 @@ def plant_parameter(surface,
     devT = dict(dimT = dimT, phenT = phenT, axeT = axeT, earT = None, ssisenT = None)
 
     #conversion en liste R de dataframe pour setAdel
-    d = dict((k,dataframe(v)) for k, v in devT.iteritems())
+    d = dict((k,dataframe(v)) for k, v in devT.items())
     RdevT  = robjects.r['list'](**d)
     #RdevT = devT
     return(devT,RdevT)

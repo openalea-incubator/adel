@@ -137,7 +137,7 @@ def dataframe(d):
     if d is None:
         return r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             rval = numpy2ri(numpy.array(v))
             if not _is_iterable(v):
                 v = [v]
@@ -211,17 +211,7 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
         ssipars = robj.r['list'](**ssipars)
     p = RsetAdel(RdevT,geoLeaf,geoAxe,nplants,sample,rseed,rxydb,rsrdb,ssipars)
     return p
-    
-def leaf_keys(lindex, lseed, db):
-    """ convert R-style lindex/lseed (also called LcType/Lindex in canopy table)
-        into (keys,index) of python xy/sr data bases 
-    """
-    if 1 > lindex or lindex > len(db) or lseed < 1:
-        raise KeyError('invalid index for leaf shape database')
-    keys = db.keys()
-    keys.sort()
-    return keys[lindex - 1], lseed -1
-     
+
 
 def plantSample(setAdelPars):
     """return id of plants used by setAdel to setup the canopy """

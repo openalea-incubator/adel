@@ -2,18 +2,18 @@
 # -*- coding: iso-8859-15 -*-
 
 
-import os, sys
-from setuptools import setup, find_packages
-from openalea.deploy.metainfo import read_metainfo
-pj = os.path.join
+import os
 
+from openalea.deploy.metainfo import read_metainfo
+from setuptools import setup, find_packages
+
+pj = os.path.join
 
 # Reads the metainfo file
 metadata = read_metainfo('metainfo.ini', verbose=True)
-for key,value in metadata.iteritems():
+for key, value in metadata.items():
     exec("%s = '%s'" % (key, value))
 
-    
 # #retrieving packages
 # pkg_root_dir = '.'
 # pkgs = [ pkg for pkg in find_packages(pkg_root_dir) if namespace not in pkg]
@@ -32,35 +32,30 @@ setup(
     authors_email=authors_email,
     url=url,
     license=license,
-    
-    namespace_packages = [namespace],
-    create_namespaces = True,
 
-    py_modules = [],
+    namespace_packages=[namespace],
+    # create_namespaces = True,
+
+    # py_modules = [],
     # pure python  packages
-    packages= find_packages('src'),
+    packages=find_packages('src'),
     # python packages directory
-    package_dir= {'': 'src'},
+    package_dir={'': 'src'},
 
-                   
     # Add package platform libraries if any
     include_package_data=True,
-    package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},
-    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea','adel', 'data'))},
+    package_data={'': ['*.RData', '*.R', '*.8', '*.h', '*.str', '*.txt', '*.l', '*.map', '*.csv', '*.png'], },
+    share_dirs={os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea', 'adel', 'data')),
+                os.path.join(*('alinea', 'adel', 'echap_leaf_data')): os.path.join(*('src', 'alinea', 'adel', 'echap_leaf_data'))},
 
     # Add package platform libraries if any
-    zip_safe = False,
-
+    zip_safe=False,
 
     # Scripts
-    entry_points = { 'wralea': [ 'adel= alinea.adel',] },
- 
+    entry_points={'wralea': ['adel= alinea.adel', ]},
+
     # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
-    setup_requires = ['openalea.deploy'],
-    install_requires = [],
-    dependency_links = [],
-   )
-
-
-
-    
+    setup_requires=['openalea.deploy'],
+    install_requires=[],
+    dependency_links=[],
+)

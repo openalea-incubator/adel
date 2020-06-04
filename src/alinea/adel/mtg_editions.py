@@ -361,7 +361,7 @@ def update_organ_elements(g, leaves=None, split=False, phyllochron=None):
             if l is not None and l.dynamic:
                 lctype, lcindex, _ = shape_key[organ]
                 axe = labels[g.complex(g.complex(organ))]
-                age_index = l.get_age_index(float(age[organ]) / phyllochron[axe] - 0.3)
+                age_index = l.get_age_index(float(age[organ]) / phyllochron.get(axe, phyllochron['T1']) - 0.3)
                 shape_key[organ] = (lctype, lcindex, age_index)
             elts = blade_elements(sectors[organ], length[organ],
                                   visible_length[organ], rolled_length[organ],

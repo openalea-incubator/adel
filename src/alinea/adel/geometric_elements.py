@@ -3,15 +3,71 @@ New proposal for computing organ shapes
 """
 
 import numpy
+import pandas
+import os
 from scipy.integrate import simps
 
 import openalea.plantgl.all as pgl
-from math import degrees, radians, pi, cos, sin
-
-from alinea.adel.exception import *
+from math import radians, pi, cos, sin
 import alinea.adel.fitting as fitting
-import alinea.adel.data_samples as adel_data
-import alinea.adel.AdelR as adelR
+
+datadir = os.path.dirname(__file__)
+
+
+def genGeoLeaf(nlim=4,dazt=60,dazb=10):
+    """ generate geoLeaf function for Adel """
+    rcode = """
+    geoLeaf <- list(
+     Azim = function(a,n,nf) {{
+            ntop = nf - n
+            ifelse(ntop <= {ntoplim:d},
+            180 + {dazTop:.2f} * (runif(1) - .5),
+            180 + {dazBase:.2f} * (runif(1) - .5))
+            }},
+     Lindex = function(a,n,nf) {{
+              nf - n + 1}}
+              )
+        """
+    return rcode.format(ntoplim = nlim, dazTop = dazt, dazBase = dazb)
+
+
+def leaf_keys(lindex, lseed, db):
+    """ convert R-style lindex/lseed (also called LcType/Lindex in canopy table)
+        into (keys,index) of python xy/sr data bases
+    """
+    if 1 > lindex or lindex > len(db) or lseed < 1:
+        raise KeyError('invalid index for leaf shape database')
+    keys = sorted(db.keys())
+    return keys[lindex - 1], lseed - 1
+
+def xydb_to_csv(xydb, filename):
+    dat = [(numpy.repeat(k,len(x)), numpy.repeat(i, len(x)), x, y) for k in xydb for i, (x,y) in enumerate(xydb[k])]
+    dat = reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[])
+    df = pandas.DataFrame.from_records(dat, columns=('rank', 'lindex', 'x', 'y'))
+    df.to_csv(filename, index=False, sep=',', decimal='.')
+
+
+def xydb_from_csv(filename):
+    df = pandas.read_csv(filename, sep=',', decimal='.')
+    grouped = df.groupby(['rank', 'lindex'])
+    xydb = {str(int(r)):[] for r in set(df['rank'])}
+    for (rank, lindex), data in iter(grouped):
+        xydb[str(int(rank))] += [(numpy.array(data.loc[:, 'x']), numpy.array(data.loc[:, 'y']))]
+    return xydb
+
+
+def srdb_to_csv(srdb, filename):
+    dat = [(numpy.repeat(k,len(x)), x, y) for k, (x,y) in srdb.items()]
+    dat = reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[])
+    df = pandas.DataFrame.from_records(dat, columns=('rankclass', 's', 'r'))
+    df.to_csv(filename, index=False, sep=',', decimal='.')
+
+
+def srdb_from_csv(filename):
+    df = pandas.read_csv(filename, sep=',', decimal='.')
+    grouped = df.groupby('rankclass')
+    srdb = {str(int(r)): (numpy.array(data.loc[:, 's']), numpy.array(data.loc[:, 'r']))for r,data in grouped}
+    return srdb
 
 
 def curvilinear_abscisse( x, y ):
@@ -50,15 +106,17 @@ def incline_leaf(shape, inclin, relative_angle = True):
 class Leaves(object):
     
     def __init__(self, xydb = None, srdb = None, geoLeaf = None, dynamic_bins = None, discretisation_level = 9, twist = 0):
-    
+
         if xydb is None:
-            xydb = adel_data.xydb()
+            data = datadir + '/data/So99.csv'
+            xydb = xydb_from_csv(data)
         
         if srdb is None:
-            srdb = adel_data.srdb()
+            data = datadir + '/data/SRSo.csv'
+            srdb = srdb_from_csv(data)
             
         if geoLeaf is None:
-            geoLeaf = adelR.genGeoLeaf()
+            geoLeaf = genGeoLeaf()
                 
         if dynamic_bins is None:
             self.dynamic = False
@@ -103,7 +161,7 @@ class Leaves(object):
 
     def get_leaf_key(self, lindex, lseed, age=None):
     # to do return one default leaf even if key error occur ?
-        key, index = adelR.leaf_keys(lindex, lseed, self.srdb)
+        key, index = leaf_keys(lindex, lseed, self.srdb)
         age_index = self.get_age_index(age)
         #age_index = '(%s, %s]'%(str(self.bins[age_index-1]), str(self.bins[age_index]))
         return key, index, age_index
@@ -191,7 +249,7 @@ class Leaves(object):
                 mesh = fitting.plantgl_shape(pts, ind)
         else:
             if length > 0:
-                print 'ERROR No mesh', s_base, s_top, length
+                print('ERROR No mesh', s_base, s_top, length)
                 pass
             mesh = None
 

@@ -28,19 +28,19 @@ def flat_list(nested_list):
 
 def balanced_sample(n, proba):
     """ return a list of n keys found in proba, repecting probalities of proba values"""
-    card = {k: int(v * n) for k, v in proba.iteritems()}
+    card = {k: int(v * n) for k, v in proba.items()}
     missing = int(n - sum(card.values()))
     while (missing > 0):
         # current frequencies
-        freq = {k: float(v) / n for k, v in card.iteritems()}
+        freq = {k: float(v) / n for k, v in card.items()}
         # diff with probabilities
         dp = {k: abs(freq[k] - proba[k]) for k in freq}
-        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        sorted_p = sorted(dp.items(), key=operator.itemgetter(1), reverse=True)
         k = sorted_p[0][0]
         card[k] += 1
         missing -= 1
-    card = {k: v for k, v in card.iteritems() if v > 0}
-    items = flat_list([[key] * val for key, val in card.iteritems()])
+    card = {k: v for k, v in card.items() if v > 0}
+    items = flat_list([[key] * val for key, val in card.items()])
     numpy.random.shuffle(items)
     return items
 
@@ -310,8 +310,8 @@ class Adel(object):
         fgeom = basename_geom + '.bgeom'
         fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
-        with open(fg, 'w') as output:
-            pickle.dump(g, output)
+        with open(fg, 'wb') as output:
+            pickle.dump(g, output, protocol=2)
         # restore geometry
         g.add_property('geometry')
         g.property('geometry').update(geom)
@@ -331,8 +331,8 @@ class Adel(object):
         if not os.path.exists(fgeom) or not os.path.exists(fg):
             raise IOError('adel cannot find saved files')
 
-        f = open(fg)
-        g = pickle.load(f)
+        f = open(fg, 'rb')
+        g = pickle.load(f, encoding='bytes')
         f.close()
 
         # backward compatibility
@@ -374,7 +374,7 @@ class Adel(object):
             vid
             in midribs}
         hins = {k: v[0][2] + midribs[k][2] for k, v in
-                midribs_anchor.iteritems() if len(v) > 0}
+                midribs_anchor.items() if len(v) > 0}
 
         ntop = g.property('ntop')
         res = [pandas.DataFrame({'vid': vid,

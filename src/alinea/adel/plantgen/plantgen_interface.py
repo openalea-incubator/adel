@@ -156,11 +156,11 @@ def gen_adel_input_data(dynT_user,
         raise tools.InputError("the sum of the probabilities defined in MS_leaves_number_probabilities is not equal to 1.0")
     possible_axes = \
         set([id_axis for (id_axis, probability) in
-             decide_child_axis_probabilities.iteritems() if probability != 0.0])
+             decide_child_axis_probabilities.items() if probability != 0.0])
         
     possible_MS_N_phytomer_potential = \
         set([int(MS_N_phytomer_potential) for (MS_N_phytomer_potential, probability) in
-             MS_leaves_number_probabilities.iteritems() if probability != 0.0])
+             MS_leaves_number_probabilities.items() if probability != 0.0])
     
     # check plants_number, decide_child_axis_probabilities, plants_density and ears_density validity
     decide_child_cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)

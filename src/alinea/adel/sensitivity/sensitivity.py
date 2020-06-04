@@ -20,7 +20,7 @@ def Morris(repeat,factors,binf,bsup):
     #param=r['data.frame'](m.rx["X"])
     param=r['data.frame'](r['$'](m,'X'))
     pdict = dict((k,numpy.array((r['$'](param,k))).tolist()) for k in param.names)
-    #pdict = dict((str(k), list(v)) for k,v in param.iteritems()) 
+    #pdict = dict((str(k), list(v)) for k,v in param.items())
     return m,pdict
 
 def Morris_IS(morrisPlan,y):

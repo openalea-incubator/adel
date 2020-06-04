@@ -40,7 +40,7 @@ def blade_dimension(area=None, length=None, width=None, ntop=None, leaves=None,
     if leaves is None:
         leaves = Leaves()
     ff = leaves.form_factor()
-    ff = {int(k): v for k, v in ff.iteritems()}
+    ff = {int(k): v for k, v in ff.items()}
 
     if area is None:
         if length is None:

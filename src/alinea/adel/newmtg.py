@@ -618,7 +618,7 @@ def update_elements(organ, leaves=None):
                                   leaves=leaves)
         for i, e in enumerate(organ.components()):
             for k in elements[i]:
-                exec "e.%s = elements[i]['%s']" % (k, k)
+                exec("e.%s = elements[i]['%s']" % (k, k))
 
 
 def update_plant(plant, time):
@@ -657,16 +657,16 @@ def update_organ_from_table(organ, metamer, oldmetamer):
     old_elts = oldorg.pop('elements')
     for k in neworg:
         if k is not 'shape_xysr':
-            exec "organ.%s = neworg['%s']" % (k, k)
+            exec("organ.%s = neworg['%s']" % (k, k))
     for i, e in enumerate(organ.components()):
         has_area = False
         for k in new_elts[i]:
             if k in ['area', 'green_area', 'senesced_area']:
-                exec "e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])" % (
-                    k, k, k)
+                exec("e.%s += (new_elts[i]['%s'] - old_elts[i]['%s'])" % (
+                    k, k, k))
                 has_area = True
             else:
-                exec "e.%s = new_elts[i]['%s']" % (k, k)
+                exec("e.%s = new_elts[i]['%s']" % (k, k))
         # control senescence (in case of acceleration by an other process)
         if has_area:
             if (e.green_area + e.senesced_area) > e.area:
@@ -720,9 +720,9 @@ def mtg_update_from_table(g, cantable, old_cantable):
                 # G. Garin 02/08: Addition of the following condition
                 if (len(dm) > 0):
                     dmd = dict(
-                        [(k, v[0]) for k, v in dm.to_dict('list').iteritems()])
+                        [(k, v[0]) for k, v in dm.to_dict('list').items()])
                     old_dmd = dict([(k, v[0]) for k, v in
-                                    old_dm.to_dict('list').iteritems()])
+                                    old_dm.to_dict('list').items()])
                     blade = m.components_at_scale(4)[2]
                     dmd['xysr_shape'] = blade.shape_xysr
                     dmd['Lsect'] = blade.n_sect
@@ -833,7 +833,7 @@ def move_properties(g_source, g_dest, filter_length=True, cleanup_source=True):
     newids = adel_ids(g_dest, scale=5)
     if filter_length:
         length = g_dest.property('length')
-        newids = {lab: vid for lab, vid in newids.iteritems() if
+        newids = {lab: vid for lab, vid in newids.items() if
                   length[vid] > 0}
     common_labs = set(ids) & set(newids)
 
@@ -942,9 +942,9 @@ def replicate(g, target=1):
 
     nduplication = int(numpy.log2(1. * target / current))
     missing = target - current * numpy.power(2, nduplication)
-    cards = numpy.power(2, range(nduplication))
+    cards = numpy.power(2, list(range(nduplication)))
     add_g = [False] * len(cards)
-    for i in reversed(range(len(cards))):
+    for i in reversed(list(range(len(cards)))):
         if cards[i] <= missing:
             add_g[i] = True
             missing -= cards[i]

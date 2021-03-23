@@ -15,7 +15,7 @@ def dataframe(d):
     if d is None:
         return robjects.r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             df[k] = numpy2ri(numpy.array(v))
     dataf = robjects.r['data.frame'](**df)
     return dataf
@@ -197,7 +197,7 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
     # output dict
     dTags = ["plante","phytomere","longFeu","largFeu","inclinaisonFeu","azimuthFeu","longTige","diamTige","longGa","longEn"] 
     dVals = [ [1] * nb_phy,
-              range(1,nb_phy + 1),
+              list(range(1,nb_phy + 1)),
               lengths,
               widths,
               inclinations,
@@ -207,8 +207,8 @@ def simpleMais_param(total_area = 10000, total_height = 200, pseudostem_height =
               sheaths,
               internodes
               ]
-    dVals = map(numpy.array,dVals)
-    dout = dict(zip(dTags,dVals))
+    dVals = list(map(numpy.array,dVals))
+    dout = dict(list(zip(dTags,dVals)))
 
     return dout
 
@@ -232,7 +232,7 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
     
     dTags = ["plante","phytomere","longFeu","largFeu","inclinaisonFeu","azimuthFeu","longTige","diamTige"]
     dVals = [ [1] * nb_phy,
-	      range(1, nb_phy + 1),
+	      list(range(1, nb_phy + 1)),
 	      numpy.array(axedim['Lamina_length']) * scale_leaf,
 	      numpy.array(axedim['Lamina_width']) * scale_leaf_width,
 	      [inclination] * nb_phy,
@@ -241,8 +241,8 @@ def MonoAxeWheat_param(axedim =  {'Lamina_length':[8.125,9.25,9.35,10,11.4,13.7,
 	      numpy.array(axedim['Stem_diameter']) * scale_stem_diameter
 	      ]
 
-    dVals = map(numpy.array,dVals)
-    d = dict(zip(dTags,dVals))
+    dVals = list(map(numpy.array,dVals))
+    d = dict(list(zip(dTags,dVals)))
 
     nrow = len(d['plante'])
     zero = numpy.zeros(nrow)
@@ -387,7 +387,7 @@ def plant_parameter(surface,
                 startdate + tip_lig_delay,
                 startdate + tip_lig_delay + lig_senescence_delay,
                 startdate + tip_lig_delay + lig_senescence_delay + senescence_disparition_delay]
-    axeT = dict(zip(axeTags,axeVals))
+    axeT = dict(list(zip(axeTags,axeVals)))
 
     #phen table
     tip = numpy.array([-phyl, phyl * nb_phy])
@@ -399,7 +399,7 @@ def plant_parameter(surface,
                 tip + tip_lig_delay + lig_senescence_delay,
                 tip + tip_lig_delay + lig_senescence_delay + senescence_disparition_delay
                 ]
-    phenT = dict(zip(phenTags,phenVals))
+    phenT = dict(list(zip(phenTags,phenVals)))
     
     #dim Table
     dimTags = ["index","nrel","Ll","Lw","Gl","Gd","El","Ed","incB","dincB","pAngle","dpAngle"] #last two columns to be tested for existence in setAdel for freeing of geoLeaf function inputs
@@ -417,12 +417,12 @@ def plant_parameter(surface,
                 [phyllotactic_young] * nb_young_phy + [phyllotactic_mature] * (nb_phy - nb_young_phy)
                 ]
     
-    dimT = dict(zip(dimTags,dimVals))
+    dimT = dict(list(zip(dimTags,dimVals)))
 
     devT = dict(dimT = dimT, phenT = phenT, axeT = axeT, earT = None, ssisenT = None)
 
     #conversion en liste R de dataframe pour setAdel
-    d = dict((k,dataframe(v)) for k, v in devT.iteritems())
+    d = dict((k,dataframe(v)) for k, v in devT.items())
     RdevT  = robjects.r['list'](**d)
     #RdevT = devT
     return(devT,RdevT)

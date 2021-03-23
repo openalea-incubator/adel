@@ -39,7 +39,7 @@ def test_adelR_postprocessing(nplants, dd):
         out = canL2canS(RcanT,srdb)
         out_df = DataFrame(out)
         return out_df
-    out_dfs = map(run_adel, [dd, dd + 100])
+    out_dfs = list(map(run_adel, [dd, dd + 100]))
     concat_df = concat(out_dfs, ignore_index=True)
     domain_area = 1
     axis_df = postprocessing.axis_statistics(concat_df, domain_area)

@@ -77,7 +77,7 @@ class Leaves(object):
         leaves = {}
         xy = self.xydb
         sr = self.srdb
-        for k in xy.keys():
+        for k in list(xy.keys()):
             leaves[k]=[]
             for i in range(len(xy[k])):
                 if self.dynamic :
@@ -135,7 +135,7 @@ class Leaves(object):
             s,r = self.get_sr(leaf_key)
             sre = [sr for sr in zip(s,r) if (sr_base < sr[0] < sr_top)]
             if len(sre) > 0:
-                se,re = zip(*sre)
+                se,re = list(zip(*sre))
                 snew = [sr_base] + list(se) + [sr_top]
                 rnew = [numpy.interp(sr_base,s,r)] + list(re) + [numpy.interp(sr_top,s,r)]
             else:
@@ -156,7 +156,7 @@ class Leaves(object):
             s, r = self.get_sr(leaf_key)
             sre = [sr for sr in zip(s, r) if (sr_base < sr[0] < sr_top)]
             if len(sre) > 0:
-                se, re = zip(*sre)
+                se, re = list(zip(*sre))
                 snew = [sr_base] + list(se) + [sr_top]
                 rnew = [numpy.interp(sr_base, s, r)] + list(re) + [
                     numpy.interp(sr_top, s, r)]
@@ -191,7 +191,7 @@ class Leaves(object):
                 mesh = fitting.plantgl_shape(pts, ind)
         else:
             if length > 0:
-                print 'ERROR No mesh', s_base, s_top, length
+                print('ERROR No mesh', s_base, s_top, length)
                 pass
             mesh = None
 

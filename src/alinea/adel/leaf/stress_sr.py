@@ -1,4 +1,4 @@
-from curvature import curvilinear_abscisse
+from .curvature import curvilinear_abscisse
 import numpy as np
 
 class Interval(object):
@@ -37,7 +37,7 @@ class Interval(object):
         return 'Interval('+str(self.min)+','+str(self.max)+')'
 
 def sort_intervals(d):
-    intervals = dict(zip( (Interval(m,M) for m, M in d), d.itervalues())) 
+    intervals = dict(list(zip( (Interval(m,M) for m, M in d), iter(d.values())))) 
 
     keys = list(sorted(intervals))
     # add missing intervals with factor 1

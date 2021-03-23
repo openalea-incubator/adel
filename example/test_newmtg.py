@@ -14,7 +14,7 @@ def adelR(nplants,dd):
     return pars,cantable
     
 def leaves_db(dlevel=9):
-    import cPickle as Pickle
+    import pickle as Pickle
     fn = r'../adel/data/leaves_simple.db'
     f = open(fn)
     leaves = Pickle.load(f)

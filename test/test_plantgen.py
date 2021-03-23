@@ -62,7 +62,7 @@ def test_init_axes():
     expected_cardinalityT = pandas.read_csv(default_expected_results_dir/'cardinalityT.csv')
     test_table_filepath = default_results.joinpath('cardinalityT.csv')
     cardinalityT.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)  
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     assert (cardinalityT['id_axis'] == expected_cardinalityT['id_axis']).all()
     cardinalityT = cardinalityT.drop('id_axis', axis=1)
     expected_cardinalityT = expected_cardinalityT.drop('id_axis', axis=1)
@@ -81,7 +81,7 @@ def test_phenology_functions():
     expected_dynT = pandas.read_csv(default_expected_results_dir/'dynT.csv')
     test_table_filepath = default_results.joinpath('dynT.csv')
     dynT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)  
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     assert (dynT_['id_axis'] == expected_dynT['id_axis']).all()
     dynT_ = dynT_.drop('id_axis', axis=1)
     expected_dynT = expected_dynT.drop('id_axis', axis=1)
@@ -99,7 +99,7 @@ def test_plants_structure():
     expected_axeT = pandas.read_csv(default_expected_results_dir/'axeT.csv')
     test_table_filepath = default_results.joinpath('axeT.csv')
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     assert (axeT_['id_axis'] == expected_axeT['id_axis']).all()
     axeT_ = axeT_.drop('id_axis', axis=1)
     expected_axeT = expected_axeT.drop('id_axis', axis=1)
@@ -108,13 +108,13 @@ def test_plants_structure():
     expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
     test_table_filepath = default_results.joinpath('tilleringT.csv')
     tilleringT.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(tilleringT.values, expected_tilleringT.values, relative_tolerance, absolute_tolerance)
         
     expected_phenT_first = pandas.read_csv(default_expected_results_dir/'phenT_first.csv')
     test_table_filepath = default_results.joinpath('phenT_first.csv')
     phenT_first.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(phenT_first.values, expected_phenT_first.values, relative_tolerance, absolute_tolerance)
     
 
@@ -131,7 +131,7 @@ def test_organs_dimensions():
     expected_dimT = pandas.read_csv(default_expected_results_dir/'dimT.csv')
     test_table_filepath = default_results.joinpath('dimT.csv')
     dimT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
         
 
@@ -147,19 +147,19 @@ def test_axes_phenology():
     expected_phenT_abs = pandas.read_csv(default_expected_results_dir/'phenT_abs.csv')
     test_table_filepath = default_results.joinpath('phenT_abs.csv')
     phenT_abs.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(phenT_abs.values, expected_phenT_abs.values, relative_tolerance, absolute_tolerance)
         
     expected_phenT = pandas.read_csv(default_expected_results_dir/'phenT.csv')
     test_table_filepath = default_results.joinpath('phenT.csv')
     phenT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(phenT_.values, expected_phenT.values, relative_tolerance, absolute_tolerance)
         
     expected_HS_GL_SSI_T = pandas.read_csv(default_expected_results_dir/'HS_GL_SSI_T.csv')
     test_table_filepath = default_results.joinpath('HS_GL_SSI_T.csv')
     HS_GL_SSI_T.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
-    print 'The results have been saved to %s' % test_table_filepath
+    print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_allclose(HS_GL_SSI_T.values, expected_HS_GL_SSI_T.values, relative_tolerance, absolute_tolerance)
     
 
@@ -284,12 +284,12 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
                                                                  dimT_user_completeness.lower()))
     if not result_table_dir.exists():
         result_table_dir.mkdir()
-    for key, value in to_compare.iteritems():
+    for key, value in to_compare.items():
         expected_table = value[0]
         result_table = value[1]
         result_table_filepath = result_table_dir.joinpath(key + '.csv')
         result_table.to_csv(result_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)  
-        print 'The results have been saved to %s' % result_table_filepath
+        print('The results have been saved to %s' % result_table_filepath)
         if 'id_axis' in expected_table:
             assert (result_table['id_axis'] == expected_table['id_axis']).all()
             result_table = result_table.drop('id_axis', axis=1)

@@ -6,7 +6,7 @@ import alinea.adel.fitting as fitting
 symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
 
 def leaves_db():
-    import cPickle as Pickle
+    import pickle as Pickle
     f = open('../src/alinea/adel/data/leaves.db')
     leaves = Pickle.load(f)
     f.close()

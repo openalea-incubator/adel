@@ -8,12 +8,12 @@ def addsoil_2(caribuscene, x0):
     '''    Add a soil along with the pattern of a CaribuScene (Supposing the pattern is aligned with coordinate axis) 
     '''
     pat=caribuscene.pattern
-    xy=map(string.split,pat.splitlines())
-    A=map(float,xy[0])
-    C=map(float,xy[1])
+    xy=list(map(string.split,pat.splitlines()))
+    A=list(map(float,xy[0]))
+    C=list(map(float,xy[1]))
     if (A[0] > C[0]):
-        A=map(float,xy[1])
-        C=map(float,xy[0])
+        A=list(map(float,xy[1]))
+        C=list(map(float,xy[0]))
     if (C[1] < A[1]):
         D=[A[0],C[1]]        
         B=[C[0],A[1]]

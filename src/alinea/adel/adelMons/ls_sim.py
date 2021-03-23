@@ -1,5 +1,5 @@
 import os
-import IOtable
+from . import IOtable
 import math
 from os.path import join
 from openalea.core.pkgmanager import PackageManager
@@ -69,8 +69,8 @@ class ls_sim(object):
         ls = IOtable.table_csv_str(f) 
         f.close()
         ls = conv_dataframe(t_list(ls))
-        ls = extract_dataframe(ls, ls.keys(), 'simul', val='1')
-        ls['TT'] = map(int, ls['TT'])
+        ls = extract_dataframe(ls, list(ls.keys()), 'simul', val='1')
+        ls['TT'] = list(map(int, ls['TT']))
 
         #generer noms de fichier param / noms de fichiers can
         ls_par, ls_can, ls_pos, ls_angle = [], [], [], []

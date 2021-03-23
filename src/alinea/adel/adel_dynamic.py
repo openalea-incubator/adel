@@ -105,11 +105,11 @@ class AdelWheatDyn(AdelWheat):
             - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
         """
         for length_property in properties_to_convert['lengths']:
-            for vid, length in g.properties()[length_property].iteritems():
+            for vid, length in g.properties()[length_property].items():
                 g.properties()[length_property][vid] = length * 100 # Converts m to cm
 
         for area_property in properties_to_convert['areas']:
-            for vid, area in g.properties()[area_property].iteritems():
+            for vid, area in g.properties()[area_property].items():
                 g.properties()[area_property][vid] = area * 10000 # Converts m2 to cm2
 
     def convert_to_SI_units(self, g, properties_to_convert):
@@ -120,9 +120,9 @@ class AdelWheatDyn(AdelWheat):
             - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
         """
         for length_property in properties_to_convert['lengths']:
-            for vid, length in g.properties()[length_property].iteritems():
+            for vid, length in g.properties()[length_property].items():
                 g.properties()[length_property][vid] = length / 100 # Converts cm to m
 
         for area_property in properties_to_convert['areas']:
-            for vid, area in g.properties()[area_property].iteritems():
+            for vid, area in g.properties()[area_property].items():
                 g.properties()[area_property][vid] = area / 10000 # Converts cm2 to m2

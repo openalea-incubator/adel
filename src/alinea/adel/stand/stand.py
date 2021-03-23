@@ -15,7 +15,7 @@ def regular(nb_plants, nb_rank, dx, dy, nx=None):
         nx = int(nb_plants/nb_rank)
     ny = nb_rank
     domain = ((0,0),(nx*dx, ny*dy))
-    return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in xrange(ny) for i in xrange(nx)], domain
+    return [(i*dx+dx/2., j*dy+dy/2., 0.) for j in range(ny) for i in range(nx)], domain
     
 def randomise_position(position, radius):
     az = random() * 2 * np.pi
@@ -36,7 +36,7 @@ def regular_plot(inter_plant, inter_row, nrow, plant_per_row, noise=0, convunit=
     positions = sorted(positions,key= itemgetter(1,0))
     # add noise
     if noise > 0:
-        positions = map(lambda x: randomise_position(x, noise * convunit), positions)
+        positions = [randomise_position(x, noise * convunit) for x in positions]
     if center_scene:
         xc = float(domain[1][0] + domain[0][0]) / 2
         yc = float(domain[1][1] + domain[0][1]) / 2
@@ -106,9 +106,9 @@ def regularband(nb_plants, nb_rank, dx, dy):
     
     nx = int(nb_plants/nb_rank)
     ny = nb_rank
-    db=sample(xrange(100),nb_plants)
+    db=sample(range(100),nb_plants)
     domain = ((0,0),(nx*dx, ny*dy))
-    return [(i*dx+dx/2., j*dy+dy/2.+(db[i+j]-50)/100.*dy/3., 0.) for j in xrange(nb_rank) for i in xrange(nx)], domain
+    return [(i*dx+dx/2., j*dy+dy/2.+(db[i+j]-50)/100.*dy/3., 0.) for j in range(nb_rank) for i in range(nx)], domain
 
 def concentric(nb_plants, distance_plant):
     nb_circle = int(sqrt(nb_plants))
@@ -138,7 +138,7 @@ def planter(scene, distribution):
     def transfo(plant,pt):
         r = AxisRotation((0,0,1), random()*pi).getMatrix()
         return plant.transform2(Transform4(Translation(pt).getMatrix()*r))
-    l=[new_scene.add_plant(p) for p in imap(transfo, cycle(scene.itervalues()),iter(distribution))]
+    l=[new_scene.add_plant(p) for p in map(transfo, cycle(iter(scene.values())),iter(distribution))]
     return new_scene
 
 def sample_selection(points, gap_fraction):
@@ -158,7 +158,7 @@ def clumping_selection(points, nb_clumps, radius_mu, radius_sigma):
     with a radius following a normal distribution.
     """
     n = len(points)
-    centers = sample(range(n), nb_clumps)
+    centers = sample(list(range(n)), nb_clumps)
 
     for index in centers:
         radius = normalvariate(radius_mu, radius_sigma)
@@ -180,7 +180,7 @@ def sample_regular_gaps(points, pattern = [0,1]):
     p = p * (length / len(p)) + [p[i] for i in range(length % len(p))]
     
     #selection = compress(points,p) only python >= 2.7
-    return [point for point,i in izip(points,p) if i],[point for point,i in izip(points,p) if not i]
+    return [point for point,i in zip(points,p) if i],[point for point,i in zip(points,p) if not i]
 
 
 def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,

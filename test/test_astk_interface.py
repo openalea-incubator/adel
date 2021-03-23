@@ -8,7 +8,7 @@ def test_static(age=100):
     adel = AdelWheat(nplants=nplants)
     g = adel.setup_canopy(age=100)
     assert len(g.vertices()) > 20
-    assert g.property('geometry').values()[0].isValid()
+    assert list(g.property('geometry').values())[0].isValid()
 
 def test_statistics():
     nplants = 1

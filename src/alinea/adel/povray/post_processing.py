@@ -85,7 +85,7 @@ def count_pixels(scene_path='',
         colors_float = tuple(np.array(rgb_colors).astype(float))
         normalized_colors = [tuple(normalize_to_255(color).astype(int)) 
                              for color in colors_float]
-        colors_mapping = dict(zip(normalized_colors, rgb_colors))
+        colors_mapping = dict(list(zip(normalized_colors, rgb_colors)))
         assert len(normalized_colors) == len(set(normalized_colors))
     
     scene_path = path(scene_path)
@@ -102,8 +102,8 @@ def count_pixels(scene_path='',
     normalized_scene_image = Image.new(scene_image.mode, scene_image.size)
     normalized_scene_image_array = normalized_scene_image.load()
     
-    pixels_init_number = np.zeros_like(range(len(rgb_colors)))
-    pixels_numbers = dict(zip(rgb_colors, pixels_init_number))
+    pixels_init_number = np.zeros_like(list(range(len(rgb_colors))))
+    pixels_numbers = dict(list(zip(rgb_colors, pixels_init_number)))
     
     scene_box_pixels_number = 0
     

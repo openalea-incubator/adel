@@ -4,7 +4,7 @@
 from openalea.core import *
 
 
-__name__ = u'alinea.adel..lsystem'
+__name__ = 'alinea.adel..lsystem'
 
 __editable__ = True
 __version__ = ''
@@ -15,7 +15,7 @@ __url__ = ''
 __institutes__ = ''
 
 
-__all__ = ['_81622288', '_81621936', '_57070640', '_81622608', u'lsystem', '_81621648', '_82629808']
+__all__ = ['_81622288', '_81621936', '_57070640', '_81622608', 'lsystem', '_81621648', '_82629808']
 
 
 _81622288 = DataFactory(name='leaf.a',
@@ -47,19 +47,19 @@ _81622608 = DataFactory(name='view.v',
 
 
 
-lsystem = CompositeNodeFactory(name=u'lsystem',
+lsystem = CompositeNodeFactory(name='lsystem',
                              description='',
                              category='',
                              doc='',
                              inputs=[],
                              outputs=[],
                              elt_factory={  2: ('vlab.bin', 'process'),
-   3: (u'vlab.lsystem', 'Adel.l'),
-   4: (u'vlab.lsystem', 'description.txt'),
-   5: (u'vlab.lsystem', 'view.v'),
-   6: (u'vlab.lsystem', 'leaf.a'),
-   7: (u'vlab.lsystem', 'color.map'),
-   8: (u'vlab.lsystem', 'bid.txt')},
+   3: ('vlab.lsystem', 'Adel.l'),
+   4: ('vlab.lsystem', 'description.txt'),
+   5: ('vlab.lsystem', 'view.v'),
+   6: ('vlab.lsystem', 'leaf.a'),
+   7: ('vlab.lsystem', 'color.map'),
+   8: ('vlab.lsystem', 'bid.txt')},
                              elt_connections={  9791872: (7, 0, 2, 0),
    9791884: (6, 0, 2, 0),
    9791896: (5, 0, 2, 0),

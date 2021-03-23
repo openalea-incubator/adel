@@ -7,7 +7,7 @@ def calculate_LAI_TC_ViaCaribu(stand_MTG, pattern=None, thermal_time=0, output_d
     pm = pkgmanager.PackageManager()
     pm.init(verbose=False)
     from openalea.core.system import systemnodes
-    opt_filepath = systemnodes.get_data('par4.opt', 'alinea.caribu.data').values().pop()
+    opt_filepath = list(systemnodes.get_data('par4.opt', 'alinea.caribu.data').values()).pop()
     # read
     from openalea.file import files
     opt_str = files.FileRead()(opt_filepath)

@@ -142,7 +142,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     total_domain = mask.sum() / 255.
     masked = cv2.bitwise_and(im,im,mask=mask)
     
-    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
+    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.items()}
     
     if not getImages:
         im = None
@@ -212,7 +212,7 @@ def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id'
                              
     column_names = np.array(aggregations_to_apply_list)[:, 0]
     aggregations_to_apply_dict = dict(aggregations_to_apply_list)
-    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.iteritems() if key not in by])
+    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.items() if key not in by])
                              
     grouped = adel_output_df.groupby(by, as_index=False)
     adel_output_aggregated_df = grouped.aggregate(aggregations_to_apply_dict)
@@ -263,7 +263,7 @@ def phenology(adel_output_df):
                 index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
                 index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
                 index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
-                HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
+                HS_indexes = list(range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1))
                 NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
                 d_base_lastcol = group['d_basecol'][index_of_last_Lv_equal_L_shape]
             HS = NFL + \

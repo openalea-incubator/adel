@@ -1,4 +1,4 @@
-import IOtable
+from . import IOtable
 from scipy import sqrt
 
 
@@ -26,7 +26,7 @@ class clean_can(object):
         tab_geom = IOtable.table_txt(f) 
         f.close()
         for i in range(1,len(tab_geom)-1):
-            tab_geom[i][5:] = map(float, tab_geom[i][5:])
+            tab_geom[i][5:] = list(map(float, tab_geom[i][5:]))
 
         out = []
         out.append(tab_geom[0])

@@ -83,7 +83,7 @@ def readRData(fn):
     """return a dictionary containing the Robject of the RData file"""
     
     data = r.load(fn)
-    return dict(zip([nom for nom in data],[r[nom] for nom in data]))
+    return dict(list(zip([nom for nom in data],[r[nom] for nom in data])))
 
 def saveRData(Robj,name,fn):
     """ name and write the Robj to RData file """
@@ -95,7 +95,7 @@ def RlistAsDict(Rlist):
     """returns a dictionary containing the elements of the Rlist"""
     if r['is.null'](Rlist.names)[0]:
         Rlist.names = r['seq'](Rlist)
-    return dict(zip([n for n in r.names(Rlist)],[obj for obj in Rlist]))
+    return dict(list(zip([n for n in r.names(Rlist)],[obj for obj in Rlist])))
 
 def _rvect_asarray(rvect):
     """"
@@ -137,7 +137,7 @@ def dataframe(d):
     if d is None:
         return r('as.null()')
     else:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             rval = numpy2ri(numpy.array(v))
             if not _is_iterable(v):
                 v = [v]
@@ -150,13 +150,13 @@ def dataframe(d):
 
 def Rdflist(dictOfdict):
     """ convert a dict of dict of numpy vectors into a Rlist of Rdataframe  """
-    df_tags = dictOfdict.keys()
-    df_value = dictOfdict.values()
-    return r.list(**dict(zip(df_tags, [dataframe(dft) for dft in df_value])))
+    df_tags = list(dictOfdict.keys())
+    df_value = list(dictOfdict.values())
+    return r.list(**dict(list(zip(df_tags, [dataframe(dft) for dft in df_value]))))
 
 def RdflistAsdicts(Rdflist):
     """ convert a Rlist of Rdataframe into a dict of dict of numpy vectors """
-    return dict(zip([n for n in r.names(Rdflist)],[dataframeAsdict(obj) for obj in Rdflist]))
+    return dict(list(zip([n for n in r.names(Rdflist)],[dataframeAsdict(obj) for obj in Rdflist])))
 
 def csvAsDict(fn,type=1):
     """ returns a dictionnary with the content of csv file as numpy vectors (one colum = one key) """
@@ -182,11 +182,11 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
         rxydb = r('as.null()')
     elif isinstance(xydb, dict): # pure python xydb dict, a list of list is passed to setAdel
         # Warning : setadel uses index only and finding closest index if db is too small. Unambiguous meaning of keys retrieving from Lindex afterward there fore will need sorting keys before using Lindex (python sorted key index = Lindex - 1 (Lindex follows Rindexing convention), python list index = lseed - 1. cf conversion infra
-        keys = xydb.keys()
+        keys = list(xydb.keys())
         keys.sort() # to ensure lseed index is sample in the good list)
-        rxydb = r.list(*map(str,keys))
+        rxydb = r.list(*list(map(str,keys)))
         for i in range(len(rxydb)):
-            rxydb[i] = r.list(*range(len(xydb[keys[i]])))            
+            rxydb[i] = r.list(*list(range(len(xydb[keys[i]]))))            
     else:
         rxydb = r.load(xydb)[0]
         rxydb = r(rxydb)
@@ -194,7 +194,7 @@ def setAdel(devT,RcodegeoLeaf,RcodegeoAxe,nplants = 1,seed = None, xydb = None, 
     if srdb is None:
         rsrdb = r('as.null()')
     elif isinstance(srdb, dict): # pure python srdb dict, a list is passed to setAdel
-        rsrdb = r.list(*map(str,srdb.keys()))
+        rsrdb = r.list(*list(map(str,list(srdb.keys()))))
     else: # path to RData file
         rsrdb = r.load(srdb)[0]
         rsrdb = r(rsrdb)
@@ -218,7 +218,7 @@ def leaf_keys(lindex, lseed, db):
     """
     if 1 > lindex or lindex > len(db) or lseed < 1:
         raise KeyError('invalid index for leaf shape database')
-    keys = db.keys()
+    keys = list(db.keys())
     keys.sort()
     return keys[lindex - 1], lseed -1
      
@@ -430,11 +430,11 @@ def R_xydb(rdata):
   
     xy = RlistAsDict(r(xy))
     
-    rank = xy.keys()    
+    rank = list(xy.keys())    
     leaves = {}
     for k in rank:
         xyk = RlistAsDict(xy[k])
-        leaves_id = xyk.keys()
+        leaves_id = list(xyk.keys())
         for leaf_id in leaves_id:
             try:
                 x, y = numpy.transpose(numpy.array(xyk[leaf_id])) #xy is a matrix
@@ -453,7 +453,7 @@ def R_srdb(rdata):
   
     sr = RlistAsDict(r(sr))
     
-    rank = sr.keys()
+    rank = list(sr.keys())
    
     leaves = {}
     for k in rank:

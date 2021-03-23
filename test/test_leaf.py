@@ -3,14 +3,14 @@ from scipy.interpolate import *
 import openalea.plantgl.all as pgl
 from openalea.plantgl.all import Viewer
 import alinea.adel.fitting as fitting
-import cPickle as Pickle
+import pickle as Pickle
 from pylab import plot, show,clf
 
 db = r'../src/alinea/adel/data/leaves.db'
 f = open(db)
 
 leaves = Pickle.load(f)
-rank = leaves.keys()[0]
+rank = list(leaves.keys())[0]
 leaf = leaves[rank][0]
 f.close()
 
@@ -53,13 +53,13 @@ def test2(leaves=leaves):
     scene= pgl.Scene()
     Viewer.display(scene)
     for k in leaves:
-        print "Rank number: ", k
+        print("Rank number: ", k)
         index = 0
         for leaf in leaves[k]:
             try:
                 test1(leaf,scene)
             except:
-                print "problem with leaf %d in rank %s"%(index,k)
+                print("problem with leaf %d in rank %s"%(index,k))
             index += 1
             translation.z += zt
             #raw_input('Enter something for next leaf...')

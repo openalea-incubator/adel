@@ -3,6 +3,7 @@
 from alinea.adel.AdelR import devCsv,setAdel,RunAdel,genGeoLeaf,genGeoAxe, csvAsDict
 #from alinea.adel.mtg import mtg_factory
 import numpy as np
+from functools import reduce
 
 def test_organ_length():
     dir = './data/test_Adel_Maxwell_plante11/Maxwell_'
@@ -16,7 +17,7 @@ def test_organ_length():
     geoLeaf = genGeoLeaf()
     geoAxe = genGeoAxe()
     pars = setAdel(devT,geoLeaf,geoAxe,1,seed = 1)
-    cantables = map(lambda(x): RunAdel(x,pars), range(0,2300,100))
+    cantables = [RunAdel(x,pars) for x in range(0,2300,100)]
     expected = csvAsDict(dir + 'reference_simulation.csv')
     for k in ('TT','plant','numphy','Ll','Gl','El','Lv','Gv','Ev','Esen','Lsen','Gsen'):
         sim = reduce(lambda x,y: x + y, (t[k].tolist() for t in cantables))

@@ -8,7 +8,7 @@ import random
 symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
 
 def leaves_db():
-    import cPickle as Pickle
+    import pickle as Pickle
     fn = r'../src/alinea/adel/data/leaves.db'
     f = open(fn)
     leaves = Pickle.load(f)
@@ -28,7 +28,7 @@ def test1():
     s_top = 0.6
     radius_max = 1
 
-    rank_max =max(map(int,db.keys()))
+    rank_max =max(list(map(int,list(db.keys()))))
     rank = leaf_rank
     rank = min(rank, rank_max)
     #choisi la liste de leaves du rang, ou rang + 1 si clef absente ourag -1 ou liste vide sinon

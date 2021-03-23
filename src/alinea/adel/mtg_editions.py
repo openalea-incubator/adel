@@ -125,7 +125,7 @@ def add_plant(g, plant_number=None, plant_properties=None, axis_properties=None,
                         g.component_roots_at_scale(g.root, scale=1)]
         if len(plant_labels) > 0:
             plant_number = max(
-                map(lambda x: int(x.split('plant')[1]), plant_labels)) + 1
+                [int(x.split('plant')[1]) for x in plant_labels]) + 1
         else:
             plant_number = 1
 

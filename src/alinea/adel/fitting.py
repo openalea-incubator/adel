@@ -4,8 +4,8 @@ from scipy.interpolate import *
 from scipy.integrate import simps
 import openalea.plantgl.all as pgl
 
-from simplification import cost
-from itertools import izip
+from .simplification import cost
+
 
 ##### DEBUG
 debug = False
@@ -193,12 +193,12 @@ def partial_leaf( leaf, nb_polygones, length_max, length, radius_max):
 
     # build a mesh
     n = len(xf)
-    points = zip(xf, yf, -rf/2.)
-    points.extend(zip(xf, yf, rf/2.))
+    points = list(zip(xf, yf, -rf/2.))
+    points.extend(list(zip(xf, yf, rf/2.)))
 
-    ind = array(xrange(n-2))
-    indices = zip(ind, ind+n, ind+(n+1))
-    indices.extend(zip(ind, ind+(n+1), ind+1))
+    ind = array(range(n-2))
+    indices = list(zip(ind, ind+n, ind+(n+1)))
+    indices.extend(list(zip(ind, ind+(n+1), ind+1)))
     # add only one triangle at the end !!
     indices.append((n-2, 2*n-2, n-1))
 
@@ -260,15 +260,15 @@ def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
         waves_z= cos(angle)
     
     n = len(x)
-    points = zip(x+waves1_x, -r/2.*waves_z, y+waves1_y)
-    points.extend(zip(x, zeros(n), y))
-    points.extend(zip(x+waves2_x, r/2.*waves_z, y+waves2_y))
+    points = list(zip(x+waves1_x, -r/2.*waves_z, y+waves1_y))
+    points.extend(list(zip(x, zeros(n), y)))
+    points.extend(list(zip(x+waves2_x, r/2.*waves_z, y+waves2_y)))
 
-    ind = array(xrange(n-2))
-    indices = zip(ind, ind+n, ind+(n+1))
-    indices.extend(zip(ind, ind+(n+1), ind+1))
-    indices.extend(zip(ind+n, ind+2*n, ind+2*n+1))
-    indices.extend(zip(ind+n, ind+2*n+1, ind+n+1))
+    ind = array(range(n-2))
+    indices = list(zip(ind, ind+n, ind+(n+1)))
+    indices.extend(list(zip(ind, ind+(n+1), ind+1)))
+    indices.extend(list(zip(ind+n, ind+2*n, ind+2*n+1)))
+    indices.extend(list(zip(ind+n, ind+2*n+1, ind+n+1)))
 
     # add only one triangle at the end !!
     if r[-1] < 0.001:
@@ -284,12 +284,12 @@ def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
 def leaf_to_mesh(x, y, r, twist_start=0, twist_end=0, **kwds):
     n = len(x)
     theta = linspace(radians(twist_start),radians(twist_end),n)
-    points = zip(x, -r/2. * abs(cos(theta)), y + abs(sin(theta)) * r / 2.)
-    points.extend(zip(x, r/2.* abs(cos(theta)), y - abs(sin(theta)) * r / 2.))
+    points = list(zip(x, -r/2. * abs(cos(theta)), y + abs(sin(theta)) * r / 2.))
+    points.extend(list(zip(x, r/2.* abs(cos(theta)), y - abs(sin(theta)) * r / 2.)))
 
-    ind = array(xrange(n-2)) if n > 2 else array([0])
-    indices = zip(ind, ind+n, ind+(n+1))
-    indices.extend(zip(ind, ind+(n+1), ind+1))
+    ind = array(range(n-2)) if n > 2 else array([0])
+    indices = list(zip(ind, ind+n, ind+(n+1)))
+    indices.extend(list(zip(ind, ind+(n+1), ind+1)))
 
     # add only one triangle at the end !!
     if n < 2:
@@ -472,7 +472,7 @@ def read_smf(filename):
     return points, indices
 
 def plantgl_shape(points, indices):
-    indices = [ map(int, index) for index in indices]
+    indices = [ list(map(int, index)) for index in indices]
     return pgl.TriangleSet(points, indices, normalPerVertex=False)
 
 def qslim( nb_triangles, points, indexes ):
@@ -532,10 +532,10 @@ def fit3(x, y, s, r, nb_points):
 def simplify(leaf, nb_points):
     xn, yn, sn, rn = leaf
 
-    points = [pgl.Vector3(*pt) for pt in izip(xn, rn, yn)]
-    pts = filter(None,cost(points, nb_points))
+    points = [pgl.Vector3(*pt) for pt in zip(xn, rn, yn)]
+    pts = [_f for _f in cost(points, nb_points) if _f]
     coords = ((pt.x,pt.y, pt.z) for pt in pts)
-    x, r, y = map(array, izip(*coords))
+    x, r, y = list(map(array, zip(*coords)))
     s = curvilinear_abscisse(x, y)
     return (x, y, s, r) 
     
@@ -580,13 +580,13 @@ def fit_leaves(leaves, nb_points, dynamic = False):
             if not dynamic:
                 leaf = _fit_element(el, nb_points)
             else:
-                leaf = {age:_fit_element(v, nb_points) for age,v in el.iteritems()}
-                if any(map(lambda x: x is None, leaf.values())):
+                leaf = {age:_fit_element(v, nb_points) for age,v in el.items()}
+                if any([x is None for x in list(leaf.values())]):
                     leaf = None                   
             if leaf is not None:
                 new_db.setdefault(key,[]).append(leaf)
             else:
-                print("alinea.adel.fitting->fit_leaves: can't fit leaf shape index %s, Rsub-index %d (python sub-index %d)=> leaf shape discarded"%(key,i+1,i))
+                print(("alinea.adel.fitting->fit_leaves: can't fit leaf shape index %s, Rsub-index %d (python sub-index %d)=> leaf shape discarded"%(key,i+1,i)))
                 discarded.setdefault(key,[]).append(i+1)
 
                 

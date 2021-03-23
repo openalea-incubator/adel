@@ -18,7 +18,7 @@ def leaves():
     return {0: Leaves()}
     
 def leaves_db():
-    import cPickle as Pickle
+    import pickle as Pickle
     import alinea.adel.fitting as fitting
     fn = datadir + '/data/leaves_simple.db'
     f = open(fn)

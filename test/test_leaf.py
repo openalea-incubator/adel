@@ -6,7 +6,7 @@ import alinea.adel.fitting as fitting
 import cPickle as Pickle
 from pylab import plot, show,clf
 
-db = r'../src/alinea/adel/data/leaves.db'
+db = r'../src/alinea/adel/data/leaves_simple.db'
 f = open(db)
 
 leaves = Pickle.load(f)
@@ -14,18 +14,25 @@ rank = leaves.keys()[0]
 leaf = leaves[rank][0]
 f.close()
 
+dbf = r'../src/alinea/adel/data/leaves.db'
+f = open(db)
+
+leaves_f = Pickle.load(f)
+rankf = leaves.keys()[0]
+leaff = leaves[rank][0]
+f.close()
 #
 # build a database of function
 # 1. fit leaves
 # 2. write a function
 # 3. draw the result
 
-# 3 bis. write a class 
+# 3 bis. write a class
 # 4 parse the string and build the scene
-# 5. create the can file 
+# 5. create the can file
 translation = pgl.Vector3(0,0,0)
 zt = 6
-yt = 13 
+yt = 13
 
 def test1(leaf=leaf, scene = None):
     """
@@ -38,8 +45,8 @@ def test1(leaf=leaf, scene = None):
 
     x, y, s, r= leaf
     spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
-    mesh = fitting.discretize(spline_leaf,30, 7, 1) 
-    
+    mesh = fitting.discretize(spline_leaf,30, 7, 1)
+
     scene += pgl.Translated(translation, mesh)
     Viewer.update()
 
@@ -65,7 +72,7 @@ def test2(leaves=leaves):
             #raw_input('Enter something for next leaf...')
         translation.y = -60 + yt*int(k)
         translation.z = 0
-            
+
 def test3(leaf=leaf, scene = None):
     """
     Obtain a leaf at different time.
@@ -79,7 +86,7 @@ def test3(leaf=leaf, scene = None):
     spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
     translation = pgl.Vector3()
     n = 7
-    
+
     for i in range (1,n+1):
         mesh = fitting.partial_leaf(spline_leaf, 30, n, i, 1)
         scene += pgl.Translated(translation, mesh)
@@ -102,15 +109,15 @@ def test5(leaf=leaf):
     """
     x, y, s, r= leaf
     #spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
-    tckp, u = splprep([x,y],k=5) 
+    tckp, u = splprep([x,y],k=5)
     xp, yp = splev(linspace(0,1,6),tckp)
-    #xn, yn, rn = splev(linspace(0,1,100),spline_leaf)    
+    #xn, yn, rn = splev(linspace(0,1,100),spline_leaf)
     sn=fitting.curvilinear_abscisse(x,y)
     l=sn.sum()
     clf()
     plot(x,y,'.')
     plot(xp, yp)
-    
+
 # def test6(leaves=leaves,rank=rank):
 #     # try with rank=7
 #     index = 0
@@ -130,10 +137,10 @@ def test7(leaf=leaf, scene = None):
 
     x, y, s, r= leaf
     spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
-    pts, ind = fitting.mesh(spline_leaf,30, 7, 7, 1) 
+    pts, ind = fitting.mesh(spline_leaf,30, 7, 7, 1)
     fitting.write_smf('leaf_full.smf', pts, ind)
     Viewer.display(fitting.plantgl_shape(pts, ind))
-    
+
 
 def test8(leaf=leaf, scene = None):
     global translation, zt
@@ -144,7 +151,7 @@ def test8(leaf=leaf, scene = None):
     x, y, s, r= leaf
     leaf_new, leaf_surface = fitting.fit2(x, y, s, r)
 
-    pts, ind = fitting.mesh2(leaf_new, 7, 7, 1) 
+    pts, ind = fitting.mesh2(leaf_new, 7, 7, 1)
     #pts2, ind2 = fitting.qslim(13, pts, ind)
     #mesh = fitting.plantgl_shape(pts2, ind2)
 
@@ -155,7 +162,7 @@ def test8(leaf=leaf, scene = None):
     #mesh_final = mesh
     scene += pgl.Translated(translation, fitting.plantgl_shape(pts, ind))
     #scene += pgl.Translated(translation+(0,yt/3.,0), mesh_final)
-    
+
     Viewer.update()
 
 def test81(leaf=leaf, scene = None):
@@ -167,7 +174,7 @@ def test81(leaf=leaf, scene = None):
     mesh = fitting.leaf_shape2(leaf,10, 7, 7, 1)
 
     scene += pgl.Translated(translation+(0,yt/3.,0), mesh)
-    
+
     Viewer.update()
 
 # def test9(leaves=leaves):
@@ -197,10 +204,10 @@ def test81(leaf=leaf, scene = None):
 # def test10():
 #     pass
 #sc=pgl.SurfComputer(pgl.Discretizer())
-#m=pgl_shape mesh2 
+#m=pgl_shape mesh2
 #m2=pgl_shape qslim
 #m.apply(sc)
 #sc.surface
 #m2.apply(sc)
-#sc.surface 
+#sc.surface
 

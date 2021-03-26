@@ -32,10 +32,6 @@ setup(
     author_email=authors_email,
     url=url,
     license=license,
-    
-    namespace_packages = [namespace],
-    create_namespaces = True,
-
     py_modules = [],
     # pure python  packages
     packages= find_packages('src'),

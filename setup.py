@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 
 
-import os, sys
+import os, sys 
 from setuptools import setup, find_packages
 from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
@@ -28,14 +28,10 @@ setup(
     version=version,
     description=description,
     long_description=long_description,
-    authors=authors,
-    authors_email=authors_email,
+    author=authors,
+    author_email=authors_email,
     url=url,
     license=license,
-    
-    namespace_packages = [namespace],
-    create_namespaces = True,
-
     py_modules = [],
     # pure python  packages
     packages= find_packages('src'),

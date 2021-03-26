@@ -1,0 +1,119 @@
+<<<<<<< HEAD
+# {# pkglts, github
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# pkglts files
+.pkglts/info.log*
+
+# Packages
+*.egg
+*.egg-info
+.eggs
+.Python
+*.pth
+dist/
+build/
+env/
+downloads/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# editors
+.idea/
+
+# Vim files
+*.swp
+*.*~
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+.settings
+
+
+# C extensions
+*.so
+*.dll
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Compiled Object files
+*.os
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+.amlog
+.sconsign.dblite
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# PyBuilder
+target/
+
+# jupyter notebooks
+.ipynb_checkpoints/
+
+# svn
+.svn
+.cache/
+
+# coverage
+.coverage
+
+# sphinx autogen file
+doc/_dvlpt/
+
+
+# #}
+
+# user custom filters
+
+# Mac
+.DS_Store
+=======
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.pyc
+>>>>>>> 86c7f0d7f9e4946161871b55498a1eb14d7c7a2f

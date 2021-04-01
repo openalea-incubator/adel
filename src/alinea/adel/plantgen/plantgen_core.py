@@ -559,14 +559,14 @@ def _gen_HS_final_series(axeT_, dynT_):
     index_to_modify = HS_final_series[HS_final_series > axeT_['N_phytomer_potential']].index
     HS_final_series[index_to_modify] = axeT_['N_phytomer_potential'][index_to_modify]
     HS_final_series.fillna(axeT_['N_phytomer_potential'], inplace=True)
-    HS_final_series = HS_final_series.clip_lower(0.0)
+    HS_final_series = HS_final_series.clip(lower=0.0)
     HS_final_series = HS_final_series[HS_final_series != 0.0]
     return HS_final_series
 
 
 def _remove_axes_without_leaf(axeT_, index_to_keep):
     '''Remove the axes which do not have any leaf.'''
-    axeT_ = axeT_.ix[index_to_keep]
+    axeT_ = axeT_.loc[index_to_keep]
     axeT_.index = list(range(len(axeT_)))
     return axeT_
 
@@ -576,7 +576,7 @@ def _create_tilleringT(dynT_, phenT_first, number_of_axes, plants_number, plants
     '''
     Create the :ref:`tilleringT <tilleringT>` dataframe.
     '''
-    dynT_most_frequent_MS = dynT_.ix[dynT_.first_valid_index()]
+    dynT_most_frequent_MS = dynT_.loc[dynT_.first_valid_index()]
     id_cohort_most_frequent_MS = str(dynT_most_frequent_MS['id_cohort'])
     N_phytomer_potential_most_frequent_MS = str(dynT_most_frequent_MS['N_phytomer_potential']).zfill(2) # we use N_phytomer_potential because N_phytomer_potential == N_phytomer for the most frequent MS
     id_phen_most_frequent_MS = int(''.join([id_cohort_most_frequent_MS, N_phytomer_potential_most_frequent_MS, '1']))
@@ -714,7 +714,7 @@ def _init_dimT(axeT_, dimT_tmp, dynT_):
     dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
     for id_dim, axeT_group in axeT_.groupby('id_dim'):
         axeT_keys = list(axeT_group.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups.keys())
-        dynT_group = dynT_.select(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer_potential'][idx]) in axeT_keys)
+        dynT_group = dynT_.loc[dynT_.index.map(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer_potential'][idx]) in axeT_keys)]
         idxmax = dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()
         N_phytomer_potential = dynT_group['N_phytomer_potential'][idxmax]
             
@@ -790,7 +790,7 @@ def _fit_L_blade(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_p
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
@@ -852,7 +852,7 @@ def _fit_L_sheath(index_phytomer_series, MS_rows_indexes, MS_last_but_one_index_
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
@@ -902,7 +902,7 @@ def _fit_L_internode(index_phytomer_series, MS_rows_indexes, MS_last_but_one_ind
     
     lengths_multiplicative_factor = 1 + params.LENGTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
@@ -968,7 +968,7 @@ def _fit_W_blade(MS_rows_indexes, row_indexes_to_fit, dimT_):
     
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
@@ -1029,7 +1029,7 @@ def _fit_W_sheath(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongated_
     
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         
         if id_cohort == 1: # MS
@@ -1086,7 +1086,7 @@ def _fit_W_internode(MS_rows_indexes, row_indexes_to_fit, dimT_, decimal_elongat
     
     widths_multiplicative_factor = 1 + params.WIDTHS_REDUCTION_FACTOR
     
-    for id_dim, dimT_group in dimT_.ix[row_indexes_to_fit].groupby(by='id_dim'):
+    for id_dim, dimT_group in dimT_.loc[row_indexes_to_fit].groupby(by='id_dim'):
         id_cohort = dimT_group.id_cohort[dimT_group.first_valid_index()]
         if id_cohort == 1: # MS
             index_phytomer_series = dimT_group.index_phytomer
@@ -1180,12 +1180,12 @@ def _create_dynT(dynT_tmp,
     MS = dynT_tmp[dynT_tmp['id_axis'] == 'MS']
     
     # get the row of the most frequent main stem
-    most_frequent_MS = MS.ix[0:0]
+    most_frequent_MS = MS.loc[0:0]
     # for this row, fill the columns referring to the dynamic of the green leaves
     most_frequent_MS = _gen_most_frequent_MS_GL_dynamic(most_frequent_MS, GL_number, TT_t1_user)
     
     # get the rows of all main stems except the most frequent one
-    other_MS = MS.ix[1:]
+    other_MS = MS.loc[1:]
     # for these rows, fill the columns referring to the dynamic of Haun Stage
     other_MS = _gen_other_MS_HS_dynamic(most_frequent_MS, other_MS)
     # and fill the columns referring to the dynamic of the green leaves
@@ -1201,7 +1201,7 @@ def _create_dynT(dynT_tmp,
         grouped = tiller_axes.groupby('id_axis')
         most_frequent_tiller_axes = []
         for id_axis, group_indexes in grouped.groups.items():
-            most_frequent_tiller_axes.append(tiller_axes.ix[group_indexes[0:1]])
+            most_frequent_tiller_axes.append(tiller_axes.loc[group_indexes[0:1]])
         # concatenate these rows in one dataframe ; 'most_frequent_tiller_axes' is  
         # now a pd.DataFrame (and is not a list anymore)
         most_frequent_tiller_axes = pd.concat(most_frequent_tiller_axes)
@@ -1446,7 +1446,7 @@ def _gen_other_tiller_axes_HS_dynamic(most_frequent_MS, most_frequent_tiller_axe
         nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
     except AttributeError:# backward compatibility with pandas < 0.16 
         nan_other_tiller_axis_indexes = other_tiller_axes.index - without_nan_other_tiller_axis_indexes
-    for name, group in other_tiller_axes.ix[nan_other_tiller_axis_indexes].groupby('id_axis'):
+    for name, group in other_tiller_axes.loc[nan_other_tiller_axis_indexes].groupby('id_axis'):
         most_frequent_tiller_axis_idx = most_frequent_tiller_axes[most_frequent_tiller_axes['id_axis'] == name].first_valid_index()
         # calculation of TT_hs_0
         other_tiller_axes.loc[group.index, 'TT_hs_0'] = most_frequent_tiller_axes['TT_hs_0'][most_frequent_tiller_axis_idx]
@@ -1478,7 +1478,7 @@ def _gen_other_tiller_axes_GL_dynamic(most_frequent_MS, most_frequent_tiller_axe
         nan_other_tiller_axis_indexes = other_tiller_axes.index.difference(without_nan_other_tiller_axis_indexes)
     except AttributeError:# backward compatibility with pandas < 0.16 
         nan_other_tiller_axis_indexes = other_tiller_axes.index - without_nan_other_tiller_axis_indexes
-    for name, group in other_tiller_axes.ix[nan_other_tiller_axis_indexes].groupby('id_axis'):
+    for name, group in other_tiller_axes.loc[nan_other_tiller_axis_indexes].groupby('id_axis'):
         most_frequent_tiller_axis_idx = most_frequent_tiller_axes[most_frequent_tiller_axes['id_axis'] == name].first_valid_index()
         # calculation ofn1
         other_tiller_axes.loc[group.index, 'n1'] = most_frequent_tiller_axes['n1'][most_frequent_tiller_axis_idx]
@@ -1537,7 +1537,7 @@ def _calculate_decimal_elongated_internode_number(dimT_tmp, dynT_tmp):
     '''
     Calculate the number of elongated internodes.
     '''
-    MS_most_frequent_axis_dynT_tmp = dynT_tmp.ix[dynT_tmp.first_valid_index()]
+    MS_most_frequent_axis_dynT_tmp = dynT_tmp.loc[dynT_tmp.first_valid_index()]
     id_axis = MS_most_frequent_axis_dynT_tmp['id_axis']
     N_phytomer_potential = MS_most_frequent_axis_dynT_tmp['N_phytomer_potential']
     grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
@@ -1567,7 +1567,7 @@ class _CreatePhenTTmp():
     def __call__(self, axeT_, dynT_, decimal_elongated_internode_number, force=True):
         if force or self.phenT_tmp is None:
             columns_without_nan = [col for col in dynT_.columns if col not in ['TT_hs_break', 'n0', 't0']]
-            dynT_without_nan = dynT_.ix[:, columns_without_nan]
+            dynT_without_nan = dynT_.loc[:, columns_without_nan]
             if not (dynT_without_nan.count().max() == dynT_without_nan.count().min() == dynT_without_nan.index.size):
                 raise tools.InputError("dynT contains unexpected NA values")
             
@@ -1596,7 +1596,7 @@ class _CreatePhenTTmp():
             for (id_cohort, N_phytomer_potential, id_phen), axeT_group in axeT_.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
                 phenT_tmp_group = phenT_tmp_grouped.get_group(id_phen)
                 dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer_potential))
-                dynT_row = dynT_group.ix[dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()]
+                dynT_row = dynT_group.loc[dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()]
                 a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation = \
                     dynT_row[['a_cohort', 'TT_hs_0', 'TT_hs_break', 'TT_flag_ligulation']]
                 
@@ -1865,7 +1865,7 @@ class _CreatePhenTFirst():
         if force or self.phenT_first is None:
             if not (phenT_tmp.count().max() == phenT_tmp.count().min() == phenT_tmp.index.size):
                 raise tools.InputError("phenT_tmp contains NA values")
-            self.phenT_first = phenT_tmp.select(lambda idx: True if phenT_tmp['index_phytomer'][idx] == 1 else False)
+            self.phenT_first = phenT_tmp.loc[phenT_tmp.index.map(lambda idx: True if phenT_tmp['index_phytomer'][idx] == 1 else False)]
         return self.phenT_first
 
 _create_phenT_first = _CreatePhenTFirst()
@@ -1905,7 +1905,7 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
     dynT_grouped = dynT_.groupby(['id_cohort', 'N_phytomer_potential'])
     for (id_cohort, N_phytomer_potential, id_phen), axeT_group in axeT_.groupby(['id_cohort', 'N_phytomer_potential', 'id_phen']):
         dynT_group = dynT_grouped.get_group((id_cohort, N_phytomer_potential))
-        dynT_row = dynT_group.ix[dynT_group['cardinality'].idxmax()]
+        dynT_row = dynT_group.loc[dynT_group['cardinality'].idxmax()]
         id_axis, a_cohort_before_start_MS_elongation_1, TT_hs_0, TT_hs_break, TT_flag_ligulation, n0, n1, n2, t0, t1, a, c = \
             dynT_row[['id_axis', 'a_cohort', 'TT_hs_0', 'TT_hs_break', 'TT_flag_ligulation', 'n0', 'n1', 'n2', 't0', 't1', 'a', 'c']]
         
@@ -2100,7 +2100,7 @@ class _PrepareMergeWithUserTables():
             self.most_frequent_dynT_tmp = pd.DataFrame(columns=dynT_tmp.columns)
             for id_axis, dynT_tmp_group in dynT_tmp.groupby('id_axis'):
                 idxmax = dynT_tmp_group['cardinality'].idxmax()
-                self.most_frequent_dynT_tmp = pd.concat([self.most_frequent_dynT_tmp, dynT_tmp_group.ix[idxmax:idxmax]], ignore_index=True)
+                self.most_frequent_dynT_tmp = pd.concat([self.most_frequent_dynT_tmp, dynT_tmp_group.loc[idxmax:idxmax]], ignore_index=True)
             self.most_frequent_dynT_tmp_grouped = self.most_frequent_dynT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
         return self.most_frequent_dynT_tmp, self.most_frequent_dynT_tmp_grouped
 

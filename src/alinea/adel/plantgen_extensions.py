@@ -486,7 +486,7 @@ class GreenLeaves(object):
         """ Fit curvature coefficient from a HS, GL dataset
         """
         GLpol = pandas.DataFrame({'HS':HS_since_flag, 'GL':GL})
-        GLpol = GLpol.ix[GLpol['HS'] > 0,:]
+        GLpol = GLpol.iloc[GLpol['HS'] > 0,:]
         c = (self.n2 - self.n1) / (self.n_elongated_internode) - 1
         fixed_coefs = [0.0, c, self.n2]
         a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_starting_estimate=self.a)
@@ -787,7 +787,7 @@ class AxePop(object):
                     loss = [0] * 2 + [card] * 2
                     cfits[c] = {'hs':hs,'loss':loss}
                 #merge cohorts
-                hs = [start] + numpy.unique(damages.ix[:,('start_damages','end_damages')].values).tolist() + [end]
+                hs = [start] + numpy.unique(damages.loc[:,('start_damages','end_damages')].values).tolist() + [end]
                 loss = numpy.array([0] * len(hs))
                 for c in cfits:
                     loss = loss + numpy.interp(hs,cfits[c]['hs'],cfits[c]['loss'])
@@ -1045,8 +1045,8 @@ class PlantGen(object):
             dTTem = plant['dTTem'].values[0]
             if not numpy.isnan(TT_stop):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
-                axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
-                axeT.ix[i,'id_ear'] = numpy.nan
+                axeT.loc[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT.loc[i,'id_ear'] = numpy.nan
         # to do reduce 10%length + 10%width of regressing axes        
         # include plant number in ids to allow future concatenation with other plants
         id_plt = plant['id_plt'][0]
@@ -1096,7 +1096,7 @@ class PlantGen(object):
         df = pandas.DataFrame(index=idaxis,
                               columns=['id_axis','a_cohort','TT_hs_0','TT_flag_ligulation','n0','n1','n2'],
                               dtype=float)
-        df.ix['MS'] = pandas.Series(MS_parameters)
+        df.loc['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
         cohort = plant['id_cohort'].values
         df['TT_flag_ligulation'] = self.HSfit.TTflag(nff) + self.HSfit.dTT_MS_cohort(cohort)
@@ -1130,9 +1130,9 @@ def axis_list(TilleringModel,  nplants = 2):
     
     df = TilleringModel.emited_cohorts()
     df = df.set_index('cohort') 
-    cohort_cardinalities = {c:round(df.ix[c,'total_axis'] * nplants) for c in df.index}
+    cohort_cardinalities = {c:round(df.loc[c,'total_axis'] * nplants) for c in df.index}
     
-    modal_proba = {c:modalities(df.ix[c,'nff']) for c in df.index}
+    modal_proba = {c:modalities(df.loc[c,'nff']) for c in df.index}
     
     cohort_modalities = {k:cardinalities(modal_proba[k],v) for k,v in cohort_cardinalities.items()}
     cohort_mods = {k:flat_list([[x[0]] * int(x[1]) for x in list(v.items())]) for k, v in cohort_modalities.items()}

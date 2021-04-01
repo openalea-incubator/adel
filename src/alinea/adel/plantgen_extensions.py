@@ -65,7 +65,7 @@ def get_normal_dist(nb_plants=10, sigma=30.):
         gap = distri_plants - round_distri
         round_distri[numpy.argmin(gap)] -= 1
         missing_pl = nb_plants - sum(round_distri)
-    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], d+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
+    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], int(d)+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
 def _order(axe):
     if axe is 'MS':

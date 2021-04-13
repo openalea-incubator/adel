@@ -117,10 +117,13 @@ def dataframeAsdict(df):
 #        d = dict(zip( df.colnames, numpy.array(df)))
 #        return d
 #    except:
-    try:
-        d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
-    except:
-        d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
+    if isinstance(df, numpy.recarray):
+        d = {k: _rvect_asarray(df[k]) for k in df.dtype.names}
+    else:
+        try:
+            d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
+        except:
+            d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
     return d
 
 def _is_iterable(x):
@@ -138,7 +141,7 @@ def dataframe(d):
         return r('as.null()')
     else:
         for k, v in d.items():
-            rval = numpy2ri(numpy.array(v))
+            rval = numpy.array(v)
             if not _is_iterable(v):
                 v = [v]
             if 'NA' in numpy.array(v).tolist():

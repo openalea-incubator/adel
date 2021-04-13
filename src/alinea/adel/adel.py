@@ -164,7 +164,7 @@ class Adel(object):
         if duplicate is not None:
             self.duplicate = duplicate
 
-        if self.aspect is 'smart':
+        if self.aspect == 'smart':
             self.nplants, self.domain, self.positions, \
             self.domain_area = self.stand.smart_stand(
                 self.nplants, at=age, convunit=1. / self.convUnit)

@@ -4,7 +4,7 @@ import pickle as Pickle
 
 import numpy
 from rpy2 import robjects
-from rpy2.robjects.numpy2ri import numpy2ri
+r = robjects.r
 
 from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict,canL2canS
 from alinea.adel.mtg import (mtg_factory, duplicate, thermal_time, 
@@ -13,15 +13,29 @@ from openalea.mtg.io import lpy2mtg, mtg2lpy
 
 import openalea.core.path as path
 
+def _is_iterable(x):
+    try:
+        x = iter(x)
+    except TypeError:
+        return False
+    return True
+
+
 def dataframe(d):
     """ convert a dict of numbers to an RDataframe  """
     df = {}
     if d is None:
-        return robjects.r('as.null()')
+        return r('as.null()')
     else:
         for k, v in d.items():
-            df[k] = numpy2ri(numpy.array(v))
-    dataf = robjects.r['data.frame'](**df)
+            rval = numpy.array(v)
+            if not _is_iterable(v):
+                v = [v]
+            if 'NA' in numpy.array(v).tolist():
+                df[k] = r['as.numeric'](rval)
+            else :
+                df[k] = rval
+    dataf = r['data.frame'](**df)
     return dataf
 
 

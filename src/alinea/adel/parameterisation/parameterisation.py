@@ -4,7 +4,14 @@ from alinea.adel.fitting import fit2
 
 import numpy
 from rpy2 import robjects
-from rpy2.robjects.numpy2ri import numpy2ri
+
+from rpy2.robjects import numpy2ri
+try:
+    numpy2ri.activate()#force auto-conversion mode of Robject to array
+except:
+    pass
+
+
 
 class PlantParameter(object):
     def __init__(self, **kwargs):

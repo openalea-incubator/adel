@@ -4,7 +4,6 @@ from alinea.adel.plantgen import params, tools, plantgen_interface, plantgen_cor
 import numpy as np
 import pandas
 from openalea.core.path import path
-from openalea.core.alea import *
 
 
 random.seed(1234)
@@ -82,7 +81,7 @@ def test_phenology_functions():
     test_table_filepath = default_results.joinpath('dynT.csv')
     dynT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)  
     print('The results have been saved to %s' % test_table_filepath)
-    np.testing.asert_arry_equal(dynT_['id_axis'], expected_dynT['id_axis'])
+    np.testing.assert_array_equal(dynT_['id_axis'], expected_dynT['id_axis'])
     dynT_ = dynT_.drop('id_axis', axis=1)
     expected_dynT = expected_dynT.drop('id_axis', axis=1)
     np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)

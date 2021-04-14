@@ -5,6 +5,7 @@ __revision__ = " $Id: $"
 
 from openalea.core.alea import run
 from openalea.core.pkgmanager import PackageManager
+import warnings
 from random import random, randint
 """ A unique PackageManager is created for all test of dataflow """
 pm = PackageManager()
@@ -13,8 +14,12 @@ pm.init(verbose=False)
 
 def test_adelr1():
     """ Test AdelR MonoRun """
-    res = run(('alinea.adel.tutorials', 'AdelR MonoRun'),
-        inputs={}, pm=pm, vtx_id=13)
+    # check if openalea components are there
+    if '#openalea.python' in [k for k,v in pm.items()]:
+        res = run(('alinea.adel.tutorials', 'AdelR MonoRun'),
+            inputs={}, pm=pm, vtx_id=13)
+    else:
+        warnings.warn('OpenAlea components not installed, AdelR Monorun dataflow could not be test')
 
 
 

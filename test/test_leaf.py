@@ -1,26 +1,21 @@
-from numpy import *
-from scipy.interpolate import *
-import openalea.plantgl.all as pgl
-from openalea.plantgl.all import Viewer
+import numpy
+from scipy.interpolate import splev, splprep
 import alinea.adel.fitting as fitting
-import pickle as Pickle
-from pylab import plot, show,clf
+from alinea.adel.data_samples import leaves_db
+from openalea.plantgl.all import Viewer
+import openalea.plantgl.all as pgl
+# nosetetsts fails importing pylab for some mysteriuous reason (backend ?)
+with_pylab = True
+try:
+    from pylab import plot, show,clf
+except:
+    with_pylab = False
 
-db = r'../src/alinea/adel/data/leaves_simple.db'
-f = open(db)
 
-leaves = Pickle.load(f)
+leaves = leaves_db()
 rank = list(leaves.keys())[0]
 leaf = leaves[rank][0]
-f.close()
 
-dbf = r'../src/alinea/adel/data/leaves.db'
-f = open(db)
-
-leaves_f = Pickle.load(f)
-rankf = leaves.keys()[0]
-leaff = leaves[rank][0]
-f.close()
 #
 # build a database of function
 # 1. fit leaves
@@ -110,13 +105,14 @@ def test5(leaf=leaf):
     x, y, s, r= leaf
     #spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
     tckp, u = splprep([x,y],k=5)
-    xp, yp = splev(linspace(0,1,6),tckp)
+    xp, yp = splev(numpy.linspace(0,1,6),tckp)
     #xn, yn, rn = splev(linspace(0,1,100),spline_leaf)
     sn=fitting.curvilinear_abscisse(x,y)
     l=sn.sum()
-    clf()
-    plot(x,y,'.')
-    plot(xp, yp)
+    if with_pylab:
+        clf()
+        plot(x,y,'.')
+        plot(xp, yp)
 
 # def test6(leaves=leaves,rank=rank):
 #     # try with rank=7

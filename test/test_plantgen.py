@@ -15,7 +15,7 @@ plants_number = 5
 plants_density = 12
 decide_child_axis_probabilities={'T0': 0.0, 'T1': 0.900, 'T2': 0.967, 'T3': 0.817, 'T4': 0.083}
 decide_child_cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)
-MS_leaves_number_probabilities = {'10': 0.145, '11': 0.818, '12': 0.037, '13': 0.0, '14': 0.0}
+MS_leaves_number_probabilities = {'10': 0.182, '11': 0.818, '12': 0.0, '13': 0.0, '14': 0.0}
 ears_density = 25
 GL_number = {1117.0: 5.6, 1212.1:5.4, 1368.7:4.9, 1686.8:2.4, 1880.0:0.0}
 delais_TT_stop_del_axis = 600
@@ -82,7 +82,7 @@ def test_phenology_functions():
     test_table_filepath = default_results.joinpath('dynT.csv')
     dynT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)  
     print('The results have been saved to %s' % test_table_filepath)
-    assert (dynT_['id_axis'] == expected_dynT['id_axis']).all()
+    np.testing.asert_arry_equal(dynT_['id_axis'], expected_dynT['id_axis'])
     dynT_ = dynT_.drop('id_axis', axis=1)
     expected_dynT = expected_dynT.drop('id_axis', axis=1)
     np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)
@@ -306,14 +306,14 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
 #     assert res == []
     
 
-if __name__ == '__main__':
-    test_init_axes()
-    test_phenology_functions()
-    test_plants_structure()
-    test_organs_dimensions()
-    test_axes_phenology()
-    test_gen_adel_input_data_from_min_min()
-    test_gen_adel_input_data_from_short_short()
-    test_gen_adel_input_data_from_full_full()
-    # test_plantgen()
+# if __name__ == '__main__':
+#     test_init_axes()
+#     test_phenology_functions()
+#     test_plants_structure()
+#     test_organs_dimensions()
+#     test_axes_phenology()
+#     test_gen_adel_input_data_from_min_min()
+#     test_gen_adel_input_data_from_short_short()
+#     test_gen_adel_input_data_from_full_full()
+#     # test_plantgen()
     

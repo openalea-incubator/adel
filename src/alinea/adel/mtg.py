@@ -339,7 +339,7 @@ def to_aggregation_table(g):
         symbols[k] = g.scale(v)
 
     l = list(symbols.items())
-    l.sort(cmp= lambda x, y: cmp(x[1], y[1]))
+    l.sort(key= lambda x: x[1])
 
     # scales
     header = "Plant Axe Metamer StemElement LeafElement Type"
@@ -551,7 +551,7 @@ def planter(g, distribution, random_seed=0, azimuths = None):
 
     def pt2transfo(pt, previous_pt,rotation):
         matrix = Translation(pt).getMatrix()
-        if rotation is not 0:
+        if rotation != 0:
             r = AxisRotation((0,0,1), rotation).getMatrix()
             matrix = matrix * r * Translation(previous_pt).getMatrix()
         return Transform4(matrix), pt

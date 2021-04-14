@@ -310,7 +310,7 @@ class Adel(object):
         fgeom = basename_geom + '.bgeom'
         fg = basename_adel + '.pckl'
         s.save(fgeom, 'BGEOM')
-        with open(fg, 'w') as output:
+        with open(fg, 'wb') as output:
             pickle.dump(g, output)
         # restore geometry
         g.add_property('geometry')
@@ -331,9 +331,8 @@ class Adel(object):
         if not os.path.exists(fgeom) or not os.path.exists(fg):
             raise IOError('adel cannot find saved files')
 
-        f = open(fg)
-        g = pickle.load(f)
-        f.close()
+        with open(fg, 'rb') as f:
+            g = pickle.load(f)
 
         # backward compatibility
         if isinstance(g, list):

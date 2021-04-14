@@ -11,8 +11,8 @@ try:
 except:
     import pickle
 from openalea.plantgl.all import Viewer, Scene
-from openalea.mtg.plantframe.color import colormap
 
+from alinea.adel.colormap import colormap
 from alinea.adel.geometric_elements import Leaves
 from alinea.adel.Stand import AgronomicStand
 from alinea.adel.mtg_interpreter import plot3d, transform_geom, mtg_interpreter

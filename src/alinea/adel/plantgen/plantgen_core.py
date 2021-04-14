@@ -1141,7 +1141,7 @@ def _create_dynT_tmp(axeT_tmp):
     '''
     groups = axeT_tmp.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups
     keys_array = np.array(list(groups.keys()))
-    cardinalities = pd.DataFrame(np.array(list(groups.values()))).applymap(np.size)
+    cardinalities = pd.DataFrame(np.array(list(groups.values()), dtype=object)).applymap(np.size)
     # initialize the values of the other columns to NaN
     dynT_tmp = pd.DataFrame(index=list(range(len(groups))), 
                                 columns=['id_axis', 'id_cohort', 'cardinality', 'N_phytomer_potential', 'a_cohort', 'TT_hs_0', 'TT_hs_break', 'TT_flag_ligulation', 'dTT_MS_cohort', 'n0', 'n1', 'n2', 't0', 't1', 'hs_t1', 'a', 'c', 'RMSE_gl'],

@@ -3,6 +3,7 @@
 
 import os
 import pandas
+import alinea.adel.json_numpy as json_np
 
 datadir = os.path.dirname(__file__)
 
@@ -18,12 +19,10 @@ def leaves():
     return {0: Leaves()}
     
 def leaves_db():
-    import pickle as Pickle
     import alinea.adel.fitting as fitting
-    fn = datadir + '/data/leaves_simple.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
-    f.close()
+    fn = datadir + '/data/simpleleavesdb.json'
+    with open(fn) as f:
+        leaves = json_np.load(f)
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
     

@@ -34,9 +34,9 @@ setup(
     license=license,
     
     namespace_packages = [namespace],
-    #create_namespaces = True,
+    create_namespaces = True,
 
-    # py_modules = [],
+    py_modules = [],
     # pure python  packages
     packages= find_packages('src'),
     # python packages directory

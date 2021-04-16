@@ -10,6 +10,7 @@ from scipy.integrate import simps
 import openalea.plantgl.all as pgl
 from math import radians, pi, cos, sin
 import alinea.adel.fitting as fitting
+from functools import reduce
 
 datadir = os.path.dirname(__file__)
 
@@ -37,13 +38,12 @@ def leaf_keys(lindex, lseed, db):
     """
     if 1 > lindex or lindex > len(db) or lseed < 1:
         raise KeyError('invalid index for leaf shape database')
-    keys = db.keys()
-    keys.sort()
+    keys = sorted(db.keys())
     return keys[lindex - 1], lseed - 1
 
 def xydb_to_csv(xydb, filename):
     dat = [(numpy.repeat(k,len(x)), numpy.repeat(i, len(x)), x, y) for k in xydb for i, (x,y) in enumerate(xydb[k])]
-    dat = reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[])
+    dat = list(reduce(lambda x, y: x + y, map(lambda x: zip(*x), dat),[]))
     df = pandas.DataFrame.from_records(dat, columns=('rank', 'lindex', 'x', 'y'))
     df.to_csv(filename, index=False, sep=',', decimal='.')
 

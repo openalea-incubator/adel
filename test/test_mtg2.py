@@ -1,9 +1,11 @@
-from openalea.core.alea import *
-from openalea.mtg.traversal import pre_order2
-from alinea.adel import mtg
+import alinea.adel.mtg as mtg
 import alinea.adel.fitting as fitting
+import alinea.adel.parameterisation.parameterisation as adelp
 from alinea.adel.symbol import build_symbols
-from openalea.plantgl.all import *
+from alinea.adel.data_samples import leaves_db as ldb
+from openalea.mtg.traversal import pre_order2
+from openalea.plantgl.all import Viewer
+
 
 g = None
 
@@ -11,20 +13,30 @@ def adel_mtg():
     global g
     if g is not None:
         return g
-    pm = load_package_manager()
-    g = run(('alinea.adel.tutorials','mtgparam'), {},pm=pm, vtx_id=5)
 
-    g = g[0]
-    
+    pars = adelp.simpleMais_param(total_area = 5000,
+                                  total_height = 200,
+                                  pseudostem_height = 20,
+                                  nb_phy = 15,
+                                  nb_young_phy = 6,
+                                  lad_skew = 5,
+                                  lad_rmax = 0.7,
+                                  pseudostem_dist = 1.4,
+                                  stem_dist = 1.,
+                                  phyllotactic_angle = 180,
+                                  basal_insertion = 40,
+                                  top_insertion = 30,
+                                  diam_base = 2,
+                                  diam_top = 1,
+                                  leaf_width_ratio = 0.1,
+                                  shape_factors = 0.75)
+    canT = adelp.simpleMais2dict(pars)[0]
+    g = mtg.mtg_factory(canT, sectors=1)
 
     return g
 
 def leaves_db():
-    import cPickle as Pickle
-    fn = r'../src/alinea/adel/data/leaves.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
-    f.close()
+    leaves = ldb()
     leaves = fitting.fit_leaves(leaves, 9)
     
     db = leaves[0]
@@ -38,7 +50,7 @@ def test_adel_mtg():
 
     assert len(g) == len(g.sub_mtg(g.root))
 
-    print symbols.keys()
+    print(list(symbols.keys()))
     g=mtg.mtg_turtle(g,symbols)
     return g
 
@@ -52,7 +64,7 @@ def test_dynamic_mtg():
 
     g = adel_mtg()
 
-    v = g.component_roots_at_scale_iter(g.root, scale=3).next()
+    v = next(g.component_roots_at_scale_iter(g.root, scale=3))
     tt = 0
     dtt = 10.
     for metamer in pre_order2(g, v):

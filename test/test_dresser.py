@@ -30,7 +30,7 @@ def test_mixture():
     df = adel.canopy_table(adel.plant_references, adel.plant_species)
     assert 0.91 > df['species'].sum() * 1. / df['species'].size > 0.89
     g = adel.canopy()
-    spec = [v for k,v in g.property('species').iteritems() if k in g.vertices(1)]
+    spec = [v for k,v in g.property('species').items() if k in g.vertices(1)]
     assert sum(spec) == 9
 
 

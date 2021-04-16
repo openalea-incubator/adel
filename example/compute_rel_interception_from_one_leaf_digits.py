@@ -24,19 +24,19 @@ mean_star_per_phytomer_filepath = pj(DATA_OUT_DIR, 'mean_star_per_phytomer.csv')
  earT_filepath,
  lamina2D_filepath, 
  laminaCurv_filepath,
- params_filepath) = map(pj, [DATA_IN_DIR] * 5, 
+ params_filepath) = list(map(pj, [DATA_IN_DIR] * 5, 
                         ['dimT.csv', 'earT.csv', 'lamina2D.RData', 
-                         'laminaCurv.RData', 'params.py'])
+                         'laminaCurv.RData', 'params.py']))
  
 params = imp.load_source('params', params_filepath)
  
-(dimT, earT) = map(pandas.read_csv, (dimT_filepath, earT_filepath))
+(dimT, earT) = list(map(pandas.read_csv, (dimT_filepath, earT_filepath)))
 
 earT_grouped = earT.groupby(['Code', 'id_plt'])
 
 for Linc in (0, 0.5, 1):
     angle_of_incidence = Linc * 90
-    print 'angle_of_incidence', angle_of_incidence
+    print('angle_of_incidence', angle_of_incidence)
 
     metamers_parameters = []
     
@@ -53,7 +53,7 @@ for Linc in (0, 0.5, 1):
         L_spike = earT_group['L_spike'][earT_group.first_valid_index()]
         
         index_phytomer_ntop = [1]
-        metamers_parameters_group = pandas.DataFrame(columns=dimT.columns, index=range(len(index_phytomer_ntop)))
+        metamers_parameters_group = pandas.DataFrame(columns=dimT.columns, index=list(range(len(index_phytomer_ntop))))
         metamers_parameters_group['id_plt'] = id_plt_global
         metamers_parameters_group['index_phytomer_ntop'] = index_phytomer_ntop
         metamers_parameters_group['L_blade'] = dimT_group['L_blade'].tolist()
@@ -80,7 +80,7 @@ for Linc in (0, 0.5, 1):
         metamers_parameters_group['axe_id'] = 'MS' # Note: to adapt if tillers are provided
         metamers_parameters_group['ms_insertion'] = 0  # Note: to adapt if tillers are provided
         # order numphy from base to top
-        metamers_parameters_group['numphy'] = range(1, len(metamers_parameters_group) + 1) 
+        metamers_parameters_group['numphy'] = list(range(1, len(metamers_parameters_group) + 1)) 
         # add missing mandatory data  (does like adel)                  
         metamers_parameters_group['Laz'] = [180 for i in range(len(metamers_parameters_group))] #leaf azimuth
         metamers_parameters_group['LcType'] = metamers_parameters_group['ntop'] # selector for first level in leaf db
@@ -114,7 +114,7 @@ for Linc in (0, 0.5, 1):
     metamers_parameters = pandas.concat(metamers_parameters, ignore_index=True)
     
     metamers_parameters_filepath = pj(DATA_OUT_DIR, 'metamers_parameters' + str(angle_of_incidence) + '.csv')
-    print 'Save Adel parameters to ', metamers_parameters_filepath
+    print('Save Adel parameters to ', metamers_parameters_filepath)
     metamers_parameters.to_csv(metamers_parameters_filepath, na_rep='NA', index=False)
     
     def agronomicplot(nplants=None, length=None, width=None, sowing_density=None, plant_density=None, inter_row=None, noise=0, convunit=100, center_scene=True):
@@ -186,7 +186,7 @@ for Linc in (0, 0.5, 1):
     db, discard = fit.fit_leaves(db, NUMBER_OF_LONGITUDINAL_DIVISIONS)
     
     # set the rotation angle of the plant on itself. Permits to randomize the orientation of each leaf.
-    stand = zip(positions, [0 for i in range(len(positions))])
+    stand = list(zip(positions, [0 for i in range(len(positions))]))
     g = mtg_factory(metamers_parameters.to_dict('list'), adel_metamer, leaf_db = db, stand = stand)
     #add geometry
     g = mtg_interpreter(g)
@@ -203,7 +203,7 @@ for Linc in (0, 0.5, 1):
                                   columns=['adel_label', 'star', 'exposed_area'])
     
     caribu_out_filepath = pj(DATA_OUT_DIR, 'caribu_out' + str(angle_of_incidence) + '.csv')
-    print 'Save caribu output to', caribu_out_filepath
+    print('Save caribu output to', caribu_out_filepath)
     caribu_out.to_csv(caribu_out_filepath, na_rep='NA', index=False)
     
     # Calculate the star for each class of metamers (metamer1, metamer2, metamer3, etc).
@@ -224,8 +224,8 @@ for Linc in (0, 0.5, 1):
             pandas.concat([mean_star_per_phytomer_pre, mean_star_per_phytomer], 
                           ignore_index=True)
     
-    print 'Save mean star per phytomer to', mean_star_per_phytomer_filepath
+    print('Save mean star per phytomer to', mean_star_per_phytomer_filepath)
     mean_star_per_phytomer.to_csv(mean_star_per_phytomer_filepath, na_rep='NA', index=False)
 
 tps2 = time.clock()
-print 'Execution time: ', tps2 - tps1
+print('Execution time: ', tps2 - tps1)

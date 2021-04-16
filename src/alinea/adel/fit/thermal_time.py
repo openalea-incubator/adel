@@ -27,7 +27,7 @@ def thermal_time(requested_dates, emergence_date, input_data, data_type, thermal
     :rtype: pandas.DataFrame
     
     '''
-    print 'emergence_date', emergence_date
+    print('emergence_date', emergence_date)
     emergence_datetime = pandas.datetime(emergence_date['year'], emergence_date['month'], emergence_date['day'], emergence_date['hour'], emergence_date['minute'], emergence_date['second'])
     # check that input_data contains 'emergence_datetime' and 'emergence_datetime + 1 year'
     if emergence_datetime not in input_data.index:
@@ -57,7 +57,7 @@ def thermal_time(requested_dates, emergence_date, input_data, data_type, thermal
     # check that input_data contains requested_dates
     # and that emergence_datetime is <= to requested_dates
     for requested_date in requested_dates.index:
-        print 'requested_date', type(requested_date), requested_date
+        print('requested_date', type(requested_date), requested_date)
         if requested_date not in input_data.index:
             raise Exception(' '.join(['requested_date', requested_date, 'does not belong to input_data']))
         if requested_date < emergence_datetime:
@@ -121,7 +121,7 @@ def parton_logan(dailyMinMaxTemp, latitude=55, param="air150cm"):
     Tmin = dailyMinMaxTemp['Tmin']
     Tmax = dailyMinMaxTemp['Tmax']
     
-    daily_series = pandas.Series(range(Tmin.size), index=Tmin.index)    
+    daily_series = pandas.Series(list(range(Tmin.size)), index=Tmin.index)    
         
     def calc_daylength(i):
         dayNumber = dailyMinMaxTemp.index[i].toordinal() + 1 - datetime.datetime(dailyMinMaxTemp.index[i].year,1,1).toordinal()
@@ -163,7 +163,7 @@ def parton_logan(dailyMinMaxTemp, latitude=55, param="air150cm"):
     
     hourly_idx = pandas.DateRange(Tmin.index[0], Tmin.index[-1] + 23 * Hour(), offset=Hour())
 
-    hourly_series = pandas.Series(range(hourly_idx.size), index=hourly_idx)                               
+    hourly_series = pandas.Series(list(range(hourly_idx.size)), index=hourly_idx)                               
                                           
     def calc_hourlyTemp(abs_hour):
         abs_day = abs_hour / 24

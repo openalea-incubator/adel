@@ -1,4 +1,4 @@
-import IOtable
+from . import IOtable
 import os
 from os.path import join
 from openalea.core.pkgmanager import PackageManager

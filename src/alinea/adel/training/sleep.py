@@ -33,7 +33,7 @@ def leaf_sectors(g, leaf_number=0, latence=350):
                 vid = g.parent(vid)
             green.extend(l for l in g.components(vid) if 'Leaf' in g.label(l) and 0 < age.get(l,0) < latence )
 
-    return g, map(g.node,green), map(g.node, infectious)
+    return g, list(map(g.node,green)), list(map(g.node, infectious))
 
 def leaf_sectors_by_number(g, target_leaf_number=1, source_leaf_number=4):
     max_scale = g.max_scale()
@@ -52,7 +52,7 @@ def leaf_sectors_by_number(g, target_leaf_number=1, source_leaf_number=4):
             rvid = g.parent(rvid)
             infectious.extend(l for l in g.components(rvid) if 'Leaf' in g.label(l))
 
-    return g, map(g.node,green), map(g.node, infectious)
+    return g, list(map(g.node,green)), list(map(g.node, infectious))
 
 def compute_distance(target_sectors, source_sectors, distance_function):
     """ Apply function on each target sectors as a function of other sectors"""
@@ -73,7 +73,7 @@ def get_distances(g,filename):
     for k in d:
         if len(d[k][0])==0:
             continue
-	age, distance = zip(*d[k])
+	age, distance = list(zip(*d[k]))
 	ln = height(g, g.complex(k))+1
 	sector=rank(g,k)+1
 	nrow = len(age)

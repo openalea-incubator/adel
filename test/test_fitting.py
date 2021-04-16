@@ -3,18 +3,18 @@ import alinea.adel.mtg as CanMTG
 from alinea.adel.symbol import build_symbols
 from numpy import compress, unique, union1d, interp
 import random
-
+import alinea.adel.json_numpy as json_np
 
 symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
 
 def leaves_db():
-    import cPickle as Pickle
-    fn = r'../src/alinea/adel/data/leaves.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
-    f.close()
-    leaves = fitting.fit_leaves(leaves, 9)
-    return leaves[0]
+    import alinea.adel.fitting as fitting
+    fn = '../src/alinea/adel/data/simpleleavesdb.json'
+    with open(fn) as f:
+        leaves = json_np.load(f)
+    leaves,discard = fitting.fit_leaves(leaves, 9)
+    return leaves
+
 
 db = leaves_db()
 functions = build_symbols(db)
@@ -28,7 +28,7 @@ def test1():
     s_top = 0.6
     radius_max = 1
 
-    rank_max =max(map(int,db.keys()))
+    rank_max =max(list(map(int,list(db.keys()))))
     rank = leaf_rank
     rank = min(rank, rank_max)
     #choisi la liste de leaves du rang, ou rang + 1 si clef absente ourag -1 ou liste vide sinon

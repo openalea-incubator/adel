@@ -98,7 +98,7 @@ def plot_HS_GL_SSI_T(HS_GL_SSI_T, dynT, config, id_phen_to_plot=None, dynamics_t
             plot_.plot(group.TT, group[dynamic_to_plot], linestyle=line_style, color=DYNAMIC_TO_COLOR_MAPPING[dynamic_to_plot], label='{} - {}'.format(id_phen, dynamic_to_plot))
         
         if plot_most_frequent_main_stem and id_phen == most_frequent_main_stem_id_phen:
-            plot_.plot([t0, t1, TT_flag_ligulation] + config['GL_number'].keys(), [n0, n1, n2] + config['GL_number'].values(), linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
+            plot_.plot([t0, t1, TT_flag_ligulation] + list(config['GL_number'].keys()), [n0, n1, n2] + list(config['GL_number'].values()), linestyle='', marker='D', color='k', label='{} - {}'.format(id_phen, 'measured data'))
         
     plot_.set_xlabel('Thermal time')
     plot_.set_ylabel('Decimal leaf number')

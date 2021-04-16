@@ -1,4 +1,4 @@
-from sys import maxint
+from sys import maxsize
 from openalea.plantgl import all as pgl
 
 DISTANCE = 'BOX'
@@ -76,7 +76,7 @@ def my_distance(n, sectors):
     if dist != maxint:
         n.distance.append((n.age, dist))
 
-    print n, dist
+    print(n, dist)
     if dist<=1:
         n.color = 0,0,255
 
@@ -151,7 +151,7 @@ def my_distance(n, sectors):
     if dist != maxint:
         n.distance.append((n.age, dist))
 
-    print n, dist
+    print(n, dist)
     if dist<=1:
         n.color = 0,0,255
 

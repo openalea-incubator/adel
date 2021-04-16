@@ -8,7 +8,7 @@ def energy_per_organ(nplants, positions, adel_output, leaves_db, domain, classic
     
     # rotation angle of the plant on itself. 
     azimuths = np.random.random(nplants) * 360 # TODO: use input
-    stand = zip(positions, azimuths)
+    stand = list(zip(positions, azimuths))
     g = mtg_factory(adel_output, adel_metamer, leaf_db=leaves_db, stand=stand)
     # add geometry
     g = mtg_interpreter(g, classic=classic)

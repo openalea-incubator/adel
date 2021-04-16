@@ -1,4 +1,4 @@
-import IOtable
+from . import IOtable
 import os
 from os.path import join
 from openalea.core.pkgmanager import PackageManager
@@ -34,7 +34,7 @@ class adel_sim_exp(object):
         f.close()
 
         d = {'SOIL_REFLECTANCE':'', 'LEAF_REFLECTANCE':'', 'LEAF_TRANSMITANCE':'', 'SEN_LEAF_REFLECTANCE':'', 'SEN_LEAF_TRANSMITANCE':'', 'STEM_REFLECTANCE':'', 'NB_RANG':'', 'NB_PLANTES':'', 'INTER_RANG':'', 'INTER_PLANTE':''}
-        for var in d.keys():
+        for var in list(d.keys()):
             for i in range(len(tab)):
                 if len(tab[i])>1:
                     if tab[i][1]==var:

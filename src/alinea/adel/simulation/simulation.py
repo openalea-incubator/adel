@@ -20,9 +20,9 @@ def simulation(lsystem_filename, nb_plants):
     color_file = 'color.map'
     result_file = 'result.str'
     cmd = "cpfg -g -homo -str %s %s %s %s -m %s" % (result_file, fn.basename(), view_file, leaf_file, color_file)
-    print cmd
+    print(cmd)
     curdir = os.getcwd()
-    print dir
+    print(dir)
     os.chdir(dir)
     os.system(cmd)
     os.chdir(curdir)

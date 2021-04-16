@@ -56,7 +56,7 @@ def test_statistics():
     g.add_property('species')
     g.property('species').update(species)
     axstats = adel.axis_statistics(g)
-    print axstats['LAI totale'].round(2).values[0]
+    print(axstats['LAI totale'].round(2).values[0])
     assert axstats['LAI totale'].round(2).values[0] == 0.02
     pstats = adel.plot_statistics(g, axstats)
     assert pstats['Nbr.axe.tot.m2'][0] == 500

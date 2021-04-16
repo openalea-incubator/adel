@@ -98,8 +98,8 @@ class AdelWheat(Adel):
         if geoAxe is None:
             geoAxe = genGeoAxe(incT=incT, dinT=dinT, dep=dep)
 
-        assert len(self.leaves.keys()) == 1
-        k = self.leaves.keys()[0]
+        assert len(list(self.leaves.keys())) == 1
+        k = list(self.leaves.keys())[0]
 
         pars = {'devT': self.devT, 'RcodegeoLeaf': self.leaves[k].geoLeaf,
                     'RcodegeoAxe': geoAxe,
@@ -149,7 +149,7 @@ class AdelWheat(Adel):
 
         if self.duplicate is None:
             canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
-            stand = zip(self.positions, self.plant_azimuths)
+            stand = list(zip(self.positions, self.plant_azimuths))
             g = self.build_mtg(canopy, stand,
                                aborting_tiller_reduction=self.aborting_tiller_reduction)
         else:
@@ -169,7 +169,7 @@ class AdelWheat(Adel):
 
         return g
 
-    def checkAxeDyn(self, dates=range(0, 2000, 100), density=None):
+    def checkAxeDyn(self, dates=list(range(0, 2000, 100)), density=None):
         if density is None:
             density = self.stand.plant_density
         return checkAxeDyn(self.pars, dates, density)

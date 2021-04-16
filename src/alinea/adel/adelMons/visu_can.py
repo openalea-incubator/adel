@@ -1,4 +1,4 @@
-import IOtable
+from . import IOtable
 from openalea.plantgl.all import *
 
 
@@ -32,8 +32,8 @@ class visu_can(object):
                 #count=0
             
                 indices=Index3Array([(0,1,2),(3,4,5)])
-                coord1 = map(float, tb[i][5:])
-                coord2 = map(float, tb[i+1][5:])
+                coord1 = list(map(float, tb[i][5:]))
+                coord2 = list(map(float, tb[i+1][5:]))
                 points = Point3Array([Vector3(*coord1[:3]),Vector3(*coord1[3:6]),Vector3(*coord1[6:9]),
                                       Vector3(*coord2[:3]),Vector3(*coord2[3:6]),Vector3(*coord2[6:9])])
                 if tb[i][2][0]!='2':# sp_opt feuille senescente

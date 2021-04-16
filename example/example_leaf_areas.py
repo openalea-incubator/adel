@@ -5,7 +5,7 @@ plt.ion()
 
 # Imports for wheat
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except:
     import pickle
 from alinea.adel.newmtg import move_properties, adel_ids
@@ -48,7 +48,7 @@ recorders = initiate_all_adel_septo_recorders(g, nsect)
 for canopy_iter in canopy_timing:
     if canopy_iter:
         date = canopy_iter.value.index[-1]
-        print date
+        print(date)
         
         # Grow wheat
         g = adel.grow(g, canopy_iter.value)
@@ -59,7 +59,7 @@ for canopy_iter in canopy_timing:
         
         # Save variables
         for plant in recorders:
-            for lf, recorder in recorders[plant].iteritems():
+            for lf, recorder in recorders[plant].items():
                 recorder.update_vids_with_labels(adel_ids = adel_ids(g))
                 recorder.record_only_leaf_data(g, date, degree_days = canopy_iter.value.degree_days[-1])
 
@@ -67,13 +67,13 @@ scene = plot3d(g)
 Viewer.display(scene)
 
 for plant in recorders:
-    for recorder in recorders[plant].itervalues():
+    for recorder in recorders[plant].values():
         recorder.create_dataframe_only_leaf_data()
         
 leaves = ['F%d' % lf for lf in range(13)]
 fig, axs = plt.subplots(3, 3)
 for plant in recorders:
-    for recorder in recorders[plant].itervalues():
+    for recorder in recorders[plant].values():
         data = recorder.data
         axs[0][0].plot(data.degree_days, data.leaf_area)
         axs[0][0].set_ylabel('leaf area (cm2)', fontsize = 18)

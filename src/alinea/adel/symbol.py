@@ -12,8 +12,8 @@ Symbols are:
 
 import random, math
 import openalea.plantgl.all as pgl
-import fitting
-import label
+from . import fitting
+from . import label
 from math import degrees, radians, pi, cos, sin
 
 from alinea.adel.exception import *
@@ -68,14 +68,14 @@ class LeafElement(Symbol):
     def _mesh(self, leaf_rank, seed, total_length, length, s_base, s_top, radius_max, *args):
         
         db = self.database
-        rank_max = max(map(int,db.keys()))
+        rank_max = max(list(map(int,list(db.keys()))))
         rank = leaf_rank
         rank = min(rank, rank_max)
         #choisi la liste de leaves du rang, ou rang + 1 si clef absente ourag -1 ou liste vide sinon
         leaves = db.get(str(rank), db.get(str(rank+1), db.get(str(rank-1), [])))
         n = len(leaves)
         if n == 0:
-            dbk = ' '.join(db.keys())
+            dbk = ' '.join(list(db.keys()))
             raise AdelParameterisationError("Leaf curvature index %d not found in database, available indices are:\n%s"%(rank,dbk))
 
         if self.seed is None:

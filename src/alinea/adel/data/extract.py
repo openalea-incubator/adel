@@ -21,15 +21,15 @@ gen = genotype
 
 def build_db( gen, nervj, nerva, SRj, SRa):
     plant_id = set(nervj[gen].keys())
-    plant_id.intersection_update(nerva[gen].keys())
-    plant_id.intersection_update(SRj[gen].keys())
-    plant_id.intersection_update(SRa[gen].keys())
+    plant_id.intersection_update(list(nerva[gen].keys()))
+    plant_id.intersection_update(list(SRj[gen].keys()))
+    plant_id.intersection_update(list(SRa[gen].keys()))
     leaves = {}
     for pid in plant_id:
         nerv = nervj[gen][pid]
         rad = SRj[gen][pid]
         rank_id = set(nerv.keys())
-        rank_id.intersection_update(rad.keys())
+        rank_id.intersection_update(list(rad.keys()))
         for k in rank_id:
             x, y = transpose(nerv[k])
             s, r = transpose(rad[k])
@@ -38,7 +38,7 @@ def build_db( gen, nervj, nerva, SRj, SRa):
         nerv = nerva[gen][pid]
         rad = SRa[gen][pid]
         rank_id = set(nerv.keys())
-        rank_id.intersection_update(rad.keys())
+        rank_id.intersection_update(list(rad.keys()))
         for k in rank_id:
             x, y = transpose(nerv[k])
             s, r = transpose(rad[k])
@@ -48,7 +48,7 @@ def build_db( gen, nervj, nerva, SRj, SRa):
 
 if __name__ == '__main__':
     leaves = build_db( gen, nervj, nerva, SRj, SRa)
-    import cPickle as Pickle
+    import pickle as Pickle
     f = open('leaves.db','w')
     Pickle.dump(leaves, f)
     f.close()

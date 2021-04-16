@@ -24,10 +24,10 @@ class dim_pattern:
         self.emptydict= ndict
         self.dictMS = deepcopy(ndict)
         #dimT construction CAREFULL NO HEADER
-        reader.next() # Getting the header out
-        row = reader.next() # initialisation
+        next(reader) # Getting the header out
+        row = next(reader) # initialisation
         while int(row[0]) is not index:
-            row = reader.next()
+            row = next(reader)
         
         while int(row[0]) is index:
             self.dictMS['relative_phytomer'].append(float(row[1]))
@@ -36,7 +36,7 @@ class dim_pattern:
             self.dictMS['sheathlength'].append(float(row[4]))
             self.dictMS['internodelength'].append(float(row[6]))
             self.dictMS['stemdiameter'].append(float(row[5]))
-            row = reader.next()
+            row = next(reader)
         self.numphy = len(self.dictMS['stemdiameter']) # number of phytomer for mainstem
        
     def predict_tiller(self, tiller_position):
@@ -193,7 +193,7 @@ def simpleWheat_param(total_area = 10000 , # aussi dans wheatpop
     dTags = ["plante","axe","phytomere","longFeu","largFeu","inclinaisonFeu","azimuthFeu","longTige","diamTige","longGa","longEn","incEn"] 
     dVals = [ [1] * nb_phy * (nbtalles + 1),
               axe ,
-              range(1,nb_phy + 1),
+              list(range(1,nb_phy + 1)),
               lengths,
               widths,
               inclinations,
@@ -204,8 +204,8 @@ def simpleWheat_param(total_area = 10000 , # aussi dans wheatpop
               internodes,
               Einc
               ]
-    dVals = map(np.array,dVals)
-    dout = dict(zip(dTags,dVals))
+    dVals = list(map(np.array,dVals))
+    dout = dict(list(zip(dTags,dVals)))
 
     return dout
 

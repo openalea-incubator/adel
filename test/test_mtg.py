@@ -2,17 +2,18 @@ from openalea.plantgl.all import *
 from alinea.adel.symbol import *
 from alinea.adel.mtg import *
 import alinea.adel.fitting as fitting
+import alinea.adel.json_numpy as json_np
 
 symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
 
 def leaves_db():
-    import cPickle as Pickle
-    f = open('../src/alinea/adel/data/leaves.db')
-    leaves = Pickle.load(f)
-    f.close()
-    leaves = fitting.fit_leaves(leaves, 9)
-    #print "leaves ", leaves
-    return leaves[0]
+    import alinea.adel.fitting as fitting
+    fn = '../src/alinea/adel/data/simpleleavesdb.json'
+    with open(fn) as f:
+        leaves = json_np.load(f)
+    leaves,discard = fitting.fit_leaves(leaves, 9)
+    return leaves
+
 
 functions = build_symbols(leaves_db())
 

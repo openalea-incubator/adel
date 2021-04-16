@@ -56,11 +56,11 @@ class write_graphtalPars(object):
         #fname = "_05_geomF2_S1B1.h"
 
         txt1 = r.writenumf (fname,dev,morpho,anglesPrev)
-        print txt1
+        print(txt1)
         r.writePO (fname)
         r.writecarto(fname, plan, 0.8, 0.125)
         txt2 = r.writedimkin(fname, dev, sen, morpho)
-        print txt2
+        print(txt2)
         r.writeprev(fname, alpha, anglesPrev, dev)
 
         os.chdir(path_ini)

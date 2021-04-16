@@ -148,19 +148,19 @@ def gen_adel_input_data(dynT_user,
         
     # update values defined in alinea.adel.plantgen.params from values in inner_params
     attribute_names = set(dir(params))
-    attribute_names.intersection_update(inner_params.keys())
-    params.__dict__.update(dict([(key, value) for key, value in inner_params.items() if key in attribute_names]))
+    attribute_names.intersection_update(list(inner_params.keys()))
+    params.__dict__.update(dict([(key, value) for key, value in list(inner_params.items()) if key in attribute_names]))
     
     
     if sum(MS_leaves_number_probabilities.values()) != 1.0:
         raise tools.InputError("the sum of the probabilities defined in MS_leaves_number_probabilities is not equal to 1.0")
     possible_axes = \
         set([id_axis for (id_axis, probability) in
-             decide_child_axis_probabilities.iteritems() if probability != 0.0])
+             decide_child_axis_probabilities.items() if probability != 0.0])
         
     possible_MS_N_phytomer_potential = \
         set([int(MS_N_phytomer_potential) for (MS_N_phytomer_potential, probability) in
-             MS_leaves_number_probabilities.iteritems() if probability != 0.0])
+             MS_leaves_number_probabilities.items() if probability != 0.0])
     
     # check plants_number, decide_child_axis_probabilities, plants_density and ears_density validity
     decide_child_cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(decide_child_axis_probabilities)
@@ -202,7 +202,7 @@ of the MS are documented by the user, then this will lead to an error."
 
     
     # check the consistency of decide_child_axis_probabilities and params.MS_HS_AT_TILLER_EMERGENCE
-    available_axes = params.MS_HS_AT_TILLER_EMERGENCE.keys()
+    available_axes = list(params.MS_HS_AT_TILLER_EMERGENCE.keys())
     if not possible_axes.issubset(set(available_axes)):
         warnings.warn(available_axes_warning_message % (decide_child_axis_probabilities,
                                                         available_axes,

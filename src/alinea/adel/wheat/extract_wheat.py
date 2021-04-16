@@ -10,10 +10,10 @@ def extract_leaf_info(rdata_xy, rdata_sr):
     xy = R_xydb(rdata_xy)
     sr = R_srdb(rdata_sr)
     
-    rank = xy.keys()
+    rank = list(xy.keys())
     rank.sort()
     # Assert that the two databases are compatible.
-    rank_bis = sr.keys()
+    rank_bis = list(sr.keys())
     rank_bis.sort()
     assert rank == rank_bis
 
@@ -26,7 +26,7 @@ def test():
     rdata_xy = 'data/So99.RData'
     rdata_sr = 'data/SRSo.RData'
     leaves = extract_leaf_info(rdata_xy, rdata_sr)
-    rank = leaves.keys()
+    rank = list(leaves.keys())
     rank.sort()
     assert rank == ['1', '2', '3', '4', '5', '6']
     return leaves
@@ -34,7 +34,7 @@ def test():
 
 if __name__ == '__main__':
     leaves = test()
-    import cPickle as Pickle
+    import pickle as Pickle
     f = open('leaves_wheat.db','w')
     Pickle.dump(leaves, f)
     f.close()

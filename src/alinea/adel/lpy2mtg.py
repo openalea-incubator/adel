@@ -16,7 +16,7 @@ def lpy2mtg(axialtree, lsystem):
     gk.sort()
     gk.reverse()
 
-    gids = zip(vids,gk)
+    gids = list(zip(vids,gk))
     for k,v in gids:
         geometry[k] = geoms[v]
     return g,

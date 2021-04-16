@@ -58,7 +58,7 @@ Installation with conda
 
 Create an environment:
 
-  conda create -n adel -c openalea openalea.plantgl boost=1.66
+  conda create -n adel -c anaconda -c openalea openalea.plantgl boost=1.66
 
 Activate the environment:
 

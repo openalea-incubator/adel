@@ -29,7 +29,7 @@ def test_post_processing():
     # check intermediate results
     intermediate_results_array = \
         pandas.read_csv(intermediate_results_file_path).values
-    intermediate_results_array = np.delete(intermediate_results_array, 3, 1).astype(float)
+    intermediate_results_array = np.delete(intermediate_results_array, (1,3), 1).astype(float)
     expected_intermediate_results_array = \
         pandas.read_csv(expected_results_dir_path/'intermediate.csv').values
     expected_intermediate_results_array = np.delete(expected_intermediate_results_array, 2, 1).astype(float)
@@ -49,5 +49,5 @@ def test_post_processing():
     expected_global_postprocessing_results_array = np.delete(expected_global_postprocessing_results_array, 0, 1).astype(float)
     np.testing.assert_allclose(global_postprocessing_results_array, expected_global_postprocessing_results_array, relative_tolerance, absolute_tolerance)
     
-if __name__ == '__main__':
-    test_post_processing()
+# if __name__ == '__main__':
+#     test_post_processing()

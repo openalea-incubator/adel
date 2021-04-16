@@ -131,7 +131,7 @@ def test_organs_dimensions():
     test_table_filepath = default_results.joinpath('dimT.csv')
     dimT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
     print('The results have been saved to %s' % test_table_filepath)
-    np.testing.assert_allclose(dimT_.values, expected_dimT.values, relative_tolerance, absolute_tolerance)
+    np.testing.assert_allclose(dimT_.values.astype(float), expected_dimT.values, relative_tolerance, absolute_tolerance)
         
 
 def test_axes_phenology():
@@ -293,7 +293,7 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
             assert (result_table['id_axis'] == expected_table['id_axis']).all()
             result_table = result_table.drop('id_axis', axis=1)
             expected_table = expected_table.drop('id_axis', axis=1)
-        np.testing.assert_allclose(result_table.values, expected_table.values, relative_tolerance, absolute_tolerance)
+        np.testing.assert_allclose(result_table.values.astype(float), expected_table.values, relative_tolerance, absolute_tolerance)
    
 
 # Deactivate test as it modifies data : TO DO : pass tmp dir to node before executing

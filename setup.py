@@ -42,7 +42,8 @@ setup(
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},
-    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea','adel', 'data'))},
+    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea','adel', 'data')),
+                  os.path.join(*('alinea', 'adel', 'echap_leaf_data')): os.path.join(*('src', 'alinea','adel', 'echap_leaf_data'))},
 
     # Add package platform libraries if any
     zip_safe = False,

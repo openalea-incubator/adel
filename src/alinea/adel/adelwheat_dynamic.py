@@ -1,17 +1,18 @@
 """ Prototype adel model that uses mtg edition functions"""
 from openalea.mtg import MTG
-from alinea.adel.adel import Adel
+from alinea.adel.astk_interface import AdelWheat
 from alinea.adel.mtg_editions import find_metamers, add_plant, add_vegetative_metamer, new_mtg_factory, update_organ_elements
+from alinea.adel.AdelR import plantSample
 from alinea.adel.mtg_interpreter import mtg_interpreter, transform_geom
 
 
-class AdelDyn(Adel):
+class AdelWheatDyn(AdelWheat):
 
-    def build_stand(self, axeTable):
+    def build_stand(self):
 
         g = MTG()
-        plants = axeTable
-        sample = self.plant_references
+        plants = self.axeT()
+        sample = [int(p) for p in plantSample(self.pars)]
         for i, plant in plants.groupby('plant'):
             plant_properties = {'position': self.positions[i - 1],
                                 'azimuth': self.plant_azimuths[i - 1],
@@ -20,16 +21,16 @@ class AdelDyn(Adel):
             ms_properties = {'HS_final': float(ms['HS_final'][0]),
                              'nff': int(ms['nf'][0]),
                              'hasEar': bool(int(ms['hasEar'][0])),
-                             'azimuth': 0}
+                             'azimuth': float(ms['azTb'][0])}
             add_plant(g, i, plant_properties=plant_properties,
                       axis_properties=ms_properties)
         return g
 
-    def add_metamer(self, g, phytoT, plant=1, axe='MS'):
+    def add_metamer(self, g, plant=1, axe='MS'):
         vid_plant, vid_axe, metamers = find_metamers(g, plant, axe)
         nff = g.property('nff')[vid_axe]
         num_metamer = len(metamers)
-        df = phytoT.loc[phytoT['axe'] == axe,:]
+        df = self.phytoT(axe)
         m = df.loc[df['n'] == num_metamer, :].to_dict('list')
         metamer_properties = {'L_shape': m['Ll'][0]}
         ntop = nff - num_metamer + 1
@@ -64,7 +65,7 @@ class AdelDyn(Adel):
                             face_up=self.face_up)
         return g
 
-    def update_geometry(self, g, phyllochron={'MS':88.92, 'T1':91.6}, SI_units=False, properties_to_convert={'lengths':[], 'areas':[]}):
+    def update_geometry(self, g, SI_units=False, properties_to_convert={'lengths':[], 'areas':[]}):
         """Update MTG geometry.
 
         :Parameters:
@@ -81,7 +82,7 @@ class AdelDyn(Adel):
             self.convert_to_ADEL_units(g, properties_to_convert)
 
         # update elements
-        g = update_organ_elements(g, self.leaves, self.split, phyllochron)
+        g = update_organ_elements(g, self.leaves, self.split, self.phyllochron())
         g = mtg_interpreter(g, self.leaves, face_up=self.face_up,
                             classic=self.classic)
         pos = g.property('position')
@@ -104,11 +105,11 @@ class AdelDyn(Adel):
             - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
         """
         for length_property in properties_to_convert['lengths']:
-            for vid, length in g.properties()[length_property].items():
+            for vid, length in g.properties()[length_property].iteritems():
                 g.properties()[length_property][vid] = length * 100 # Converts m to cm
 
         for area_property in properties_to_convert['areas']:
-            for vid, area in g.properties()[area_property].items():
+            for vid, area in g.properties()[area_property].iteritems():
                 g.properties()[area_property][vid] = area * 10000 # Converts m2 to cm2
 
     def convert_to_SI_units(self, g, properties_to_convert):
@@ -119,9 +120,9 @@ class AdelDyn(Adel):
             - `properties_to_convert` (:class:`dict` of :class:`pandas.DataFrame`) - A dictionnary with the list of length properties area properties to be converted.
         """
         for length_property in properties_to_convert['lengths']:
-            for vid, length in g.properties()[length_property].items():
+            for vid, length in g.properties()[length_property].iteritems():
                 g.properties()[length_property][vid] = length / 100 # Converts cm to m
 
         for area_property in properties_to_convert['areas']:
-            for vid, area in g.properties()[area_property].items():
+            for vid, area in g.properties()[area_property].iteritems():
                 g.properties()[area_property][vid] = area / 10000 # Converts cm2 to m2

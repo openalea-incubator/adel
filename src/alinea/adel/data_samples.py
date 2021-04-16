@@ -3,9 +3,11 @@
 
 import os
 import pandas
+from alinea.adel.geometric_elements import Leaves, xydb_from_csv, srdb_from_csv
 import alinea.adel.json_numpy as json_np
 
 datadir = os.path.dirname(__file__)
+
 
 def wheat_dimension_profiles():
     """ Dimension profiles compiled using maxwell REF + Echap data (cf Dimension_profile.R in echap/src/data/architecturaldata)
@@ -14,10 +16,11 @@ def wheat_dimension_profiles():
     df = pandas.read_csv(fn)
     return df
 
+
 def leaves():
-    from alinea.adel.geometric_elements import Leaves
     return {0: Leaves()}
-    
+
+
 def leaves_db():
     import alinea.adel.fitting as fitting
     fn = datadir + '/data/simpleleavesdb.json'
@@ -25,7 +28,8 @@ def leaves_db():
         leaves = json_np.load(f)
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
-    
+
+
 def devT():
     from alinea.adel.AdelR import devCsv
     
@@ -36,27 +40,39 @@ def devT():
     ssisenT = datadir + '/data/ssi2sen.csv'
     
     return devCsv(axeT,dimT,phenT,earT,ssisenT)
-    
+
+
 def srdb(nlevel=None):
-    from alinea.adel.AdelR import R_srdb
-    rdata = datadir + '/data/SRSo.RData'
-    db = R_srdb(rdata)
+    rdata = datadir + '/data/SRSo.csv'
+    db = srdb_from_csv(rdata)
     if nlevel is None:
         return db
     else:
-        return {(k + 1):db['1'] for k in range(nlevel)}
-    
+        return {str(k + 1): db['1'] for k in range(nlevel)}
+
+
 def xydb():
-    from alinea.adel.AdelR import R_xydb
-    rdata =  datadir + '/data/So99.RData'
-    return R_xydb(rdata)
-    
+    data =  datadir + '/data/So99.csv'
+    return xydb_from_csv(data)
+
+
 def wheat_leaf_db():
     from alinea.adel.wheat.extract_wheat import extract_leaf_info
     import alinea.adel.fitting as fitting
     leaves= extract_leaf_info(datadir + '/data/So99.RData',datadir + '/data/SRSo.RData')
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
+
+
+def axeTable():
+    filename = datadir + '/data/axeTable.csv'
+    return pandas.read_csv(filename, sep=',', decimal='.')
+
+
+def phytoT():
+    filename = datadir + '/data/phytoT.csv'
+    return pandas.read_csv(filename, sep=',', decimal='.')
+
 
 from alinea.adel.newmtg import mtg_factory, adel_metamer
 from alinea.adel.mtg_interpreter import mtg_interpreter

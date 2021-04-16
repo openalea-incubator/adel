@@ -76,8 +76,8 @@ def test_plot_statistics():
     desired_plot_statistics_df = desired_plot_statistics_df.select_dtypes(include=[np.number])
     np.testing.assert_allclose(plot_statistics_df.values, desired_plot_statistics_df.values, RELATIVE_TOLERANCE, ABSOLUTE_TOLERANCE)
     
-if __name__ == '__main__':
-    test_aggregate_adel_output()
-    test_phenology()
-    test_axis_statistics()
-    test_plot_statistics()
+# if __name__ == '__main__':
+#     test_aggregate_adel_output()
+#     test_phenology()
+#     test_axis_statistics()
+#     test_plot_statistics()

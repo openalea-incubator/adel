@@ -306,7 +306,7 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
 #     assert res == []
     
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     # test_init_axes()
     # test_phenology_functions()
     # test_plants_structure()
@@ -314,6 +314,6 @@ if __name__ == '__main__':
     # test_axes_phenology()
     #test_gen_adel_input_data_from_min_min()
      #test_gen_adel_input_data_from_short_short()
-     test_gen_adel_input_data_from_full_full()
+     #test_gen_adel_input_data_from_full_full()
 #     # test_plantgen()
     

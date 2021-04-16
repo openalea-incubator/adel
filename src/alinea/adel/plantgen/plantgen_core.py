@@ -714,7 +714,7 @@ def _init_dimT(axeT_, dimT_tmp, dynT_):
     dimT_tmp_grouped = dimT_tmp.groupby(['id_axis', 'N_phytomer_potential'])
     for id_dim, axeT_group in axeT_.groupby('id_dim'):
         axeT_keys = axeT_group.groupby(['id_axis', 'id_cohort', 'N_phytomer_potential']).groups.keys()
-        dynT_group = dynT_.select(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer_potential'][idx]) in axeT_keys)
+        dynT_group = dynT_.loc[dynT_.index.map(lambda idx: (dynT_['id_axis'][idx], dynT_['id_cohort'][idx], dynT_['N_phytomer_potential'][idx]) in axeT_keys)]
         idxmax = dynT_group[dynT_group['id_axis'] == dynT_group['id_axis'].max()].first_valid_index()
         N_phytomer_potential = dynT_group['N_phytomer_potential'][idxmax]
             
@@ -1865,7 +1865,7 @@ class _CreatePhenTFirst():
         if force or self.phenT_first is None:
             if not (phenT_tmp.count().max() == phenT_tmp.count().min() == phenT_tmp.index.size):
                 raise tools.InputError("phenT_tmp contains NA values")
-            self.phenT_first = phenT_tmp.select(lambda idx: True if phenT_tmp['index_phytomer'][idx] == 1 else False)
+            self.phenT_first = phenT_tmp.loc[phenT_tmp.index.map(lambda idx: True if phenT_tmp['index_phytomer'][idx] == 1 else False)]
         return self.phenT_first
 
 _create_phenT_first = _CreatePhenTFirst()

@@ -214,10 +214,10 @@ def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id'
     aggregations_to_apply_dict = dict(aggregations_to_apply_list)
     aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.iteritems() if key not in by])
                              
-    grouped = adel_output_df.groupby(by, as_index=False)
+    grouped = adel_output_df.groupby(list(by), as_index=False)
     adel_output_aggregated_df = grouped.aggregate(aggregations_to_apply_dict)
     
-    return adel_output_aggregated_df.reindex_axis(column_names, axis=1)
+    return adel_output_aggregated_df.reindex(column_names, axis=1)
             
     
 def phenology(adel_output_df):
@@ -414,7 +414,7 @@ def plot_statistics(axis_statistics_df, plant_number, domain_area):
         plot_statistics_columns.append('active_axes_density_for_axis_order_{}'.format(order))
         
     plot_statistics_list = []
-    for (ThermalTime, species),  group in axis_statistics_df.groupby(('ThermalTime', 'species'), as_index=False):
+    for (ThermalTime, species),  group in axis_statistics_df.groupby(['ThermalTime', 'species'], as_index=False):
                                   
         tot_LAI = group['LAI totale'].sum()
         green_LAI = group['LAI vert'].sum()

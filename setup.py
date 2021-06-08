@@ -37,6 +37,8 @@ setup(
     packages= find_packages('src'),
     # python packages directory
     package_dir= {'': 'src'},
+    namespace_packages=['alinea'],
+
 
                    
     # Add package platform libraries if any

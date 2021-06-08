@@ -40,7 +40,8 @@ setup(
     namespace_packages=['alinea'],
 
 
-                   
+    # Namespace packages creation by deploy
+    namespace_packages = [namespace],
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},

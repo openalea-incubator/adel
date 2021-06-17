@@ -267,8 +267,8 @@ def phenology(adel_output_df):
                 NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
                 d_base_lastcol = group['d_basecol'][index_of_last_Lv_equal_L_shape]
             HS = NFL + \
-                 (Lv_non_null_series[HS_indexes] / \
-                  L_shape[HS_indexes].astype(float)) \
+                 (Lv_non_null_series.loc[Lv_non_null_series.index.isin(HS_indexes)] /
+                  L_shape.loc[L_shape.index.isin(HS_indexes)].astype(float)) \
                  .sum()
         indexes_of_all_non_null_Lsen = group['Lvsen'][group['Lvsen'] != 0].index
         Lsen_non_null_series = group['Lvsen'][indexes_of_vegetative_phytomers][indexes_of_all_non_null_Lsen]

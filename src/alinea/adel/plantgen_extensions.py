@@ -335,7 +335,7 @@ class TillerRegression(object):
             # remaining compensation obtained by reducing f_disp of regressing cohorts, older first
             if sum(damages['f_damaged']) > 1e-6:
                 damages = damages[damages['f_damaged'] > 0]
-                regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = True) 
+                regressing_cohorts = regressing_cohorts.sort_values(by=['delay'], ascending = True) 
                 for c in damages.index:
                     f_d = damages['f_damaged'][c]
                     for c_r in regressing_cohorts.index:
@@ -349,7 +349,7 @@ class TillerRegression(object):
                     assert f_d < 1e-6, 'Damages are too important to be compensated by reggressing tillers !'
                         
         #curve
-        regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = False)           
+        regressing_cohorts = regressing_cohorts.sort_values(by=['delay'], ascending = False)           
         hs = [start, regressing_cohorts['t_start'].tolist()[0]] +  regressing_cohorts['t_disp'].tolist() + [end]
         curves = {}            
         for w in ('primary','other', 'total'):
@@ -551,7 +551,7 @@ class GreenLeaves(object):
     def TTsen(self, nff=None) :
         """ TTfull senescence = f(rank)
         """
-        TT = numpy.arange(self.hsfit.TT(self.n0, nff),round(self.hsfit.TT(self.hs_end(nff), nff)), 1)
+        TT = numpy.arange(self.hsfit.TT(self.n0, nff),numpy.round(self.hsfit.TT(self.hs_end(nff), nff)), 1)
         ssi = self.ssi_curve(nff)
         nsen = ssi(TT)
         nsen[0] = 0

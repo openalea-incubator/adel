@@ -416,7 +416,7 @@ class HaunStage(object):
         return final_leaf_number(ms_nff, cohort, self.inner_parameters)
         
     def dTT_MS_cohort(self, cohort=1):
-        """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
+        """ delay between main stem mean flag leaf emergence and mean flag leaf emergence of a cohort
         
         Note : compatibility with plantgen changes of 15/04/2016 is to be checked
         """
@@ -458,8 +458,10 @@ class HaunStage(object):
         return self.dTT_nff / self.phyllochron()
 
     def curve(self, nff=None, cohort=1):
-        ymax = self.HSflag(nff, cohort)
-        return interp1d([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort), 3000.],[0., 0., ymax, ymax]) 
+        ymax = self.HSflag(nff, cohort).item()
+        x = numpy.array([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort).item(), 3000.])
+        y = numpy.array([0., 0., ymax, ymax])
+        return interp1d(x,y)
 
 class GreenLeaves(object):
     """

@@ -68,7 +68,7 @@ def get_normal_dist(nb_plants=10, sigma=30.):
     return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], int(d)+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
 def _order(axe):
-    if axe is 'MS':
+    if axe == 'MS':
         return 0
     else:
         return len(axe.rsplit('.'))    

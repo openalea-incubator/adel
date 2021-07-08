@@ -144,10 +144,11 @@ class AdelWheat(Adel):
             dt=0) for i in range(steps))
 
     def setup_canopy(self, age=10):
-
-        self.new_stand(age=age)
+        if "stand" not in self.meta: 
+            self.new_stand(age=age)
 
         if self.duplicate is None:
+            self.canopy_age = age
             canopy = RunAdel(age, self.pars, adelpars=self.run_adel_pars)
             stand = list(zip(self.positions, self.plant_azimuths))
             g = self.build_mtg(canopy, stand,

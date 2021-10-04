@@ -4,15 +4,15 @@
 
 import os
 
-from openalea.deploy.metainfo import read_metainfo
+#from openalea.deploy.metainfo import read_metainfo
 from setuptools import setup, find_packages
 
 pj = os.path.join
 
 # Reads the metainfo file
-metadata = read_metainfo('metainfo.ini', verbose=True)
-for key, value in metadata.items():
-    exec("%s = '%s'" % (key, value))
+#metadata = read_metainfo('metainfo.ini', verbose=True)
+#for key, value in metadata.items():
+ #   exec("%s = '%s'" % (key, value))
 
 # #retrieving packages
 # pkg_root_dir = '.'
@@ -24,16 +24,16 @@ for key, value in metadata.items():
 
 # Main setup
 setup(
-    name=name,
-    version=version,
-    description=description,
-    long_description=long_description,
-    authors=authors,
-    authors_email=authors_email,
-    url=url,
-    license=license,
+    name='Alinea.Adel',
+    version='1.7.0',
+    description='ADEL',
+    long_description='The Adel package characterise 3D plant development for raminae crops.',
+    authors='Christian Fournier, Christophe Pradal',
+    authors_email='christophe.pradal@cirad.fr',
+    url='http://openalea.gforge.inria.fr',
+    license='Cecill-C',
 
-    namespace_packages=[namespace],
+    namespace_packages=['alinea'],
     # create_namespaces = True,
 
     # py_modules = [],
@@ -55,7 +55,7 @@ setup(
     entry_points={'wralea': ['adel= alinea.adel', ]},
 
     # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
-    setup_requires=['openalea.deploy'],
+    setup_requires=[],
     install_requires=[],
     dependency_links=[],
 )

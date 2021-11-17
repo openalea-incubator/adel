@@ -68,14 +68,20 @@ Install the different packages
 
   conda install -c fredboudon -c conda-forge openalea.plantgl openalea.mtg -y
 
-
 Install openalea.Deploy
-  git clone https://github.com/openalea/deploy.git
-  cd deploy
-  python setup.py install
-  cd..
+
+.. code-block:: console
+
+    git clone https://github.com/openalea/deploy.git 
+    cd deploy
+    python setup.py install 
+    cd
 
 Install adel
-  git clone -b Port_python_3 https://github.com/openalea-incubator/adel.git
-  cd adel
-  python setup.py develop
+
+.. code-block:: console
+
+   git clone -b Port_python_3 https://github.com/openalea-incubator/adel.git 
+   cd adel
+   python setup.py develop
+

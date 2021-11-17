@@ -3,7 +3,7 @@ from itertools import *
 from math import pi, sqrt
 from random import random,sample
 from numpy.random import vonmises
-from openalea.core.path import path
+import path
 import numpy as np
 import alinea.adel.postprocessing as pp
 from operator import itemgetter

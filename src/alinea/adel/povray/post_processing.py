@@ -18,7 +18,7 @@
 import pandas
 import numpy as np
 from PIL import Image
-from openalea.core.path import path
+from pathlib import Path as path
 
 WHITE = (255, 255, 255)
 
@@ -29,7 +29,7 @@ def count_pixels(scene_path='',
                  color_labels=[], 
                  normalize=False, 
                  absolute_tolerance=1,
-                 normalized_scene_path=''):
+                 normalized_scene_path=None):
     '''Counts the pixels of each color, after normalizing the colors or not.
     :Parameters:
         - `scene_path` : the path of the bmp file which represents the scene 
@@ -85,7 +85,7 @@ def count_pixels(scene_path='',
         colors_float = tuple(np.array(rgb_colors).astype(float))
         normalized_colors = [tuple(normalize_to_255(color).astype(int)) 
                              for color in colors_float]
-        colors_mapping = dict(zip(normalized_colors, rgb_colors))
+        colors_mapping = dict(list(zip(normalized_colors, rgb_colors)))
         assert len(normalized_colors) == len(set(normalized_colors))
     
     scene_path = path(scene_path)
@@ -102,8 +102,8 @@ def count_pixels(scene_path='',
     normalized_scene_image = Image.new(scene_image.mode, scene_image.size)
     normalized_scene_image_array = normalized_scene_image.load()
     
-    pixels_init_number = np.zeros_like(range(len(rgb_colors)))
-    pixels_numbers = dict(zip(rgb_colors, pixels_init_number))
+    pixels_init_number = np.zeros_like(list(range(len(rgb_colors))))
+    pixels_numbers = dict(list(zip(rgb_colors, pixels_init_number)))
     
     scene_box_pixels_number = 0
     
@@ -135,7 +135,7 @@ def count_pixels(scene_path='',
                     if scene_color in rgb_colors:
                         pixels_numbers[scene_color] += 1
     
-    if len(normalized_scene_path) != 0:
+    if normalized_scene_path is not None:
         normalized_scene_image.save(path(normalized_scene_path), "BMP") 
     
     if result_path.exists():
@@ -149,7 +149,7 @@ def count_pixels(scene_path='',
         columns.append('scene_box')
         result_df = pandas.DataFrame(columns=columns)
     
-    data = [[scene_path.basename()] + 
+    data = [[scene_path.name] + 
             [pixels_numbers[color] for color in rgb_colors] + 
             [scene_box_pixels_number]]
     new_index = [result_df.index.size]

@@ -12,7 +12,7 @@ from os import chdir
 def pandadf2adeldict(df):
     ''' convertit un dataframe panda en dictionaire de vecteur numpy '''
     d = df.to_dict()
-    return dict((k,np.array([v for v in dv.itervalues()])) for k, dv in d.iteritems())
+    return dict((k,np.array([v for v in dv.values()])) for k, dv in d.items())
 
 def dimension_fitting(id_axe_ref, csvdata_to_fit):
 
@@ -67,7 +67,7 @@ def dimension_fitting(id_axe_ref, csvdata_to_fit):
 
         fitted_df = pandas.DataFrame()
 
-        for id_dim_curr, line_numbers in all_groups.iteritems():
+        for id_dim_curr, line_numbers in all_groups.items():
             id_dim = id_dim_curr
             df_to_fit = df.select(select_from_id_dim)
             #select secondary axis: we supose that primary axis have an id_dim =(100+FinalLeafNumber)

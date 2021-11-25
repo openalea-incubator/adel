@@ -6,7 +6,7 @@ try:
 except ImportError:
     win32api = None
 
-from openalea.core.path import path
+from pathlib import Path as path
 import time
 
 

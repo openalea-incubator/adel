@@ -17,7 +17,7 @@
 import os
 import tempfile
 import platform
-from openalea.core.path import path
+from pathlib import Path as path
 import openalea.plantgl.all as pgl
 
 
@@ -83,7 +83,7 @@ class PovRay(object):
                 #print 'Remove tempfile %s'%self.wdir
                 self.wdir.rmtree()
         else:
-            print "Povray.__del__ called, but working directory kept: %s"%self.wdir
+            print("Povray.__del__ called, but working directory kept: %s"%self.wdir)
 
     def add_soil(self, domain):
         self.domain = domain

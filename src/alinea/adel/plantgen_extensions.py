@@ -30,6 +30,7 @@ from alinea.adel.plantgen.plantgen_interface import gen_adel_input_data
 from alinea.adel.plantgen import tools, params
 from alinea.adel.AdelR import devCsv
 import alinea.adel.data_samples as adel_data
+from functools import reduce
 
 # some new tools
 
@@ -64,10 +65,10 @@ def get_normal_dist(nb_plants=10, sigma=30.):
         gap = distri_plants - round_distri
         round_distri[numpy.argmin(gap)] -= 1
         missing_pl = nb_plants - sum(round_distri)
-    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], d+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
+    return numpy.hstack([numpy.linspace(h[1][i], h[1][i+1], int(d)+2)[1:-1] for i, d in enumerate(round_distri) if d>0])
 
 def _order(axe):
-    if axe is 'MS':
+    if axe == 'MS':
         return 0
     else:
         return len(axe.rsplit('.'))    
@@ -85,21 +86,21 @@ def cardinalities(proba, n, parents = None):
         parents allows for control of botanical constraint in the specific case of tiller sampling
     """
     if parents is not None:#filter botanical impossibilities
-        proba = {k:v for k,v in proba.iteritems() if _parent(k) in parents}
-        proba = {k: v / sum(proba.values()) for k,v in proba.iteritems()} 
-        card  = {k:min(int(v*n), parents.get(_parent(k),n)) for k,v in proba.iteritems()}
+        proba = {k:v for k,v in proba.items() if _parent(k) in parents}
+        proba = {k: v / sum(proba.values()) for k,v in proba.items()} 
+        card  = {k:min(int(v*n), parents.get(_parent(k),n)) for k,v in proba.items()}
     else:
-        card  = {k:int(v*n) for k,v in proba.iteritems()}
+        card  = {k:int(v*n) for k,v in proba.items()}
     if parents is not None:   #filter saturated parents after int rounding
-        proba = {k:v for k,v in proba.iteritems() if (card[k] <= parents.get(_parent(k),n) or _parent(k) == '')}
+        proba = {k:v for k,v in proba.items() if (card[k] <= parents.get(_parent(k),n) or _parent(k) == '')}
     
     missing = int(n - sum(card.values()))
     while (missing > 0):
         # current frequencies
-        freq = {k:float(v) / n for k,v in card.iteritems() if k in proba}
+        freq = {k:float(v) / n for k,v in card.items() if k in proba}
         # diff with probabilities
         dp = {k:abs(freq[k] - proba[k]) for k in freq}
-        sorted_p = sorted(dp.iteritems(), key=operator.itemgetter(1), reverse=True)
+        sorted_p = sorted(iter(dp.items()), key=operator.itemgetter(1), reverse=True)
         k = sorted_p[0][0]
         card[k] += 1
         if parents is not None:
@@ -107,13 +108,13 @@ def cardinalities(proba, n, parents = None):
                 proba.pop(k)
         missing -= 1   
             
-    res = {k:v for k,v in card.iteritems() if v > 0}
+    res = {k:v for k,v in card.items() if v > 0}
     if parents is not None:
         parents.update(res)
     return res
    
 def card2list(card,shuffle=True):
-    liste = flat_list([[int(key)] * val for key,val in card.iteritems()])
+    liste = flat_list([[int(key)] * val for key,val in card.items()])
     if shuffle:
         random.shuffle(liste)
     return liste
@@ -124,7 +125,7 @@ def plant_list(axis, nplants = 2):
 # TO DO for more robust name selection : test if any parent of same cohort is present on the plant to filter candidates,and, in update find the matching prent and then choose a compatible name : debug possible avec get_reconstruction Tremie 12
 
     def _choose_plant(axe_name, plantlist):   
-        candidates = filter(lambda x: (axe_name not in x) and (_parent(axe_name) in x or _parent(axe_name) == ''), plantlist)
+        candidates = [x for x in plantlist if (axe_name not in x) and (_parent(axe_name) in x or _parent(axe_name) == '')]
         if len(candidates) == 0:
             raise AdelImplementationError(' Unable to build plants from cardinalities of axis...')
         return random.sample(candidates,1)[0]
@@ -153,7 +154,7 @@ def cohort_delays(inner_parameters={}):
     cohort emergence delay = delays HS_0 MS -> HS_0 tillers (HS=0 <=> emergence leaf)
     """
     tiller_delays = inner_parameters.get('MS_HS_AT_TILLER_EMERGENCE',params.MS_HS_AT_TILLER_EMERGENCE)
-    cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.iteritems()}
+    cohort_delays = {(int(k.lstrip('T')) + 3):v for k,v in tiller_delays.items()}
     cohort_delays[1] = 0
     return cohort_delays
     
@@ -172,7 +173,7 @@ class TillerEmission(object):
     
     def __init__(self, primary_tiller_probabilities = {'T1':0.95, 'T2':0.85, 'T3':0.75, 'T4':0.4}, inner_parameters ={}):
         
-        self.primary_tiller_probabilities = {k:v for k,v in primary_tiller_probabilities.iteritems() if v > 0 }
+        self.primary_tiller_probabilities = {k:v for k,v in primary_tiller_probabilities.items() if v > 0 }
         if len(self.primary_tiller_probabilities) <= 0:
             self.primary_tiller_probabilities = {'T1':0.001}
         self.cohort_probabilities = tools.calculate_decide_child_cohort_probabilities(self.primary_tiller_probabilities)
@@ -206,7 +207,7 @@ class TillerEmission(object):
         proba = self.theoretical_probabilities()
         emergence_delays = self.cohort_delays
         nff = self.final_leaf_numbers(MS_nff)
-        data = zip(*[(k[0],k[1],v) for k,v in proba.iteritems()])
+        data = list(zip(*[(k[0],k[1],v) for k,v in proba.items()]))
         df = pandas.DataFrame({'axis': data[1],
                                'cohort': data[0],
                                'nff': [nff[c] for c in data[0]],
@@ -215,7 +216,7 @@ class TillerEmission(object):
         df = df.sort_values(['cohort','axis'])
         
         if max_order != None:
-            df = df[map(lambda x: _order(x) <= max_order,df['axis'])]
+            df = df[[_order(x) <= max_order for x in df['axis']]]
            
         if hs_debreg != None:
             df = df[df['delay'] <= hs_debreg]
@@ -228,7 +229,7 @@ class TillerEmission(object):
         return df
 
     def curve_emission_table(self, emission_table):
-        emission_table['primary'] = map(lambda x: not '.' in x, emission_table['axis'])
+        emission_table['primary'] = [not '.' in x for x in emission_table['axis']]
         def _fun(x):
             d = {'cohort': x['cohort'].mean(), 
                  'delay': x['delay'].mean(),
@@ -334,7 +335,7 @@ class TillerRegression(object):
             # remaining compensation obtained by reducing f_disp of regressing cohorts, older first
             if sum(damages['f_damaged']) > 1e-6:
                 damages = damages[damages['f_damaged'] > 0]
-                regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = True) 
+                regressing_cohorts = regressing_cohorts.sort_values(by=['delay'], ascending = True) 
                 for c in damages.index:
                     f_d = damages['f_damaged'][c]
                     for c_r in regressing_cohorts.index:
@@ -348,7 +349,7 @@ class TillerRegression(object):
                     assert f_d < 1e-6, 'Damages are too important to be compensated by reggressing tillers !'
                         
         #curve
-        regressing_cohorts = regressing_cohorts.sort_index(by=['delay'], ascending = False)           
+        regressing_cohorts = regressing_cohorts.sort_values(by=['delay'], ascending = False)           
         hs = [start, regressing_cohorts['t_start'].tolist()[0]] +  regressing_cohorts['t_disp'].tolist() + [end]
         curves = {}            
         for w in ('primary','other', 'total'):
@@ -398,7 +399,7 @@ class HaunStage(object):
     def load(file_path):
         with open(file_path, 'r') as input_file:
             saved = json.load(input_file)
-            saved['cohort_delays'] = {int(k):v for k, v in saved['cohort_delays'].iteritems()}
+            saved['cohort_delays'] = {int(k):v for k, v in saved['cohort_delays'].items()}
         return HaunStage(phyllochron = saved['phyllochron'], TT_hs_0 = saved['TT_hs_0'],
                          std_TT_hs_0 = saved['std_TT_hs_0'], mean_nff = saved['mean_nff'],
                          dHS_nff = saved['dHS_nff'], dTT_cohort=saved['dTT_cohort'],
@@ -415,7 +416,7 @@ class HaunStage(object):
         return final_leaf_number(ms_nff, cohort, self.inner_parameters)
         
     def dTT_MS_cohort(self, cohort=1):
-        """ delay between main stem mean flag leaf emergenece and mean flag leaf emergence of a cohort
+        """ delay between main stem mean flag leaf emergence and mean flag leaf emergence of a cohort
         
         Note : compatibility with plantgen changes of 15/04/2016 is to be checked
         """
@@ -457,8 +458,10 @@ class HaunStage(object):
         return self.dTT_nff / self.phyllochron()
 
     def curve(self, nff=None, cohort=1):
-        ymax = self.HSflag(nff, cohort)
-        return interp1d([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort), 3000.],[0., 0., ymax, ymax]) 
+        ymax = self.HSflag(nff, cohort).item()
+        x = numpy.array([-1000., self.TTfirst(cohort), self.TTflag(nff, cohort).item(), 3000.])
+        y = numpy.array([0., 0., ymax, ymax])
+        return interp1d(x,y)
 
 class GreenLeaves(object):
     """
@@ -485,7 +488,7 @@ class GreenLeaves(object):
         """ Fit curvature coefficient from a HS, GL dataset
         """
         GLpol = pandas.DataFrame({'HS':HS_since_flag, 'GL':GL})
-        GLpol = GLpol.ix[GLpol['HS'] > 0,:]
+        GLpol = GLpol.iloc[GLpol['HS'] > 0,:]
         c = (self.n2 - self.n1) / (self.n_elongated_internode) - 1
         fixed_coefs = [0.0, c, self.n2]
         a, rmse = tools.fit_poly(GLpol['HS'], GLpol['GL'], fixed_coefs, a_starting_estimate=self.a)
@@ -550,7 +553,7 @@ class GreenLeaves(object):
     def TTsen(self, nff=None) :
         """ TTfull senescence = f(rank)
         """
-        TT = numpy.arange(self.hsfit.TT(self.n0, nff),round(self.hsfit.TT(self.hs_end(nff), nff)), 1)
+        TT = numpy.arange(self.hsfit.TT(self.n0, nff),numpy.round(self.hsfit.TT(self.hs_end(nff), nff)), 1)
         ssi = self.ssi_curve(nff)
         nsen = ssi(TT)
         nsen[0] = 0
@@ -564,7 +567,7 @@ class GreenLeaves(object):
         df = pandas.DataFrame({'HS':hs,'GL':curve(hs)})
         df = df.loc[df['GL'] > 0,:]
         df['TT'] = self.hsfit.TT(df['HS'], nff)
-        return dict(zip(df['TT'],df['GL']))
+        return dict(list(zip(df['TT'],df['GL'])))
      
     def TT_t1_user(self, nff=None):
         return self.hsfit.TT(self.hs_t1(nff), nff)
@@ -702,11 +705,11 @@ class AxePop(object):
         self.std_em = std_em
           
     def mean_nff(self):
-        return sum([int(k) * v for k,v in self.MS_probabilities.iteritems()])
+        return sum([int(k) * v for k,v in self.MS_probabilities.items()])
         
     def mode_nff(self):
-        v = self.MS_probabilities.values()
-        nff = self.MS_probabilities.keys()
+        v = list(self.MS_probabilities.values())
+        nff = list(self.MS_probabilities.keys())
         return int(nff[v.index(max(v))])
         
     def sorted_nff(self):
@@ -743,9 +746,9 @@ class AxePop(object):
         if damages is not None:
             when_start,when_end = damages['when']
             f_damaged = tools.calculate_decide_child_cohort_probabilities(damages['damage'])# tools function convert 'tiller name' kays into cohort index keys
-            damages = pandas.DataFrame({'cohort':f_damaged.keys(), 'f_damaged':f_damaged.values()})
+            damages = pandas.DataFrame({'cohort':list(f_damaged.keys()), 'f_damaged':list(f_damaged.values())})
             # compute start/end for the different cohorts
-            delays = pandas.DataFrame({'cohort':self.Emission.cohort_delays.keys(), 'delay':self.Emission.cohort_delays.values()})
+            delays = pandas.DataFrame({'cohort':list(self.Emission.cohort_delays.keys()), 'delay':list(self.Emission.cohort_delays.values())})
             damages = damages.merge(delays)
             damages['start_damages'] = numpy.maximum(damages['delay'],when_start)
             damages['end_damages'] = numpy.maximum(damages['delay'], when_end)
@@ -786,7 +789,7 @@ class AxePop(object):
                     loss = [0] * 2 + [card] * 2
                     cfits[c] = {'hs':hs,'loss':loss}
                 #merge cohorts
-                hs = [start] + numpy.unique(damages.ix[:,('start_damages','end_damages')].values).tolist() + [end]
+                hs = [start] + numpy.unique(damages.loc[:,('start_damages','end_damages')].values).tolist() + [end]
                 loss = numpy.array([0] * len(hs))
                 for c in cfits:
                     loss = loss + numpy.interp(hs,cfits[c]['hs'],cfits[c]['loss'])
@@ -802,7 +805,7 @@ class AxePop(object):
             id_plant = i + 1
             # Random sampling of axes
             axes =  tools.decide_child_cohorts(self.Emission.cohort_probabilities, self.Emission.child_cohort_delay)
-            id_cohort, id_axis = zip(*axes)
+            id_cohort, id_axis = list(zip(*axes))
             # random sampling of nff for main stem
             nff_MS = tools.calculate_MS_final_leaves_number(self.MS_probabilities)
             # nfff on tillers : random rounding of decimal nff of cohort for that nff
@@ -848,13 +851,13 @@ class AxePop(object):
         cohort_cardinalities = numpy.round(cohort_table['probability'] * nplants)
         
         groups = table.groupby('cohort')
-        axis_proba = groups.apply(lambda x: dict(zip(x['axis'].values, x['probability'].values / sum(x['probability'])))).to_dict()
+        axis_proba = groups.apply(lambda x: dict(list(zip(x['axis'].values, x['probability'].values / sum(x['probability']))))).to_dict()
         parents={'':0}
-        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.iteritems()}    
+        axis_cardinalities = {k:cardinalities(axis_proba[k], v,parents) for k, v in cohort_cardinalities.items()}    
 
-        axis_list = flat_list([flat_list(map(lambda x: [(k,x[0])] * int(x[1]),v.items())) for k, v in axis_cardinalities.iteritems()])
+        axis_list = flat_list([flat_list([[(k,x[0])] * int(x[1]) for x in list(v.items())]) for k, v in axis_cardinalities.items()])
         plist = plant_list(axis_list, nplants)
-        plant_axes = map(lambda x: [(v[0],k) for k,v in x.iteritems()],plist)
+        plant_axes = [[(v[0],k) for k,v in x.items()] for x in plist]
         
         nff_MS_cardinalities = cardinalities(self.MS_probabilities, nplants)
         nff_MS = card2list(nff_MS_cardinalities)
@@ -864,25 +867,25 @@ class AxePop(object):
             df = df.rename(columns={0:'cohort',1:'axe'})
             df['nff'] = y
             return df
-        df = pandas.concat(map(lambda x: _dfc(x[0],x[1]), zip(plant_axes, list(reversed(nff_MS)))))# plants are constructed by poping nff_MS, ie from last to first
+        df = pandas.concat([_dfc(x[0],x[1]) for x in zip(plant_axes, list(reversed(nff_MS)))])# plants are constructed by poping nff_MS, ie from last to first
         cardnff = df.groupby(['nff','cohort']).agg('count')
         #find nff per cohort
         cohort_decimal_nff = {int(k):self.Emission.final_leaf_numbers(int(k)) for k in self.MS_probabilities}
-        cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.iteritems()} for k,v in cohort_decimal_nff.iteritems()}
+        cohort_nff_modalities = {k:{kk:modalities(vv) for kk,vv in v.items()} for k,v in cohort_decimal_nff.items()}
         cohort_nff_cardinalities = {}
         for nff in nff_MS_cardinalities:
             d = {}
             for c in cardnff.loc[int(nff)].index:
                 d[int(c)] = cardinalities(cohort_nff_modalities[int(nff)][int(c)], int(cardnff.loc[int(nff),c]))
             cohort_nff_cardinalities[int(nff)] = d
-        cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.iteritems()} for k,v in cohort_nff_cardinalities.iteritems()}
+        cohort_nff = {k:{kk:card2list(vv) for kk,vv in v.items()} for k,v in cohort_nff_cardinalities.items()}
         
         plants = []
         dTTem = get_normal_dist(nb_plants=nplants, sigma=self.std_em)
         for i in range(nplants): 
             id_plant = i + 1
             axes =  plant_axes[i]
-            id_cohort, id_axis = zip(*axes)
+            id_cohort, id_axis = list(zip(*axes))
             # deterministic sampling of nff for main stem 
             nff_p = nff_MS.pop()
             # nfff on tillers
@@ -907,18 +910,18 @@ class AxePop(object):
         cards = population.groupby('id_cohort').count()['id_axis'].to_dict()
         
         nreg = {k: round(fdisp[k] * cards[k]) for k in fdisp if k in cards}
-        nreg = {k:v for k,v in nreg.iteritems() if v > 0}
-        treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.iteritems()}
+        nreg = {k:v for k,v in nreg.items() if v > 0}
+        treg = {k: t_death(v, regression_table['t_start'][k], regression_table['t_disp'][k]) for k,v in nreg.items()}
         
         if damages is None:
             tdisp = treg
         else:
             damages.set_index('cohort', inplace=True)
             fdamaged = damages['f_damaged'].to_dict()
-            ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.iteritems()}
-            ndamaged = {k:v for k,v in ndamaged.iteritems() if v > 0}
+            ndamaged = {k: round(v * cards[k]) for k,v in fdamaged.items()}
+            ndamaged = {k:v for k,v in ndamaged.items() if v > 0}
             assert sum(ndamaged.values()) <= sum(nreg.values()), 'Damages are too important to be compensated by reggressing tillers !'
-            tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.iteritems()}
+            tdamaged = {k: t_death(v, damages['start_damages'][k], damages['end_damages'][k]) for k,v in ndamaged.items()}
             tdisp = {}
             # for damaged regressing tillers, choose min(tdamage, treg)
             for k in tdamaged:
@@ -957,7 +960,7 @@ class AxePop(object):
         hs_stop = pop['hs_disparition'] - self.Regression.delta_stop_del
         # Hack for mimicking "new" plant gen behavior for regressing tillers: hs_stop  = startreg (ie the old first axis stop) for all regressing tillers. may be add one new leaf to be more smooth ?
         pop['hs_stop'] = numpy.where(numpy.isnan(pop['hs_disparition']),numpy.nan,numpy.minimum(hs_stop,self.hs_debreg()))
-        return dict(list(pop.groupby('id_plt'))).values()
+        return list(dict(list(pop.groupby('id_plt'))).values())
         
 
         
@@ -1044,8 +1047,8 @@ class PlantGen(object):
             dTTem = plant['dTTem'].values[0]
             if not numpy.isnan(TT_stop):
                 phen = phenT_abs[phenT_abs['id_phen'] == axeT['id_phen'][i]]
-                axeT.ix[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
-                axeT.ix[i,'id_ear'] = numpy.nan
+                axeT.loc[i,'HS_final'] = numpy.interp(TT_stop + dTTem, phen['TT_col_phytomer'], phen['index_phytomer'])
+                axeT.loc[i,'id_ear'] = numpy.nan
         # to do reduce 10%length + 10%width of regressing axes        
         # include plant number in ids to allow future concatenation with other plants
         id_plt = plant['id_plt'][0]
@@ -1059,16 +1062,16 @@ class PlantGen(object):
     def adelT(self, plants):
         """ Compute Adel input tables (axeT, phenT, dimT) for a collection of plants
         """        
-        tables = map(lambda x: self.pgen_tables(x)['adelT'], plants)
+        tables = [self.pgen_tables(x)['adelT'] for x in plants]
         if len(plants) > 1:
-            axeT, dimT, phenT =  map(pandas.concat, zip(*tables))
+            axeT, dimT, phenT =  list(map(pandas.concat, list(zip(*tables))))
         else:
             axeT, dimT, phenT = tables[0]
         return axeT, dimT, phenT
      
     def axeT_user_table(self, axeT):
     
-        df = pandas.DataFrame(index=range(len(axeT['id_plt'])),
+        df = pandas.DataFrame(index=list(range(len(axeT['id_plt']))),
                                                columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_app_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
                                                dtype=float)
 
@@ -1095,7 +1098,7 @@ class PlantGen(object):
         df = pandas.DataFrame(index=idaxis,
                               columns=['id_axis','a_cohort','TT_hs_0','TT_flag_ligulation','n0','n1','n2'],
                               dtype=float)
-        df.ix['MS'] = pandas.Series(MS_parameters)
+        df.loc['MS'] = pandas.Series(MS_parameters)
         df['id_axis'] = idaxis
         cohort = plant['id_cohort'].values
         df['TT_flag_ligulation'] = self.HSfit.TTflag(nff) + self.HSfit.dTT_MS_cohort(cohort)
@@ -1129,25 +1132,25 @@ def axis_list(TilleringModel,  nplants = 2):
     
     df = TilleringModel.emited_cohorts()
     df = df.set_index('cohort') 
-    cohort_cardinalities = {c:round(df.ix[c,'total_axis'] * nplants) for c in df.index}
+    cohort_cardinalities = {c:round(df.loc[c,'total_axis'] * nplants) for c in df.index}
     
-    modal_proba = {c:modalities(df.ix[c,'nff']) for c in df.index}
+    modal_proba = {c:modalities(df.loc[c,'nff']) for c in df.index}
     
-    cohort_modalities = {k:cardinalities(modal_proba[k],v) for k,v in cohort_cardinalities.iteritems()}
-    cohort_mods = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_modalities.iteritems()}
+    cohort_modalities = {k:cardinalities(modal_proba[k],v) for k,v in cohort_cardinalities.items()}
+    cohort_mods = {k:flat_list([[x[0]] * int(x[1]) for x in list(v.items())]) for k, v in cohort_modalities.items()}
 
     
     p = TilleringModel.theoretical_probabilities()
-    axis_p = [(k[0],(k[1],v)) for k,v in p.iteritems()] 
+    axis_p = [(k[0],(k[1],v)) for k,v in p.items()] 
     axis_proba = {k:dict([a[1] for a in axis_p if a[0] == k]) for k in dict(axis_p)}
-    axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.iteritems()} for k,v in axis_proba.iteritems()}
+    axis_proba = {k:{kk:vv/sum(v.values()) for kk,vv in v.items()} for k,v in axis_proba.items()}
     
     parents={'':0}
-    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values()),parents) for k, v in cohort_modalities.iteritems()}
-    cohort_ax = {k:flat_list(map(lambda x: [x[0]] * int(x[1]),v.items())) for k, v in cohort_axis.iteritems()}
+    cohort_axis = {k:cardinalities(axis_proba[k], sum(v.values()),parents) for k, v in cohort_modalities.items()}
+    cohort_ax = {k:flat_list([[x[0]] * int(x[1]) for x in list(v.items())]) for k, v in cohort_axis.items()}
     
-    axis = {k:zip(cohort_mods[k],cohort_ax[k]) for k in cohort_mods}
-    axis_list = [map(lambda x: (k,x[0],x[1]), v) for k,v in axis.iteritems()]
+    axis = {k:list(zip(cohort_mods[k],cohort_ax[k])) for k in cohort_mods}
+    axis_list = [[(k,x[0],x[1]) for x in v] for k,v in axis.items()]
     
     return flat_list(axis_list)
     
@@ -1160,14 +1163,14 @@ def axeT_user(nplants, TilleringModel):
     axis = axis_list(TilleringModel, nplants)
     plants = plant_list(axis, nplants) 
     iplant = flat_list([[i+1]*len(x) for i,x in enumerate(plants)])
-    df = pandas.DataFrame(index=range(len(iplant)),
+    df = pandas.DataFrame(index=list(range(len(iplant))),
                                            columns=['id_plt', 'id_cohort', 'id_axis', 'N_phytomer_potential', 'N_phytomer', 'HS_final', 'TT_stop_axis', 'TT_del_axis', 'id_dim', 'id_phen', 'id_ear', 'TT_app_phytomer1', 'TT_col_phytomer1', 'TT_sen_phytomer1', 'TT_del_phytomer1'],
                                            dtype=float)
 
     df['id_plt'] = iplant
-    df['id_axis'] = flat_list(map(lambda x: x.keys(),plants))
-    df['id_cohort'] = flat_list(map(lambda x: zip(*x.values())[0],plants))
-    df['N_phytomer_potential'] = flat_list(map(lambda x: zip(*x.values())[1],plants))
+    df['id_axis'] = flat_list([list(x.keys()) for x in plants])
+    df['id_cohort'] = flat_list([list(zip(*list(x.values())))[0] for x in plants])
+    df['N_phytomer_potential'] = flat_list([list(zip(*list(x.values())))[1] for x in plants])
     df['id_phen'] = df['id_cohort'] * 100 + df['N_phytomer_potential']
     
     df= df.sort(['id_plt','id_cohort','id_axis'])
@@ -1188,7 +1191,7 @@ def time_of_death(nplants, density_table, relative_density  = False):
     else:
         card = df['density'] * 1. / df['density'].iloc[0] * nplants
     ndead = card.iloc[0] - round(min(card))
-    tdeath = numpy.interp(range(int(card.iloc[0] - ndead), int(card.iloc[0])),card[::-1],df['TT'][::-1])
+    tdeath = numpy.interp(list(range(int(card.iloc[0] - ndead), int(card.iloc[0]))),card[::-1],df['TT'][::-1])
     return tdeath
 
 def kill_axis(devT, who, when, TT_stop_del = 2.8 * 110):
@@ -1242,7 +1245,7 @@ def adjust_tiller_survival(devT, cohort_survival, TT_stop_del = 2.8 * 110):
     Make (all) tillers of a living plant die along survival table
     """
     df = pandas.DataFrame(devT['axeT'])
-    df['iaxe'] = range(len(df))
+    df['iaxe'] = list(range(len(df)))
     for cohort in cohort_survival:
         naxes = len(df[df['id_cohort'] == cohort])
         tdeath = time_of_death(naxes, cohort_survival[cohort], relative_density=True)

@@ -5,7 +5,7 @@ from alinea.adel.AdelR import devCsv,setAdel,RunAdel,genGeoLeaf,genGeoAxe
 import alinea.adel.fitting as fitting
 
 import alinea.adel.data as data
-from openalea.core.path import path as Path
+from pathlib import Path
 
 
 def adelR(nplants,dd):
@@ -17,7 +17,7 @@ def adelR(nplants,dd):
     return pars,cantable
 
 def leaves_db(dlevel=9):
-    import cPickle as Pickle
+    import pickle as Pickle
     d = data.__path__[0]
     fn = r'%s/leaves_simple.db'%str(d)
     f = open(fn)

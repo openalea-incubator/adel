@@ -57,8 +57,8 @@ Installation with conda
 =======================
 
 Create an environment:
-
-  conda create -n adel -c openalea openalea.plantgl boost=1.66
+  conda create -n adel -c conda-forge python=3.8 ipython numpy=1.20 pandas rpy2 scipy setuptools=49.6 path -y
+  
 
 Activate the environment:
 
@@ -66,11 +66,22 @@ Activate the environment:
 
 Install the different packages
 
-  conda install -c conda-forge rpy2 
+  conda install -c fredboudon -c conda-forge openalea.plantgl openalea.mtg -y
 
-  conda install -c anaconda -c openalea openalea.mtg openalea.visualea openalea.core openalea.components numpy scipy matplotlib pandas pil
+Install openalea.Deploy
 
+.. code-block:: console
+
+    git clone https://github.com/openalea/deploy.git 
+    cd deploy
+    python setup.py install 
+    cd
 
 Install adel
 
-  python setup.py develop
+.. code-block:: console
+
+   git clone -b Port_python_3 https://github.com/openalea-incubator/adel.git 
+   cd adel
+   python setup.py develop
+

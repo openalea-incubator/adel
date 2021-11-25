@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 
 
-import os, sys
+import os, sys 
 from setuptools import setup, find_packages
 from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
@@ -10,7 +10,7 @@ pj = os.path.join
 
 # Reads the metainfo file
 metadata = read_metainfo('metainfo.ini', verbose=True)
-for key,value in metadata.iteritems():
+for key,value in metadata.items():
     exec("%s = '%s'" % (key, value))
 
     
@@ -28,21 +28,19 @@ setup(
     version=version,
     description=description,
     long_description=long_description,
-    authors=authors,
-    authors_email=authors_email,
+    author=authors,
+    author_email=authors_email,
     url=url,
     license=license,
-    
-    namespace_packages = [namespace],
-    create_namespaces = True,
-
     py_modules = [],
     # pure python  packages
     packages= find_packages('src'),
     # python packages directory
     package_dir= {'': 'src'},
+    namespace_packages=['alinea'],
 
-                   
+
+    # Namespace packages creation by deploy
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},

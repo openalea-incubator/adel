@@ -50,7 +50,7 @@ def log(*args):
         if logger:
             logger.debug('  '.join(map(str, args)))
         else:
-            print '  '.join(map(str, args))
+            print('  '.join(map(str, args)))
 
 import re
 
@@ -143,10 +143,10 @@ def read_lsystem_string( string,
     scale = 0
 
     lsys_symbols = ['[', ']', '/', '+', '^', 'f']
-    modules = symbol_at_scale.keys()
+    modules = list(symbol_at_scale.keys())
     symbols = lsys_symbols + modules
 
-    index = dict(zip(symbol_at_scale.keys(), [0]*len(symbol_at_scale)))
+    index = dict(list(zip(list(symbol_at_scale.keys()), [0]*len(symbol_at_scale))))
 
     is_ramif = False 
 
@@ -163,7 +163,7 @@ def read_lsystem_string( string,
     l = s.split()
 
     try:
-        plant_name = [s for s in symbol_at_scale.keys() if 'plant' in s.lower()][0]
+        plant_name = [s for s in list(symbol_at_scale.keys()) if 'plant' in s.lower()][0]
     except:
         ValueError("""Incorrect plant name (should be plant)""")
 
@@ -215,7 +215,7 @@ def read_lsystem_string( string,
             # add new modules to the mtg (i.e. add nodes)
             name = get_name(node)
             if name not in modules:
-                print 'Unknow element %s'% name
+                print('Unknow element %s'% name)
                 continue
             
             module_scale = symbol_at_scale[name]
@@ -283,7 +283,7 @@ def read_lsystem_string( string,
             # MANAGE the properties, the geometry and the indices!!!
             index[name] += 1
             if name == plant_name:
-                for k in index.keys():
+                for k in list(index.keys()):
                     if k != name:
                         index[k] = 0
 
@@ -334,12 +334,12 @@ def to_aggregation_table(g):
     can_label = g.property("can_label")
     tissue_type = g.property("tissue_type")
 
-    symbols = dict(zip(label.itervalues(), label.iterkeys()))
-    for k, v in symbols.iteritems():
+    symbols = dict(list(zip(iter(label.values()), iter(label.keys()))))
+    for k, v in symbols.items():
         symbols[k] = g.scale(v)
 
-    l = symbols.items()
-    l.sort(cmp= lambda x, y: cmp(x[1], y[1]))
+    l = list(symbols.items())
+    l.sort(key= lambda x: x[1])
 
     # scales
     header = "Plant Axe Metamer StemElement LeafElement Type"
@@ -348,13 +348,13 @@ def to_aggregation_table(g):
     # 2. iterate on the geometry at the last scale
     assert g.max_scale() == 4
 
-    root_axe = g.roots_iter(scale=2).next()
-    root_metamer = g.roots_iter(scale=3).next()
-    root_elt = g.roots_iter(scale=4).next()
+    root_axe = next(g.roots_iter(scale=2))
+    root_metamer = next(g.roots_iter(scale=3))
+    root_elt = next(g.roots_iter(scale=4))
 
     # compute the number of triangles
 
-    nb_lines = sum( mesh.indexListSize() for mesh in geometry.itervalues() if mesh)
+    nb_lines = sum( mesh.indexListSize() for mesh in geometry.values() if mesh)
     lines = numpy.zeros((nb_lines, 6), dtype=int)
 
     # compute relative index for metamer in axe and element in metamer
@@ -436,7 +436,7 @@ def to_aggregation_table(g):
 
     lines = lines.transpose()
     cols =[c.transpose() for c in lines]
-    table = dict(zip(header, cols))
+    table = dict(list(zip(header, cols)))
     return table
         
 def to_plantgl(g, 
@@ -494,7 +494,7 @@ def to_plantgl(g,
         shape.id = vid
         scene.add(shape)
 
-    for vid, mesh in geometries.iteritems():
+    for vid, mesh in geometries.items():
         geom2shape(vid, mesh, scene)
     return scene,
 
@@ -551,7 +551,7 @@ def planter(g, distribution, random_seed=0, azimuths = None):
 
     def pt2transfo(pt, previous_pt,rotation):
         matrix = Translation(pt).getMatrix()
-        if rotation is not 0:
+        if rotation != 0:
             r = AxisRotation((0,0,1), rotation).getMatrix()
             matrix = matrix * r * Translation(previous_pt).getMatrix()
         return Transform4(matrix), pt
@@ -618,7 +618,7 @@ def apply_property(g, pname, function):
     Returns this values as a dict (vid, new value).
     """
     prop = g.property(pname)
-    return dict( (k, function(v)) for k, v in prop.iteritems())
+    return dict( (k, function(v)) for k, v in prop.items())
 
 CanMTG.planter = planter
 CanMTG.to_plantgl = to_plantgl
@@ -644,7 +644,7 @@ def convert(v, undef='NA'):
 
 def properties(d, exclude = []):
     res = {}
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if k in exclude:
             continue
         v = convert(v)
@@ -920,7 +920,7 @@ def mtg_factory(params, sectors = 1):
                 edge_type = '+'
                 assert g.parent(vid_plant) is None
                 new_axe = g.add_child(vid_axe,edge_type=edge_type,label=label)
-                print vid_axe, new_axe, vid_plant
+                print(vid_axe, new_axe, vid_plant)
                 assert g.parent(vid_plant) is None
                 #vid, vid_axe = g.add_child_and_complex(metamers[axe], complex=vid_axe, **args)
 
@@ -1296,7 +1296,7 @@ def mtg_turtle_time(g, symbols, time, update_visitor=None ):
             if v == vid: continue
             # Done for the leaves
             if g.node(v).complex().start_tt > time:
-                print 'Do not consider ', v, time
+                print('Do not consider ', v, time)
                 continue
             visitor(g,v,turtle,time)
 
@@ -1320,7 +1320,7 @@ def thermal_time(g, phyllochron=110., leaf_duration=1.6, stem_duration=1.6, leaf
 
     for plant in plants:
         tt = 0
-        v = g.component_roots_at_scale_iter(plant, scale=metamer_scale).next()
+        v = next(g.component_roots_at_scale_iter(plant, scale=metamer_scale))
         for metamer in pre_order2(g, v):
             end_leaf = tt + phyllochron*leaf_duration
             nm = g.node(metamer)

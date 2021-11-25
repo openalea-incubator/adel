@@ -142,7 +142,7 @@ def color_ground_cover(scene, domain, colors_def = {'green':[0, 255, 0], 'senesc
     total_domain = mask.sum() / 255.
     masked = cv2.bitwise_and(im,im,mask=mask)
     
-    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.iteritems()}
+    res = {k:color_count(masked,v) / total_domain for k,v in colors_def.items()}
     
     if not getImages:
         im = None
@@ -212,7 +212,7 @@ def aggregate_adel_output(adel_output_df, by=('TT', 'species', 'plant', 'axe_id'
                              
     column_names = np.array(aggregations_to_apply_list)[:, 0]
     aggregations_to_apply_dict = dict(aggregations_to_apply_list)
-    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.iteritems() if key not in by])
+    aggregations_to_apply_dict = dict([(key, value) for key, value in aggregations_to_apply_dict.items() if key not in by])
                              
     grouped = adel_output_df.groupby(list(by), as_index=False)
     adel_output_aggregated_df = grouped.aggregate(aggregations_to_apply_dict)
@@ -263,12 +263,12 @@ def phenology(adel_output_df):
                 index_of_last_Lv_equal_L_shape = Lv_equal_L_shape_series.index[-1]
                 index_of_first_Lv_not_equal_L_shape = index_of_last_Lv_equal_L_shape + 1
                 index_of_last_Lv_non_null = Lv_non_null_series.index[-1]
-                HS_indexes = range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1)
+                HS_indexes = list(range(index_of_first_Lv_not_equal_L_shape, index_of_last_Lv_non_null + 1))
                 NFL = group['numphy'][index_of_last_Lv_equal_L_shape]
                 d_base_lastcol = group['d_basecol'][index_of_last_Lv_equal_L_shape]
             HS = NFL + \
-                 (Lv_non_null_series[HS_indexes] / \
-                  L_shape[HS_indexes].astype(float)) \
+                 (Lv_non_null_series.loc[Lv_non_null_series.index.isin(HS_indexes)] /
+                  L_shape.loc[L_shape.index.isin(HS_indexes)].astype(float)) \
                  .sum()
         indexes_of_all_non_null_Lsen = group['Lvsen'][group['Lvsen'] != 0].index
         Lsen_non_null_series = group['Lvsen'][indexes_of_vegetative_phytomers][indexes_of_all_non_null_Lsen]
@@ -277,7 +277,7 @@ def phenology(adel_output_df):
         if indexes_of_all_non_null_Lsen.size == 0:
             SSI = 0.0
         else:
-            nonzero_Lvsen_indexes = group.index[group.Lvsen.nonzero()]
+            nonzero_Lvsen_indexes = group.index[group.Lvsen.to_numpy().nonzero()]
             SSI = group['numphy'][nonzero_Lvsen_indexes[0]] - 1
             if len(nonzero_Lvsen_indexes) > 0:
                 Lvsen_values = group['Lvsen'].loc[nonzero_Lvsen_indexes]

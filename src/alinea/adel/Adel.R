@@ -88,7 +88,7 @@ rssi_pattern <- function(n,nf,hasEar=TRUE,pars=list(r1=0.07,ndelsen=3)) {
 #proportion Senesced as a function of Relative ssi and number from top
 #TO DO add nf pour gerer pattern special si nf <4 & hasEar
 psen <- function(rssi, n, nf, hasEar=TRUE, pars = NULL) {
-  if ('ssisenT' %in% names(pars)) 
+  if ('ssisenT' %in% names(pars))
     pat <- rssi_patternT(n, nf, pars$ssisenT,hasEar)
   else if ('ssipars' %in% names(pars))
     pat <- rssi_pattern(n,nf,hasEar,pars$ssipars)
@@ -96,7 +96,7 @@ psen <- function(rssi, n, nf, hasEar=TRUE, pars = NULL) {
     pat <- rssi_pattern(n,nf,hasEar)
   openapprox(pat$t, pat$p, rssi, extrapolate=FALSE)
 }
-                 
+
 #
 # kinL : Model for organ extension and leaf senescence
 #
@@ -175,7 +175,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
       # makes first phyto replace enclosing sheath after emergence
       if (i == 1 & xh > 0) {
         Lh <- 0
-      } else if (xh > 1) { 
+      } else if (xh > 1) {
         Lhmat <- dim$Gl[i - 1]
         Lh <- Lhcol + (Lhcol - Lhmat) * (xh - 1)
         Lh <- ifelse(Lhmat < Lhcol, min(Lhmat, Lh), max(Lhmat, Lh))
@@ -198,7 +198,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
       kin[i <= (disp-1),i,c("Gl","Glsen")] <- 0
     }
     #ear + peduncle elongation
-    
+
     if (plant$axeT$hasEar[a]) {
       for (i in (nfa+2):(nfa+3))
         kin[,i,"El"] <- ifelse(ph < (nfa + 1.6),0,dim$El[i])
@@ -208,7 +208,7 @@ kinL <- function(x,plant,pars=list("leafDuration" = 2, "fracLeaf" = 0.2, "stemDu
         kin[,nfa+1,"El"] = 0
    #senescence of stem + ear + awn + peduncle
     for (i in 1:(nfa+3))
-      kin[,i,"Elsen"] <- tryCatch(ifelse(xa < ped$senPed | length(dim$El[i]) <= 0,0,dim$El[i]), error = function(e) {stop(paste('plant:', plant$refp, 'axe', a, 'i', i));e}) 
+      kin[,i,"Elsen"] <- tryCatch(ifelse(xa < ped$senPed | length(dim$El[i]) <= 0,0,dim$El[i]), error = function(e) {stop(paste('plant:', plant$refp, 'axe', a, 'i', i));e})
     }
     ##TO DO disparition axe = longueurs nulles pour tout ce qui est sur des entrenoeuds allonges sauf pour entrenoeuds
     if (!is.na(plant$axeT$disp[a]))
@@ -276,7 +276,7 @@ checktube <- function(kin,ht0=0) {
           kin$ht <- htube(kin,0)
         }
     #for emegrning leaves ht must be as close to Lh as possible
-      if (kin$xh[i] > 0 & kin$xh[i] < 1) 
+      if (kin$xh[i] > 0 & kin$xh[i] < 1)
         if (abs(kin$ht[i] - kin$Lh[i]) > 0) {
           delta <- kin$Lh[i] - kin$ht[i]
           if (delta > 0) #tube is too short
@@ -375,7 +375,7 @@ kinLvis <- function(kinlist,pars=NULL) {
       }
       res[[a]][d,,"ht"] <- kin$ht
       res[[a]][d,,"Llrolled"] <- kin$Llrolled
-      res[[a]][d,,"Glopen"] <- kin$Glopen      
+      res[[a]][d,,"Glopen"] <- kin$Glopen
       res[[a]][d,,"Llvis"] <- kin$Llvis
       res[[a]][d,,"Glvis"] <- kin$Glvis
       res[[a]][d,,"Elvis"] <- kin$Elvis
@@ -463,7 +463,7 @@ axe_inclination <- function(dat, HS, ht, axename, incBase, dredT, start_incT=1, 
             Einc[stem$metamer[nd+1]] <- inc
           } else {
             Ginc[stem$metamer[nd+1]] <- inc
-          } 
+          }
         }
       } else {#incT too large
         beta <- acos(dredT / hc[1])
@@ -497,7 +497,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
     kin <- kinlist[[p]]
     plant <- plantlist[[p]]
     pldesc <- NULL
-    
+
     for (a in seq(kin)) {
       #print(paste("axe",a))
       axename <- names(kin)[a]
@@ -507,7 +507,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         colnames(dat) <- c("Ll","Gl","El","Lv","Gv","Ev","Lsen","Gsen","Esen","Lr")
                                         #  infos brutes de plant parameters
         datp <- data.frame(plant$phytoT[,,a])
-        dataxe <- plant$axeT[a,]       
+        dataxe <- plant$axeT[a,]
         nbleaf <- dataxe$nf
         nbphy <- nrow(dat)#inclus ear,ped et awn
         datp <- datp[1:nbphy,]
@@ -524,7 +524,7 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
         #azimuts : Attention new 21 fev 2011 : azimuts en relatif / phytomere precedent !
         Laz <- datp$Azim
         Laz[1] <- dataxe$azT
-        
+
         # control of blade basal inclination (to be moved in kinL?)
         Linc <- ifelse(datp$Ll > 0,dat$Lv / datp$Ll,1)
         # setup of Lindex (for Tino, no more needed) as a function of leaf stage
@@ -565,11 +565,9 @@ getdesc <- function(kinlist,plantlist,pars=list("senescence_leaf_shrink" = 0.5,"
                                          Lpo=pogreen,
                                          Lpos=posen,
                                          Gd=datp$Gd,
-                                         Ginc=dat$Ginc,
                                          Gpo=pogreen,
                                          Gpos=posen,
                                          Ed=datp$Ed,
-                                         Einc=dat$Einc,
                                          Epo=Epo,
                                          Epos=Epos,
                                          rph=rph,

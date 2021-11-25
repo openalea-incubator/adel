@@ -2,7 +2,7 @@ from math import *
 
 
 #from openalea.plantgl.all import *
-from curve_discretizer import curve_discretizer
+from .curve_discretizer import curve_discretizer
 #from alinea.adel.fitting import curvilinear_abscisse
 
 def curvilinear_abscisse( x, y ):
@@ -102,7 +102,7 @@ def interpolate_curvature(curvatures, times, kind='cubic'):
         s_new = np.unique(np.array(curv_abs).flatten())
         ds = np.diff(s_new)
         k = np.cumsum(ds >= min_s)
-        labels = range(k.min(), k.max()+1)
+        labels = list(range(k.min(), k.max()+1))
         s = np.zeros(len(labels)+1)
         s[1:] = measurements.mean(s_new[1:], k, labels)
         s[-1]=1.

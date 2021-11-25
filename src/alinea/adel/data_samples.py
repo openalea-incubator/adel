@@ -4,6 +4,7 @@
 import os
 import pandas
 from alinea.adel.geometric_elements import Leaves, xydb_from_csv, srdb_from_csv
+import alinea.adel.json_numpy as json_np
 
 datadir = os.path.dirname(__file__)
 
@@ -21,12 +22,10 @@ def leaves():
 
 
 def leaves_db():
-    import cPickle as Pickle
     import alinea.adel.fitting as fitting
-    fn = datadir + '/data/leaves_simple.db'
-    f = open(fn)
-    leaves = Pickle.load(f)
-    f.close()
+    fn = datadir + '/data/simpleleavesdb.json'
+    with open(fn) as f:
+        leaves = json_np.load(f)
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
 
@@ -130,9 +129,9 @@ def adel_two_metamers_stand(leaf_sectors = 1, inter_row=0.2, density = 150, conv
 def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
     """ create a very simple adel mtg """
     l = leaves()
-    d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
+    d = {'plant':[1],'axe_id':['MS'],'nff': [10], 'HS_final': [10],'ms_insertion':[0],'numphy':[1],
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[L], 'Lw_shape':[w], 'Linc':[0],
-         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
+         'Einc':[0],'El':[1],'Ev':[1],'Esen':[0],'Ed': [0.1], 'Gv': [1], 'Gl': [1], 'Gsen': [0],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
     g=mtg_factory(d,adel_metamer,leaves=l,leaf_sectors=leaf_sectors)
     g=mtg_interpreter(g,leaves=l)
     return g
@@ -140,9 +139,9 @@ def adel_one_leaf(L = 30, w = 0.3, leaf_sectors=1):
 def adel_one_leaf_element():
     """ create a very simple adel mtg """
     l = leaves()
-    d = {'plant':[1],'axe_id':['MS'],'ms_insertion':[0],'numphy':[1], 
+    d = {'plant':[1],'axe_id':['MS'],'nff': [10], 'HS_final': [10],'ms_insertion':[0],'numphy':[1],
          'Laz': [0], 'Ll' :[3], 'Lv' :[3] , 'Lr': [0], 'Lsen':[0], 'L_shape':[3], 'Lw_shape':[.3], 'Linc':[0],
-         'Einc':[0],'El':[0],'Ev':[0],'Esen':[0],'Ed': [0.1],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
+         'Einc':[0],'El':[1],'Ev':[1],'Esen':[0],'Ed': [0.1], 'Gv': [1], 'Gl': [1], 'Gsen': [0],'Gd': [0.1], 'LcType':[1],'LcIndex':[1]}
     g=mtg_factory(d,adel_metamer,leaves=l, leaf_sectors=1)
     g=mtg_interpreter(g, leaves=l)
     g.remove_vertex(13)

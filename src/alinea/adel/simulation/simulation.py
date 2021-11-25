@@ -1,5 +1,5 @@
 import os
-from openalea.core.path import path
+from pathlib import Path as path
 
 from alinea.adel.AdelR import RunAdel,genString
 
@@ -19,7 +19,7 @@ def simulation(lsystem_filename, nb_plants):
     leaf_file = 'leaf.a'
     color_file = 'color.map'
     result_file = 'result.str'
-    cmd = "cpfg -g -homo -str %s %s %s %s -m %s" % (result_file, fn.basename(), view_file, leaf_file, color_file)
+    cmd = "cpfg -g -homo -str %s %s %s %s -m %s" % (result_file, fn.name, view_file, leaf_file, color_file)
     print(cmd)
     curdir = os.getcwd()
     print(dir)

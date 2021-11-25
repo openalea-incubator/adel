@@ -3,7 +3,7 @@ import random
 from alinea.adel.plantgen import params, tools, plantgen_interface, plantgen_core
 import numpy as np
 import pandas
-from openalea.core.path import path
+from pathlib import Path as path
 
 
 random.seed(1234)

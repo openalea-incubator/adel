@@ -528,6 +528,7 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
             if not 'Gd' in args:
                 args.update({'Gd': 0.19})
             args.update({'split': split})
+            
             if args.get('HS_final') < args.get('nff'):
                 for what in (
                 'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
@@ -656,7 +657,7 @@ def update_organ_from_table(organ, metamer, oldmetamer):
     new_elts = neworg.pop('elements')
     old_elts = oldorg.pop('elements')
     for k in neworg:
-        if k is not 'shape_xysr':
+        if k != 'shape_xysr':
             exec("organ.%s = neworg['%s']" % (k, k))
     for i, e in enumerate(organ.components()):
         has_area = False

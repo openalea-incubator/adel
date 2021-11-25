@@ -3,7 +3,7 @@ from itertools import *
 from math import pi, sqrt
 from random import random,sample
 from numpy.random import vonmises
-import path
+from pathlib import Path as path
 import numpy as np
 import alinea.adel.postprocessing as pp
 from operator import itemgetter
@@ -267,7 +267,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
     intermediate_path = path(tempfile.mktemp(intermediate_file_suffix))
     intermediate_df.to_csv(intermediate_path, na_rep='NA', index=False)
     
-    axis_statistics_df.insert(0, 'Filename', intermediate_path.basename())
+    axis_statistics_df.insert(0, 'Filename', intermediate_path.name)
     peraxis_postprocessing_path_ = path(peraxis_postprocessing_path)
     if peraxis_postprocessing_path_.exists():
         old_peraxis_postprocessing_df = pd.read_csv(peraxis_postprocessing_path_)
@@ -278,7 +278,7 @@ def post_processing(adel_output_path='', plant_number=0, domain_area=0.0,
                               na_rep='NA', 
                               index=False)
 
-    plot_statistics_df.insert(0, 'Filename', intermediate_path.basename())
+    plot_statistics_df.insert(0, 'Filename', intermediate_path.name)
     global_postprocessing_path_ = path(global_postprocessing_path)
     if global_postprocessing_path_.exists():
         old_global_postprocessing_df = pd.read_csv(global_postprocessing_path_)

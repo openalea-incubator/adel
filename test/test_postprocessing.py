@@ -2,7 +2,7 @@ import tempfile
 
 import numpy as np
 import pandas as pd
-from openalea.core.path import path
+from pathlib import Path as path
 
 from alinea.adel import postprocessing as pp
 

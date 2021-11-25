@@ -17,7 +17,7 @@
 import os
 import tempfile
 import platform
-from openalea.core.path import path
+from pathlib import Path as path
 import openalea.plantgl.all as pgl
 
 

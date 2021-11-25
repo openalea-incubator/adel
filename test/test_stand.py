@@ -2,8 +2,8 @@ import tempfile
 
 import numpy as np
 import pandas
-from openalea.core.path import path
-
+#from pathlib import Path as path
+from pathlib import Path as path
 from alinea.adel.stand.stand import post_processing
 
 relative_tolerance = 10e-3

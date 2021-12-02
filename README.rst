@@ -81,7 +81,7 @@ Install adel
 
 .. code-block:: console
 
-   git clone -b Port_python_3 https://github.com/openalea-incubator/adel.git 
+   git clone https://github.com/openalea-incubator/adel.git 
    cd adel
    python setup.py develop
 

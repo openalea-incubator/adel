@@ -2,7 +2,7 @@ import numpy
 from scipy.interpolate import splev, splprep
 import alinea.adel.fitting as fitting
 from alinea.adel.data_samples import leaves_db
-from openalea.plantgl.all import Viewer
+#from openalea.plantgl.all import Viewer
 import openalea.plantgl.all as pgl
 # nosetetsts fails importing pylab for some mysteriuous reason (backend ?)
 with_pylab = True
@@ -36,14 +36,14 @@ def test1(leaf=leaf, scene = None):
     global translation
     if scene is None:
         scene = pgl.Scene()
-        Viewer.display(scene)
+        #Viewer.display(scene)
 
     x, y, s, r= leaf
     spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
     mesh = fitting.discretize(spline_leaf,30, 7, 1)
 
     scene += pgl.Translated(translation, mesh)
-    Viewer.update()
+    #Viewer.update()
 
 #test1(leaf)
 def test2(leaves=leaves):
@@ -53,7 +53,7 @@ def test2(leaves=leaves):
     global translation, yt, zt
     translation = pgl.Vector3(0,0,0)
     scene= pgl.Scene()
-    Viewer.display(scene)
+    #Viewer.display(scene)
     for k in leaves:
         print("Rank number: ", k)
         index = 0
@@ -87,7 +87,7 @@ def test3(leaf=leaf, scene = None):
         scene += pgl.Translated(translation, mesh)
         translation.z += zt
 
-    Viewer.display(scene)
+    #Viewer.display(scene)
 
 # def test4(leaves=leaves,rank=rank):
 #     # try with rank=7
@@ -129,20 +129,20 @@ def test7(leaf=leaf, scene = None):
 
     if scene is None:
         scene = pgl.Scene()
-        Viewer.display(scene)
+        #Viewer.display(scene)
 
     x, y, s, r= leaf
     spline_leaf, leaf_surface = fitting.fit_leaf(x, y, s, r)
     pts, ind = fitting.mesh(spline_leaf,30, 7, 7, 1)
-    fitting.write_smf('leaf_full.smf', pts, ind)
-    Viewer.display(fitting.plantgl_shape(pts, ind))
+    #fitting.write_smf('leaf_full.smf', pts, ind)
+    #Viewer.display(fitting.plantgl_shape(pts, ind))
 
 
 def test8(leaf=leaf, scene = None):
     global translation, zt
     if scene is None:
         scene = pgl.Scene()
-        Viewer.display(scene)
+        #Viewer.display(scene)
 
     x, y, s, r= leaf
     leaf_new, leaf_surface = fitting.fit2(x, y, s, r)
@@ -159,19 +159,19 @@ def test8(leaf=leaf, scene = None):
     scene += pgl.Translated(translation, fitting.plantgl_shape(pts, ind))
     #scene += pgl.Translated(translation+(0,yt/3.,0), mesh_final)
 
-    Viewer.update()
+    #Viewer.update()
 
 def test81(leaf=leaf, scene = None):
     global translation, yt, zt
     if scene is None:
         scene = pgl.Scene()
-        Viewer.display(scene)
+        #Viewer.display(scene)
 
     mesh = fitting.leaf_shape2(leaf,10, 7, 7, 1)
 
     scene += pgl.Translated(translation+(0,yt/3.,0), mesh)
 
-    Viewer.update()
+    #Viewer.update()
 
 # def test9(leaves=leaves):
 #     """

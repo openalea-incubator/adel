@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 #from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
-version = '2.0.0-dev'
+version = '1.9.0'
 name = 'alinea.adel'
 
 description= '3D plant simulation of graminae crops'

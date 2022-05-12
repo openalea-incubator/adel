@@ -6,14 +6,18 @@ from setuptools import setup, find_packages
 #from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
-version = '1.8.0'
+version = '2.0.0-dev'
 name = 'alinea.adel'
+
 description= '3D plant simulation of graminae crops'
 long_description= 'The Adel package characterise 3D plant development for graminae crops.'
+
 authors= 'Christian Fournier, Christophe Pradal'
 authors_email = 'christian fournier at inrae fr'
+
 url = 'https://github.com/openalea-incubator/adel'
 license = 'Cecill-C'
+
 # Main setup
 setup(
     name=name,

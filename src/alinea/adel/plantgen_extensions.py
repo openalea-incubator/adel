@@ -24,13 +24,13 @@ import operator
 from itertools import chain
 from scipy.interpolate import interp1d
 import random
+from functools import reduce
 
 from alinea.adel.exception import *
 from alinea.adel.plantgen.plantgen_interface import gen_adel_input_data
 from alinea.adel.plantgen import tools, params
 from alinea.adel.AdelR import devCsv
 import alinea.adel.data_samples as adel_data
-from functools import reduce
 
 # some new tools
 

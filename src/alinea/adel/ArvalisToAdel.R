@@ -2,7 +2,7 @@
 #                Codage adel simexp
 #
 #
-#A. Utilitaires de generation de tables de parametres ADEL a partir des données arvalis
+#A. Utilitaires de generation de tables de parametres ADEL a partir des donnees arvalis
 #
 #A.1 Generateurs pour le tableau axeTable
 #
@@ -71,7 +71,7 @@ buildgenAxe <- function(axedata, phyl = 110, delreg = 2, dureg = 3,deldisp = 2,p
 }
 #
 #
-# A.2 construction d'un generateur de parametre phytomer (dimension + azimuth + shape leaf) a partir de dimensions calées
+# A.2 construction d'un generateur de parametre phytomer (dimension + azimuth + shape leaf) a partir de dimensions calï¿½es
 #
 buildgenDim <- function(dimF, Rfun,indexes = 1:6) {
   dim <- dimF[,c("L","l","Lg","d","Le","d","Phi0","StemRate","StemRate"),]
@@ -144,7 +144,7 @@ buildgenPhen <- function(phyl=110,nfveg=4.5,nfflo=2.7,nfend=0,dphylflo=5.2,dtten
 #
 Rfuntest = list(azim=function(a,n,ntop) {0 * runif(1)})
 #
-# A.4 : generateur de parametres adel a partir des données arvalis
+# A.4 : generateur de parametres adel a partir des donnï¿½es arvalis
 #
 setAdelArv <- function(calage,nplants=1,sdlevee=0,RFun) {
   phyl <- calage$phen$PHYL

@@ -1,0 +1,67 @@
+name: build_publish_anaconda
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    
+jobs:
+  build-and-publish:
+    name: ${{ matrix.os }}, Python 3.${{ matrix.python-minor-version }} for conda deployment
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        os: [ ubuntu-latest]
+        python-minor-version: [9]
+        isMaster:
+          - ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/dev') }}
+        exclude:
+          - isMaster: false
+            os: ubuntu-latest
+            python-minor-version: 7
+          - isMaster: false
+            os: ubuntu-latest
+            python-minor-version: 8
+          - isMaster: false
+            os: macos-latest
+            python-minor-version: 7
+          - isMaster: false
+            os: macos-latest
+            python-minor-version: 8
+          - isMaster: false
+            os: macos-latest
+            python-minor-version: 9
+          - isMaster: false
+            os: windows-latest
+            python-minor-version: 7
+          - isMaster: false
+            os: windows-latest
+            python-minor-version: 8
+          - isMaster: false
+            os: windows-latest
+            python-minor-version: 9            
+
+    steps:
+    - name: Chekout
+      uses: actions/checkout@v3
+    - name: Determine publish
+      uses: haya14busa/action-cond@v1
+      id: publish
+      with:
+        cond: ${{ contains(github.ref, 'master') || startsWith(github.ref, 'refs/heads/v') }}
+        if_true: 'true'
+        if_false: 'false'
+    - name: Build and Publish
+      uses: openalea/action-build-publish-anaconda@v0.1.3
+      with:
+        conda: conda
+        mamba: true
+        python: ${{ matrix.python-minor-version }}
+        numpy: '20.0'
+        channels: openalea3, conda-forge
+        token: ${{ secrets.ANACONDA_TOKEN }}
+        publish: ${{ steps.publish.outputs.value }}
+        label: main

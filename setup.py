@@ -1,26 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-
 import os, sys 
 from setuptools import setup, find_packages
-from openalea.deploy.metainfo import read_metainfo
+#from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
+version = '2.0.0-dev'
+name = 'alinea.adel'
 
-# Reads the metainfo file
-metadata = read_metainfo('metainfo.ini', verbose=True)
-for key,value in metadata.items():
-    exec("%s = '%s'" % (key, value))
+description= '3D plant simulation of graminae crops'
+long_description= 'The Adel package characterise 3D plant development for graminae crops.'
 
-    
-# #retrieving packages
-# pkg_root_dir = '.'
-# pkgs = [ pkg for pkg in find_packages(pkg_root_dir) if namespace not in pkg]
-# top_pkgs = [pkg for pkg in pkgs if  len(pkg.split('.')) < 2]
-# packages = [ namespace + "." + pkg for pkg in pkgs]
-# package_dir = dict( [('',pkg_root_dir)] + [(namespace + "." + pkg, pkg_root_dir + "/" + pkg) for pkg in top_pkgs] )
-# wralea_entry_points = ['%s = %s'%(pkg,namespace + '.' + pkg) for pkg in top_pkgs]
+authors= 'Christian Fournier, Christophe Pradal'
+authors_email = 'christian fournier at inrae fr'
+
+url = 'https://github.com/openalea-incubator/adel'
+license = 'Cecill-C'
 
 # Main setup
 setup(
@@ -37,27 +33,24 @@ setup(
     packages= find_packages('src'),
     # python packages directory
     package_dir= {'': 'src'},
-    namespace_packages=['alinea'],
+    #namespace_packages=['alinea'],
 
 
     # Namespace packages creation by deploy
     # Add package platform libraries if any
     include_package_data=True,
     package_data = {'' : ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.png'],},
-    share_dirs = {os.path.join(*('alinea', 'adel', 'data')): os.path.join(*('src', 'alinea','adel', 'data')),
-                  os.path.join(*('alinea', 'adel', 'echap_leaf_data')): os.path.join(*('src', 'alinea','adel', 'echap_leaf_data'))},
+    share_dirs = {pj(*('alinea', 'adel', 'data')): pj(*('src', 'alinea','adel', 'data')),
+                  pj(*('alinea', 'adel', 'echap_leaf_data')): pj(*('src', 'alinea','adel', 'echap_leaf_data'))},
 
     # Add package platform libraries if any
     zip_safe = False,
-
 
     # Scripts
     entry_points = { 'wralea': [ 'adel= alinea.adel',] },
  
     # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
     setup_requires = ['openalea.deploy'],
-    install_requires = [],
-    dependency_links = [],
    )
 
 

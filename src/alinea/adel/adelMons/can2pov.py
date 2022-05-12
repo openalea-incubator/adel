@@ -1,8 +1,6 @@
 from . import IOtable
 from openalea.plantgl.all import *
 
-
-
 class can2pov(object):
     """  converts can file into pov file using geom viewer """ 
 

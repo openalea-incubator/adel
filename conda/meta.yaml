@@ -1,0 +1,45 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: alinea.adel
+  version: {{ data.get('version') }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  preserve_egg_dir: True
+  number: 0
+  script: {{PYTHON}} setup.py install 
+
+requirements:
+  build:
+    - python {{PY_VER}}
+    - setuptools
+    - openalea.deploy
+  run:
+    - python >=3.6
+    - openalea.mtg
+    - scipy
+    - rpy2
+    - alinea.caribu
+    - alinea.astk
+
+test:
+  requires:
+    - pytest
+  imports:
+    - alinea.adel
+  source_files:
+    - test/**
+    - test/data/**
+  commands:
+    - cd test
+    - pytest -v --ignore=test_povray.py
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
+  summary: {{ data.get('description') }}
+

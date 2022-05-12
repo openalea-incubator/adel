@@ -3,7 +3,7 @@
 from math import radians,tan,log,sqrt
 import numpy as np
 
-from vplants.plantgl.all import NurbsCurve2D
+from openalea.plantgl.all import NurbsCurve2D
 
 
 # simple nurbs for training

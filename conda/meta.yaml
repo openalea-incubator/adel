@@ -29,20 +29,17 @@ requirements:
 test:
   requires:
     - pytest
-    - path
-    - openalea.lpy
   imports:
-    - openalea.mtg
+    - alinea.adel
   source_files:
-    - share/data/**
     - test/**
     - test/data/**
   commands:
     - cd test
-    - pytest -v --ignore=test_aml.py  --ignore=test_stat.py
+    - pytest -v --ignore=test_povray.py
 
 about:
   home: {{ data.get('url') }}
-  license: CeCILL-C
+  license: {{ data.get('license') }}
   summary: {{ data.get('description') }}
 

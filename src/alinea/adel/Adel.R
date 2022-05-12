@@ -1,5 +1,5 @@
 #
-#                Ce fichier : Core Code modèle ADEL(cinetique, ssi...) sous R
+#                Ce fichier : Core Code modele ADEL(cinetique, ssi...) sous R
 #
 #                Doc input et exemples sont dans docAdel.R
 #

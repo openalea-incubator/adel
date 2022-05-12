@@ -36,7 +36,7 @@ test:
     - test/data/**
   commands:
     - cd test
-    - pytest -v --ignore=test_povray.py
+    - pytest -v --ignore=test_povray.py --ignore=test_dataflow.py --ignore=test_plantgen.py
 
 about:
   home: {{ data.get('url') }}

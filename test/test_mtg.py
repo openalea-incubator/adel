@@ -9,6 +9,8 @@ symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'Leaf
 def leaves_db():
     import alinea.adel.fitting as fitting
     from alinea.adel import data
+    from os.path import join
+
     pth = data.__path__[0]
     fn = join(pth,'simpleleavesdb.json')
     with open(fn) as f:

@@ -23,6 +23,8 @@ requirements:
     - openalea.mtg
     - scipy
     - rpy2
+    - alinea.caribu
+    - alinea.astk
 
 test:
   requires:

@@ -1,0 +1,46 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: alinea.adel
+  version: {{ data.get('version') }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  preserve_egg_dir: True
+  number: 0
+  script: {{PYTHON}} setup.py install 
+
+requirements:
+  build:
+    - python {{PY_VER}}
+    - setuptools
+    - openalea.deploy
+  run:
+    - python >=3.6
+    - openalea.mtg
+    - scipy
+    - rpy2
+
+test:
+  requires:
+    - pytest
+    - path
+    - openalea.lpy
+  imports:
+    - openalea.mtg
+  source_files:
+    - share/data/**
+    - test/**
+    - test/data/**
+  commands:
+    - cd test
+    - pytest -v --ignore=test_aml.py  --ignore=test_stat.py
+
+about:
+  home: {{ data.get('url') }}
+  license: CeCILL-C
+  summary: {{ data.get('description') }}
+

@@ -529,7 +529,11 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
                 args.update({'Gd': 0.19})
             args.update({'split': split})
             
-            if args.get('HS_final') < args.get('nff'):
+            _HS_final = args.get('HS_final')
+            _nff = int(args.get('nff'))
+            if _HS_final == 'NA':
+                pass
+            elif int(_HS_final) < _nff:
                 for what in (
                 'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
                 'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):

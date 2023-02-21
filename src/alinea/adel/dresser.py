@@ -357,10 +357,9 @@ class AdelDress(Adel):
             dfp.loc[:, 'LcType'] = numpy.where(dfp['ntop'] > 0, dfp['ntop'], 1)
             # selector for second level (ranging 1:max_nb_leaf_per_level)
             dfp.loc[:,
-            'LcIndex'] = 1 + numpy.array(map(lambda (s, t): numpy.random.choice(
-                range(len(self.leaves[s].xydb[str(t)]))),
-                                             zip(dfp['species'], dfp[
-                                                 'LcType'])))
+            'LcIndex'] = 1 + numpy.array([numpy.random.choice(
+                list(range(len(self.leaves[s_t[0]].xydb[str(s_t[1])])))) for s_t in zip(dfp['species'], dfp[
+                                                 'LcType'])])
             # fill other columns
             dfp.loc[:, 'Lr'] = 0
             dfp.loc[:, 'Lsen'] = 0
@@ -396,7 +395,7 @@ class AdelDress(Adel):
                            aspect=aspect, age=age, species=species)
             df = self.canopy_table(self.plant_references, self.plant_species,
                                    azimuth=azimuth, relative_inclination=relative_inclination)
-            stand = zip(self.positions, self.plant_azimuths)
+            stand = list(zip(self.positions, self.plant_azimuths))
             g = self.build_mtg(df.to_dict('list'), stand)
         else:
             raise NotImplementedError(

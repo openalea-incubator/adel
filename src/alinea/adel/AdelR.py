@@ -123,7 +123,7 @@ def dataframeAsdict(df):
         try:
             d = dict([(k,_rvect_asarray(df.r[k][0])) for k in r.colnames(df)])
         except:
-            d = dict([(k,_rvect_asarray(df.rx2(k))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
+            d = dict([(k,_rvect_asarray(df.rx2(str(k)))) for k in r.colnames(df)])# r delegator is replaced by rx/rx2 in new rpy2
     return d
 
 def _is_iterable(x):
@@ -326,7 +326,8 @@ def RunAdel(datesTT,plant_parameters,adelpars={'senescence_leaf_shrink' : 0.5,'l
         d = dataframeAsdict(res[0])
     return d
 
-def devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None):
+
+def _devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None):
     """ Import development parameters for adel from csv files and/or pandas dataframes """
     args = [axeTfn, dimTfn, phenTfn]
     if earTfn is not None:
@@ -347,7 +348,11 @@ def devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None):
         shutil.rmtree(tmp_dir)
     else :        
         Rdat = RdevCsv(*args)
-    return RdflistAsdicts(Rdat)
+    return Rdat
+    
+def devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None):
+    """ Import development parameters for adel from csv files and/or pandas dataframes """
+    return RdflistAsdicts(_devCsv(axeTfn,dimTfn,phenTfn,earTfn=None,ssi2senTfn=None))
     
 
 def genString(RcanopyT):

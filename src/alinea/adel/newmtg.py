@@ -529,12 +529,14 @@ def mtg_factory(parameters, metamer_factory=adel_metamer, leaf_sectors=1,
                 args.update({'Gd': 0.19})
             args.update({'split': split})
             
-            if args.get('HS_final') < args.get('nff'):
-                for what in (
-                'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
-                'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
-                    args.update(
-                        {what: args.get(what) * aborting_tiller_reduction})
+            hs_f = args.get('HS_final')
+            if hs_f != 'NA':
+                if float(hs_f) < args.get('nff'):
+                    for what in (
+                    'Ll', 'Lv', 'Lr', 'Lsen', 'L_shape', 'Lw_shape', 'Gl', 'Gv',
+                    'Gsen', 'Gd', 'El', 'Ev', 'Esen', 'Ed'):
+                        args.update(
+                            {what: args.get(what) * aborting_tiller_reduction})
             components = metamer_factory(Lsect=leaf_sectors, shape_key=xysr_key,
                                          elongation=elongation,
                                          leaves=leaves[species], **args)

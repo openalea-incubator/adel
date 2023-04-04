@@ -29,6 +29,17 @@ def leaves_db():
     leaves,discard = fitting.fit_leaves(leaves, 9)
     return leaves
 
+def _devT():
+    from alinea.adel.AdelR import _devCsv
+    
+    axeT = datadir + '/data/axeTCa0N.csv'
+    dimT = datadir + '/data/dimTCa0N.csv'
+    phenT = datadir + '/data/phenTCa0N.csv'
+    earT = datadir + '/data/earTCa0N.csv'
+    ssisenT = datadir + '/data/ssi2sen.csv'
+    
+    return _devCsv(axeT,dimT,phenT,earT,ssisenT)
+
 
 def devT():
     from alinea.adel.AdelR import devCsv

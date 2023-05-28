@@ -4,7 +4,7 @@ import pickle as Pickle
 
 import numpy
 from rpy2 import robjects
-from rpy2.robjects.numpy2ri import numpy2ri
+from rpy2.robjects.numpy2ri import numpy2rpy as numpy2ri
 
 from alinea.adel.AdelR import RlistAsDict,readRData,saveRData,csvAsDict,dataframeAsdict,canL2canS
 from alinea.adel.mtg import (mtg_factory, duplicate, thermal_time, 
@@ -70,33 +70,35 @@ names satisfy Unix style patterns.
             return self._concatenated_paths
         
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from qtpy import QtWidgets, QtCore, QtGui
+
 
 from openalea.core.observer import lock_notify
 from openalea.visualea.node_widget import NodeWidget
 
-class SelectMultipleFiles(NodeWidget, QDialog):
+class SelectMultipleFiles(NodeWidget, QtWidgets.QDialog):
     def __init__(self, node, parent):
 
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         NodeWidget.__init__(self, node)
         
-        self.gridlayout = QGridLayout(self)
+        self.gridlayout = QtWidgets.QGridLayout(self)
         self.gridlayout.setMargin(3)
         self.gridlayout.setSpacing(5)
 
-        self.package_lineedit_label = QLabel('1. Set the package', self)
+        self.package_lineedit_label = QtWidgets.QLabel('1. Set the package', self)
         self.gridlayout.addWidget(self.package_lineedit_label, 0, 0)
         
-        self.package_lineedit = QLineEdit(self)
+        self.package_lineedit = QtWidgets.QLineEdit(self)
         self.cursorPosition_package_lineedit = self.package_lineedit.cursorPosition()
         self.gridlayout.addWidget(self.package_lineedit, 0, 1, 1, 4)
+        
+        # TODO
         self.connect(self.package_lineedit, 
                      SIGNAL("textChanged(QString)"), 
                      self.package_changed)
 
-        self.select_files_label = QLabel('2. Set the patterns and select the \
+        self.select_files_label = QtWidgets.QLabel('2. Set the patterns and select the \
 files', self)
         self.gridlayout.addWidget(self.select_files_label, 1, 0, 1, 4)
 
@@ -175,12 +177,12 @@ files', self)
                 = update_filepath_output
  
             self.files_mapping[pattern_input_number] = {}
-            self.files_mapping[pattern_input_number]['label'] = QLabel(name, self)
+            self.files_mapping[pattern_input_number]['label'] = QtWidgets.QLabel(name, self)
             self.gridlayout.addWidget(self.files_mapping[pattern_input_number]['label'], i+2, 0)
-            self.files_mapping[pattern_input_number]['pattern_lineedit'] = QLineEdit(self)
+            self.files_mapping[pattern_input_number]['pattern_lineedit'] = QtWidgets.QLineEdit(self)
             self.files_mapping[pattern_input_number]['pattern_lineedit_cursorPosition'] = self.files_mapping[pattern_input_number]['pattern_lineedit'].cursorPosition()
             self.gridlayout.addWidget(self.files_mapping[pattern_input_number]['pattern_lineedit'], i+2, 1, 1, 2)
-            self.pattern_lineedit_signal_mapper = QSignalMapper(self)
+            self.pattern_lineedit_signal_mapper = QtCore.QSignalMapper(self)
             self.connect(self.files_mapping[pattern_input_number]['pattern_lineedit'], 
                          SIGNAL("textChanged(QString)"), 
                          self.pattern_lineedit_signal_mapper,
@@ -192,7 +194,7 @@ files', self)
                          self.map_to_pattern_method)
             self.files_mapping[pattern_input_number]['filenames_combobox'] = QComboBox(self)
             self.gridlayout.addWidget(self.files_mapping[pattern_input_number]['filenames_combobox'], i+2, 3, 1, 2)
-            self.filenames_combobox_signal_mapper = QSignalMapper(self)
+            self.filenames_combobox_signal_mapper = QSignalMapper.QSignalMapper(self)
             self.connect(self.files_mapping[pattern_input_number]['filenames_combobox'], 
                          SIGNAL("currentIndexChanged(QString)"), 
                          self.filenames_combobox_signal_mapper,

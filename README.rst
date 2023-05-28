@@ -53,29 +53,24 @@ Requirements
 * Pandas
 * Rpy2
 
-Installation with conda
-=======================
+Installation with conda or mamba
+================================
 
-Create an environment:
-  conda create -n adel -c conda-forge python=3.8 ipython numpy=1.20 pandas rpy2 scipy setuptools=49.6 path -y
+Create an environment (either use mamba or conda):
+  
+  mamba create -n adel -c conda-forge -c openalea3 alinea.adel -y
   
 
 Activate the environment:
 
-  [source] activate adel
+  conda activate adel
 
-Install the different packages
+Installation from source
+========================
 
-  conda install -c fredboudon -c conda-forge openalea.plantgl openalea.mtg -y
+Create an environment 
 
-Install openalea.Deploy
-
-.. code-block:: console
-
-    git clone https://github.com/openalea/deploy.git 
-    cd deploy
-    python setup.py install 
-    cd
+  mamba create -n adel -c openalea3 -c conda-forge alinea.adel --only-deps -y
 
 Install adel
 

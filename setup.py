@@ -31,7 +31,7 @@ setup(
     #py_modules = [],
     # pure python  packages
     packages= find_namespace_packages(where='src', 
-                                      include=['alinea.*', 'alinea']),
+                                      include=['alinea.*']),
     # python packages directory
     package_dir= {'': 'src'},
 

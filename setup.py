@@ -2,11 +2,11 @@
 # -*- coding: iso-8859-15 -*-
 
 import os, sys 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 #from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
-version = '1.9.0'
+version = '2.0.0'
 name = 'alinea.adel'
 
 description= '3D plant simulation of graminae crops'
@@ -28,12 +28,12 @@ setup(
     author_email=authors_email,
     url=url,
     license=license,
-    py_modules = [],
+    #py_modules = [],
     # pure python  packages
-    packages= find_packages('src'),
+    packages= find_namespace_packages(where='src', 
+                                      include=['alinea.*', 'alinea']),
     # python packages directory
     package_dir= {'': 'src'},
-    #namespace_packages=['alinea'],
 
 
     # Namespace packages creation by deploy

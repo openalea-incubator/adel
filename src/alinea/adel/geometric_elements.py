@@ -5,7 +5,7 @@ New proposal for computing organ shapes
 import numpy
 import pandas
 import os
-from scipy.integrate import simps
+from scipy.integrate import simpson
 
 import openalea.plantgl.all as pgl
 from math import radians, pi, cos, sin
@@ -201,7 +201,7 @@ class Leaves(object):
                 snew = [sr_base, sr_top]
                 rnew = [numpy.interp(sr_base,s,r), numpy.interp(sr_top,s,r)]
 
-            S = simps(rnew,snew) * Lshape * Lwshape
+            S = simpson(rnew,snew) * Lshape * Lwshape
 
         return S
 
@@ -261,9 +261,9 @@ class Leaves(object):
         return form factor for each key in sr_db
         """
         try:
-            return {k:simps(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
+            return {k:simpson(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
         except TypeError:
-            return {k: simps(self.srdb[k][1], self.srdb[k][0]) for k in
+            return {k: simpson(self.srdb[k][1], self.srdb[k][0]) for k in
                     self.srdb}
         
     def midrib(self, blade, resample=False):

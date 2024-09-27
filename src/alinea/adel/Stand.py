@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 from alinea.adel.stand.stand import agronomicplot, regular_plot
 
 
-class AgronomicStand(object):
+class AgronomicStand:
     def __init__(self, sowing_density=10, plant_density=10, inter_row=0.8,
                  noise=0, density_curve_data=None):
         self.sowing_density = sowing_density

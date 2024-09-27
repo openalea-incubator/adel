@@ -2,7 +2,7 @@
 Labels for the canestra file management.
 """
 
-class Label(object):
+class Label:
     """ Label is an object to deals with can file cryptic label.
     It provide a way to store various information in one field.
     """

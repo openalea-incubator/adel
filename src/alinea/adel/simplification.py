@@ -1,4 +1,3 @@
-from math import sqrt
 from heapq import *
 from openalea.plantgl.all import Vector3
 

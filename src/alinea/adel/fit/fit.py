@@ -1,5 +1,5 @@
 from alinea.adel import fitting
-from copy import deepcopy
+
 
 def fit(x, y, s, r, nb_points):
     return fitting.fit3(x, y, s, r, nb_points)

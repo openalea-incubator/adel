@@ -1,6 +1,6 @@
 """ Methods for mtg interpretation with turtle """
 
-from math import degrees, radians, pi, cos, sin
+from math import degrees, pi, cos, sin
 import openalea.plantgl.all as pgl
 # from openalea.mtg import MTG
 from openalea.mtg.turtle import TurtleFrame

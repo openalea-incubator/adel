@@ -14,7 +14,7 @@ import random, math
 import openalea.plantgl.all as pgl
 from . import fitting
 from . import label
-from math import degrees, radians, pi, cos, sin
+from math import cos, sin
 
 from alinea.adel.exception import *
 

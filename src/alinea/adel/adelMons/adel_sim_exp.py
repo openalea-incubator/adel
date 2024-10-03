@@ -11,7 +11,7 @@ if pkg :
 
 path_ini = os.getcwd()
 
-class adel_sim_exp(object):
+class adel_sim_exp
     """  wrapper for adelsimexp2.lsys L-system (graphtal) - return can opt and 8 files """ 
 
     def __init__(self):

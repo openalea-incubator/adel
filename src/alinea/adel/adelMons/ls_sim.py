@@ -56,7 +56,7 @@ def extract_dataframe(dat, ls_cles, cle, val=None):
 
 
 
-class ls_sim(object):
+class ls_sim:
     """  Gets the lists of argument to pass for batch runs with adelsimexp.lsys (list of TT, list of can file names)  
          Converts fov angle into camera angle for povray (enables to simulate ground cover with povray) """
 

@@ -45,7 +45,7 @@ def balanced_sample(n, proba):
     return items
 
 
-class Adel(object):
+class Adel:
     """Mother class for adel models"""
     conv_units = {'mm': 0.001, 'cm': 0.01, 'dm': 0.1, 'm': 1, 'dam': 10,
                   'hm': 100,

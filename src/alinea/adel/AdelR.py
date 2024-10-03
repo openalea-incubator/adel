@@ -18,16 +18,16 @@ import pandas
 
 #
 #create AdelR functions into rpy2 environment
-from math import sqrt
 import numpy
 import rpy2.robjects as robj
-r = robj.r
-
 from rpy2.robjects import numpy2ri
 try:
     numpy2ri.activate()#force auto-conversion mode of Robject to array
 except:
     pass
+
+
+r = robj.r
 
 try: 
     robj.globalEnv = robj.globalenv

@@ -3,7 +3,7 @@ from openalea.plantgl.all import *
 
 
 
-class visu_can(object):
+class visu_can:
     """  can file visualisation """ 
 
     def __init__(self):

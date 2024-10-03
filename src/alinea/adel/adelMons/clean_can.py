@@ -13,7 +13,7 @@ def triangle_area(p1, p2, p3):
     return 0.25*sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))
 
 
-class clean_can(object):
+class clean_can:
     """  remove abnormal triangles genetared in graphtal by the 'atan' bug """ 
 
     def __init__(self):

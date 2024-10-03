@@ -21,9 +21,10 @@ from pathlib import Path as path
 import openalea.plantgl.all as pgl
 
 
-class PovRayError(Exception): pass
+class PovRayError(Exception): 
+    pass
 
-class PovRay(object):
+class PovRay:
     """ A class interface to povray Raytracer
     """
 

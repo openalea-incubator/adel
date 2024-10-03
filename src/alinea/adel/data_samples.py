@@ -6,6 +6,11 @@ import pandas
 from alinea.adel.geometric_elements import Leaves, xydb_from_csv, srdb_from_csv
 import alinea.adel.json_numpy as json_np
 
+from alinea.adel.newmtg import mtg_factory, adel_metamer
+from alinea.adel.mtg_interpreter import mtg_interpreter
+from alinea.adel.stand.stand import regular
+
+
 datadir = os.path.dirname(__file__)
 
 
@@ -84,10 +89,6 @@ def phytoT():
     filename = datadir + '/data/phytoT.csv'
     return pandas.read_csv(filename, sep=',', decimal='.')
 
-
-from alinea.adel.newmtg import mtg_factory, adel_metamer
-from alinea.adel.mtg_interpreter import mtg_interpreter
-from alinea.adel.stand.stand import regular
 
 
 def canopy_two_metamers():

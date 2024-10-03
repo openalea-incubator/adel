@@ -1,4 +1,4 @@
-class get_val(object):
+class get_val:
     """  return ith value of a list """ 
 
     def __init__(self):

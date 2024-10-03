@@ -13,7 +13,7 @@ if pkg :
 
 
 
-class write_graphtalPars(object):
+class write_graphtalPars:
     """  write a .h input file for adelSimexp from excel files """ 
 
     def __init__(self):

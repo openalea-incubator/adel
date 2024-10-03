@@ -104,7 +104,7 @@ def incline_leaf(shape, inclin, relative_angle = True):
     return leaf
 
 
-class Leaves(object):
+class Leaves:
     
     def __init__(self, xydb = None, srdb = None, geoLeaf = None, dynamic_bins = None, discretisation_level = 9, twist = 0):
 
@@ -261,9 +261,9 @@ class Leaves(object):
         return form factor for each key in sr_db
         """
         try:
-            return {k:simpson(self.srdb[k]['r'], self.srdb[k]['s']) for k in self.srdb}
+            return {k:simpson(self.srdb[k]['r'], x=self.srdb[k]['s']) for k in self.srdb}
         except TypeError:
-            return {k: simpson(self.srdb[k][1], self.srdb[k][0]) for k in
+            return {k: simpson(self.srdb[k][1], x=self.srdb[k][0]) for k in
                     self.srdb}
         
     def midrib(self, blade, resample=False):

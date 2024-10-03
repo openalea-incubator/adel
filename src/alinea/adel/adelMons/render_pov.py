@@ -1,6 +1,5 @@
 import os
 from os.path import join
-from os.path import split
 try:
     import win32api
 except ImportError:
@@ -10,7 +9,7 @@ from pathlib import Path as path
 import time
 
 
-class render_pov(object):
+class render_pov:
     """  render a pov file and generates a bmp file . !! Pov-ray has to be launch !! """ 
 
     def __call__(self, pov_file, povdir, wait):

@@ -1879,7 +1879,7 @@ def _create_phenT(phenT_abs, phenT_first):
         raise tools.InputError("phenT_abs contains NA values")
         
     #define TT_*_phytomer_1 and merge in tmp
-    tmp_first = phenT_first.drop('index_phytomer',1)
+    tmp_first = phenT_first.drop('index_phytomer',axis=1)
     stades = ('em','col','sen','del')
     tmp_first = tmp_first.rename(columns={'_'.join(('TT',k,'phytomer')):'_'.join(('TT',k,'phytomer','1')) for k in stades})
     tmp = pd.merge(phenT_abs,tmp_first,on='id_phen')
@@ -1991,7 +1991,7 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
                 HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
                 HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
             
-            HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
+            HS_GL_SSI_dynamic = pd.concat([HS_GL_SSI_dynamic,HS_GL_SSI_dynamic_group], ignore_index=True)
             
         else:  # 4 phases
             
@@ -2078,7 +2078,7 @@ def _create_HS_GL_SSI_T(axeT_, dynT_):
                 HS_GL_SSI_dynamic_group['GL'] = pd.Series(np.concatenate((GL_1_TT_1_1, GL_1_TT_1_2, GL_2_TT_2_1, GL_2_TT_2_2, GL_3_TT_3_1, GL_3_TT_3_2, GL_4_TT_4_1, GL_4_TT_4_2)))
                 HS_GL_SSI_dynamic_group['SSI'] = pd.Series(np.concatenate((SSI_1_TT_1_1, SSI_1_TT_1_2, SSI_2_TT_2_1, SSI_2_TT_2_2, SSI_3_TT_3_1, SSI_3_TT_3_2, SSI_4_TT_4_1, SSI_4_TT_4_2)))
             
-            HS_GL_SSI_dynamic = HS_GL_SSI_dynamic.append(HS_GL_SSI_dynamic_group, ignore_index=True)
+            HS_GL_SSI_dynamic = pd.concat([HS_GL_SSI_dynamic,HS_GL_SSI_dynamic_group], ignore_index=True)
     
     HS_GL_SSI_dynamic[['id_phen', 'TT']] = HS_GL_SSI_dynamic[['id_phen', 'TT']].astype(int)
     

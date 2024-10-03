@@ -167,7 +167,7 @@ def final_leaf_number(ms_nff=12, cohort=1, inner_parameters={}):
 
 # define classes for structuring/handling the different botanical models found in pgen
 
-class TillerEmission(object):
+class TillerEmission:
     """ A class interface to plantgen tiller emmission model
     """
     
@@ -258,7 +258,7 @@ class TillerEmission(object):
             curves[w] = interp1d([start-delta] + hs + [end],[0] + em + [em[-1]])
         return curves
 
-class TillerRegression(object):
+class TillerRegression:
     """ Tiller regression model
     """
         
@@ -361,7 +361,7 @@ class TillerRegression(object):
 
         
                
-class HaunStage(object):
+class HaunStage:
     """ Handle HaunStage = f (ThermalTime) fits for mean plant and its nff modalities
     """
     
@@ -463,7 +463,7 @@ class HaunStage(object):
         y = numpy.array([0., 0., ymax, ymax])
         return interp1d(x,y)
 
-class GreenLeaves(object):
+class GreenLeaves:
     """
     An object interface to a plantgen derived Green Leaf model
     This variant is for GL=f(HS_since_flag_leaf) fits (instead of GL=f(TT)) that allow to predict a curve for different nff
@@ -572,7 +572,7 @@ class GreenLeaves(object):
     def TT_t1_user(self, nff=None):
         return self.hsfit.TT(self.hs_t1(nff), nff)
       
-class WheatDimensions(object):
+class WheatDimensions:
     """ A dimension generator model based on scaling of a reference dataset
     """
     
@@ -686,7 +686,7 @@ class WheatDimensions(object):
         n = df['rank'].max() - numpy.polyfit(df['length'].values, df['rank'].values, 2)[2]
         return n   
 
-class AxePop(object):
+class AxePop:
     """ An axe population generator based on plantgen axe generation methods and new extension (smart pop/damages)
     """
         
@@ -964,7 +964,7 @@ class AxePop(object):
         
 
         
-class PlantGen(object):
+class PlantGen:
     """ A class interface to plantgen
     """
     

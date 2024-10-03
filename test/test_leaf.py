@@ -7,7 +7,7 @@ import openalea.plantgl.all as pgl
 # nosetetsts fails importing pylab for some mysteriuous reason (backend ?)
 with_pylab = True
 try:
-    from pylab import plot, show,clf
+    from pylab import plot, clf
 except:
     with_pylab = False
 

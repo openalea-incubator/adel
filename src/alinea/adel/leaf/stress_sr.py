@@ -1,7 +1,7 @@
 from .curvature import curvilinear_abscisse
 import numpy as np
 
-class Interval(object):
+class Interval:
     def __init__(self, min_, max_):
         self._min = min_
         self._max = max_

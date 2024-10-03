@@ -28,7 +28,7 @@ def optical(tissue_type):
     return int(opt)
 
 
-class Symbol(object):
+class Symbol:
     def _mesh(self):
         pass
 

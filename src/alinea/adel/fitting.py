@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from scipy.interpolate import splprep, splev
-from scipy.integrate import simpson, trapzoid
+from scipy.integrate import simpson, trapezoid
 
 
 import openalea.plantgl.all as pgl
@@ -68,7 +68,7 @@ def fit_leaf(x, y, s, r):
     rnew2 = rnew2 / rnew2.max()
 
     # 2.4 leaf surface (integral r ds)
-    leaf_surface = simpson(rnew2, snew2)
+    leaf_surface = simpson(rnew2, x=snew2)
 
     # 2.5 Compute rnew
     rnew = np.interp(snew, snew2, rnew2)
@@ -156,7 +156,7 @@ def fit2(x, y, s, r):
     rnew2 = np.maximum(rnew2, 0) / rnew2.max()
 
     # 2.4 leaf surface (integral r ds)
-    leaf_surface = simpson(rnew2, snew2)
+    leaf_surface = simpson(rnew2, x=snew2)
 
     # 2.5 Compute rnew
     rnew = np.interp(snew, snew2, rnew2)
@@ -249,7 +249,6 @@ def leaf_to_mesh_new(x, y, r, twist=True, nb_twist=1., nb_waves=8, **kwds):
     s /= L
 
     nb_oscillation = nb_waves
-    diff_length = 2.
     dt = list(np.arctan2(np.diff(y), np.diff(x)))
     dt.append(0.)
     dt = np.array(dt)
@@ -523,11 +522,6 @@ def qslim(nb_triangles, points, indexes):
 
     write_smf(file_in, points, indexes)
 
-    prog = 'qslim'
-    args = ' -t %d -W 2 -O 0 -o %s %s' % (nb_triangles, file_out, file_in)
-
-    sts = os.system(prog + args)
-
     pts, ind = read_smf(file_out)
 
     os.remove(file_in)
@@ -591,8 +585,8 @@ def simplify(leaf, nb_points, scale_radius=True):
     y *= adj
 
     if scale_radius:
-        leaf_surface = simpson(rn, sn)  # use here simpson as leaf is a smooth shape
-        new_surface = trapzoid(r, s)  # use here trapzoid as the new surface is a polygonial shape
+        leaf_surface = simpson(rn, x=sn)  # use here simpson as leaf is a smooth shape
+        new_surface = trapezoid(r, x=s)  # use here trapezoid as the new surface is a polygonial shape
         scale_r = leaf_surface / new_surface
         r *= scale_r
 

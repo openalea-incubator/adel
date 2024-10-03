@@ -1,4 +1,4 @@
-class fit_leaves(object):
+class fit_leaves:
     """  Doc... """ 
 
     def __init__(self):

@@ -1,5 +1,4 @@
 from alinea.adel import AdelR
-from alinea.adel.AdelR import setAdel,setAdelArv,devCsv,genGeoAxe,genGeoLeaf,freeGeoLeaf, plantSample, checkAxeDyn
 from alinea.adel.fitting import fit2
 
 import numpy
@@ -13,7 +12,7 @@ except:
 
 
 
-class PlantParameter(object):
+class PlantParameter:
     def __init__(self, **kwargs):
         pass
 

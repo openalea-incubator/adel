@@ -4,6 +4,7 @@ from alinea.adel.plantgen import params, tools, plantgen_interface, plantgen_cor
 import numpy as np
 import pandas
 from pathlib import Path as path
+import tempfile
 
 
 random.seed(1234)
@@ -28,7 +29,6 @@ min_min_expected_results_dir = expected_results_dir.joinpath('min_min')
 short_short_expected_results_dir = expected_results_dir.joinpath('short_short')
 full_full_expected_results_dir = expected_results_dir.joinpath('full_full')
 
-import tempfile
 tmp_results_directory = path(tempfile.mkdtemp(suffix='_plantgen_results'))
 default_results = tmp_results_directory.joinpath('default')
 if not default_results.exists():
@@ -83,7 +83,7 @@ def test_phenology_functions():
     print('The results have been saved to %s' % test_table_filepath)
     np.testing.assert_array_equal(dynT_['id_axis'], expected_dynT['id_axis'])
     dynT_ = dynT_.drop('id_axis', axis=1)
-    expected_dynT = expected_dynT.drop('id_axis', axis=1)
+    expected_dynT = expected_dynT.drop(['id_axis'], axis=1)
     np.testing.assert_allclose(dynT_.values, expected_dynT.values, relative_tolerance, absolute_tolerance)
        
 
@@ -100,8 +100,8 @@ def test_plants_structure():
     axeT_.to_csv(test_table_filepath, na_rep='NA', index=False, float_format=FLOAT_FORMAT)
     print('The results have been saved to %s' % test_table_filepath)
     assert (axeT_['id_axis'] == expected_axeT['id_axis']).all()
-    axeT_ = axeT_.drop('id_axis', axis=1)
-    expected_axeT = expected_axeT.drop('id_axis', axis=1)
+    axeT_ = axeT_.drop(['id_axis'], axis=1)
+    expected_axeT = expected_axeT.drop(['id_axis'], axis=1)
     np.testing.assert_allclose(axeT_.values, expected_axeT.values, relative_tolerance, absolute_tolerance)
         
     expected_tilleringT = pandas.read_csv(default_expected_results_dir/'tilleringT.csv')
@@ -291,8 +291,8 @@ def _check_results(to_compare, dynT_user_completeness, dimT_user_completeness):
         print('The results have been saved to %s' % result_table_filepath)
         if 'id_axis' in expected_table:
             assert (result_table['id_axis'] == expected_table['id_axis']).all()
-            result_table = result_table.drop('id_axis', axis=1)
-            expected_table = expected_table.drop('id_axis', axis=1)
+            result_table = result_table.drop(['id_axis'], axis=1)
+            expected_table = expected_table.drop(['id_axis'], axis=1)
         np.testing.assert_allclose(result_table.values.astype(float), expected_table.values, relative_tolerance, absolute_tolerance)
    
 

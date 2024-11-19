@@ -3,7 +3,8 @@ import openalea.plantgl.all as pgl
 import cv2
 
 
-#pov = PovRay(working_dir='./test')
+# pov = PovRay(working_dir='./test')
+
 
 def test_class_interface():
     scene = pgl.Scene()
@@ -13,6 +14,7 @@ def test_class_interface():
     reader = cv2.imread
     im = pov.get_image(reader)
     return im
+
 
 def test_old_interface():
     scene = pgl.Scene()

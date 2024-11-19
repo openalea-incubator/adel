@@ -1,22 +1,28 @@
+import pytest
+
 import alinea.adel.data_samples as test_data
 from alinea.adel.adel import Adel
 import os
 
-def test_instantiate():
-    adel = Adel()
+@pytest.fixture
+def adel():
+    return Adel()
+
+@pytest.fixture()
+def g():
+    return test_data.adel_two_metamers()
+
+def test_instantiate(adel):
     assert len(adel.leaves[0].xydb) == 6
     assert adel.stand.plant_density == 250
     assert adel.convUnit == 0.01
     assert adel.nplants == 1
     assert adel.domain_area == 1. / adel.stand.plant_density
     assert adel.positions[0] == (0, 0, 0)
-    return adel
-
-adel = test_instantiate()
-g = test_data.adel_two_metamers()
 
 
-def test_stand():
+
+def test_stand(adel):
     assert adel.aspect == 'smart'
     assert adel.domain_area == 0.004
     assert adel.nplants == 1
@@ -31,20 +37,18 @@ def test_stand():
     assert adel.nplants == 4
 
 
-def test_get_axis():
+def test_get_axis(adel,g):
     assert g.nb_scales() == 6
     ms = adel.get_axis(g)
     assert ms.nb_scales() == 4
 
 
-def test_scene():
+def test_scene(adel,g):
     s = adel.scene(g)
     assert len(s) == 6
 
 
-def test_statistics():
-    adel = test_instantiate()
-    g = test_data.adel_two_metamers()
+def test_statistics(adel,g):
     areas = adel.get_exposed_areas(g)
     assert 'green_area' in areas
     assert 'species' in areas
@@ -62,13 +66,13 @@ def test_statistics():
     assert pstats['Nbr.axe.tot.m2'][0] == 500
 
 
-def test_midribs():
+def test_midribs(adel,g):
     midribs = adel.get_midribs(g)
     midstats = adel.midrib_statistics(g)
     assert midstats['insertion_height'].values[0] == 2
 
 
-def test_save_and_load():
+def test_save_and_load(adel,g):
     fgeom, fg = adel.save(g)
     gg = adel.load()
     assert len(gg) == len(g)
@@ -77,7 +81,7 @@ def test_save_and_load():
     if os.path.exists(fg):
         os.remove(fg)
 
-def test_duplicated():
+def test_duplicated(adel,g):
     try:
         gg = adel.duplicated(g)
         assert False
@@ -88,7 +92,7 @@ def test_duplicated():
     assert gg.nb_vertices() == 1 + 2 * (g.nb_vertices() - 1)
 
 
-def test_build_mtg():
+def test_build_mtg(adel,g):
     pars = test_data.canopy_two_metamers()
     gg = adel.build_mtg(pars, stand=None)
     assert gg.nb_vertices() == g.nb_vertices()

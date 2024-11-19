@@ -27,7 +27,7 @@ class ColorMap:
 
     """
 
-    def __init__(self, minval=0., maxval=1.):
+    def __init__(self, minval=0.0, maxval=1.0):
         self.minval = float(minval)
         self.maxval = float(maxval)
 
@@ -37,7 +37,7 @@ class ColorMap:
         :param normedU: todo
 
         """
-        inter = 1 / 5.
+        inter = 1 / 5.0
         winter = int(normedU / inter)
         a = (normedU % inter) / inter
         b = 1 - a
@@ -54,7 +54,7 @@ class ColorMap:
             col = (self.coul1, self.coul1 * b + self.coul2 * a, self.coul2)
         elif winter > 3:
             col = (self.coul1, self.coul2, self.coul2)
-        return (int(col[0]), int(col[1]), int(col[2]))
+        return int(col[0]), int(col[1]), int(col[2])
 
     def greycolor(self, normedU):
         """
@@ -62,7 +62,7 @@ class ColorMap:
         :param normedU: todo
         :returns: todo
         """
-        return (int(255 * normedU), int(255 * normedU), int(255 * normedU))
+        return int(255 * normedU), int(255 * normedU), int(255 * normedU)
 
     def grey(self, u):
         """
@@ -95,26 +95,24 @@ def get_cmap(cmap):
     return _cmap
 
 
-def colormap(g, property_name, cmap='jet',lognorm=True):
-    """ Compute a color property based on a given property and a colormap.
-
-    """
+def colormap(g, property_name, cmap="jet", lognorm=True):
+    """Compute a color property based on a given property and a colormap."""
     prop = g.property(property_name)
     keys = list(prop.keys())
     values = np.array(list(prop.values()))
-    #m, M = int(values.min()), int(values.max())
+    # m, M = int(values.min()), int(values.max())
 
     if cm_import_okay:
         _cmap = get_cmap(cmap)
         norm = Normalize() if not lognorm else LogNorm()
         values = norm(values)
-        #my_colorbar(values, _cmap, norm)
+        # my_colorbar(values, _cmap, norm)
 
-        colors = (_cmap(values)[:,0:3])*255
-        colors = np.array(colors,dtype=np.int).tolist()
+        colors = (_cmap(values)[:, 0:3]) * 255
+        colors = np.array(colors, dtype=np.intp).tolist()
     else:
         cmap = ColorMap(values.min(), values.max())
         colors = cmap(values)
 
-    g.properties()['color'] = dict(list(zip(keys,colors)))
+    g.properties()["color"] = dict(list(zip(keys, colors)))
     return g

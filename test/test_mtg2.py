@@ -52,11 +52,11 @@ def test_adel_mtg():
 
     print(list(symbols.keys()))
     g=mtg.mtg_turtle(g,symbols)
-    return g
+    assert g is not None
 
 
 def test_dynamic_mtg():
-    """ Add to the each metamers a thermal time (e.g. 10).
+    """ Add to each metamer a thermal time (e.g. 10).
     Length = length * (thermal_time - start_thermaltime)/(end-start)
     if the thermal time is lower that the start thermal time, 
     do not proceed more.
@@ -74,7 +74,7 @@ def test_dynamic_mtg():
             node.end_tt = tt+dtt
         tt += dtt
 
-    return g, tt
+    assert g is not None and tt != 0
 
 def display():
 

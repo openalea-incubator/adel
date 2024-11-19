@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-import os, sys 
+import os
+
 from setuptools import setup, find_namespace_packages
+
 #from openalea.deploy.metainfo import read_metainfo
 pj = os.path.join
 
@@ -49,7 +51,7 @@ setup(
     # Scripts
     entry_points = { 'wralea': [ 'adel= alinea.adel',] },
  
-    # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installs)
+    # Dependencies (other are listed in doc to avoid setputools/pip/conda possible conflicts in automatic installations)
     setup_requires = ['openalea.deploy'],
    )
 

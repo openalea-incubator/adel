@@ -1,9 +1,17 @@
-""" Defines Exception classes for adel """
+"""Defines Exception classes for adel"""
 
-class AdelError(Exception): pass
 
-class AdelParameterisationError(AdelError): pass
+class AdelError(Exception):
+    pass
 
-class AdelDeprecationError(AdelError): pass
 
-class AdelImplementationError(AdelError): pass
+class AdelParameterisationError(AdelError):
+    pass
+
+
+class AdelDeprecationError(AdelError):
+    pass
+
+
+class AdelImplementationError(AdelError):
+    pass

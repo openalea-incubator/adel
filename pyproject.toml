@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alinea.adel"
+authors = [
+  { name = "Christian Fournier" },
+  { name = "Christophe Pradal" },
+  { name = "Bruno Andrieu" },
+]
+description = "3D plant simulation of graminae crops"
+readme = "README.rst"
+license.file = "LICENSE.txt"
+requires-python = ">=3.10"
+classifiers = [
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: CeCILL-C License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+]
+version = "2.0.1"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pandas",
+    "rpy2",
+    "setuptools"
+]
+
+
+[project.urls]
+Homepage = "https://github.com/openalea-incubator/adel"
+"Bug Tracker" = "https://github.com/openalea-incubator/adel/issues"
+Discussions = "https://github.com/openalea-incubator/adel/discussions"
+Changelog = "https://github.com/openalea-incubator/adel/releases"

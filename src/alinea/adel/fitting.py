@@ -1,8 +1,11 @@
 import os
 import numpy as np
 from scipy.interpolate import splprep, splev
-from scipy.integrate import simps, trapz
-
+try:
+    from scipy.integrate import simps, trapz
+except ImportError:
+    from scipy.integrate import simpson as simps
+    from scipy.integrate import trapezoid as trapz
 
 import openalea.plantgl.all as pgl
 from .simplification import cost
@@ -68,7 +71,7 @@ def fit_leaf(x, y, s, r):
     rnew2 = rnew2 / rnew2.max()
 
     # 2.4 leaf surface (integral r ds)
-    leaf_surface = simps(rnew2, snew2)
+    leaf_surface = simps(rnew2, x=snew2)
 
     # 2.5 Compute rnew
     rnew = np.interp(snew, snew2, rnew2)
@@ -156,7 +159,7 @@ def fit2(x, y, s, r):
     rnew2 = np.maximum(rnew2, 0) / rnew2.max()
 
     # 2.4 leaf surface (integral r ds)
-    leaf_surface = simps(rnew2, snew2)
+    leaf_surface = simps(rnew2, x=snew2)
 
     # 2.5 Compute rnew
     rnew = np.interp(snew, snew2, rnew2)
@@ -591,8 +594,8 @@ def simplify(leaf, nb_points, scale_radius=True):
     y *= adj
 
     if scale_radius:
-        leaf_surface = simps(rn, sn)  # use here simpson as leaf is a smooth shape
-        new_surface = trapz(r, s)  # use here trapz as the new surface is a polygonial shape
+        leaf_surface = simps(rn, x=sn)  # use here simpson as leaf is a smooth shape
+        new_surface = trapz(r, x=s)  # use here trapz as the new surface is a polygonial shape
         scale_r = leaf_surface / new_surface
         r *= scale_r
 

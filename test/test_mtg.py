@@ -4,7 +4,14 @@ from alinea.adel.mtg import *
 import alinea.adel.fitting as fitting
 import alinea.adel.json_numpy as json_np
 
-symbols = {'newPlant' : 1, 'newAxe' : 2, 'newMetamer' :3, 'StemElement':4, 'LeafElement':4}
+symbols = {
+    "newPlant": 1,
+    "newAxe": 2,
+    "newMetamer": 3,
+    "StemElement": 4,
+    "LeafElement": 4,
+}
+
 
 def leaves_db():
     import alinea.adel.fitting as fitting
@@ -12,26 +19,30 @@ def leaves_db():
     from os.path import join
 
     pth = data.__path__[0]
-    fn = join(pth,'simpleleavesdb.json')
+    fn = join(pth, "simpleleavesdb.json")
     with open(fn) as f:
         leaves = json_np.load(f)
-    leaves,discard = fitting.fit_leaves(leaves, 9)
+    leaves, discard = fitting.fit_leaves(leaves, 9)
     return leaves
 
 
 functions = build_symbols(leaves_db())
 
+
 def save_table(table, fn):
     from rpy import r
-    r['write.table'](table, fn)
+
+    r["write.table"](table, fn)
+
 
 def save_file(str, fn):
-    f = open(fn, 'w')
+    f = open(fn, "w")
     f.write(str)
     f.close()
 
+
 def test1():
-    s="""
+    s = """
 newPlant
 [newAxe
 newMetamer
@@ -98,15 +109,16 @@ StemElement(1,3.200001,0.04,0.04)StemElement(1,16.250000,0.04,0.04)[/(180.000000
 """
     g = CanMTG(functions, s)
     table = g.to_aggregation_table()
-    #save_table(table, 'rtable.txt')
+    # save_table(table, 'rtable.txt')
     canstr = g.to_canestra()
-    #save_file(canstr, 'wheat.can')
+    # save_file(canstr, 'wheat.can')
     scene = g.to_plantgl()
-    #Viewer.display(scene)
-    #raw_input('enter')
+    # Viewer.display(scene)
+    # raw_input('enter')
+
 
 def test2():
-    s="""
+    s = """
 newPlant
 [newAxe
 newMetamer
@@ -171,19 +183,19 @@ newMetamer
 StemElement(1,3.200001,0.04,0.04)StemElement(1,16.250000,0.04,0.04)[/(180.000000)+(1.000000)LeafElement(1,19.549999,1.438667,0.000000,1,0,0.5)]
 ]
 """
-    s = s+s+s
+    s = s + s + s
     g = CanMTG(functions, s)
-    distribution = [(0,0,0), (0,90,0), (90,0,0)]
+    distribution = [(0, 0, 0), (0, 90, 0), (90, 0, 0)]
     g.planter(distribution)
     scene = g.to_plantgl()
     table = g.to_aggregation_table()
-    #save_table(table, 'rtable.txt')
+    # save_table(table, 'rtable.txt')
     canstr = g.to_canestra()
-    #save_file(canstr, 'wheat.can')
+    # save_file(canstr, 'wheat.can')
 
 
 def test3():
-    s="""
+    s = """
 newPlant
 [newAxe
 newMetamer
@@ -248,15 +260,15 @@ newMetamer
 StemElement(1,3.200001,0.04,0.04)StemElement(1,16.250000,0.04,0.04)[/(180.000000)+(1.000000)LeafElement(1,19.549999,1.438667,0.000000,1,0,0.5)]
 ]
 """
-    s = s*24
+    s = s * 24
     g = CanMTG(functions, s)
-    distribution = [(20*i,20*j,0) for i in range(4) for j in range(6)]
+    distribution = [(20 * i, 20 * j, 0) for i in range(4) for j in range(6)]
     g.planter(distribution)
     scene = g.to_plantgl()
     table = g.to_aggregation_table()
-    #save_table(table, 'rtable.txt')
+    # save_table(table, 'rtable.txt')
     canstr = g.to_canestra()
-    #save_file(canstr, 'wheat.can')
+    # save_file(canstr, 'wheat.can')
 
-    #Viewer.display(scene)
-    #raw_input('enter')
+    # Viewer.display(scene)
+    # raw_input('enter')

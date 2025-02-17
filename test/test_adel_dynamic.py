@@ -1,32 +1,31 @@
-""" Test use cases of adel/fspm wheat coupling"""
-
+"""Test use cases of adel/fspm wheat coupling"""
 
 from alinea.adel.adel_dynamic import AdelDyn
 import alinea.adel.data_samples as test_data
 
 
 def test_build_stand():
-    adel=AdelDyn()
+    adel = AdelDyn()
     axeT = test_data.axeTable()
     g = adel.build_stand(axeT)
     assert g.nb_vertices(scale=1) == 1
-    assert g[2]['hasEar']
+    assert g[2]["hasEar"]
 
 
 def test_add_metamer():
-    adel=AdelDyn()
+    adel = AdelDyn()
     axeT = test_data.axeTable()
     phytoT = test_data.phytoT()
     g = adel.build_stand(axeT)
-    vid = adel.add_metamer(g,phytoT)
-    labels = g.property('label')
+    vid = adel.add_metamer(g, phytoT)
+    labels = g.property("label")
     new_metamer = g.node(vid)
-    metamers = [vid for vid in labels if labels[vid].startswith('metamer')]
+    metamers = [vid for vid in labels if labels[vid].startswith("metamer")]
     assert len(metamers) == 2
     internode, sheath, blade = new_metamer.components()
     assert blade.length == 0
     elts = [c.label for c in blade.components()]
-    assert elts == ['baseElement', 'topElement']
+    assert elts == ["baseElement", "topElement"]
 
 
 def test_build_mtg():
@@ -36,11 +35,11 @@ def test_build_mtg():
 
 
 def test_update_geometry():
-    adel=AdelDyn()
+    adel = AdelDyn()
     axeT = test_data.axeTable()
     phytoT = test_data.phytoT()
     g = adel.build_stand(axeT)
-    vid = adel.add_metamer(g,phytoT)
+    vid = adel.add_metamer(g, phytoT)
     new_metamer = g.node(vid)
     internode, sheath, blade = new_metamer.components()
     assert blade.length == 0
@@ -51,5 +50,3 @@ def test_update_geometry():
     assert blade.area > 0
     elts = [c.label for c in blade.components()]
     assert len(elts) > 2
-
-

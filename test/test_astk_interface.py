@@ -2,20 +2,20 @@ from alinea.adel.astk_interface import AdelWheat
 # from alinea.astk.TimeControl import TimeControlSet
 
 
-
 def test_static(age=100):
     nplants = 1
     adel = AdelWheat(nplants=nplants)
     g = adel.setup_canopy(age=100)
     assert len(g.vertices()) > 20
-    assert list(g.property('geometry').values())[0].isValid()
+    assert list(g.property("geometry").values())[0].isValid()
+
 
 def test_statistics():
     nplants = 1
     adel = AdelWheat(nplants=nplants)
     g = adel.setup_canopy(age=100)
     areas = adel.get_exposed_areas(g)
-    assert 'green_area' in areas
+    assert "green_area" in areas
     pstats = adel.plot_statistics(g)
 
 
@@ -28,5 +28,3 @@ def test_statistics():
 #     for tc in timing:
 #         adel.grow(g,tc)
 #     return g
-
-

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,9 +10,8 @@ authors = [
   { name = "Bruno Andrieu" },
 ]
 description = "3D plant simulation of graminae crops"
-readme = "README.rst"
-license.file = "LICENSE.txt"
-requires-python = ">=3.10"
+license = {file = "LICENSE.txt"}
+requires-python = ">=3.8"
 classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
@@ -21,11 +20,14 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering",
 ]
+dynamic = ["readme"]
 version = "2.0.1"
 dependencies = [
     "numpy",
@@ -33,12 +35,23 @@ dependencies = [
     "matplotlib",
     "pandas",
     "rpy2",
-    "setuptools"
 ]
 
-
 [project.urls]
-Homepage = "https://github.com/openalea-incubator/adel"
+Homepage = "https://openalea.readthedocs.io/"
 "Bug Tracker" = "https://github.com/openalea-incubator/adel/issues"
 Discussions = "https://github.com/openalea-incubator/adel/discussions"
 Changelog = "https://github.com/openalea-incubator/adel/releases"
+
+[project.entry-points."wralea"]
+"adel" = "alinea.adel"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst"]}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["alinea.*"]
+
+[tool.setuptools.package-data]
+"*" = ['*.RData', '*.R', '*.8', '*.h', '*.str','*.txt', '*.l', '*.map', '*.csv', '*.json', '*.png']

@@ -118,7 +118,7 @@ latex_documents = [
         master_doc,
         "alinea.adel.tex",
         "alinea.adel Documentation",
-        "INRA / INRIA / CIRAD",
+        "INRAe / INRIA / CIRAD",
         "manual",
     ),
 ]

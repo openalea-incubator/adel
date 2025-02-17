@@ -445,9 +445,9 @@ class TillerRegression:
                         f_d = f_d - comp_d
                         if f_d < 1e-6:
                             break
-                    assert (
-                        f_d < 1e-6
-                    ), "Damages are too important to be compensated by reggressing tillers !"
+                    assert f_d < 1e-6, (
+                        "Damages are too important to be compensated by reggressing tillers !"
+                    )
 
         # curve
         regressing_cohorts = regressing_cohorts.sort_values(
@@ -1176,9 +1176,9 @@ class AxePop:
             fdamaged = damages["f_damaged"].to_dict()
             ndamaged = {k: round(v * cards[k]) for k, v in fdamaged.items()}
             ndamaged = {k: v for k, v in ndamaged.items() if v > 0}
-            assert sum(ndamaged.values()) <= sum(
-                nreg.values()
-            ), "Damages are too important to be compensated by reggressing tillers !"
+            assert sum(ndamaged.values()) <= sum(nreg.values()), (
+                "Damages are too important to be compensated by reggressing tillers !"
+            )
             tdamaged = {
                 k: t_death(v, damages["start_damages"][k], damages["end_damages"][k])
                 for k, v in ndamaged.items()

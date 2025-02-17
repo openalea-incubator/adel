@@ -528,7 +528,7 @@ def new_mtg_factory(
         if plant != prev_plant:
             if axe != "MS":
                 raise ValueError(
-                    "Main stem is expected first when a new plant " "is declared"
+                    "Main stem is expected first when a new plant is declared"
                 )
 
             position, azimuth = (0, 0, 0), 0

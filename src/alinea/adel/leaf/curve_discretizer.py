@@ -2,6 +2,7 @@
 import numpy as np
 from openalea.plantgl import all as pgl
 
+
 def curve_discretizer(curve, n=100):
     """ """
 
@@ -17,6 +18,5 @@ def curve_discretizer(curve, n=100):
 
 
 def points2curve(x, y):
-
     points = list(zip(x, y))
     return pgl.NurbsCurve2D.fit(points)

@@ -353,7 +353,9 @@ class Adel:
         pstat = plot_statistics(axstat, meta["nplants"], meta["domain_area"])
         return pstat
 
-    def save(self, g, index=0, directory="./adel_saved", basename=None, check_meta=True):
+    def save(
+        self, g, index=0, directory="./adel_saved", basename=None, check_meta=True
+    ):
         if check_meta:
             if "meta" not in g.property_names():
                 root = g.node(0)

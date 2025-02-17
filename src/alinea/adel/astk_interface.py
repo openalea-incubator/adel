@@ -16,6 +16,7 @@ from alinea.adel.AdelR import (
 from alinea.adel.newmtg import move_properties
 import alinea.adel.data_samples as adel_data
 from alinea.adel.mtg_interpreter import plot3d
+
 # user friendly macros
 from alinea.adel.stand.stand import agronomicplot
 
@@ -342,8 +343,6 @@ def axis_statistics_node(adel, g):
 
 def plot_statistics_node(adel, axstat):
     return (adel.plot_statistics(axstat),)
-
-
 
 
 def new_canopy(plant_model, age=0):

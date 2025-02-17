@@ -2858,9 +2858,7 @@ class _CreatePhenTTmp:
                 self.phenT_tmp.loc[
                     phenT_tmp_group.index, "TT_col_phytomer"
                 ] = phenT_tmp_group.loc[:, "TT_col_phytomer"].values[:] = (
-                    phenT_tmp_group[
-                        "index_phytomer"
-                    ].apply(
+                    phenT_tmp_group["index_phytomer"].apply(
                         _calculate_TT_col_phytomer,
                         args=(
                             HS_break,
@@ -2957,9 +2955,7 @@ class _CreatePhenTTmp:
                 self.phenT_tmp.loc[
                     phenT_tmp_group.index, "TT_sen_phytomer"
                 ] = phenT_tmp_group.loc[:, "TT_sen_phytomer"].values[:] = (
-                    phenT_tmp_group[
-                        "index_phytomer"
-                    ].apply(
+                    phenT_tmp_group["index_phytomer"].apply(
                         _calculate_TT_sen_phytomer,
                         args=(
                             HS_break,

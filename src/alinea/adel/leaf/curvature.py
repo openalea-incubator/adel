@@ -1,18 +1,17 @@
 import numpy as np
+
 # from openalea.plantgl.all import *
 from .curve_discretizer import curve_discretizer
 # from alinea.adel.fitting import curvilinear_abscisse
 
 
 def curvilinear_abscisse(x, y):
-
     s = np.zeros(len(x))
     s[1:] = np.sqrt(np.diff(x) ** 2 + np.diff(y) ** 2)
     return s.cumsum()
 
 
 def curvature_xys(x, y, s):
-
     ds = np.diff(s)
     dx, dy = np.diff(x), np.diff(y)
     # dx /= ds
@@ -47,7 +46,6 @@ def curvature(crv, n=100):
 
 
 def curvature2xy(p0, angle, s, dtheta):
-
     x0, y0 = p0
     ds = np.diff(s)
     theta = angle + np.cumsum([0] + list(dtheta * ds[1:]))

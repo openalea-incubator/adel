@@ -23,7 +23,7 @@ light interception by individual phytoelements during the crop cycle. Applicatio
 interpretation of remote-sensing signals, to the estimation of crop light use efficiency, or to the
 assistance in the ecophysiological analysis of plant response to light conditions.
 The model is based on an analysis of developmental and geometrical similarities that exist among phytomers, to allow a
-concise parameterisation. Parameterising the model requires using experimental data to document a set of inputs described below.
+concise parameterization. Parameterising the model requires using experimental data to document a set of inputs described below.
 
 Beside these user inputs, Adel also make use of constants and of relations (set and 'readable' in Adel.R, but not documented)
 describing coordination of leaves, dynamics of geometry, computation of visibility and progression of senescence as a function of ssi.

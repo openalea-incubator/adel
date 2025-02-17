@@ -1,0 +1,17 @@
+channels:
+  - conda-forge
+  - openalea3
+dependencies:
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - rpy2
+  - openalea.mtg
+  - openalea.plantgl
+  - openalea.core >= 2.4
+  - pydata_sphinx_theme
+  - sphinx-favicon
+  - nbsphinx
+  - nbsphinx-link
+  - myst-parser

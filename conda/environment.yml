@@ -10,4 +10,5 @@ dependencies:
   - openalea.mtg
   - openalea.plantgl
   - openalea.core >= 2.4
+  - openalea.deploy
   - pytest

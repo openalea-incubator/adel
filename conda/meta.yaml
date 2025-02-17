@@ -37,7 +37,7 @@ test:
     - pytest -v --ignore=test_povray.py --ignore=test_dataflow.py --ignore=test_plantgen.py
 
 about:
-  home: {{ data.get('url') }}
-  license: {{ data.get('license') }}
-  summary: {{ data.get('description') }}
+  home: "https://github.com/openalea-incubator/adel"
+  license: Cecill-C License
+  license_file: LICENCE.txt
 

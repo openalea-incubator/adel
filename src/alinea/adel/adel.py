@@ -9,7 +9,7 @@ import numpy
 
 try:
     import pickle as pickle
-except:
+except ImportError:
     import pickle
 from openalea.plantgl.all import Viewer, Scene
 

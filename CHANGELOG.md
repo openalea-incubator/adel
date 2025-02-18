@@ -24,3 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - ChangeLog.txt to use this CHANGELOG.md file instead.
+- setup.py in favor of pyproject.toml.
+- debian folder (not used)

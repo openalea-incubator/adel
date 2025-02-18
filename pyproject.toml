@@ -37,6 +37,10 @@ dependencies = [
     "rpy2",
 ]
 
+[project.optional-dependencies]
+test = ["pytest"]
+notebook = ["jupyter"]
+
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"
 "Bug Tracker" = "https://github.com/openalea-incubator/adel/issues"

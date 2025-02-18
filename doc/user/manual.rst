@@ -1,7 +1,3 @@
-
-   
-++++++++++++++++++++
-
 .. sidebar:: Summary
 
     :Topic: *Alinea.Adel Documentation*
@@ -146,7 +142,7 @@ There is one line per axis. Columns are :
 
    Botanical position of the axis on the plant. 
 
-See :download:`an example of axeT <../../test/data/test_plantgen/MIN_MIN/axeT.csv>`.
+See :download:`an example of axeT <../../test/data/test_plantgen/min_min/axeT.csv>`.
    
 
 .. _dimT:
@@ -196,7 +192,7 @@ Columns are :
     * - **W_internode** 
       - Diameter of an internode (cm)
       
-See :download:`an example of dimT <../../test/data/test_plantgen/MIN_MIN/dimT.csv>`.
+See :download:`an example of dimT <../../test/data/test_plantgen/min_min/dimT.csv>`.
 
 
 .. _phenT:
@@ -242,7 +238,7 @@ Columns are :
     * - **dTT_del_phytomer** 
       - Thermal time after which the leaf blade is destroyed and is not displayed in the 3D mock-up anymore; expressed as thermal time since TT_del_phytomer1
 
-See :download:`an example of phenT <../../test/data/test_plantgen/MIN_MIN/phenT.csv>`.
+See :download:`an example of phenT <../../test/data/test_plantgen/min_min/phenT.csv>`.
 
 
 .. _earT:
@@ -292,7 +288,8 @@ The upper leaves correspond approximately to the leaves beard by an elongated in
 The number of lower leaves showing a linear progress of senescence is called Nsenlow;
 The number of upper leaves showing a complex progress is called Nsenup
 
-All upper leaf blades start to senesce at the same time, that is at :math:`SSI = Nsenlow`; 
+All upper leaf blades start to senesce at the same time, that is at
+:math:`SSI = Nsenlow`;
 Senescence of each upper leaf blade progresses first at a slow rate,identical for all leaves, then at a fast rate.
 
 The parameter used to describe these kinetics are the value of the slow rate (R_sen1), the value of ssi (dssit1) at the onset of fast senescence 
@@ -683,7 +680,7 @@ Otherwise, the function :func:`read_plantgen_inputs <alinea.adel.plantgen.plantg
 permits to define the :ref:`arguments <user_arguments>` by importing a Python module.
 
 Using :func:`read_plantgen_inputs <alinea.adel.plantgen.plantgen.read_plantgen_inputs>` with 
-the module :download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`, 
+the module :download:`plantgen_inputs.py <../../src/alinea/adel/data/plantgen_inputs.py>`,
 the preceding example becomes::
 
     from alinea.adel.plantgen.plantgen import read_plantgen_inputs
@@ -792,7 +789,7 @@ Finally, the node ``read_plantgen_inputs`` permits to define the values of the i
 ``alinea.adel.plantgen``. 
     
 For example, using ``read_plantgen_inputs`` with the module 
-:download:`plantgen_inputs.py <../../adel/data/plantgen_inputs.py>`, 
+:download:`plantgen_inputs.py <../../src/alinea/adel/data/plantgen_inputs.py>`,
 the dataflow becomes:
     
     .. figure:: ./image/plantgen_csv_inputs_dataflow.png
@@ -926,21 +923,21 @@ The resulting MTG has the following properties:
     :header-rows: 1
 
     * - Scale
-      - Lable
+      - Label
       - Properties (up to date 26/09/2014; may change)
       - Comments
     * - 1
-      - plant*
+      - plant
       - azimuth, edge_type, label, position, refplant_id
-      - *number of plants
+      - number of plants
     * - 2
-      - MS/T*
+      - MS/T
       - HS_final, edge_type, label, nff, timetable
-      - MS: main stem; * the order of tillers
+      - MS: main stem;  the order of tillers
     * - 3
-      - metamer*
+      - metamer
       - L_shape, edge_type, label
-      - *the position of metamer (numphy)
+      - the position of metamer (numphy)
     * - 4
       - internode
       - azimuth, diameter, edge_type, inclination, label, length, ntop, senesced_length, visible_length
@@ -1044,7 +1041,7 @@ Each line contains the following data: *id_axis*, *N_phytomer_potential*, *a_coh
 *TT_hs_0*, *TT_flag_ligulation*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for the meaning of these parameters.
 
-See :download:`an example of dynT_user_FULL <../../test/data/test_plantgen/FULL_FULL/dynT_user.csv>`.
+See :download:`an example of dynT_user_FULL <../../test/data/test_plantgen/full_full/dynT_user.csv>`.
 
 
 .. _dynT_user_SHORT:
@@ -1063,7 +1060,7 @@ Each line contains the following data *id_axis*, *a_cohort*, *TT_hs_0*,
 *TT_flag_ligulation*, *n0*, *n1* and *n2*. 
 See :ref:`dynT` for a description of these parameters.
 
-See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/SHORT_SHORT/dynT_user.csv>`.
+See :download:`an example of dynT_user_SHORT <../../test/data/test_plantgen/short_short/dynT_user.csv>`.
 
 
 .. _dynT_user_MIN:
@@ -1083,7 +1080,7 @@ In the other lines, only *id_axis* and *TT_flag_ligulation* are documented:
  
 See :ref:`dynT` for a description of these parameters.
 
-See :download:`an example of dynT_user_MIN <../../test/data/test_plantgen/MIN_MIN/dynT_user.csv>`.
+See :download:`an example of dynT_user_MIN <../../test/data/test_plantgen/min_min/dynT_user.csv>`.
 
 
 .. _dimT_user_FULL:
@@ -1103,7 +1100,7 @@ Each line contains the following data: *id_axis*,
 :ref:`botanical_positions`). *N_phytomer_potential* are the final number of phytomers. The 
 other data are the same as the ones in :ref:`dimT_abs`.
 
-See :download:`an example of dimT_user_FULL <../../test/data/test_plantgen/FULL_FULL/dimT_user.csv>`.
+See :download:`an example of dimT_user_FULL <../../test/data/test_plantgen/full_full/dimT_user.csv>`.
 
 
 .. _dimT_user_SHORT:
@@ -1123,7 +1120,7 @@ Each line contains the following data: *id_axis*, *index_phytomer*, *L_blade*, *
 :ref:`botanical_positions`). *N_phytomer_potential* are the final number of phytomers. The 
 other data are the same as the ones in :ref:`dimT_abs`.
 
-See :download:`an example of dimT_user_SHORT <../../test/data/test_plantgen/SHORT_SHORT/dimT_user.csv>`.
+See :download:`an example of dimT_user_SHORT <../../test/data/test_plantgen/short_short/dimT_user.csv>`.
         
 
 .. _dimT_user_MIN:
@@ -1137,7 +1134,7 @@ Each line contains the following data: *index_phytomer*, *L_blade*, *W_blade*,
 *L_sheath*, *W_sheath*, *L_internode* and *W_internode*. 
 See :ref:`dimT_abs` for a description of these data.
 
-See :download:`an example of dimT_user_MIN <../../test/data/test_plantgen/MIN_MIN/dimT_user.csv>`.
+See :download:`an example of dimT_user_MIN <../../test/data/test_plantgen/min_min/dimT_user.csv>`.
 
 
 .. _phenT_abs:
@@ -1152,7 +1149,7 @@ can be useful for debugging.
     * the positions of the phytomers are not normalized,
     * the thermal times of developmental events are absolute.
 
-See :download:`an example of phenT_abs <../../test/data/test_plantgen/MIN_MIN/phenT_abs.csv>`.
+See :download:`an example of phenT_abs <../../test/data/test_plantgen/min_min/phenT_abs.csv>`.
         
 
 .. _dimT_abs:
@@ -1166,7 +1163,7 @@ can be useful for debugging.
 :ref:`dimT_abs` is the same as :ref:`dimT <dimT>`, except that the positions 
 of the phytomers are not normalized.
 
-See :download:`an example of dimT_abs <../../test/data/test_plantgen/MIN_MIN/dimT_abs.csv>`.
+See :download:`an example of dimT_abs <../../test/data/test_plantgen/min_min/dimT_abs.csv>`.
 
 
 .. _dynT:
@@ -1230,7 +1227,7 @@ a line with the following data:
 The lines are ordered first by **id_axis** in ascending order, then by **cardinality** 
 in descending order.
 
-See :download:`an example of dynT <../../test/data/test_plantgen/MIN_MIN/dynT.csv>`.
+See :download:`an example of dynT <../../test/data/test_plantgen/min_min/dynT.csv>`.
         
 
 .. _phenT_first:
@@ -1245,7 +1242,7 @@ needn't it. This table can be useful for debugging.
 :ref:`phenT_abs` which correspond to the first phytomer of each non-regressive axis, 
 i.e. *index_phytomer* equal to 1.
 
-See :download:`an example of phenT_first <../../test/data/test_plantgen/MIN_MIN/phenT_first.csv>`.
+See :download:`an example of phenT_first <../../test/data/test_plantgen/min_min/phenT_first.csv>`.
 
 
 .. _HS_GL_SSI_T:
@@ -1267,8 +1264,8 @@ For each couple (*id_cohort*, *N_phytomer_potential*) in :ref:`axeT <axeT>` and 
     * - Column
       - Description
     * - **id_phen** 
-      - the concatenation of *id_cohort* and *N_phytomer_potential*. For example, if 
-        *id_cohort*==4 and *N_phytomer_potential*==8, then *id_phen*==408.
+      - the concatenation of *id_cohort* and *N_phytomer_potential*. For example, if
+        *id_cohort* == 4 and *N_phytomer_potential* == 8, then *id_phen* == 408.
     * - **TT** 
       - the thermal time.
     * - **HS** 
@@ -1282,7 +1279,7 @@ For each couple (*id_cohort*, *N_phytomer_potential*) in :ref:`axeT <axeT>` and 
 
    For each axis, *TT* varies from 0 to :attr:`alinea.adel.plantgen.params.TT_DEL_FHAUT`.     
 
-See :download:`an example of HS_GL_SSI_T <../../test/data/test_plantgen/MIN_MIN/HS_GL_SSI_T.csv>`.
+See :download:`an example of HS_GL_SSI_T <../../test/data/test_plantgen/min_min/HS_GL_SSI_T.csv>`.
 
 
 .. _tilleringT:
@@ -1306,7 +1303,7 @@ of the start of MS elongation, and the thermal time of the flowering.
     * - **axes_density** 
       - the number of axes per square meter.
 
-See :download:`an example of tilleringT <../../test/data/test_plantgen/MIN_MIN/tilleringT.csv>`.
+See :download:`an example of tilleringT <../../test/data/test_plantgen/min_min/tilleringT.csv>`.
 
 
 .. _cardinalityT:
@@ -1342,4 +1339,4 @@ Theoretical cardinalities are calculated globally without randomness.
       - the simulated cardinality of the axis
       
 
-See :download:`an example of cardinalityT <../../test/data/test_plantgen/MIN_MIN/cardinalityT.csv>`.
+See :download:`an example of cardinalityT <../../test/data/test_plantgen/min_min/cardinalityT.csv>`.

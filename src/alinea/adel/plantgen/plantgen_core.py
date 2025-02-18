@@ -62,17 +62,19 @@ def init_axes(
     """
     Initialize the axes randomly.
     The following variables are calculated:
+
         * id_plt: Number (int) identifying the plant to which the axe belongs
         * id_cohort: Number (int) identifying the cohort to which the axe belongs
         * id_axis: Identifier of the botanical position of the axis on the plant.
-          MS refers to the main stem, T0, T1, T2,..., refers to the primary tillers,
-          T0.0, T0.1, T0.2,..., refers to the secondary tillers of the primary tiller
-          T0, and T0.0.0, T0.0.1, T0.0.2,..., refers to the tertiary tillers
-          of the secondary tiller T0.0.
+              MS refers to the main stem, T0, T1, T2,..., refers to the primary tillers,
+              T0.0, T0.1, T0.2,..., refers to the secondary tillers of the primary tiller
+              T0, and T0.0.0, T0.0.1, T0.0.2,..., refers to the tertiary tillers
+              of the secondary tiller T0.0.
         * N_phytomer_potential: The potential total number of vegetative phytomers formed on
-          the axis. N_phytomer_potential does NOT take account of the regression of some axes.
+            the axis. N_phytomer_potential does NOT take account of the regression of some axes.
         * id_phen: a key (int) linking to phenT. id_phen allows referring to the data
-          that describe the phenology of the axis
+            that describe the phenology of the axis
+
     and are stored in memory for the next steps of the process.
     The routine returns :ref:`cardinalityT` for debugging purpose.
     """
@@ -102,6 +104,7 @@ class PhenologyFunctions:
     Define phenology functions. These functions are used later on to calculate the
     phenology of the axes.
     The following variables are calculated:
+
         * cardinality: the cardinality of the couple (id_axis, N_phytomer_potential) in axeT
         * a_cohort: the rate of Haun Stage vs Thermal time. This is the rate of the first phase in case of bilinear behavior.
         * TT_hs_0: the thermal time for Haun Stage equal to 0
@@ -115,11 +118,12 @@ class PhenologyFunctions:
         * t1: the thermal time at which the senescence starts
         * hs_t1: the Haun Stage at t1
         * a: the coefficient of the 3rd order term of the polynomial describing the dynamics
-          of the number of green leaves after flowering
+            of the number of green leaves after flowering
         * c: the coefficient of the 1st order term of the polynomial describing the dynamics
-          of the number of green leaves after flowering
+            of the number of green leaves after flowering
         * RMSE_gl: the RMSE for the dynamic of the number of green leaves after estimation of
-          parameter a.
+            parameter a.
+
     and are stored in memory for the next steps of the process.
     The routine returns :ref:`dynT` and the decimal number of elongated internodes.
     """
@@ -205,28 +209,31 @@ def plants_structure(
     """
     Construct the structure of the plants.
     The following variables are calculated:
+
         * N_phytomer: The effective total number of vegetative phytomers formed
-          on the axis. N_phytomer does take account of the regression of some axes.
+            on the axis. N_phytomer does take account of the regression of some axes.
         * HS_final: The Haun Stage at the end of growth of the axis.
         * TT_stop_axis: If the axis dyes: thermal time (since crop emergence) of
-          end of growth. If the axis grows up to flowering: NA
+            end of growth. If the axis grows up to flowering: NA
         * TT_del_axis: If the axis dyes: thermal time (since crop emergence) of
-          disappearance. If the axis grows up to flowering: NA
+            disappearance. If the axis grows up to flowering: NA
         * id_dim: key (int) linking to dimT. id_dim allows referring to the data
-          that describe the dimensions of the phytomers of the axis
+            that describe the dimensions of the phytomers of the axis
         * id_ear: Key (int) linking to earT. id_ear allows referring to the data
-          that describe the ear of the axis. For the regressive axes, id_ear=NA.
-          For the non-regressive axes, id_ear=1.
+            that describe the ear of the axis. For the regressive axes, id_ear=NA.
+            For the non-regressive axes, id_ear=1.
         * TT_em_phytomer1: Thermal time (relative to canopy appearance) of tip
-          appearance of the first true leaf (not coleoptile or prophyll)
+            appearance of the first true leaf (not coleoptile or prophyll)
         * TT_col_phytomer1: Thermal time (relative to canopy appearance) of collar
-          appearance of the first true leaf
+            appearance of the first true leaf
         * TT_sen_phytomer1: Thermal time (relative to canopy appearance) of full
-          senescence of the first true leaf (this is : thermal time when SSI= 1)
+            senescence of the first true leaf (this is : thermal time when SSI= 1)
         * TT_del_phytomer1: Thermal time (relative to canopy appearance) of
-          disappearance of the first true leaf
+            disappearance of the first true leaf
+
     and are stored in memory for the next steps of the process.
     The routine returns
+
         * :ref:`axeT <axeT>` as final result,
         * :ref:`tilleringT` and :ref:`phenT_first` for debugging purpose.
     """
@@ -307,6 +314,7 @@ def organs_dimensions(
     """
     Calculate the dimensions of the organs.
     The following variables are calculated:
+
         * id_dim: key (int) of the axis
         * index_phytomer: The absolute phytomer position, i.e. phytomer rank
         * L_blade: length of the mature blade (cm)
@@ -315,6 +323,7 @@ def organs_dimensions(
         * W_sheath: Diameter of the stem or pseudo stem at the level of sheath (cm)
         * L_internode: Length of an internode (cm)
         * W_internode: Diameter of an internode (cm)
+
     and are stored in memory for the next steps of the process.
     The routine returns :ref:`dimT <dimT>` as final result.
     """
@@ -382,24 +391,27 @@ def axes_phenology(
     """
     Calculate the phenology of the axes.
     The following variables are calculated:
+
         * TT_em_phytomer: Thermal time of the appearance of the tip of leaf out of
-          the whorl made by the older blade.
+            the whorl made by the older blade.
         * TT_col_phytomer: Thermal time of the appearance of collar.
         * TT_sen_phytomer: Thermal time for which SSI = n (where n is the phytomer
-          rank).
+             rank).
         * TT_del_phytomer: Thermal time after which the leaf blade is destroyed
-          and is not displayed in the 3D mock-up anymore.
+                and is not displayed in the 3D mock-up anymore.
         * dTT_em_phytomer: Thermal time of the appearance of the tip of leaf out of
-          the whorl made by the older blade; expressed as thermal time since TT_em_phytomer1
+                the whorl made by the older blade; expressed as thermal time since TT_em_phytomer1
         * dTT_col_phytomer: Thermal time of the appearance of collar; expressed as
-          thermal time since TT_col_phytomer1
+                thermal time since TT_col_phytomer1
         * dTT_sen_phytomer: Thermal time for which SSI = n (where n is the phytomer
-          rank); expressed as thermal time since TT_sen_phytomer1
+                rank); expressed as thermal time since TT_sen_phytomer1
         * dTT_del_phytomer: Thermal time after which the leaf blade is destroyed
-          and is not displayed in the 3D mock-up anymore; expressed as thermal time
-          since TT_del_phytomer1
+              and is not displayed in the 3D mock-up anymore; expressed as thermal time
+              since TT_del_phytomer1
+
     and are stored in memory for the next steps of the process.
     The routine returns:
+
         * :ref:`phenT <phenT_>` as final result,
         * :ref:`phenT_abs` and :ref:`HS_GL_SSI_T` for debugging purpose.
     """
@@ -676,7 +688,7 @@ def _gen_id_plt_list(plant_ids, id_cohort_list):
         else:
             next_plant_first_row = len(id_cohort_list)
         current_plant_axes = id_cohort_list[current_plant_index:next_plant_first_row]
-        id_plt_list.extend([plant_id for current_plant_axis in current_plant_axes])
+        id_plt_list.extend([plant_id for _ in current_plant_axes])
         current_plant_index = next_plant_first_row
     return id_plt_list
 
@@ -695,7 +707,7 @@ def _gen_id_axis_list(plant_ids, decide_child_cohort_probabilities):
     all_child_cohorts_array = np.array(all_child_cohorts)
     cohort_numbers = all_child_cohorts_array[:, 0].astype(int).tolist()
     cohort_positions = all_child_cohorts_array[:, 1].tolist()
-    return (cohort_numbers, cohort_positions)
+    return cohort_numbers, cohort_positions
 
 
 def _gen_N_phytomer_potential_list(
@@ -1094,7 +1106,7 @@ class _CreateDimT:
             MS_id_dim = axeT_group["id_dim"][axeT_group.first_valid_index()]
 
             L_blade_is_null = self.dimT_["L_blade"].isnull()
-            row_indexes_to_fit = L_blade_is_null[L_blade_is_null == True].index
+            row_indexes_to_fit = L_blade_is_null[L_blade_is_null is True].index
 
             _gen_lengths(
                 MS_id_dim,

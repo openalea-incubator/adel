@@ -5,7 +5,9 @@ Symbols are:
     LeafElement( tissue_type (int),
                  final_length, length, radius_max, s_base, s_top ([0,1]),
                  leaf_id (rank), seed (random) )
+
     StemElement( tissue type (int) , length, diam_base, diam_top)
+
 """
 # Define symbol classes used by the Turtle like
 # Leaf, Stem, PStem, Apex, ApexR
@@ -33,7 +35,8 @@ class Symbol:
     def _mesh(self):
         pass
 
-    def _can_label(self, leaf_number, optical_species):
+    @staticmethod
+    def _can_label(leaf_number, optical_species):
         _label = label.Label()
         _label.leaf_id = leaf_number
         _label.optical_id = optical_species
@@ -189,17 +192,15 @@ class StemElement(Symbol):
 
 
 def build_symbols(leaves, seed=None, relative_angle=True):
-    symbols = {}
-    symbols["LeafElement"] = LeafElement(
+    symbols = {"LeafElement": LeafElement(
         leaves, seed=seed, relative_angle=relative_angle
-    )
-    symbols["StemElement"] = StemElement(leaves, seed=seed)
+    ), "StemElement": StemElement(leaves, seed=seed)}
     return symbols
 
 
 # geometric functions
 def slim_cylinder(length, radius_base, radius_top):
-    "Try to construct a cylinder with a low number of triangles."
+    """Try to construct a cylinder with a low number of triangles."""
     pi = math.pi
     cos = math.cos
     sin = math.sin

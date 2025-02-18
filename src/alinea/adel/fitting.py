@@ -25,21 +25,22 @@ def fit_leaf(x, y, s, r):
     r: leaf radius
 
     Algo:
-        1.1 fit x, y
-        1.2 discretize the splines (high: 100)
-        1.3 compute curvilinear abscissa
-        1.4 normalize :
-          + compute length and divide x, y by length
+        #. fit x, y
+            #. discretize the splines (high: 100)
+            #. compute curvilinear abscissa
+            #. normalize :
+                + compute length and divide x, y by length
 
-        2.1 fit r, s
-        2.2 discretize r, s (high 500)
-        2.3 normalize :
-          + compute max r, s and divide r, s
-        2.4 compute leaf surface
-        2.5 r-t1-> found r(s): interp(s_t1,s_t2, r_t2)
+        #. fit r, s
+            #. discretize r, s (high 500)
+            #. normalize :
+                + compute max r, s and divide r, s
+            #. compute leaf surface
+            #. r-t1-> found r(s): interp(s_t1,s_t2, r_t2)
 
-        3. fit x(t1), y(t1), r(t1)
-        4. return (x, y, r) and surface value
+        #. fit x(t1), y(t1), r(t1)
+        #. return (x, y, r) and surface value
+
     """
     global debug
     # spline parameters
@@ -95,25 +96,26 @@ def fit_leaf(x, y, s, r):
 def fit2(x, y, s, r):
     """
     x, y: 2d points
-    s: curvilinear abscisse
+    s: curvilinear abscissa
     r: leaf radius
 
     Algo:
-        1.1 fit x, y
-        1.2 discretize the splines (high: 100)
-        1.3 compute curvilinear abscissa
-        1.4 normalize :
-          + compute length and divide x, y by length
+        #. fit x, y
+            #. discretize the splines (high: 100)
+            #. compute curvilinear abscissa
+            #. normalize :
+                + compute length and divide x, y by length
 
-        2.1 fit r, s
-        2.2 discretize r, s (high 500)
-        2.3 normalize :
-          + compute max r, s and divide r, s
-        2.4 compute leaf surface
-        2.5 r_t1-> found r(s): interp(s_t1,s_t2, r_t2)
+        #. fit r, s
+            #. discretize r, s (high 500)
+            #. normalize :
+                + compute max r, s and divide r, s
+            #. compute leaf surface
+            #. r_t1-> found r(s): interp(s_t1,s_t2, r_t2)
 
-        3. fit x(t1), y(t1), r(t1)
-        4. return (x, y, r) and surface value
+        #. fit x(t1), y(t1), r(t1)
+        #. return (x, y, r) and surface value
+
     """
     global debug
     # spline parameters

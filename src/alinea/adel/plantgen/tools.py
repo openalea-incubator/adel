@@ -190,16 +190,20 @@ def decide_time_of_death(
     :Parameters:
 
         - `max_axes_number` (:class:`int`) - the maximum number of existing axes.
+
         - `number_of_ears` (:class:`int`) - the number of ears.
+
         - `TT_regression_start` (:class:`float`) - thermal time at which the regression starts, i.e. when the Haun Stage
-          of the most frequent main stem is equal to (N_phytomer_potential - 5).
+            of the most frequent main stem is equal to (N_phytomer_potential - 5).
+
         - `TT_regression_end` (:class:`float`) - the thermal time at which the regression ends, i.e. when the haun stage
-         of the most frequent main stem is equal to flag leaf number.
+            of the most frequent main stem is equal to flag leaf number.
+
         - `TT_em_phytomer1_df` (:class:`pandas.DataFrame`) - A dataframe which contains, for each plant and each tiller, the thermal time
-        (relative to canopy appearance) of tip appearance of the first true leaf (not coleoptile nor prophyll).
+            (relative to canopy appearance) of tip appearance of the first true leaf (not coleoptile nor prophyll).
 
     :Returns:
-        the thermal times (relative to canopy emergence) when the axes stops growing.
+        the thermal times (relative to canopy emergence) when the axes stop growing.
 
     :Returns Type:
         :class:`list`

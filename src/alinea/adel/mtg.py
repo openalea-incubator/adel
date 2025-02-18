@@ -726,7 +726,9 @@ def properties(d, exclude=[]):
     return res
 
 
-def properties_from_dict(d, index, exclude=[]):
+def properties_from_dict(d, index, exclude=None):
+    if exclude is None:
+        exclude = []
     res = {}
     for k in d:
         if k in exclude:
@@ -998,33 +1000,34 @@ def mtg_factory(params, sectors=1):
 
     The dictionary contains the parameters and a list of elements. Sector is an integer giving the number of LeafElements per Leaf
     The keys of params are:
-        - plant: indx of plant
-        - axe:
-        - numphy
-        - Lv
-        - L_shape
-        - Lsen
-        - Lw_shape
-        - LcType
-        - LcIndex
-        - Linc
-        - Laz
-        - Lpo
-        - Lpos
-        - Gl
-        - Gv
-        - Gsen
-        - Gpo
-        - Gpos
-        - Gd
-        - Ginc
-        - El
-        - Ev
-        - Esen
-        - Ed
-        - Einc
-        - Epo
-        - Epos
+
+    * plant: index of plant
+    * axe
+    * numphy
+    * Lv
+    * L_shape
+    * Lsen
+    * Lw_shape
+    * LcType
+    * LcIndex
+    * Linc
+    * Laz
+    * Lpo
+    * Lpos
+    * Gl
+    * Gv
+    * Gsen
+    * Gpo
+    * Gpos
+    * Gd
+    * Ginc
+    * El
+    * Ev
+    * Esen
+    * Ed
+    * Einc
+    * Epo
+    * Epos
 
     :TODO:
         * add length and final_length (DONE)
@@ -1036,11 +1039,12 @@ def mtg_factory(params, sectors=1):
         * function growthThermaltime(g, tt, dtt): tt=thermaltime du couvert
         * function growthThermaltime(g, tt, dtt, stress factor)
         * stress factor: offre/demande
-            - demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}*\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}*\rho_v`
-            - offre : :math:`sum{E_abs}*\eps_b`
+            * demand = :math:`D=\int_{tt}^{tt+dtt}{S(x)dx}\rho_s+\int_{tt}^{tt+dtt}{V(x)dx}\rho_v`
+            * offre = :math:`sum{E_abs}\eps_b`
             => ds = ds_predit* stress_factor
         * give the area to the leaf model
         * update properties
+
     """
 
     if not _check_adel_parameters(params):
@@ -1301,7 +1305,6 @@ def compute_element(n, symbols):
     # leaf inclination
     linc = n.Linc
 
-    element = {}
     if n.label.startswith("L"):
         radius_max = n.Lw
         element = leaf(
@@ -1389,7 +1392,7 @@ def mtg_turtle(g, symbols):
 def mtg_turtle_time(g, symbols, time, update_visitor=None):
     """Compute the geometry on each node of the MTG using Turtle geometry.
 
-    Update_visitor is a function called on each node in a pre order (parent before children).
+    Update_visitor is a function called on each node in a pre-order (parent before children).
     This function allow to update the parameters and state variables of the vertices.
 
     :Example:

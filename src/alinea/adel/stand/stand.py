@@ -1,8 +1,8 @@
-from itertools import *
+from itertools import cycle
 from math import pi, sqrt
 from operator import itemgetter
 from pathlib import Path as path
-from random import random, sample
+from random import random, sample, normalvariate
 
 import numpy as np
 from numpy import cos, linspace, sin

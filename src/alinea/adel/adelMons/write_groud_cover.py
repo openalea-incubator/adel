@@ -1,7 +1,8 @@
-from . import IOtable
-import os
 from os.path import join
+
 from openalea.core.pkgmanager import PackageManager
+
+from . import IOtable
 
 pm = PackageManager()
 pkg = pm.get("alinea.adel.adelMons")

@@ -221,7 +221,6 @@ def simpleWheat_param(
         t_distances = distances[(nb_phy - t_nb_phy - 1) :]
         distances = np.concatenate((distances, t_distances))
 
-        t_diameters = np.linspace(diam_base, diam_top, t_nb_phy)
 
         inclinations = np.linspace(basal_insertion, top_insertion, t_nb_phy)
         # azimuth : aller chercher regle adel ?

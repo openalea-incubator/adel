@@ -1,8 +1,9 @@
-import os
-from . import IOtable
 import math
-from os.path import join
+import os
+
 from openalea.core.pkgmanager import PackageManager
+
+from . import IOtable
 
 pm = PackageManager()
 pkg = pm.get("alinea.adel.adelMons")
@@ -41,7 +42,7 @@ def extract_dataframe(dat, ls_cles, cle, val=None):
 
     id = []
     for i in range(len(dat[cle])):
-        if val == None:
+        if val is None:
             id.append(i)
         else:
             if dat[cle][i] == val:

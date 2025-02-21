@@ -517,7 +517,7 @@ def mtg_factory(
     aborting_tiller_reduction=1.0,
     leaf_db=None,
 ):
-    """Construct a MTG from a dictionary of parameters.
+    """Construct an MTG from a dictionary of parameters.
 
     The dictionary contains the parameters of all metamers in the stand (topology + properties).
     metamer_factory is a function that build metamer properties and metamer elements from parameters dict.
@@ -553,8 +553,6 @@ def mtg_factory(
     vid_plant = -1
     vid_axe = -1
     vid_metamer = -1
-    vid_node = -1
-    vid_elt = -1
     # vid of top of stem nodes and elements
     vid_topstem_node = -1
     vid_topstem_element = -1
@@ -599,8 +597,6 @@ def mtg_factory(
             prev_axe = -1
             vid_axe = -1
             vid_metamer = -1
-            vid_node = -1
-            vid_elt = -1
             vid_topstem_node = -1
             vid_topstem_element = -1
             vid_main_stem = -1
@@ -673,9 +669,9 @@ def mtg_factory(
                     "endleaf": endleaf,
                     "endE": endE,
                 }
-            if not "ntop" in args:
+            if "ntop" not in args:
                 args.update({"ntop": None})
-            if not "Gd" in args:
+            if "Gd" not in args:
                 args.update({"Gd": 0.19})
             args.update({"split": split})
 
@@ -823,7 +819,6 @@ def update_organ_from_table(organ, metamer, oldmetamer):
     neworg = metamer[organ.label]
     oldorg = oldmetamer[organ.label]
     new_elts = neworg.pop("elements")
-    old_elts = oldorg.pop("elements")
     for k in neworg:
         if k != "shape_xysr":
             exec("organ.%s = neworg['%s']" % (k, k))

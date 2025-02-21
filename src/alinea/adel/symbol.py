@@ -12,7 +12,8 @@ Symbols are:
 # Define symbol classes used by the Turtle like
 # Leaf, Stem, PStem, Apex, ApexR
 
-import random, math
+import random
+import math
 import openalea.plantgl.all as pgl
 from . import fitting
 from . import label
@@ -177,7 +178,6 @@ class StemElement(Symbol):
         if self.seed is not None or classic:
             solid = True
             slices = 3
-            diameter = diameter_base
             stem = pgl.Tapered(
                 diameter_base / 2.0,
                 diameter_top / 2.0,

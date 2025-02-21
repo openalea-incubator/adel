@@ -1,4 +1,4 @@
-from math import *
+from math import sin, cos, radians
 
 
 def DecliSun(JJ):

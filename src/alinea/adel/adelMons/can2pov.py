@@ -22,10 +22,6 @@ class can2pov:
 
         # ajout des triangles 2 par 2 pour eviter bugs lors de l'exportation des triangleset dans pov-ray
         for i in range(0, len(tb) - 1, 2):
-            # creation d'une liste de coordonnees des points et d'une liste d'index des triangles pour les lignes i et i+1
-            ind, pts = [], []
-            # count=0
-
             indices = Index3Array([(0, 1, 2), (3, 4, 5)])
             coord1 = list(map(float, tb[i][5:]))
             coord2 = list(map(float, tb[i + 1][5:]))
@@ -60,7 +56,8 @@ class can2pov:
 
         return can_file[0:-4] + ".pov"
 
-    def pov_header(self, f, cam_type, backg, soil, cam_pos, fov, cam_rot):
+    @staticmethod
+    def pov_header(f, cam_type, backg, soil, cam_pos, fov, cam_rot):
         """cree une camera povray, un arriere plan et lumiere"""
         """ sol optionnel """
 
@@ -110,7 +107,7 @@ class can2pov:
             + "\n\n"
         )
 
-        if soil == True:
+        if soil:
             f.write("#declare T1=" + "\n")
             f.write("    texture {" + "\n")
             f.write("      pigment { color red 1.0 green 0.75 blue 0.33 }" + "\n")

@@ -55,7 +55,6 @@ def get_normal_dist(nb_plants=10, sigma=30.0):
     N = 1000
     norm_list = numpy.random.normal(scale=sigma, size=N)
     h = numpy.histogram(norm_list, bins=nb_plants)
-    classes = h[1]
     distri_plants = h[0] * nb_plants / float(N)
     round_distri = [numpy.round(d) for d in distri_plants]
     missing_pl = nb_plants - sum(round_distri)
@@ -293,7 +292,7 @@ class TillerEmission:
 
     @staticmethod
     def curve_emission_table(emission_table):
-        emission_table["primary"] = [not "." in x for x in emission_table["axis"]]
+        emission_table["primary"] = ["." not in x for x in emission_table["axis"]]
 
         def _fun(x):
             d = {
@@ -463,7 +462,6 @@ class TillerRegression:
         curves = {}
         for w in ("primary", "other", "total"):
             card = regressing_cohorts[w + "_axis"] * regressing_cohorts["f_disp"]
-            n_d = card.cumsum()
             loss = [0] * 2 + card.cumsum().tolist() + [card.sum()]
             curves[w] = interp1d(hs, loss)
         return curves
@@ -1195,7 +1193,7 @@ class AxePop:
             # remaining damages are compensated by unregressing the oldest tillers (compensation is for getting the right nears/plant)
             for k in tdamaged:
                 if len(tdamaged[k]) > 0:  # more than the regressing tillers are damaged
-                    if not k in tdisp:
+                    if k not in tdisp:
                         tdisp[k] = []
                     tdisp[k].extend(tdamaged[k])
                     # compensation : unregressing oldest tillers
@@ -1207,7 +1205,7 @@ class AxePop:
             # add remaining regression
             for k in treg:
                 if len(treg[k]) > 0:
-                    if not k in tdisp:
+                    if k not in tdisqp:
                         tdisp[k] = []
                     tdisp[k].extend(treg[k])
 
@@ -1261,7 +1259,7 @@ class PlantGen:
 
         # setup base configuration for plantgen interface for one plant
         self.base_config = base_config
-        if not "inner_params" in base_config:
+        if "inner_params" not in base_config:
             self.base_config["inner_params"] = {}
         self.base_config["inner_params"]["MS_EMERGENCE_STANDARD_DEVIATION"] = (
             0  # strictly respect TT_hs_0 as orign

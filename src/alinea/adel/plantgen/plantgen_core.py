@@ -1789,7 +1789,6 @@ def _fit_W_internode(
 ):
     width = "W_internode"
 
-    MS_index_phytomer_series = dimT_["index_phytomer"][MS_rows_indexes]
     MS_width_series = dimT_[width][MS_rows_indexes]
     MS_last_3_widths_mean = MS_width_series[-3:].mean()
 
@@ -2962,8 +2961,6 @@ class _CreatePhenTTmp:
                     a_cohort_before_start_MS_elongation_2,
                 )
 
-                HS_1_before_start_MS_elongation = HS_1_after_start_MS_elongation = HS_1
-                HS_2_before_start_MS_elongation = HS_2_after_start_MS_elongation = HS_2
                 self.phenT_tmp.loc[
                     phenT_tmp_group.index, "TT_sen_phytomer"
                 ] = phenT_tmp_group.loc[:, "TT_sen_phytomer"].values[:] = (

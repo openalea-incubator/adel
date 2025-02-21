@@ -1,10 +1,10 @@
+import numpy as np
 cm_import_okay = True
 try:
     from matplotlib import cm
     from matplotlib.colors import Normalize, LogNorm
 except:
     cm_import_okay = False
-import numpy as np
 
 
 """ A colormap class

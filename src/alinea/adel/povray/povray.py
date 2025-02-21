@@ -19,6 +19,7 @@ import tempfile
 import platform
 from pathlib import Path as path
 import openalea.plantgl.all as pgl
+from alinea.adel.postprocessing import domain3D, stand_box
 
 
 class PovRayError(Exception):
@@ -76,7 +77,7 @@ class PovRay:
                 "PovRay can't create its working directory : check for read/write permission or security level"
             )
 
-        if platform.system() is "Windows":
+        if platform.system() == "Windows":
             self.cmdline = "pvengine +FN +I%s +H%d +W%d -d /exit"
         else:
             self.cmdline = "povray +FN +I%s +H%d +W%d"
@@ -149,7 +150,7 @@ camera {{
 
         return pov_camera
 
-    def set_user_camera(pov_camera):
+    def set_user_camera(self, pov_camera):
         self.user_camera = pov_camera
 
     def soil_string(self):
@@ -184,7 +185,6 @@ box {{ <{x1}, {y1},  -0.1>,
             os.chdir(self.wdir)
             f = self.wdir / name
             namebase = f.namebase
-            ext = f.ext
 
             mesh_fn = self.wdir / (namebase + "_mesh.pov")
             pov = pgl.PovFilePrinter(str(mesh_fn), self.tesselator)
@@ -242,7 +242,6 @@ box {{ <{x1}, {y1},  -0.1>,
 
 # deprecated functions (here for backward compatibility)
 
-from alinea.adel.postprocessing import domain3D, stand_box
 
 color_list = [
     (0, 0, 0),

@@ -351,12 +351,7 @@ def phenology(adel_output_df):
                 ).sum()
             )
         indexes_of_all_non_null_Lsen = group["Lvsen"][group["Lvsen"] != 0].index
-        Lsen_non_null_series = group["Lvsen"][indexes_of_vegetative_phytomers][
-            indexes_of_all_non_null_Lsen
-        ]
-        Lsen_equal_L_shape_series = Lsen_non_null_series[
-            Lsen_non_null_series == L_shape[indexes_of_all_non_null_Lsen]
-        ]
+
         # SSI
         if indexes_of_all_non_null_Lsen.size == 0:
             SSI = 0.0

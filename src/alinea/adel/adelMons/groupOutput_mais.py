@@ -1,6 +1,3 @@
-from scipy import *
-
-
 def groupOutput_mais(caribu_dict, key="EiSup", sum_=False):
     # add a unique id per phytomer
     caribu_dict["id"], caribu_dict["av"] = [], []
@@ -27,7 +24,7 @@ def groupOutput_mais(caribu_dict, key="EiSup", sum_=False):
             if i == len(caribu_dict["id"]):
                 break
 
-        if sum_ == False:
+        if sum_ is False:
             av[id] = mean(v)
         else:
             av[id] = sum(v)

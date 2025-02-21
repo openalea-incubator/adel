@@ -33,7 +33,6 @@ class render_pov:
             name = _pov_file.namebase
 
             os.chdir(dir)
-            cmdline = "povray +I%s" % (pov_file)
             ext = ".png"
 
         time.sleep(wait)  # temps d'attente en secondes entre 2 simulations

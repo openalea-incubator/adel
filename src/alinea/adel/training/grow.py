@@ -33,7 +33,6 @@ def grow(n, time):
             n.color = 0, 180, 0
 
         # compute length of the entire leaf
-        leaf_age = time - metamer.start_tt
         development_stage = (min(time, metamer.end_tt) - metamer.start_tt) / (
             metamer.end_tt - metamer.start_tt
         )

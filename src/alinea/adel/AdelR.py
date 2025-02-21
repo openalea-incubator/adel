@@ -398,7 +398,8 @@ def _devCsv(axeTfn, dimTfn, phenTfn, earTfn=None, ssi2senTfn=None):
         ]
     # use tempdir + csv to pass correctly NA from pandas to R, and to let RdevCsv make the columns renaming, if any
     if any([isinstance(f, pandas.DataFrame) for f in args]):
-        import tempfile, shutil
+        import tempfile
+        import shutil
 
         tmp_dir = tempfile.mkdtemp()
         for i in range(len(args)):

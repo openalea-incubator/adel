@@ -4,7 +4,7 @@ def Group_and_Apply(table, properties, function, data):
 
     prop = []
 
-    if type(properties) == str:
+    if type(properties) is str:
         if properties.split(" ")[0] in keys:
             prop.append(properties.split(" ")[0])
 
@@ -15,7 +15,7 @@ def Group_and_Apply(table, properties, function, data):
 
     dat = []
 
-    if type(data) == str:
+    if type(data) is str:
         if data.split(" ")[0] in keys:
             dat.append(data.split(" ")[0])
 
@@ -26,7 +26,7 @@ def Group_and_Apply(table, properties, function, data):
 
     by = {}
     n = len(table[keys[0]])
-    for i in xrange(n):
+    for i in range(n):
         key = (prop[0], table[prop[0]][i])
 
     if len(prop) > 1:
@@ -35,7 +35,7 @@ def Group_and_Apply(table, properties, function, data):
     by.setdefault(key, []).append(i)
 
     l = range(0, len(table[keys[0]]))
-    for k, v in by.iteritems():
+    for k, v in by.items():
         args = {}
 
     for i in v:

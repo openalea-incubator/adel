@@ -266,7 +266,7 @@ class Leaves:
         return w
 
     def mesh(
-        self, leaf_key, L_shape, Lw_shape, length, s_base, s_top, incline=1, flipx=False
+        self, leaf_key, L_shape, Lw_shape, length, s_base, s_top, incline=1, flipx=False, min_area=1e-6
     ):
         """Compute mesh for a leaf element.
         - shape is a x,y,s,r tuple descriibing leaf shape
@@ -281,8 +281,8 @@ class Leaves:
         if flipx:
             shape = (-shape[0],) + shape[1:]  # to position leaves along tiller emitted
         leaf_mesh = fitting.mesh4(
-            shape, L_shape, length, s_base, s_top, Lw_shape, twist=self.twist
-        )
+            shape, L_shape, length, s_base, s_top, Lw_shape, twist=self.twist,
+        min_area=min_area)
         if leaf_mesh:
             pts, ind = leaf_mesh
             if len(ind) < 1:

@@ -4,7 +4,7 @@ from math import degrees, pi, cos, sin
 import openalea.plantgl.all as pgl
 
 # from openalea.mtg import MTG
-from openalea.mtg.turtle import TurtleFrame
+from openalea.mtg.plantframe.turtle import TurtleFrame
 # from openalea.mtg.algo import union
 # from alinea.astk.plantgl_utils import addSets
 
@@ -91,7 +91,7 @@ def StemElement_mesh(length, diameter_base, diameter_top, classic=False):
     return mesh
 
 
-def compute_element(element_node, leaves, classic=False):
+def compute_element(element_node, leaves, min_length=0.01, classic=False):
     """compute geometry of Adel base elements (LeafElement and StemElement)
     element_node should be a mtg node proxy"""
     n = element_node
@@ -100,7 +100,7 @@ def compute_element(element_node, leaves, classic=False):
     if n.label.startswith("Leaf"):  # leaf element
         blade = n.complex()
         species = blade.species
-        if blade.visible_length > 0.01:  # filter less than 0.1 mm leaves
+        if blade.visible_length >= min_length:
             if blade.shape_key is not None and n.srb is not None:
                 if leaves[species].dynamic:
                     inclin = 1  # inclination is encoded in db
@@ -117,6 +117,7 @@ def compute_element(element_node, leaves, classic=False):
                     n.srt,
                     incline=inclin,
                     flipx=True,
+                    min_area=min_length**2 / 100,
                 )  # flipx allows x-> -x to place the shape along with the tiller positioned with turtle.down()
 
             if n.lrolled > 0:
@@ -129,7 +130,7 @@ def compute_element(element_node, leaves, classic=False):
         stem = n.complex()
         # diameter_base = stem.parent().diameter if (stem.parent() and stem.parent().diameter > 0.) else stem.diameter
         # diameter_top = n.diam
-        if n.length > 0:
+        if n.length >= min_length:
             diameter_base = stem.diameter
             diameter_top = stem.diameter
             geom = StemElement_mesh(n.length, diameter_base, diameter_top, classic)
@@ -169,9 +170,10 @@ class AdelTurtle(pgl.PglTurtle):
 class AdelVisitor:
     """Performs geometric interpretation of mtg nodes"""
 
-    def __init__(self, leaves, classic, face_up):
+    def __init__(self, leaves, min_length, classic, face_up):
         self.classic = classic
         self.face_up = face_up
+        self.min_length = min_length
         self.leaves = leaves
 
     def __call__(self, g, v, turtle):
@@ -269,7 +271,7 @@ class AdelVisitor:
             # update geometry of elements
             mesh = None
             if n.length > 0:
-                mesh = compute_element(n, self.leaves, self.classic)
+                mesh = compute_element(n, self.leaves, min_length=self.min_length, classic=self.classic)
             if mesh:
                 n.geometry = turtle.transform(
                     mesh, face_up=self.face_up and n.label.startswith("Leaf")
@@ -291,7 +293,7 @@ class AdelVisitor:
         turtle.context.update({"axis": axis})
 
 
-def mtg_interpreter(g, leaves, classic=False, face_up=False):
+def mtg_interpreter(g, leaves, min_length=0.01, classic=False, face_up=False):
     """Compute/update the geometry on each node of the MTG using Turtle geometry."""
     # BUG : sub_mtg mange le vertex plant => on perd la plante !
     # plants = g.component_roots_at_scale(g.root, scale=1)
@@ -301,7 +303,7 @@ def mtg_interpreter(g, leaves, classic=False, face_up=False):
     # for plant in plants:
     #   gplant = g.sub_mtg(plant)
     turtle = AdelTurtle()
-    visitor = AdelVisitor(leaves, classic, face_up)
+    visitor = AdelVisitor(leaves, min_length, classic, face_up)
     scene = TurtleFrame(g, visitor=visitor, turtle=turtle, gc=False, all_roots=True)
     #   gt = union(gplant,gt)
 

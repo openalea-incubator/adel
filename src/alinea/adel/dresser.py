@@ -527,5 +527,5 @@ class AdelDressDyn(AdelDress):
             split=self.split,
             **kwds,
         )
-        g = mtg_interpreter(g, self.leaves, classic=self.classic, face_up=self.face_up)
+        g = mtg_interpreter(g, self.leaves, min_length=self.min_length, classic=self.classic, face_up=self.face_up)
         return g

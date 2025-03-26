@@ -24,6 +24,7 @@ def leaves_db():
         leaves = json_np.load(f)
     leaves, discard = fitting.fit_leaves(leaves, 9)
     assert leaves is not None
+    return leaves
 
 
 functions = build_symbols(leaves_db())

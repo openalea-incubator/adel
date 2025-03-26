@@ -96,8 +96,8 @@ def test_init_axes():
     cardinalityT = cardinalityT.drop("id_axis", axis=1)
     expected_cardinalityT = expected_cardinalityT.drop("id_axis", axis=1)
     np.testing.assert_allclose(
-        cardinalityT.values,
-        expected_cardinalityT.values,
+        cardinalityT.astype(float).values,
+        expected_cardinalityT.astype(float).values,
         relative_tolerance,
         absolute_tolerance,
     )
@@ -124,7 +124,8 @@ def test_phenology_functions():
         test_table_filepath, na_rep="NA", index=False, float_format=FLOAT_FORMAT
     )
     print("The results have been saved to %s" % test_table_filepath)
-    np.testing.assert_array_equal(dynT_["id_axis"], expected_dynT["id_axis"])
+    assert len(dynT_) == len(expected_dynT)
+    assert dynT_["id_axis"] == expected_dynT["id_axis"]
     dynT_ = dynT_.drop("id_axis", axis=1)
     expected_dynT = expected_dynT.drop(["id_axis"], axis=1)
     np.testing.assert_allclose(

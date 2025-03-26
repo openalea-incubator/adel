@@ -525,12 +525,13 @@ class _CreateAxeTTmp:
                 ],
                 dtype=float,
             )
-            self.axeT_tmp["id_plt"] = id_plt_list
-            self.axeT_tmp["id_cohort"] = id_cohort_list
-            self.axeT_tmp["id_axis"] = id_axis_list
-            self.axeT_tmp["N_phytomer_potential"] = N_phytomer_potential_list
-            self.axeT_tmp["N_phytomer"] = N_phytomer_potential_list
-            self.axeT_tmp["id_phen"] = id_phen_list
+            self.axeT_tmp = self.axeT_tmp.astype({'id_axis':'str'})
+            self.axeT_tmp.loc[:,"id_plt"] = id_plt_list
+            self.axeT_tmp.loc[:,"id_cohort"] = id_cohort_list
+            self.axeT_tmp.loc[:,"id_axis"] = id_axis_list
+            self.axeT_tmp.loc[:,"N_phytomer_potential"] = N_phytomer_potential_list
+            self.axeT_tmp.loc[:,"N_phytomer"] = N_phytomer_potential_list
+            self.axeT_tmp.loc[:,"id_phen"] = id_phen_list
         return self.axeT_tmp
 
 
@@ -623,10 +624,10 @@ class _CreateAxeT:
                     ) / a2_0 + TT_hs_break
 
             (
-                self.axeT_["TT_em_phytomer1"],
-                self.axeT_["TT_col_phytomer1"],
-                self.axeT_["TT_sen_phytomer1"],
-                self.axeT_["TT_del_phytomer1"],
+                self.axeT_.loc[:,"TT_em_phytomer1"],
+                self.axeT_.loc[:,"TT_col_phytomer1"],
+                self.axeT_.loc[:,"TT_sen_phytomer1"],
+                self.axeT_.loc[:,"TT_del_phytomer1"],
             ) = _gen_all_TT_phytomer1_list(axeT_tmp, phenT_first, dynT_)
             self.axeT_.loc[self.axeT_["id_axis"] == "MS", "TT_stop_axis"] = np.nan
             tillers_axeT_index = self.axeT_.loc[self.axeT_["id_axis"] != "MS"].index
@@ -641,18 +642,18 @@ class _CreateAxeT:
                     ],
                 )
             )
-            self.axeT_["id_ear"] = _gen_id_ear_list(self.axeT_["TT_stop_axis"])
-            self.axeT_["TT_del_axis"] = _gen_TT_del_axis_list(
+            self.axeT_.loc[:,"id_ear"] = _gen_id_ear_list(self.axeT_["TT_stop_axis"])
+            self.axeT_.loc[:,"TT_del_axis"] = _gen_TT_del_axis_list(
                 self.axeT_["TT_stop_axis"], delais_TT_stop_del_axis
             )
             HS_final_series = _gen_HS_final_series(self.axeT_, dynT_)
             self.axeT_ = _remove_axes_without_leaf(self.axeT_, HS_final_series.index)
-            self.axeT_["HS_final"] = HS_final_series.values
-            self.axeT_["N_phytomer"] = _gen_N_phytomer(self.axeT_["HS_final"])
-            self.axeT_["id_dim"] = _gen_id_dim_list(
+            self.axeT_.loc[:,"HS_final"] = HS_final_series.values
+            self.axeT_.loc[:,"N_phytomer"] = _gen_N_phytomer(self.axeT_["HS_final"])
+            self.axeT_.loc[:,"id_dim"] = _gen_id_dim_list(
                 self.axeT_["id_cohort"], self.axeT_["N_phytomer"], self.axeT_["id_ear"]
             )
-            self.axeT_["id_phen"] = self.axeT_["id_dim"]
+            self.axeT_.loc[:,"id_phen"] = self.axeT_["id_dim"]
 
             # we now know which tillers are regressive and which are not ; update axeT_tmp, phenT_tmp and phenT_first accordingly.
             _create_axeT_tmp.axeT_tmp.N_phytomer = self.axeT_.N_phytomer
@@ -966,24 +967,24 @@ def _create_cardinalityT(
         id_cohort,
         id_axis,
     ), theoretical_axis_cardinality in theoretical_axis_cardinalities.items():
-        cardinalityT["id_cohort"][idx] = id_cohort
-        cardinalityT["id_axis"][idx] = id_axis
-        cardinalityT["theoretical_cohort_cardinality"][idx] = (
+        cardinalityT.loc[idx,"id_cohort"] = id_cohort
+        cardinalityT.loc[idx,"id_axis"] = id_axis
+        cardinalityT.loc[idx,"theoretical_cohort_cardinality"] = (
             theoretical_cohort_cardinalities[id_cohort]
         )
-        cardinalityT["theoretical_axis_cardinality"][idx] = theoretical_axis_cardinality
+        cardinalityT.loc[idx,"theoretical_axis_cardinality"] = theoretical_axis_cardinality
         if id_cohort in simulated_cohort_cardinalities:
-            cardinalityT["simulated_cohort_cardinality"][idx] = (
+            cardinalityT.loc[idx,"simulated_cohort_cardinality"] = (
                 simulated_cohort_cardinalities[id_cohort]
             )
         else:
-            cardinalityT["simulated_cohort_cardinality"][idx] = 0
+            cardinalityT.loc[idx,"simulated_cohort_cardinality"] = 0
         if (id_cohort, id_axis) in simulated_axis_cardinalities:
-            cardinalityT["simulated_axis_cardinality"][idx] = (
+            cardinalityT.loc[idx,"simulated_axis_cardinality"] = (
                 simulated_axis_cardinalities[(id_cohort, id_axis)]
             )
         else:
-            cardinalityT["simulated_axis_cardinality"][idx] = 0
+            cardinalityT.loc[idx,"simulated_axis_cardinality"] = 0
         idx += 1
     cardinalityT[
         [
@@ -1000,7 +1001,7 @@ def _create_cardinalityT(
             "simulated_axis_cardinality",
         ]
     ].astype(float)
-    cardinalityT[
+    cardinalityT.loc[:,
         ["id_cohort", "simulated_cohort_cardinality", "simulated_axis_cardinality"]
     ] = cardinalityT[
         ["id_cohort", "simulated_cohort_cardinality", "simulated_axis_cardinality"]
@@ -1106,7 +1107,7 @@ class _CreateDimT:
             MS_id_dim = axeT_group["id_dim"][axeT_group.first_valid_index()]
 
             L_blade_is_null = self.dimT_["L_blade"].isnull()
-            row_indexes_to_fit = L_blade_is_null[L_blade_is_null is True].index
+            row_indexes_to_fit = L_blade_is_null[L_blade_is_null].index
 
             _gen_lengths(
                 MS_id_dim,
@@ -1208,7 +1209,7 @@ def _init_dimT(axeT_, dimT_tmp, dynT_):
                 "W_internode",
             ]
             for organ_dim in organ_dim_list:
-                dim_idx_to_get = dimT_tmp_group.index[dimT_group.index]
+                dim_idx_to_get = dimT_tmp_group.index[dimT_group.index.astype(int)]
                 dimT_group[organ_dim] = dimT_tmp_group[organ_dim][
                     dim_idx_to_get
                 ].values.astype(float)
@@ -1933,7 +1934,7 @@ def _create_dynT_tmp(axeT_tmp):
     keys_array = np.array(list(groups.keys()))
     cardinalities = pd.DataFrame(
         np.array(list(groups.values()), dtype=object)
-    ).applymap(np.size)
+    ).map(np.size)
     # initialize the values of the other columns to NaN
     dynT_tmp = pd.DataFrame(
         index=list(range(len(groups))),
@@ -2735,8 +2736,8 @@ class _CreatePhenTTmp:
             for (id_phen, N_phytomer), axeT_group in axeT_.groupby(
                 ["id_phen", "N_phytomer"]
             ):
-                id_phen_list.extend(np.repeat(id_phen, N_phytomer + 1))
-                index_phytomer_list.extend(list(range(N_phytomer + 1)))
+                id_phen_list.extend(np.repeat(id_phen, int(N_phytomer) + 1))
+                index_phytomer_list.extend(list(range(int(N_phytomer) + 1)))
 
             self.phenT_tmp = pd.DataFrame(
                 index=list(range(len(id_phen_list))),

@@ -63,12 +63,23 @@ Activate the environment:
 
   conda activate adel
 
+Locate RHOME:
+
+  R RHOME
+
+Set R_HOME to the R HOME dir returned above:
+
+  conda env config vars set R_HOME=r_home_dir_returned_by_rhome
+
+
 Installation from source
 ========================
 
 Create an environment 
 
   mamba env create -n adel -f conda/environment.yml
+
+Set R_HOME (see above)
 
 Install adel
 

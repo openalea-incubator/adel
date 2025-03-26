@@ -432,7 +432,7 @@ def leaf_element(leaf, length_max, length, s_base, s_top, radius_max):
     return xf, yf, s_val, rf
 
 
-def mesh4(leaf, length_max, length, s_base, s_top, radius_max, twist=0, volume=0.1):
+def mesh4(leaf, length_max, length, s_base, s_top, radius_max, twist=0, volume=0.1,min_area=1e-6):
     xf, yf, s_val, rf = leaf_element(
         leaf, length_max, length, s_base, s_top, radius_max
     )
@@ -452,7 +452,7 @@ def mesh4(leaf, length_max, length, s_base, s_top, radius_max, twist=0, volume=0
         A, B, C = [Vector3(pts[i]) for i in ind]
         return norm(cross(B - A, C - A)) / 2.0
 
-    ind = [id for id in ind if _surf(id, pts) > 1e-6]
+    ind = [id for id in ind if _surf(id, pts) > min_area]
     return pts, ind
 
 

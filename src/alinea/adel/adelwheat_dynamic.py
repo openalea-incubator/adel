@@ -102,7 +102,7 @@ class AdelWheatDyn(AdelWheat):
             split=self.split,
             **kwds,
         )
-        g = mtg_interpreter(g, self.leaves, classic=self.classic, face_up=self.face_up)
+        g = mtg_interpreter(g, self.leaves, min_length=self.min_length, classic=self.classic, face_up=self.face_up)
         return g
 
     def update_geometry(
@@ -125,7 +125,7 @@ class AdelWheatDyn(AdelWheat):
 
         # update elements
         g = update_organ_elements(g, self.leaves, self.split, self.phyllochron())
-        g = mtg_interpreter(g, self.leaves, face_up=self.face_up, classic=self.classic)
+        g = mtg_interpreter(g, self.leaves, min_length=self.min_length, face_up=self.face_up, classic=self.classic)
         pos = g.property("position")
         az = g.property("azimuth")
         geom = g.property("geometry")

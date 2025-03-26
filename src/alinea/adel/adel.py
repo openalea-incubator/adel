@@ -77,6 +77,7 @@ class Adel:
         scene_unit="cm",
         age=None,
         seed=None,
+        min_length=1e-2,
         leaf_db=None,
         positions=None,
         convUnit=None,
@@ -102,6 +103,7 @@ class Adel:
             scene_unit: (string) desired length unit for the output mtg
             age: (optional) the age of the canopy
             seed: (int) a seed for the random number generator
+            min_length: (float) minimal length (cm) of organ for being represented in the scene
             leaf_db: deprecated, use leaves
             positions: deprecated, use stand
             convUnit: deprecated, use scene_unit
@@ -165,6 +167,8 @@ class Adel:
         self.face_up = face_up
         self.classic = classic
         self.seed = seed
+        self.min_length = min_length * self.conv_units['cm'] / self.conv_units[self.scene_unit]
+
         self.meta = {}
 
         self.new_stand(
@@ -292,7 +296,7 @@ class Adel:
             split=self.split,
             **kwds,
         )
-        g = mtg_interpreter(g, self.leaves, classic=self.classic, face_up=self.face_up)
+        g = mtg_interpreter(g, self.leaves, min_length=self.min_length, classic=self.classic, face_up=self.face_up)
         return g
 
     def meta_informations(self, g):

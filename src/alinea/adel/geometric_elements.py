@@ -11,7 +11,7 @@ import openalea.plantgl.all as pgl
 from math import radians, pi, cos, sin
 import alinea.adel.fitting as fitting
 from functools import reduce
-
+from copy import deepcopy
 datadir = os.path.dirname(__file__)
 
 
@@ -204,6 +204,8 @@ class Leaves:
             leaf = self.leaves[key][index]
         else:
             leaf = self.leaves[key][index][age_index]
+        # deep copy is required as fitting.mesh alter shape
+        leaf = deepcopy(leaf)
         if isinstance(leaf, dict):
             leaf = leaf["x"], leaf["y"], leaf["s"], leaf["r"]
         return leaf
@@ -295,7 +297,6 @@ class Leaves:
             mesh = None
 
         return mesh
-
     def form_factor(self):
         """
         return form factor for each key in sr_db

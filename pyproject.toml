@@ -51,7 +51,7 @@ Changelog = "https://github.com/openalea-incubator/adel/releases"
 "adel" = "alinea.adel"
 
 [tool.setuptools.dynamic]
-readme = {file = ["README.rst"]}
+readme = {file = ["README.md"]}
 
 [tool.setuptools.packages.find]
 where = ["src"]

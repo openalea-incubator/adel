@@ -1,3 +1,7 @@
+{% set pyproject = load_file_data('pyproject.toml') %}
+{% set description = pyproject.get('project').get('description') %}
+{% set home = pyproject.get('project', {}).get('urls').get('Homepage') %}
+
 package:
   name: alinea.adel
   version: "2.0.2"
@@ -37,7 +41,8 @@ test:
     - pytest -v --ignore=test_povray.py --ignore=test_dataflow.py --ignore=test_plantgen.py
 
 about:
-  home: "https://github.com/openalea-incubator/adel"
+  home: {{ home }}
   license: Cecill-C License
   license_file: LICENCE.txt
+  summary: {{ description }}
 

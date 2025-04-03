@@ -7,13 +7,20 @@
 :   -   M Abichou (wheat parameteristion, documentation, plantgen),
     -   C Chambon (plantgen, documentation, povray, fit, io widgets)
 
-**Institutes** : INRA, CIRAD
+**Institutes** : INRAe, CIRAD
 
 **Status** : R and Python package (+ L-system)
 
 **License** : Cecill-C
 
 # About
+
+[![Last version](https://anaconda.org/openalea3/alinea.adel/badges/version.svg)](https://anaconda.org/OpenAlea3/alinea.adel/files)
+[![Documentation Status](https://readthedocs.org/projects/adel/badge/?version=latest)](https://adel.readthedocs.io/en/latest/?badge=latest)
+[![Licence](https://anaconda.org/openalea3/alinea.adel/badges/license.svg)](https://cecill.info/licences/Licence_CeCILL_V2.1-en.html)
+[![Platform](https://anaconda.org/openalea3/alinea.adel/badges/platforms.svg)](https://anaconda.org/openalea3/alinea.adel)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
+[![Downloads](https://anaconda.org/openalea3/alinea.adel/badges/downloads.svg)](https://anaconda.org/openalea3/alinea.adel)
 
 ## Description
 
@@ -54,7 +61,7 @@ Create an environment:
 
 Activate the environment:
 
-> conda activate adel
+> mamba activate adel
 
 Locate RHOME:
 
@@ -62,7 +69,7 @@ Locate RHOME:
 
 Set R_HOME to the R HOME dir returned above:
 
-> conda env config vars set R_HOME=r_home_dir_returned_by_rhome
+> mamba env config vars set R_HOME=r_home_dir_returned_by_rhome
 
 ## Installation from source
 

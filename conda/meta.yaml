@@ -26,7 +26,7 @@ requirements:
     - scipy
     - rpy2
     - alinea.caribu
-    - alinea.astk
+    - openalea.astk
 
 test:
   requires:
